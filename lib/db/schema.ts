@@ -1,4 +1,4 @@
-import {relations, sql} from 'drizzle-orm';
+import {type InferSelectModel, relations, sql} from 'drizzle-orm';
 import {integer, sqliteTable, text} from 'drizzle-orm/sqlite-core';
 
 export const shares = sqliteTable('shares', {
@@ -31,3 +31,6 @@ export const patches = sqliteTable('patches', {
 export const patchesRelations = relations(patches, ({one}) => ({
   share: one(shares, {fields: [patches.shareId], references: [shares.id]}),
 }));
+
+export type Share = InferSelectModel<typeof shares>;
+export type Patch = InferSelectModel<typeof patches>;
