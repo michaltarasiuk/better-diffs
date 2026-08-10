@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "browser-automation": {
+      "source": "pierrecomputer/pierre",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/browser-automation/SKILL.md",
+      "computedHash": "825dfdce8b7e17080f4849ca293712b8e18a619ec353363dc1d06389c1ef9cde"
+    },
+    "diffs": {
+      "source": "pierrecomputer/pierre",
+      "sourceType": "github",
+      "skillPath": "skills/diffs/SKILL.md",
+      "computedHash": "e09cc280eca6d961db4be654705cbb8b0aa0ccdfcd4640739bda554204b09c17"
+    },
+    "theme": {
+      "source": "pierrecomputer/pierre",
+      "sourceType": "github",
+      "skillPath": "skills/theme/SKILL.md",
+      "computedHash": "b4589abc87a4329185fbd3a5f2250b3826a9527e8f468ff6241eb492b6fda722"
+    },
+    "theming": {
+      "source": "pierrecomputer/pierre",
+      "sourceType": "github",
+      "skillPath": "skills/theming/SKILL.md",
+      "computedHash": "f6dd8c02f6cf3eb838d30fe5c5bd023c08e8db5ed66d593e41436ea1354efb54"
+    },
+    "trees": {
+      "source": "pierrecomputer/pierre",
+      "sourceType": "github",
+      "skillPath": "skills/trees/SKILL.md",
+      "computedHash": "7132a04dc1cb869f53db7fc01f34805d7c78a1089608d9df9b4839647e34b13a"
+    },
+    "worktrees-and-dev-servers": {
+      "source": "pierrecomputer/pierre",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/worktrees-and-dev-servers/SKILL.md",
+      "computedHash": "411d71807ba4db487d7d734e2e858853ba4eda9fd990828859274ec4288cd12a"
+    }
+  }
+}
