@@ -5,7 +5,7 @@ import {db} from '@/lib/db';
 import {shares, patches} from '@/lib/db/schema';
 import {DiffPage} from './diff-page';
 
-export default async function Page({params}: {params: Promise<{id: string}>}) {
+export default async function Page({params}: PageProps<'/d/[id]'>) {
   const {id} = await params;
 
   const share = db.query.shares
