@@ -2,7 +2,7 @@
 const config = {
   bracketSpacing: false,
   singleQuote: true,
-  trailingComma: "all",
+  trailingComma: 'all',
   semi: true,
 };
 
