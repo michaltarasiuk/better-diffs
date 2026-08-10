@@ -13,7 +13,10 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-export async function POST(request: Request) {
+export async function POST(
+  request: Request,
+  _context: RouteContext<'/api/diffs'>,
+) {
   const body: unknown = await request.json().catch(() => null);
 
   const result = safeParse(CreateShare, body);
