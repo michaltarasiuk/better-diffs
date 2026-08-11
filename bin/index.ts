@@ -101,5 +101,6 @@ if (flags.open) {
     default:
       throw new Error(`Unsupported platform: ${process.platform}`);
   }
+
   Bun.spawn([cmd, shared.url]);
 }
