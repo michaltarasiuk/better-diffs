@@ -5,7 +5,6 @@ import {safeParse, z} from 'zod';
 import {db} from '@/lib/db';
 import {patches, shares} from '@/lib/db/schema';
 import {env} from '@/lib/env';
-import {isDefined} from '@/lib/is-defined';
 
 const CreateShare = z.object({
   patches: z.array(z.array(z.custom<FileDiffMetadata>()).min(1)).min(1),
@@ -24,17 +23,10 @@ export function OPTIONS() {
 export async function POST(request: Request) {
   const body: unknown = await request.json().catch(() => null);
 
-  if (!isDefined(body)) {
-    return Response.json(
-      {ok: false, error: 'Invalid JSON body'},
-      {status: 400, headers: CORS_HEADERS},
-    );
-  }
-
   const result = safeParse(CreateShare, body);
   if (!result.success) {
     return Response.json(
-      {ok: false, error: result.error.issues[0].message},
+      {ok: false, error: 'Invalid JSON body'},
       {status: 400, headers: CORS_HEADERS},
     );
   }
