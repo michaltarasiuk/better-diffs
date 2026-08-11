@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 import type {Metadata} from 'next';
 
 import {asc, eq, sql} from 'drizzle-orm';
@@ -10,6 +8,8 @@ import {patches, shares} from '@/lib/db/schema';
 import {isDefined} from '@/lib/is-defined';
 
 import {DiffPage} from './diff-page';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
