@@ -15,6 +15,10 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
+export async function OPTIONS() {
+  return new Response(null, {status: 204, headers: CORS_HEADERS});
+}
+
 export async function POST(
   request: Request,
   _context: RouteContext<'/api/diffs'>,
@@ -60,8 +64,4 @@ export async function POST(
     {ok: true, id: share.id, url},
     {status: 201, headers: CORS_HEADERS},
   );
-}
-
-export async function OPTIONS() {
-  return new Response(null, {status: 204, headers: CORS_HEADERS});
 }

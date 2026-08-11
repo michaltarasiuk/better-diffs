@@ -4,6 +4,7 @@ import {z} from 'zod';
 export const env = createEnv({
   server: {
     BASE_URL: z.url(),
+    CRON_SECRET: z.string().optional(),
     DATABASE_PATH: z.string(),
   },
   runtimeEnv: process.env,
