@@ -1,4 +1,5 @@
-import {sql, lt} from 'drizzle-orm';
+import {lt, sql} from 'drizzle-orm';
+
 import {db} from '.';
 import {shares} from './schema';
 

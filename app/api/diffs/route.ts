@@ -1,9 +1,11 @@
 import type {FileDiffMetadata} from '@pierre/diffs';
+
+import {safeParse, z} from 'zod';
+
 import {db} from '@/lib/db';
 import {patches, shares} from '@/lib/db/schema';
 import {env} from '@/lib/env';
 import {isDefined} from '@/lib/is-defined';
-import {z, safeParse} from 'zod';
 
 const CreateShare = z.object({
   patches: z.array(z.array(z.custom<FileDiffMetadata>()).min(1)).min(1),

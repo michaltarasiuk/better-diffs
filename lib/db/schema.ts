@@ -1,6 +1,7 @@
+import type {FileDiffMetadata} from '@pierre/diffs';
+
 import {type InferSelectModel, relations, sql} from 'drizzle-orm';
 import {integer, sqliteTable, text} from 'drizzle-orm/sqlite-core';
-import type {FileDiffMetadata} from '@pierre/diffs';
 
 export const shares = sqliteTable('shares', {
   id: text('id')

@@ -1,9 +1,10 @@
 #!/usr/bin/env bun
 
 import {parseArgs} from 'node:util';
+
+import {parsePatchFiles} from '@pierre/diffs';
 import dedent from 'dedent';
 import {z} from 'zod';
-import {parsePatchFiles} from '@pierre/diffs';
 
 declare const __BETTER_DIFFS_BASE_URL__: string | undefined;
 
