@@ -2,7 +2,7 @@ import {sql, lt} from 'drizzle-orm';
 import {db} from '.';
 import {shares} from './schema';
 
-export function deleteExpired(maxAgeHours: number) {
+export function deleteExpired({maxAgeHours}: {maxAgeHours: number}) {
   return db
     .delete(shares)
     .where(
