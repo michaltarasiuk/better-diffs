@@ -1,6 +1,6 @@
 import type {FileDiffMetadata} from '@pierre/diffs';
 
-import {safeParse, z} from 'zod';
+import {z} from 'zod';
 
 import {db} from '@/lib/db';
 import {patches, shares} from '@/lib/db/schema';
@@ -31,28 +31,32 @@ export async function POST(request: Request) {
     );
   }
 
-  const [share] = db
-    .insert(shares)
-    .values({})
-    .returning({
-      id: shares.id,
-    })
-    .all();
+  const shareId = db.transaction((tx) => {
+    const [{id}] = tx
+      .insert(shares)
+      .values({})
+      .returning({
+        id: shares.id,
+      })
+      .all();
 
-  db.insert(patches)
-    .values(
-      result.data.patches.map((files, i) => ({
-        shareId: share.id,
-        files,
-        order: i,
-      })),
-    )
-    .run();
+    tx.insert(patches)
+      .values(
+        result.data.patches.map((files, i) => ({
+          shareId: id,
+          files,
+          order: i,
+        })),
+      )
+      .run();
 
-  const url = `${env.BASE_URL}/d/${share.id}`;
+    return id;
+  });
+
+  const url = `${env.BASE_URL}/d/${shareId}`;
 
   return Response.json(
-    {ok: true, id: share.id, url},
+    {ok: true, id: shareId, url},
     {status: 201, headers: CORS_HEADERS},
   );
 }

@@ -24,6 +24,11 @@ export default async function Page({params}: PageProps<'/d/[id]'>) {
   const share = db.query.shares
     .findFirst({
       where: eq(shares.id, id),
+      with: {
+        patches: {
+          orderBy: asc(patches.order),
+        },
+      },
     })
     .sync();
 
@@ -36,14 +41,7 @@ export default async function Page({params}: PageProps<'/d/[id]'>) {
     .where(eq(shares.id, id))
     .run();
 
-  const sharePatches = db.query.patches
-    .findMany({
-      where: eq(patches.shareId, id),
-      orderBy: asc(patches.order),
-    })
-    .sync();
-
-  const items = sharePatches.flatMap((p) =>
+  const items = share.patches.flatMap((p) =>
     p.files.map((fileDiff) => ({
       id: fileDiff.name,
       type: 'diff' as const,
