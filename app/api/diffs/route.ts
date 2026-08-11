@@ -23,7 +23,7 @@ export function OPTIONS() {
 export async function POST(request: Request) {
   const body: unknown = await request.json().catch(() => null);
 
-  const result = safeParse(CreateShare, body);
+  const result = CreateShare.safeParse(body);
   if (!result.success) {
     return Response.json(
       {ok: false, error: 'Invalid JSON body'},
