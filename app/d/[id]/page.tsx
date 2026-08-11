@@ -3,16 +3,16 @@ export const dynamic = 'force-dynamic';
 import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {eq, sql, asc} from 'drizzle-orm';
-import {parsePatchFiles} from '@pierre/diffs';
 import {db} from '@/lib/db';
 import {shares, patches} from '@/lib/db/schema';
+import {isDefined} from '@/lib/is-defined';
 import {DiffPage} from './diff-page';
 
 export async function generateMetadata({
   params,
 }: PageProps<'/d/[id]'>): Promise<Metadata> {
   const {id} = await params;
-  return {title: `Diff ${id.slice(0, 8)}`};
+  return {title: `Diff ${id}`};
 }
 
 export default async function Page({params}: PageProps<'/d/[id]'>) {
@@ -24,7 +24,9 @@ export default async function Page({params}: PageProps<'/d/[id]'>) {
     })
     .sync();
 
-  if (!share) notFound();
+  if (!isDefined(share)) {
+    notFound();
+  }
 
   db.update(shares)
     .set({lastVisitedAt: sql`datetime('now')`})
@@ -38,15 +40,13 @@ export default async function Page({params}: PageProps<'/d/[id]'>) {
     })
     .sync();
 
-  const files = sharePatches
-    .flatMap((p) => parsePatchFiles(p.patch))
-    .flatMap((p) => p.files);
-
-  const items = files.map((fileDiff) => ({
-    id: fileDiff.name,
-    type: 'diff' as const,
-    fileDiff,
-  }));
+  const items = sharePatches.flatMap((p) =>
+    p.files.map((fileDiff) => ({
+      id: fileDiff.name,
+      type: 'diff' as const,
+      fileDiff,
+    })),
+  );
 
   return <DiffPage items={items} />;
 }

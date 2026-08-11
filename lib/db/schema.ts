@@ -1,5 +1,6 @@
 import {type InferSelectModel, relations, sql} from 'drizzle-orm';
 import {integer, sqliteTable, text} from 'drizzle-orm/sqlite-core';
+import type {FileDiffMetadata} from '@pierre/diffs';
 
 export const shares = sqliteTable('shares', {
   id: text('id')
@@ -24,7 +25,7 @@ export const patches = sqliteTable('patches', {
   shareId: text('share_id')
     .notNull()
     .references(() => shares.id, {onDelete: 'cascade'}),
-  patch: text('patch').notNull(),
+  files: text('files', {mode: 'json'}).$type<FileDiffMetadata[]>().notNull(),
   order: integer('order').notNull(),
 });
 
