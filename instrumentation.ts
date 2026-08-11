@@ -1,7 +1,7 @@
 let interval: ReturnType<typeof setInterval> | undefined;
 
 export async function register() {
-  if (process.env.VERCEL) {
+  if (process.env.VERCEL || process.env.NEXT_RUNTIME !== 'nodejs') {
     return;
   }
   const {deleteExpired} = await import('./lib/db/cleanup');
