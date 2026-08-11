@@ -22,7 +22,7 @@ function isAuthenticated(request: Request) {
   );
 }
 
-export async function GET(request: Request) {
+export function GET(request: Request) {
   if (!isAuthenticated(request)) {
     return Response.json({ok: false}, {status: 401});
   }

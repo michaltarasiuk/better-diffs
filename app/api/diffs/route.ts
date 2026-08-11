@@ -17,14 +17,11 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-export async function OPTIONS() {
+export function OPTIONS() {
   return new Response(null, {status: 204, headers: CORS_HEADERS});
 }
 
-export async function POST(
-  request: Request,
-  _context: RouteContext<'/api/diffs'>,
-) {
+export async function POST(request: Request) {
   const body: unknown = await request.json().catch(() => null);
 
   if (!isDefined(body)) {
