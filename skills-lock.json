@@ -7,17 +7,35 @@
       "skillPath": ".agents/skills/browser-automation/SKILL.md",
       "computedHash": "825dfdce8b7e17080f4849ca293712b8e18a619ec353363dc1d06389c1ef9cde"
     },
+    "code-review": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/code-review/SKILL.md",
+      "computedHash": "1d5e7242a98674635be79ab310cdda0e555d36a9903d2526ebf4263d0b7997ca"
+    },
     "diffs": {
       "source": "pierrecomputer/pierre",
       "sourceType": "github",
       "skillPath": "skills/diffs/SKILL.md",
       "computedHash": "e09cc280eca6d961db4be654705cbb8b0aa0ccdfcd4640739bda554204b09c17"
     },
+    "grill-me": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/grill-me/SKILL.md",
+      "computedHash": "f361db4e15e6bfd562a9282b1dccda513910a50061f9e838ce017be9c69dde3f"
+    },
     "heroui-react": {
       "source": "heroui-inc/heroui",
       "sourceType": "github",
       "skillPath": "skills/heroui-react/SKILL.md",
       "computedHash": "c9e1bb41fbc3cee782faae08bd465ae05cd685a6ed7cc3392464fdf29b3ab467"
+    },
+    "setup-pre-commit": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/misc/setup-pre-commit/SKILL.md",
+      "computedHash": "1b140af948d0a6330c4cf52d46ca2e06a0e96fdc34d22ec8888d2b9751b99b62"
     },
     "theme": {
       "source": "pierrecomputer/pierre",
