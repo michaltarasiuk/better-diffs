@@ -1,0 +1,10 @@
+/*
+ * Firefox (macOS) uses classic scrollbars (~11px) while Chrome uses overlay scrollbars (0px).
+ * @pierre/diffs runtime-measures scrollbar width and sets --diffs-scrollbar-gutter,
+ * which narrows each split pane's content column and creates extra spacing between
+ * the additions/deletions columns. Chromium-based "helium" measures 0px, so it looked fine.
+ */
+diffs-container,
+[data-diffs] {
+  --diffs-scrollbar-gutter-override: 0px;
+}

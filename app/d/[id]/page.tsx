@@ -11,7 +11,7 @@ import {patches, shares} from '@/lib/db/schema';
 import {DIFF_VIEWER_OPTIONS} from '@/lib/diffs';
 import {isDefined} from '@/lib/is-defined';
 
-import {DiffPage} from './diff-page';
+import {DiffList} from './_diff-list';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,5 +61,5 @@ export default async function Page({params}: PageProps<'/d/[id]'>) {
     ),
   );
 
-  return <DiffPage items={items} />;
+  return <DiffList items={items} />;
 }

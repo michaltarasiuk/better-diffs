@@ -1,5 +1,7 @@
 'use client';
 
+import './_diff-list.css';
+
 import {FileDiff, Virtualizer} from '@pierre/diffs/react';
 
 import type {PreloadedDiffItem} from '@/lib/diffs';
@@ -11,7 +13,7 @@ const VIEWER_STYLE = {
   overflow: 'auto',
 } as const;
 
-export function DiffPage({items}: {items: PreloadedDiffItem[]}) {
+export function DiffList({items}: {items: PreloadedDiffItem[]}) {
   return (
     <Virtualizer style={VIEWER_STYLE}>
       {items.map(({id, fileDiff, prerenderedHTML}) => (
