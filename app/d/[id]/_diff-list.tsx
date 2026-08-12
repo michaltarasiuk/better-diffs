@@ -6,7 +6,7 @@ import {FileDiff, Virtualizer} from '@pierre/diffs/react';
 
 import type {PreloadedDiffItem} from '@/lib/diffs';
 
-import {DIFF_VIEWER_OPTIONS} from '@/lib/diffs';
+import {STATIC_DIFF_VIEWER_OPTIONS} from '@/lib/diffs';
 
 const VIEWER_STYLE = {
   height: '100dvh',
@@ -20,7 +20,7 @@ export function DiffList({items}: {items: PreloadedDiffItem[]}) {
         <FileDiff
           key={id}
           fileDiff={fileDiff}
-          options={DIFF_VIEWER_OPTIONS}
+          options={STATIC_DIFF_VIEWER_OPTIONS}
           prerenderedHTML={prerenderedHTML}
         />
       ))}

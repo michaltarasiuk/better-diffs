@@ -1,6 +1,6 @@
 import type {FileDiffMetadata, FileDiffOptions} from '@pierre/diffs';
 
-export const DIFF_VIEWER_OPTIONS = {
+export const STATIC_DIFF_VIEWER_OPTIONS = {
   theme: {
     light: 'pierre-light',
     dark: 'pierre-dark',
