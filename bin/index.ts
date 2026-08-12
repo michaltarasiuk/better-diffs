@@ -55,16 +55,14 @@ args.push(...positionals);
 const {stdout, stderr, exitCode} = Bun.spawnSync(args);
 if (exitCode !== 0) {
   const message = String(stderr);
-  throw new Error(
-    message
-      ? `git diff failed: ${message}`
-      : `git diff failed (exit ${exitCode})`,
-  );
+  throw message
+    ? `git diff failed: ${message}`
+    : `git diff failed (exit ${exitCode})`;
 }
 
 const diff = String(stdout);
 if (!diff) {
-  throw new Error('No changes found');
+  throw 'No changes found';
 }
 
 const patches = parsePatchFiles(diff).map((p) => p.files);
@@ -83,7 +81,7 @@ const shared = ShareResponse.parse(await response.json());
 if (shared.ok) {
   console.log(shared.url);
 } else {
-  throw new Error(`Upload failed: ${shared.error}`);
+  throw `Upload failed: ${shared.error}`;
 }
 
 if (flags.open) {
@@ -99,7 +97,7 @@ if (flags.open) {
       cmd = 'xdg-open';
       break;
     default:
-      throw new Error(`Unsupported platform: ${process.platform}`);
+      throw `Unsupported platform: ${process.platform}`;
   }
 
   Bun.spawn([cmd, shared.url]);
