@@ -1,26 +1,27 @@
 'use client';
 
-import {CodeView, type CodeViewDiffItem} from '@pierre/diffs/react';
+import {FileDiff, Virtualizer} from '@pierre/diffs/react';
 
-const CODE_VIEW_OPTIONS = {
-  theme: {
-    light: 'pierre-light',
-    dark: 'pierre-dark',
-  },
-  stickyHeader: true,
-} as const;
+import type {PreloadedDiffItem} from '@/lib/diffs';
 
-const CODE_VIEW_STYLE = {
+import {DIFF_VIEWER_OPTIONS} from '@/lib/diffs';
+
+const VIEWER_STYLE = {
   height: '100dvh',
   overflow: 'auto',
 } as const;
 
-export function DiffPage({items}: {items: CodeViewDiffItem[]}) {
+export function DiffPage({items}: {items: PreloadedDiffItem[]}) {
   return (
-    <CodeView
-      items={items}
-      options={CODE_VIEW_OPTIONS}
-      style={CODE_VIEW_STYLE}
-    />
+    <Virtualizer style={VIEWER_STYLE}>
+      {items.map(({id, fileDiff, prerenderedHTML}) => (
+        <FileDiff
+          key={id}
+          fileDiff={fileDiff}
+          options={DIFF_VIEWER_OPTIONS}
+          prerenderedHTML={prerenderedHTML}
+        />
+      ))}
+    </Virtualizer>
   );
 }

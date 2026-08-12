@@ -1,0 +1,14 @@
+import type {FileDiffMetadata, FileDiffOptions} from '@pierre/diffs';
+
+export const DIFF_VIEWER_OPTIONS = {
+  theme: {
+    light: 'pierre-light',
+    dark: 'pierre-dark',
+  },
+} as const satisfies FileDiffOptions<unknown>;
+
+export interface PreloadedDiffItem {
+  id: string;
+  fileDiff: FileDiffMetadata;
+  prerenderedHTML: string;
+}

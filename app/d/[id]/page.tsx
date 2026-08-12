@@ -1,10 +1,14 @@
 import type {Metadata} from 'next';
 
+import {preloadFileDiff} from '@pierre/diffs/ssr';
 import {asc, eq, sql} from 'drizzle-orm';
 import {notFound} from 'next/navigation';
 
+import type {PreloadedDiffItem} from '@/lib/diffs';
+
 import {db} from '@/lib/db';
 import {patches, shares} from '@/lib/db/schema';
+import {DIFF_VIEWER_OPTIONS} from '@/lib/diffs';
 import {isDefined} from '@/lib/is-defined';
 
 import {DiffPage} from './diff-page';
@@ -41,12 +45,20 @@ export default async function Page({params}: PageProps<'/d/[id]'>) {
     .where(eq(shares.id, id))
     .run();
 
-  const items = share.patches.flatMap((p) =>
-    p.files.map((fileDiff) => ({
-      id: fileDiff.name,
-      type: 'diff' as const,
-      fileDiff,
-    })),
+  const items = await Promise.all(
+    share.patches.flatMap((patch) =>
+      patch.files.map(async (fileDiff) => {
+        const preloaded = await preloadFileDiff({
+          fileDiff,
+          options: DIFF_VIEWER_OPTIONS,
+        });
+        return {
+          id: preloaded.fileDiff.name,
+          fileDiff: preloaded.fileDiff,
+          prerenderedHTML: preloaded.prerenderedHTML,
+        } satisfies PreloadedDiffItem;
+      }),
+    ),
   );
 
   return <DiffPage items={items} />;
