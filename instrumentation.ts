@@ -4,7 +4,7 @@ export async function register() {
   if (process.env.VERCEL || process.env.NEXT_RUNTIME !== 'nodejs') {
     return;
   }
-  const {deleteExpired} = await import('./lib/db/cleanup');
+  const {deleteExpired} = await import('./lib/db/expire');
   deleteExpired({maxAgeHours: 24});
   if (interval) {
     clearInterval(interval);

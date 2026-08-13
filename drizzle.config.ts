@@ -5,7 +5,7 @@ loadEnvConfig(process.cwd());
 
 export default defineConfig({
   dialect: 'sqlite',
-  schema: './lib/db/schema.ts',
+  schema: './lib/db/schema',
   dbCredentials: {
     url: process.env.DATABASE_PATH!,
   },

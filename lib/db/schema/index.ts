@@ -3,6 +3,8 @@ import type {FileDiffMetadata} from '@pierre/diffs';
 import {type InferSelectModel, relations, sql} from 'drizzle-orm';
 import {integer, sqliteTable, text} from 'drizzle-orm/sqlite-core';
 
+export * from './auth';
+
 export const shares = sqliteTable('shares', {
   id: text('id')
     .primaryKey()

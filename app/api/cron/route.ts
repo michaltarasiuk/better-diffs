@@ -1,6 +1,6 @@
 import {timingSafeEqual} from 'node:crypto';
 
-import {deleteExpired} from '@/lib/db/cleanup';
+import {deleteExpired} from '@/lib/db/expire';
 import {env} from '@/lib/env';
 import {isDefined} from '@/lib/is-defined';
 
