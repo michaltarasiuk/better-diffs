@@ -14,6 +14,7 @@ import type {PreloadedDiffItem} from '@/lib/diffs';
 import {authClient} from '@/lib/auth-client';
 import {STATIC_DIFF_VIEWER_OPTIONS} from '@/lib/diffs';
 import {isDefined} from '@/lib/is-defined';
+import {useOnEscape} from '@/lib/use-on-escape';
 
 interface AnnotationMetadata {
   type: 'form' | 'thread';
@@ -52,6 +53,12 @@ export function DiffList({items}: {items: PreloadedDiffItem[]}) {
   function dismissFormAnnotation() {
     setLineAnnotations((la) => la.filter((a) => a.metadata.type !== 'form'));
   }
+
+  useOnEscape(() => {
+    if (hasFormAnnotation) {
+      dismissFormAnnotation();
+    }
+  });
 
   return (
     <Virtualizer className="h-full overflow-auto">
