@@ -8,3 +8,20 @@ diffs-container,
 [data-diffs] {
   --diffs-scrollbar-gutter-override: 0px;
 }
+
+/*
+ * @pierre/diffs resolves its palette with light-dark(), which reads the host's
+ * computed color-scheme. Its shadow root defaults to `light dark` (OS preference),
+ * so next-themes' class on <html> is invisible to it. Declarations from the outer
+ * tree win over the shadow tree's own :host rule, so setting color-scheme here is
+ * enough to drive the whole diff palette without JS.
+ */
+:root.light diffs-container,
+:root.light [data-diffs] {
+  color-scheme: light;
+}
+
+:root.dark diffs-container,
+:root.dark [data-diffs] {
+  color-scheme: dark;
+}

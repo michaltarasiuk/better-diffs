@@ -1,0 +1,20 @@
+@import 'tailwindcss';
+@import '@heroui/styles';
+
+:root {
+  --bg: #ffffff;
+  --fg: #171717;
+}
+
+.dark {
+  --bg: #0a0a0a;
+  --fg: #fafafa;
+}
+
+@utility bg-canvas {
+  background-color: var(--bg);
+}
+
+@utility text-canvas {
+  color: var(--fg);
+}
