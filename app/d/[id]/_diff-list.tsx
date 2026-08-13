@@ -4,9 +4,9 @@ import './_diff-list.css';
 
 import type {AnnotationSide, DiffLineAnnotation} from '@pierre/diffs/react';
 
-import {Button, Card, Spinner} from '@heroui/react';
+import {Button, Card, Spinner, TextArea, TextField} from '@heroui/react';
 import {FileDiff, Virtualizer} from '@pierre/diffs/react';
-import {LogInIcon, PlusIcon} from 'lucide-react';
+import {LogInIcon, PlusIcon, SendIcon} from 'lucide-react';
 import {useState} from 'react';
 
 import type {PreloadedDiffItem} from '@/lib/diffs';
@@ -49,6 +49,10 @@ export function DiffList({items}: {items: PreloadedDiffItem[]}) {
     ]);
   }
 
+  function dismissFormAnnotation() {
+    setLineAnnotations((la) => la.filter((a) => a.metadata.type !== 'form'));
+  }
+
   return (
     <Virtualizer className="h-full overflow-auto">
       {items.map(({id, fileDiff, prerenderedHTML}) => (
@@ -77,7 +81,12 @@ export function DiffList({items}: {items: PreloadedDiffItem[]}) {
             );
           }}
           renderAnnotation={({metadata}) => {
-            return <Annotation metadata={metadata} />;
+            return (
+              <Annotation
+                metadata={metadata}
+                onDismissForm={dismissFormAnnotation}
+              />
+            );
           }}
         />
       ))}
@@ -99,10 +108,16 @@ function GutterUtility({onAddAnnotation}: {onAddAnnotation: () => void}) {
   );
 }
 
-function Annotation({metadata}: {metadata: AnnotationMetadata}) {
+function Annotation({
+  metadata,
+  onDismissForm,
+}: {
+  metadata: AnnotationMetadata;
+  onDismissForm: () => void;
+}) {
   switch (metadata.type) {
     case 'form':
-      return <FormAnnotation />;
+      return <CommentForm onDismiss={onDismissForm} />;
     case 'thread':
       return <ThreadAnnotation />;
     default:
@@ -110,8 +125,9 @@ function Annotation({metadata}: {metadata: AnnotationMetadata}) {
   }
 }
 
-function FormAnnotation() {
+function CommentForm({onDismiss}: {onDismiss: () => void}) {
   const {data: session, isPending} = authClient.useSession();
+  const [message, setMessage] = useState('');
 
   if (isPending) {
     return (
@@ -123,13 +139,42 @@ function FormAnnotation() {
 
   if (!session) {
     return (
-      <Card className="mx-2 mt-1 mb-2" variant="secondary">
+      <Card variant="secondary" className="mx-2 mt-1 mb-2">
         <SignInPrompt />
       </Card>
     );
   }
 
-  return null;
+  return (
+    <Card variant="secondary" className="mx-2 mt-1 mb-2">
+      <Card.Content>
+        <TextField
+          name="comment"
+          aria-label="Comment"
+          value={message}
+          onChange={setMessage}
+          variant="secondary"
+          fullWidth
+        >
+          <TextArea
+            placeholder="Leave a comment..."
+            rows={3}
+            className="min-h-24 w-full resize-none"
+            autoFocus
+          />
+        </TextField>
+      </Card.Content>
+      <Card.Footer className="justify-end gap-2">
+        <Button variant="tertiary" size="sm" onPress={onDismiss}>
+          Cancel
+        </Button>
+        <Button size="sm">
+          <SendIcon aria-hidden className="size-4" />
+          Comment
+        </Button>
+      </Card.Footer>
+    </Card>
+  );
 }
 
 function SignInPrompt() {
@@ -146,12 +191,12 @@ function SignInPrompt() {
           variant="tertiary"
           size="sm"
           fullWidth
-          onPress={() => {
+          onPress={() =>
             void authClient.signIn.social({
               provider: 'github',
               callbackURL: window.location.href,
-            });
-          }}
+            })
+          }
         >
           <LogInIcon aria-hidden className="size-4" />
           Continue with GitHub
