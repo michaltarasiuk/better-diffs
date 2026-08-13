@@ -54,12 +54,6 @@ export function DiffList({items}: {items: PreloadedDiffItem[]}) {
     setLineAnnotations((la) => la.filter((a) => a.metadata.type !== 'form'));
   }
 
-  useOnEscape(() => {
-    if (hasFormAnnotation) {
-      dismissFormAnnotation();
-    }
-  });
-
   return (
     <Virtualizer className="h-full overflow-auto">
       {items.map(({id, fileDiff, prerenderedHTML}) => (
@@ -122,9 +116,15 @@ function Annotation({
   metadata: AnnotationMetadata;
   onDismissForm: () => void;
 }) {
+  useOnEscape(() => {
+    if (metadata.type === 'form') {
+      onDismissForm();
+    }
+  });
+
   switch (metadata.type) {
     case 'form':
-      return <CommentForm onDismiss={onDismissForm} />;
+      return <CommentForm onCancel={onDismissForm} />;
     case 'thread':
       return <ThreadAnnotation />;
     default:
@@ -132,7 +132,7 @@ function Annotation({
   }
 }
 
-function CommentForm({onDismiss}: {onDismiss: () => void}) {
+function CommentForm({onCancel}: {onCancel: () => void}) {
   const {data: session, isPending} = authClient.useSession();
   const [message, setMessage] = useState('');
 
@@ -172,7 +172,7 @@ function CommentForm({onDismiss}: {onDismiss: () => void}) {
         </TextField>
       </Card.Content>
       <Card.Footer className="justify-end gap-2">
-        <Button variant="tertiary" size="sm" onPress={onDismiss}>
+        <Button variant="tertiary" size="sm" onPress={onCancel}>
           Cancel
         </Button>
         <Button size="sm">
