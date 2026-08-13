@@ -25,6 +25,7 @@ interface HoveredLine {
 }
 
 export function DiffList({items}: {items: PreloadedDiffItem[]}) {
+  // Prefetch
   authClient.useSession();
 
   const [lineAnnotations, setLineAnnotations] = useState<
