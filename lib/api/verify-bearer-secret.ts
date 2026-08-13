@@ -5,7 +5,7 @@ import {isDefined} from '@/lib/utils/is-defined';
 export function verifyBearerSecret(
   request: Request,
   secret: string | undefined,
-): boolean {
+) {
   if (!isDefined(secret)) {
     return false;
   }
