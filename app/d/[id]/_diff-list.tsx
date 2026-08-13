@@ -9,12 +9,12 @@ import {FileDiff, Virtualizer} from '@pierre/diffs/react';
 import {LogInIcon, PlusIcon, SendIcon} from 'lucide-react';
 import {useState} from 'react';
 
-import type {PreloadedDiffItem} from '@/lib/diffs';
+import type {PreloadedDiffItem} from '@/lib/diffs/preload';
 
 import {authClient} from '@/lib/auth-client';
-import {STATIC_DIFF_VIEWER_OPTIONS} from '@/lib/diffs';
-import {isDefined} from '@/lib/is-defined';
-import {useOnEscape} from '@/lib/use-on-escape';
+import {STATIC_DIFF_VIEWER_OPTIONS} from '@/lib/diffs/options';
+import {useOnEscape} from '@/lib/hooks/use-on-escape';
+import {isDefined} from '@/lib/utils/is-defined';
 
 interface AnnotationMetadata {
   type: 'form' | 'thread';

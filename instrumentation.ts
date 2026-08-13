@@ -4,13 +4,13 @@ export async function register() {
   if (process.env.VERCEL || process.env.NEXT_RUNTIME !== 'nodejs') {
     return;
   }
-  const {deleteExpired} = await import('./lib/db/expire');
-  deleteExpired({maxAgeHours: 24});
+  const {deleteExpiredShares} = await import('./lib/db/shares');
+  deleteExpiredShares({maxAgeHours: 24});
   if (interval) {
     clearInterval(interval);
   }
   interval = setInterval(
-    () => deleteExpired({maxAgeHours: 24}),
+    () => deleteExpiredShares({maxAgeHours: 24}),
     60 * 60 * 1000,
   );
   interval.unref?.();
