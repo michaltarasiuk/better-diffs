@@ -153,19 +153,19 @@ function CommentForm({onCancel}: {onCancel: () => void}) {
           aria-label="Comment"
           value={message}
           onChange={setMessage}
-          variant="secondary"
           fullWidth
         >
           <TextArea
             placeholder="Leave a comment..."
             rows={3}
+            variant="secondary"
             className="min-h-24 w-full resize-none"
             autoFocus
           />
         </TextField>
       </Card.Content>
       <Card.Footer className="justify-end gap-2">
-        <Button variant="tertiary" size="sm" onPress={onCancel}>
+        <Button variant="ghost" size="sm" onPress={onCancel}>
           Cancel
         </Button>
         <Button size="sm">

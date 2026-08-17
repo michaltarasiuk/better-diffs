@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     turbopackRustReactCompiler: true,
-    optimizePackageImports: ['@heroui/react', '@pierre/diffs'],
+    optimizePackageImports: ['@heroui/react'],
   },
 };
 
