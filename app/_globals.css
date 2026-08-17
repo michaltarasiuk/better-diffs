@@ -1,14 +1,110 @@
 @import 'tailwindcss';
 @import '@heroui/styles';
 
-:root {
+/*
+ * Canvas colors and HeroUI tokens aligned with @pierre/diffs themes
+ * (pierre-light / pierre-dark).
+ */
+:root,
+.light,
+[data-theme='light'] {
   --bg: #ffffff;
-  --fg: #171717;
+  --fg: #0a0a0a;
+
+  --eclipse: #0a0a0a;
+  --snow: #fafafa;
+
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+
+  --surface: #ffffff;
+  --surface-foreground: #0a0a0a;
+  --surface-secondary: #f5f5f5;
+  --surface-secondary-foreground: #0a0a0a;
+  --surface-tertiary: #ededed;
+  --surface-tertiary-foreground: #0a0a0a;
+
+  --overlay: #f7f7f7;
+  --overlay-foreground: #0a0a0a;
+
+  --muted: #737373;
+
+  --default: #ededed;
+  --default-foreground: #0a0a0a;
+
+  --accent: #009fff;
+  --accent-foreground: #ffffff;
+  --accent-hover: #1aa9ff;
+
+  --field-background: #ededed;
+  --field-foreground: #0a0a0a;
+  --field-placeholder: #8a8a8a;
+  --field-border: #d4d4d4;
+
+  --success: #18a46c;
+  --success-foreground: #0a0a0a;
+
+  --warning: #d5a910;
+  --warning-foreground: #0a0a0a;
+
+  --danger: #d52c36;
+  --danger-foreground: #ffffff;
+
+  --segment: #ffffff;
+  --segment-foreground: #0a0a0a;
+
+  --border: #e5e5e5;
+  --separator: #e5e5e5;
+  --focus: #009fff;
+  --link: #009fff;
 }
 
-.dark {
+.dark,
+[data-theme='dark'] {
   --bg: #0a0a0a;
   --fg: #fafafa;
+
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+
+  --surface: #171717;
+  --surface-foreground: #fafafa;
+  --surface-secondary: #1d1d1d;
+  --surface-secondary-foreground: #fafafa;
+  --surface-tertiary: #262626;
+  --surface-tertiary-foreground: #fafafa;
+
+  --overlay: #101010;
+  --overlay-foreground: #fafafa;
+
+  --muted: #a3a3a3;
+
+  --default: #1d1d1d;
+  --default-foreground: #fafafa;
+
+  --accent-foreground: #0a0a0a;
+  --accent-hover: #0190e7;
+
+  --field-background: #1d1d1d;
+  --field-foreground: #fafafa;
+  --field-placeholder: #636363;
+  --field-border: #1d1d1d;
+
+  --success: #07c480;
+  --success-foreground: #0a0a0a;
+
+  --warning: #ffca00;
+  --warning-foreground: #0a0a0a;
+
+  --danger: #ff2e3f;
+  --danger-foreground: #fafafa;
+
+  --segment: #262626;
+  --segment-foreground: #fafafa;
+
+  --border: #1d1d1d;
+  --separator: #1d1d1d;
+  --link: #009fff;
 }
 
 @utility bg-canvas {
