@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 @import '@heroui/styles';
-@import './themes/pierre.css';
+@import './_themes/pierre.css';
 
 @utility bg-canvas {
   background-color: var(--bg);
