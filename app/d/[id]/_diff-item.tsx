@@ -152,8 +152,8 @@ function CommentForm({onCancel}: {onCancel: () => void}) {
           <TextArea
             ref={focusRef}
             placeholder="Leave a comment..."
-            rows={3}
             variant="secondary"
+            rows={3}
             className="min-h-24 w-full resize-none"
           />
         </TextField>
