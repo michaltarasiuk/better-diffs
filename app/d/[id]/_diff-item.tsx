@@ -2,14 +2,15 @@
 
 import type {AnnotationSide, DiffLineAnnotation} from '@pierre/diffs/react';
 
-import {Button, Card, Spinner, TextArea, TextField} from '@heroui/react';
+import {Button, Card, TextArea, TextField} from '@heroui/react';
 import {FileDiff} from '@pierre/diffs/react';
 import {LogInIcon, PlusIcon, SendIcon} from 'lucide-react';
-import {useState} from 'react';
+import {use, useState} from 'react';
 
 import type {PreloadedDiffItem} from '@/lib/diffs/preload';
 
-import {authClient} from '@/lib/auth-client';
+import {authClient} from '@/lib/auth/client';
+import {SessionContext} from '@/lib/auth/context';
 import {STATIC_DIFF_VIEWER_OPTIONS} from '@/lib/diffs/options';
 import {useOnEscape} from '@/lib/hooks/use-on-escape';
 import {isDefined} from '@/lib/utils/is-defined';
@@ -126,18 +127,10 @@ function Annotation({
 }
 
 function CommentForm({onCancel}: {onCancel: () => void}) {
-  const {data: session, isPending} = authClient.useSession();
+  const session = use(SessionContext);
   const [message, setMessage] = useState('');
 
-  if (isPending) {
-    return (
-      <div className="mx-2 mt-1 mb-2 flex min-h-24 items-center justify-center">
-        <Spinner size="sm" />
-      </div>
-    );
-  }
-
-  if (!session) {
+  if (!isDefined(session)) {
     return (
       <Card variant="secondary" className="mx-2 mt-1 mb-2">
         <SignInPrompt />

@@ -2,6 +2,8 @@ import type {Metadata} from 'next';
 
 import {notFound} from 'next/navigation';
 
+import {SessionContext} from '@/lib/auth/context';
+import {getSession} from '@/lib/auth/server';
 import {findShareWithPatches, touchShare} from '@/lib/db/shares';
 import {preloadShareDiffs} from '@/lib/diffs/preload';
 import {isDefined} from '@/lib/utils/is-defined';
@@ -26,7 +28,14 @@ export default async function Page({params}: PageProps<'/d/[id]'>) {
   }
 
   touchShare(id);
-  const items = await preloadShareDiffs(share.patches);
+  const [items, session] = await Promise.all([
+    preloadShareDiffs(share.patches),
+    getSession(),
+  ]);
 
-  return <DiffList items={items} />;
+  return (
+    <SessionContext value={session}>
+      <DiffList items={items} />
+    </SessionContext>
+  );
 }
