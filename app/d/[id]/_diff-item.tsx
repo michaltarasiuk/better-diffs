@@ -133,14 +133,14 @@ function CommentForm({onCancel}: {onCancel: () => void}) {
 
   if (!isDefined(session)) {
     return (
-      <Card variant="secondary" className="mx-2 mt-1 mb-2">
+      <Card variant="secondary" className="ms-2 me-2 mbs-1 mbe-2">
         <SignInPrompt />
       </Card>
     );
   }
 
   return (
-    <Card variant="secondary" className="mx-2 mt-1 mb-2">
+    <Card variant="secondary" className="ms-2 me-2 mbs-1 mbe-2">
       <Card.Content>
         <TextField
           name="comment"

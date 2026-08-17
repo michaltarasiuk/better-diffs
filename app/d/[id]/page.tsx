@@ -1,14 +1,17 @@
 import type {Metadata} from 'next';
 
+import {preloadFileTree} from '@pierre/trees/ssr';
 import {notFound} from 'next/navigation';
 
 import {SessionContext} from '@/lib/auth/context';
 import {getSession} from '@/lib/auth/server';
 import {findShareWithPatches, touchShare} from '@/lib/db/shares';
 import {preloadShareDiffs} from '@/lib/diffs/preload';
+import {getDiffTreeOptions} from '@/lib/diffs/tree';
 import {isDefined} from '@/lib/utils/is-defined';
 
 import {DiffList} from './_diff-list';
+import {DiffTree} from './_diff-tree';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,9 +36,19 @@ export default async function Page({params}: PageProps<'/d/[id]'>) {
     getSession(),
   ]);
 
+  const files = share.patches.flatMap((patch) => patch.files);
+  const preloadedData = preloadFileTree(getDiffTreeOptions(files));
+
   return (
     <SessionContext value={session}>
-      <DiffList items={items} />
+      <div className="flex h-dvh">
+        <aside className="w-80 shrink-0 border-e">
+          <DiffTree files={files} preloadedData={preloadedData} />
+        </aside>
+        <main className="min-w-0 flex-1">
+          <DiffList items={items} />
+        </main>
+      </div>
     </SessionContext>
   );
 }
