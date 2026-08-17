@@ -13,6 +13,7 @@ import {authClient} from '@/lib/auth/client';
 import {SessionContext} from '@/lib/auth/context';
 import {STATIC_DIFF_VIEWER_OPTIONS} from '@/lib/diffs/options';
 import {useOnEscape} from '@/lib/hooks/use-on-escape';
+import {focusRef} from '@/lib/utils/focus-ref';
 import {isDefined} from '@/lib/utils/is-defined';
 
 interface AnnotationMetadata {
@@ -149,11 +150,11 @@ function CommentForm({onCancel}: {onCancel: () => void}) {
           fullWidth
         >
           <TextArea
+            ref={focusRef}
             placeholder="Leave a comment..."
             rows={3}
             variant="secondary"
             className="min-h-24 w-full resize-none"
-            autoFocus
           />
         </TextField>
       </Card.Content>
