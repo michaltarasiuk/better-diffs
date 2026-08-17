@@ -26,7 +26,9 @@ export function touchShare(id: string) {
     .run();
 }
 
-export function createShare(sharePatches: FileDiffMetadata[][]) {
+export function createShare(
+  sharePatches: readonly (readonly FileDiffMetadata[])[],
+) {
   return db.transaction((tx) => {
     const [{id}] = tx
       .insert(shares)
@@ -40,7 +42,7 @@ export function createShare(sharePatches: FileDiffMetadata[][]) {
       .values(
         sharePatches.map((files, order) => ({
           shareId: id,
-          files,
+          files: [...files],
           order,
         })),
       )
@@ -50,7 +52,12 @@ export function createShare(sharePatches: FileDiffMetadata[][]) {
   });
 }
 
-export function deleteExpiredShares({maxAgeHours}: {maxAgeHours: number}) {
+interface DeleteExpiredSharesOptions {
+  readonly maxAgeHours: number;
+}
+
+export function deleteExpiredShares(options: DeleteExpiredSharesOptions) {
+  const {maxAgeHours} = options;
   return db
     .delete(shares)
     .where(

@@ -8,7 +8,11 @@ import type {PreloadedDiffItem} from '@/lib/diffs/preload';
 
 import {DiffItem} from './_diff-item';
 
-export function DiffList({items}: {items: PreloadedDiffItem[]}) {
+interface DiffListProps {
+  readonly items: readonly PreloadedDiffItem[];
+}
+
+export function DiffList({items}: DiffListProps) {
   return (
     <Virtualizer className="h-full overflow-auto">
       {items.map(({id, fileDiff, prerenderedHTML}) => (

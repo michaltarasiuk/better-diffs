@@ -5,13 +5,13 @@ import {preloadFileDiff} from '@pierre/diffs/ssr';
 import {STATIC_DIFF_VIEWER_OPTIONS} from './options';
 
 export interface PreloadedDiffItem {
-  id: string;
-  fileDiff: FileDiffMetadata;
-  prerenderedHTML: string;
+  readonly id: string;
+  readonly fileDiff: FileDiffMetadata;
+  readonly prerenderedHTML: string;
 }
 
 export async function preloadShareDiffs(
-  patches: {files: FileDiffMetadata[]}[],
+  patches: readonly {files: readonly FileDiffMetadata[]}[],
 ) {
   return Promise.all(
     patches.flatMap((patch) =>

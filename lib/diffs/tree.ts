@@ -1,26 +1,55 @@
 import type {ChangeTypes, FileDiffMetadata} from '@pierre/diffs';
 
 import {
+  FILE_TREE_DEFAULT_ITEM_HEIGHT,
   type FileTreeOptions,
   type GitStatus,
   type GitStatusEntry,
   prepareFileTreeInput,
+  preparePresortedFileTreeInput,
 } from '@pierre/trees';
 
 const DIFF_TREE_ID = 'diff-file-tree';
 
-export function getDiffTreeOptions(files: readonly FileDiffMetadata[]) {
+// Budget first-render work for a full-height sidebar before the browser measures.
+const DIFF_TREE_INITIAL_VISIBLE_ROW_COUNT = Math.ceil(
+  900 / FILE_TREE_DEFAULT_ITEM_HEIGHT,
+);
+const DIFF_TREE_OVERSCAN = 8;
+
+const STATIC_DIFF_TREE_OPTIONS = {
+  id: DIFF_TREE_ID,
+  flattenEmptyDirectories: true,
+  initialExpansion: 'open',
+  initialVisibleRowCount: DIFF_TREE_INITIAL_VISIBLE_ROW_COUNT,
+  overscan: DIFF_TREE_OVERSCAN,
+} as const;
+
+export interface DiffTreeHandoff {
+  readonly sortedPaths: readonly string[];
+  readonly gitStatus: readonly GitStatusEntry[];
+}
+
+export function prepareDiffTreeHandoff(
+  files: readonly FileDiffMetadata[],
+): DiffTreeHandoff {
   const paths = files.map((file) => file.name);
+  const preparedInput = prepareFileTreeInput(paths, {
+    flattenEmptyDirectories: true,
+  });
 
   return {
-    id: DIFF_TREE_ID,
-    preparedInput: prepareFileTreeInput(paths, {
-      flattenEmptyDirectories: true,
-    }),
+    sortedPaths: preparedInput.paths,
     gitStatus: getDiffGitStatus(files),
-    initialExpansion: 'open',
-    initialVisibleRowCount: Infinity,
-  } satisfies FileTreeOptions;
+  };
+}
+
+export function getDiffTreeOptions(handoff: DiffTreeHandoff): FileTreeOptions {
+  return {
+    ...STATIC_DIFF_TREE_OPTIONS,
+    preparedInput: preparePresortedFileTreeInput(handoff.sortedPaths),
+    gitStatus: handoff.gitStatus,
+  };
 }
 
 function getDiffGitStatus(

@@ -25,10 +25,12 @@ interface HoveredLine {
   side: AnnotationSide;
 }
 
-export function DiffItem({
-  fileDiff,
-  prerenderedHTML,
-}: Pick<PreloadedDiffItem, 'fileDiff' | 'prerenderedHTML'>) {
+interface DiffItemProps {
+  readonly fileDiff: PreloadedDiffItem['fileDiff'];
+  readonly prerenderedHTML: PreloadedDiffItem['prerenderedHTML'];
+}
+
+export function DiffItem({fileDiff, prerenderedHTML}: DiffItemProps) {
   const [lineAnnotations, setLineAnnotations] = useState<
     DiffLineAnnotation<AnnotationMetadata>[]
   >([]);

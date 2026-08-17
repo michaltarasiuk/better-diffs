@@ -1,22 +1,20 @@
 'use client';
 
-import type {FileDiffMetadata} from '@pierre/diffs';
-
 import {
   FileTree,
   type FileTreePreloadedData,
   useFileTree,
 } from '@pierre/trees/react';
 
-import {getDiffTreeOptions} from '@/lib/diffs/tree';
+import {type DiffTreeHandoff, getDiffTreeOptions} from '@/lib/diffs/tree';
 
 interface DiffTreeProps {
-  files: FileDiffMetadata[];
-  preloadedData: FileTreePreloadedData;
+  readonly handoff: DiffTreeHandoff;
+  readonly preloadedData: FileTreePreloadedData;
 }
 
-export function DiffTree({files, preloadedData}: DiffTreeProps) {
-  const {model} = useFileTree(getDiffTreeOptions(files));
+export function DiffTree({handoff, preloadedData}: DiffTreeProps) {
+  const {model} = useFileTree(getDiffTreeOptions(handoff));
 
   return (
     <FileTree

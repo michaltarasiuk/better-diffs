@@ -7,7 +7,7 @@ import {SessionContext} from '@/lib/auth/context';
 import {getSession} from '@/lib/auth/server';
 import {findShareWithPatches, touchShare} from '@/lib/db/shares';
 import {preloadShareDiffs} from '@/lib/diffs/preload';
-import {getDiffTreeOptions} from '@/lib/diffs/tree';
+import {getDiffTreeOptions, prepareDiffTreeHandoff} from '@/lib/diffs/tree';
 import {isDefined} from '@/lib/utils/is-defined';
 
 import {DiffList} from './_diff-list';
@@ -37,13 +37,14 @@ export default async function Page({params}: PageProps<'/d/[id]'>) {
   ]);
 
   const files = share.patches.flatMap((patch) => patch.files);
-  const preloadedData = preloadFileTree(getDiffTreeOptions(files));
+  const treeHandoff = prepareDiffTreeHandoff(files);
+  const preloadedData = preloadFileTree(getDiffTreeOptions(treeHandoff));
 
   return (
     <SessionContext value={session}>
       <div className="flex h-dvh">
         <aside className="w-80 shrink-0 border-e">
-          <DiffTree files={files} preloadedData={preloadedData} />
+          <DiffTree handoff={treeHandoff} preloadedData={preloadedData} />
         </aside>
         <main className="min-w-0 flex-1">
           <DiffList items={items} />
