@@ -1,6 +1,7 @@
 'use client';
 
 import {ThemeProvider as NextThemesProvider} from 'next-themes';
+import {NuqsAdapter} from 'nuqs/adapters/next/app';
 
 interface ProvidersProps {
   readonly children: React.ReactNode;
@@ -18,7 +19,7 @@ export function Providers({children}: ProvidersProps) {
       enableSystem
       disableTransitionOnChange
     >
-      {children}
+      <NuqsAdapter>{children}</NuqsAdapter>
     </NextThemesProvider>
   );
 }

@@ -16,6 +16,7 @@ import {isPresent} from '@/lib/utils/is-present';
 
 import {DiffList} from './_diff-list';
 import {DiffTree} from './_diff-tree';
+import {loadDiffTreeSearchParams} from './_search-params';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,8 +27,14 @@ export async function generateMetadata({
   return {title: `Diff ${id}`};
 }
 
-export default async function Page({params}: PageProps<'/d/[id]'>) {
-  const {id} = await params;
+export default async function Page({
+  params,
+  searchParams,
+}: PageProps<'/d/[id]'>) {
+  const [{id}, {q: searchQuery}] = await Promise.all([
+    params,
+    loadDiffTreeSearchParams(searchParams),
+  ]);
 
   const share = findShareWithPatches(id);
   if (!isPresent(share)) {
@@ -39,7 +46,10 @@ export default async function Page({params}: PageProps<'/d/[id]'>) {
 
   const treeHandoff = prepareDiffTreeHandoff(files);
   const sortedFiles = sortFilesByTreeOrder(files, treeHandoff.sortedPaths);
-  const treeOptions = getDiffTreeOptions(treeHandoff);
+  const treeOptions = {
+    ...getDiffTreeOptions(treeHandoff),
+    initialSearchQuery: searchQuery,
+  };
 
   const [items, session] = await Promise.all([
     preloadDiffs(sortedFiles),
