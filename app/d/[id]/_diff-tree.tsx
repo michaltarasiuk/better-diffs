@@ -35,17 +35,22 @@ export function DiffTree({handoff, preloadedData}: DiffTreeProps) {
   return (
     <div className="flex h-full flex-col">
       <SearchField
+        aria-label="Search files"
         value={search.value}
         onChange={(value) => search.setValue(value || null)}
         className="bg-trees-sidebar p-2"
       >
         <SearchField.Group>
           <SearchField.SearchIcon />
-          <SearchField.Input placeholder="Search" />
-          <SearchField.ClearButton onClick={() => search.setValue(null)} />
+          <SearchField.Input placeholder="Search files" />
+          <SearchField.ClearButton
+            aria-label="Clear search"
+            onClick={() => search.setValue(null)}
+          />
         </SearchField.Group>
       </SearchField>
       <FileTree
+        aria-label="Changed files"
         model={model}
         preloadedData={preloadedData}
         className="min-h-0 flex-1"

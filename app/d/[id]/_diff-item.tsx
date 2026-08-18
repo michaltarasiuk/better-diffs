@@ -101,7 +101,7 @@ function GutterUtility({onAddAnnotation}: GutterUtilityProps) {
       className="me-[calc(-1lh+1ch)] h-lh w-[1lh]"
       isIconOnly
     >
-      <PlusIcon aria-hidden className="size-4" />
+      <PlusIcon aria-hidden="true" className="size-4" />
     </Button>
   );
 }
@@ -145,7 +145,11 @@ function CommentForm({onCancel}: CommentFormProps) {
   }
 
   return (
-    <Card variant="secondary" className="ms-2 me-2 mbs-1 mbe-2">
+    <Card
+      aria-label="New comment"
+      variant="secondary"
+      className="ms-2 me-2 mbs-1 mbe-2"
+    >
       <Card.Content>
         <TextField
           name="comment"
@@ -156,7 +160,7 @@ function CommentForm({onCancel}: CommentFormProps) {
         >
           <TextArea
             ref={focusRef}
-            placeholder="Leave a comment..."
+            placeholder="Leave a comment…"
             variant="secondary"
             rows={3}
             className="min-h-24 w-full resize-none"
@@ -168,7 +172,7 @@ function CommentForm({onCancel}: CommentFormProps) {
           Cancel
         </Button>
         <Button size="sm">
-          <SendIcon aria-hidden className="size-4" />
+          <SendIcon aria-hidden="true" className="size-4" />
           Comment
         </Button>
       </Card.Footer>
@@ -197,7 +201,7 @@ function SignInPrompt() {
             })
           }
         >
-          <LogInIcon aria-hidden className="size-4" />
+          <LogInIcon aria-hidden="true" className="size-4" />
           Continue with GitHub
         </Button>
       </Card.Footer>

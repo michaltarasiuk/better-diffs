@@ -60,10 +60,10 @@ export default async function Page({
   return (
     <SessionContext value={session}>
       <div className="flex h-dvh">
-        <aside className="w-80 shrink-0 border-e">
+        <aside aria-label="Files" className="w-80 shrink-0 border-e">
           <DiffTree handoff={treeHandoff} preloadedData={preloadedData} />
         </aside>
-        <main className="min-w-0 flex-1">
+        <main aria-label="Diff" className="min-w-0 flex-1">
           <DiffList items={items} />
         </main>
       </div>
