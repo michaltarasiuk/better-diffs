@@ -42,10 +42,10 @@ export function createShare(
 
     tx.insert(patches)
       .values(
-        sharePatches.map((files, order) => ({
+        sharePatches.map((files, index) => ({
           shareId: id,
           files: [...files],
-          order,
+          order: index,
         })),
       )
       .run();
