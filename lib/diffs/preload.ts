@@ -10,9 +10,13 @@ export interface PreloadedDiffItem {
   readonly prerenderedHTML: string;
 }
 
-export async function preloadShareDiffs(
-  patches: readonly {files: readonly FileDiffMetadata[]}[],
-) {
+interface SharePatch {
+  readonly files: readonly FileDiffMetadata[];
+}
+
+export function preloadShareDiffs(
+  patches: readonly SharePatch[],
+): Promise<readonly PreloadedDiffItem[]> {
   return Promise.all(
     patches.flatMap((patch) =>
       patch.files.map(async (fileDiff) => {

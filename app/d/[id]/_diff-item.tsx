@@ -19,12 +19,12 @@ import {focusRef} from '@/lib/utils/focus-ref';
 import {isPresent} from '@/lib/utils/is-present';
 
 interface AnnotationMetadata {
-  type: 'form' | 'thread';
+  readonly type: 'form' | 'thread';
 }
 
 interface HoveredLine {
-  lineNumber: number;
-  side: AnnotationSide;
+  readonly lineNumber: number;
+  readonly side: AnnotationSide;
 }
 
 interface DiffItemProps {
@@ -94,7 +94,11 @@ export function DiffItem({fileDiff, prerenderedHTML}: DiffItemProps) {
   );
 }
 
-function GutterUtility({onAddAnnotation}: {onAddAnnotation: () => void}) {
+interface GutterUtilityProps {
+  readonly onAddAnnotation: () => void;
+}
+
+function GutterUtility({onAddAnnotation}: GutterUtilityProps) {
   return (
     <Button
       id="gutter-utility"
@@ -108,13 +112,12 @@ function GutterUtility({onAddAnnotation}: {onAddAnnotation: () => void}) {
   );
 }
 
-function Annotation({
-  metadata,
-  onDismissForm,
-}: {
-  metadata: AnnotationMetadata;
-  onDismissForm: () => void;
-}) {
+interface AnnotationProps {
+  readonly metadata: AnnotationMetadata;
+  readonly onDismissForm: () => void;
+}
+
+function Annotation({metadata, onDismissForm}: AnnotationProps) {
   useOnEscape(() => {
     if (metadata.type === 'form') {
       onDismissForm();
@@ -131,7 +134,11 @@ function Annotation({
   }
 }
 
-function CommentForm({onCancel}: {onCancel: () => void}) {
+interface CommentFormProps {
+  readonly onCancel: () => void;
+}
+
+function CommentForm({onCancel}: CommentFormProps) {
   const session = use(SessionContext);
   const [message, setMessage] = useState('');
 

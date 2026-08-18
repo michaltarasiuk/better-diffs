@@ -54,7 +54,7 @@ export function getDiffTreeOptions(handoff: DiffTreeHandoff): FileTreeOptions {
 
 function getDiffGitStatus(
   files: readonly FileDiffMetadata[],
-): GitStatusEntry[] {
+): readonly GitStatusEntry[] {
   return files.map(({name, type}) => ({
     path: name,
     status: fileTypeToGitStatus(type),
@@ -73,7 +73,6 @@ function fileTypeToGitStatus(changeType: ChangeTypes): GitStatus {
     case 'rename-changed':
       return 'renamed';
     default:
-      const unreachable: never = changeType;
-      return unreachable;
+      return changeType satisfies never;
   }
 }
