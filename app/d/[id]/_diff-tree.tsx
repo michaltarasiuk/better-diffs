@@ -8,6 +8,8 @@ import {
 
 import {type DiffTreeHandoff, getDiffTreeOptions} from '@/lib/diffs/tree';
 
+import styles from './_diff-tree.module.css';
+
 interface DiffTreeProps {
   readonly handoff: DiffTreeHandoff;
   readonly preloadedData: FileTreePreloadedData;
@@ -20,12 +22,7 @@ export function DiffTree({handoff, preloadedData}: DiffTreeProps) {
     <FileTree
       model={model}
       preloadedData={preloadedData}
-      className="h-full"
-      style={
-        {
-          '--trees-gap-override': 'var(--trees-item-row-gap)',
-        } as React.CSSProperties
-      }
+      className={`${styles.root} h-full`}
     />
   );
 }
