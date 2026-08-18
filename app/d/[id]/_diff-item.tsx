@@ -1,5 +1,7 @@
 'use client';
 
+import '@/lib/diffs/diffs.module.css';
+
 import type {AnnotationSide, DiffLineAnnotation} from '@pierre/diffs/react';
 
 import {Button, Card, TextArea, TextField} from '@heroui/react';

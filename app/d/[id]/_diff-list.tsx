@@ -1,7 +1,5 @@
 'use client';
 
-import './_diff-list.css';
-
 import {Virtualizer} from '@pierre/diffs/react';
 
 import type {PreloadedDiffItem} from '@/lib/diffs/preload';

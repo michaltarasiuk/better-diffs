@@ -4,8 +4,8 @@
  * which narrows each split pane's content column and creates extra spacing between
  * the additions/deletions columns. Chromium-based "helium" measures 0px, so it looked fine.
  */
-diffs-container,
-[data-diffs] {
+:global(diffs-container),
+:global([data-diffs]) {
   --diffs-scrollbar-gutter-override: 0px;
 }
 
@@ -16,12 +16,12 @@ diffs-container,
  * tree win over the shadow tree's own :host rule, so setting color-scheme here is
  * enough to drive the whole diff palette without JS.
  */
-:root.light diffs-container,
-:root.light [data-diffs] {
+:global(:root.light diffs-container),
+:global(:root.light [data-diffs]) {
   color-scheme: light;
 }
 
-:root.dark diffs-container,
-:root.dark [data-diffs] {
+:global(:root.dark diffs-container),
+:global(:root.dark [data-diffs]) {
   color-scheme: dark;
 }
