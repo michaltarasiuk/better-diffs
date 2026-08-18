@@ -1,8 +1,5 @@
-import type {FileDiffOptions} from '@pierre/diffs';
+import {DEFAULT_THEMES, type FileDiffOptions} from '@pierre/diffs';
 
 export const DIFF_VIEWER_OPTIONS = {
-  theme: {
-    light: 'pierre-light',
-    dark: 'pierre-dark',
-  },
-} as const satisfies FileDiffOptions<unknown>;
+  theme: DEFAULT_THEMES,
+} satisfies FileDiffOptions<unknown>;
