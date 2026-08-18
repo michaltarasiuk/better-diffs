@@ -2,11 +2,7 @@
 
 import '@/lib/diffs/diffs.module.css';
 
-import type {
-  FileDiffMetadata,
-  GetHoveredLineResult,
-  SelectedLineRange,
-} from '@pierre/diffs';
+import type {FileDiffMetadata, GetHoveredLineResult} from '@pierre/diffs';
 import type {DiffLineAnnotation} from '@pierre/diffs/react';
 
 import {Button, Card, TextArea, TextField} from '@heroui/react';
@@ -39,18 +35,6 @@ export function DiffItem({fileDiff, prerenderedHTML}: DiffItemProps) {
     (a) => a.metadata.type === 'form',
   );
 
-  function handleLineSelectionEnd(range: SelectedLineRange | null) {
-    if (!isPresent(range)) {
-      return;
-    }
-    const {end, side = 'additions', endSide = side} = range;
-
-    addFormAnnotation({
-      lineNumber: end,
-      side: endSide,
-    });
-  }
-
   function addFormAnnotation({lineNumber, side}: GetHoveredLineResult<'diff'>) {
     setLineAnnotations((la) => [
       ...la.filter((a) => a.metadata.type !== 'form'),
@@ -77,7 +61,6 @@ export function DiffItem({fileDiff, prerenderedHTML}: DiffItemProps) {
         ...DIFF_VIEWER_OPTIONS,
         enableGutterUtility: !hasFormAnnotation,
         enableLineSelection: !hasFormAnnotation,
-        onLineSelectionEnd: handleLineSelectionEnd,
       }}
       renderGutterUtility={(getHoveredLine) => {
         return (
