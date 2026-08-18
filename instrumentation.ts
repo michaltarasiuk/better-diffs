@@ -1,7 +1,9 @@
+import {env} from './lib/env';
+
 let interval: ReturnType<typeof setInterval> | undefined;
 
 export async function register() {
-  if (process.env.VERCEL || process.env.NEXT_RUNTIME !== 'nodejs') {
+  if (env.VERCEL || env.NEXT_RUNTIME !== 'nodejs') {
     return;
   }
   const {deleteExpiredShares} = await import('./lib/db/shares');

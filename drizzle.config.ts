@@ -1,12 +1,11 @@
-import {loadEnvConfig} from '@next/env';
 import {defineConfig} from 'drizzle-kit';
 
-loadEnvConfig(process.cwd());
+import {env} from './lib/env';
 
 export default defineConfig({
   dialect: 'sqlite',
   schema: './lib/db/schema',
   dbCredentials: {
-    url: process.env.DATABASE_PATH!,
+    url: env.DATABASE_PATH,
   },
 });

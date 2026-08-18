@@ -20,7 +20,7 @@ function createSqlite() {
 
 const sqlite = globalThis.__sqlite ?? createSqlite();
 
-if (process.env.NODE_ENV !== 'production') {
+if (env.NODE_ENV !== 'production') {
   globalThis.__sqlite = sqlite;
 }
 
