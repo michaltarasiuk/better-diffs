@@ -56,8 +56,7 @@ interface DeleteExpiredSharesOptions {
   readonly maxAgeHours: number;
 }
 
-export function deleteExpiredShares(options: DeleteExpiredSharesOptions) {
-  const {maxAgeHours} = options;
+export function deleteExpiredShares({maxAgeHours}: DeleteExpiredSharesOptions) {
   return db
     .delete(shares)
     .where(
