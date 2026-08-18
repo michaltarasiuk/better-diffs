@@ -13,7 +13,7 @@ import type {PreloadedDiffItem} from '@/lib/diffs/preload';
 
 import {authClient} from '@/lib/auth/client';
 import {SessionContext} from '@/lib/auth/context';
-import {STATIC_DIFF_VIEWER_OPTIONS} from '@/lib/diffs/options';
+import {DIFF_VIEWER_OPTIONS} from '@/lib/diffs/options';
 import {useOnEscape} from '@/lib/hooks/use-on-escape';
 import {focusRef} from '@/lib/utils/focus-ref';
 import {isDefined} from '@/lib/utils/is-defined';
@@ -64,7 +64,7 @@ export function DiffItem({fileDiff, prerenderedHTML}: DiffItemProps) {
       prerenderedHTML={prerenderedHTML}
       lineAnnotations={lineAnnotations}
       options={{
-        ...STATIC_DIFF_VIEWER_OPTIONS,
+        ...DIFF_VIEWER_OPTIONS,
         enableGutterUtility: !hasFormAnnotation,
         enableLineSelection: !hasFormAnnotation,
       }}

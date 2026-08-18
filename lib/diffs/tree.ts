@@ -17,7 +17,7 @@ const DIFF_TREE_INITIAL_VISIBLE_ROW_COUNT = Math.ceil(
 );
 const DIFF_TREE_OVERSCAN = 8;
 
-const STATIC_DIFF_TREE_OPTIONS = {
+const DIFF_TREE_OPTIONS = {
   id: DIFF_TREE_ID,
   flattenEmptyDirectories: true,
   initialExpansion: 'open',
@@ -46,7 +46,7 @@ export function prepareDiffTreeHandoff(
 
 export function getDiffTreeOptions(handoff: DiffTreeHandoff): FileTreeOptions {
   return {
-    ...STATIC_DIFF_TREE_OPTIONS,
+    ...DIFF_TREE_OPTIONS,
     preparedInput: preparePresortedFileTreeInput(handoff.sortedPaths),
     gitStatus: handoff.gitStatus,
   };

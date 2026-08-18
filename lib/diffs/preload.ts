@@ -2,7 +2,7 @@ import type {FileDiffMetadata} from '@pierre/diffs';
 
 import {preloadFileDiff} from '@pierre/diffs/ssr';
 
-import {STATIC_DIFF_VIEWER_OPTIONS} from './options';
+import {DIFF_VIEWER_OPTIONS} from './options';
 
 export interface PreloadedDiffItem {
   readonly id: string;
@@ -18,7 +18,7 @@ export async function preloadShareDiffs(
       patch.files.map(async (fileDiff) => {
         const preloaded = await preloadFileDiff({
           fileDiff,
-          options: STATIC_DIFF_VIEWER_OPTIONS,
+          options: DIFF_VIEWER_OPTIONS,
         });
 
         return {
