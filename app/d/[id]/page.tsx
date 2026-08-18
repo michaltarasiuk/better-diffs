@@ -36,15 +36,15 @@ export default async function Page({params}: PageProps<'/d/[id]'>) {
   touchShare(id);
 
   const files = share.patches.flatMap((patch) => patch.files);
+
   const treeHandoff = prepareDiffTreeHandoff(files);
   const sortedFiles = sortFilesByTreeOrder(files, treeHandoff.sortedPaths);
+  const treeOptions = getDiffTreeOptions(treeHandoff);
 
   const [items, session] = await Promise.all([
     preloadDiffs(sortedFiles),
     getSession(),
   ]);
-
-  const treeOptions = getDiffTreeOptions(treeHandoff);
   const preloadedData = preloadFileTree(treeOptions);
 
   return (
