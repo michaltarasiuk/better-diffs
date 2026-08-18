@@ -1,13 +1,17 @@
 'use client';
 
-import {Virtualizer} from '@pierre/diffs/react';
+import type {FileDiffMetadata} from '@pierre/diffs';
 
-import type {PreloadedDiffItem} from '@/lib/diffs/preload';
+import {Virtualizer} from '@pierre/diffs/react';
 
 import {DiffItem} from './_diff-item';
 
 interface DiffListProps {
-  readonly items: readonly PreloadedDiffItem[];
+  readonly items: readonly {
+    readonly id: string;
+    readonly fileDiff: FileDiffMetadata;
+    readonly prerenderedHTML: string;
+  }[];
 }
 
 export function DiffList({items}: DiffListProps) {

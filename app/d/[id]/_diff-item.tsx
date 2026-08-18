@@ -2,14 +2,13 @@
 
 import '@/lib/diffs/diffs.module.css';
 
+import type {FileDiffMetadata} from '@pierre/diffs';
 import type {AnnotationSide, DiffLineAnnotation} from '@pierre/diffs/react';
 
 import {Button, Card, TextArea, TextField} from '@heroui/react';
 import {FileDiff} from '@pierre/diffs/react';
 import {LogInIcon, PlusIcon, SendIcon} from 'lucide-react';
 import {use, useState} from 'react';
-
-import type {PreloadedDiffItem} from '@/lib/diffs/preload';
 
 import {authClient} from '@/lib/auth/client';
 import {SessionContext} from '@/lib/auth/context';
@@ -28,8 +27,8 @@ interface HoveredLine {
 }
 
 interface DiffItemProps {
-  readonly fileDiff: PreloadedDiffItem['fileDiff'];
-  readonly prerenderedHTML: PreloadedDiffItem['prerenderedHTML'];
+  readonly fileDiff: FileDiffMetadata;
+  readonly prerenderedHTML: string;
 }
 
 export function DiffItem({fileDiff, prerenderedHTML}: DiffItemProps) {

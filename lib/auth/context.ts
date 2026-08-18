@@ -2,6 +2,8 @@
 
 import {createContext} from 'react';
 
-import type {Session} from '@/lib/auth';
+import type {authClient} from '@/lib/auth/client';
 
-export const SessionContext = createContext<Session | null>(null);
+export const SessionContext = createContext<
+  typeof authClient.$Infer.Session | null
+>(null);
