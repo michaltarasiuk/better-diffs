@@ -4,74 +4,97 @@
 
     --eclipse: oklch(0.1448 0 0);
     --snow: oklch(0.9851 0 0);
-
-    --bg: light-dark(oklch(1 0 0), oklch(0.1448 0 0));
-    --fg: light-dark(var(--eclipse), var(--snow));
-
-    --background: light-dark(oklch(1 0 0), oklch(0.1448 0 0));
-    --foreground: light-dark(var(--eclipse), var(--snow));
-
-    --surface: light-dark(oklch(1 0 0), oklch(0.2046 0 0));
-    --surface-foreground: light-dark(var(--eclipse), var(--snow));
-    --surface-secondary: light-dark(oklch(0.9702 0 0), oklch(0.2046 0 0));
-    --surface-secondary-foreground: light-dark(var(--eclipse), var(--snow));
-    --surface-tertiary: light-dark(oklch(0.9461 0 0), oklch(0.2686 0 0));
-    --surface-tertiary-foreground: light-dark(var(--eclipse), var(--snow));
-
-    --trees-sidebar-bg: light-dark(oklch(0.9791 0 0), oklch(0.1917 0 0));
-
-    --overlay: light-dark(oklch(0.9761 0 0), oklch(0.173 0 0));
-    --overlay-foreground: light-dark(var(--eclipse), var(--snow));
-
-    --muted: light-dark(oklch(0.5555 0 0), oklch(0.7155 0 0));
-
-    --default: light-dark(oklch(0.9461 0 0), oklch(0.2308 0 0));
-    --default-foreground: light-dark(var(--eclipse), var(--snow));
-
     --accent: oklch(0.6824 0.1778 246.59);
-    --accent-foreground: light-dark(var(--snow), var(--eclipse));
+
+    --ink: light-dark(var(--eclipse), var(--snow));
+    --ink-inverse: light-dark(var(--snow), var(--eclipse));
+
+    --tone-page: light-dark(oklch(1 0 0), oklch(0.1448 0 0));
+    --tone-panel: light-dark(oklch(1 0 0), oklch(0.2046 0 0));
+    --tone-shelf: light-dark(oklch(0.9702 0 0), oklch(0.2046 0 0));
+    --tone-well: light-dark(oklch(0.9461 0 0), oklch(0.2686 0 0));
+    --tone-segment: light-dark(oklch(1 0 0), oklch(0.2686 0 0));
+    --tone-sidebar: light-dark(oklch(0.9791 0 0), oklch(0.1917 0 0));
+    --tone-overlay: light-dark(oklch(0.9761 0 0), oklch(0.173 0 0));
+    --tone-control: light-dark(oklch(0.9461 0 0), oklch(0.2308 0 0));
+    --tone-border: light-dark(oklch(0.9219 0 0), oklch(0.2308 0 0));
+    --tone-field-border: light-dark(oklch(0.8699 0 0), oklch(0.2308 0 0));
+    --tone-placeholder: light-dark(oklch(0.6334 0 0), oklch(0.4997 0 0));
+    --tone-muted: light-dark(oklch(0.5555 0 0), oklch(0.7155 0 0));
+
     --accent-hover: light-dark(
       oklch(0.7067 0.1664 243.43),
       oklch(0.6343 0.1645 246.45)
     );
 
-    --field-background: light-dark(oklch(0.9461 0 0), oklch(0.2308 0 0));
-    --field-foreground: light-dark(var(--eclipse), var(--snow));
-    --field-placeholder: light-dark(oklch(0.6334 0 0), oklch(0.4997 0 0));
-    --field-border: light-dark(oklch(0.8699 0 0), oklch(0.2308 0 0));
-
     --success: light-dark(
       oklch(0.6362 0.1397 159.47),
       oklch(0.7239 0.1642 159.45)
     );
-    --success-foreground: light-dark(var(--eclipse), var(--eclipse));
-
     --warning: light-dark(
       oklch(0.7537 0.1514 89.45),
       oklch(0.8613 0.176 89.44)
     );
-    --warning-foreground: light-dark(var(--eclipse), var(--eclipse));
-
     --danger: light-dark(
       oklch(0.5702 0.2034 24.01),
       oklch(0.6471 0.2388 23.79)
     );
-    --danger-foreground: light-dark(var(--snow), var(--snow));
 
-    --segment: light-dark(oklch(1 0 0), oklch(0.2686 0 0));
-    --segment-foreground: light-dark(var(--eclipse), var(--snow));
+    --shadow-elevated:
+      0 2px 4px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.06),
+      0 0 1px 0 rgba(0, 0, 0, 0.06);
+    --shadow-inset-none: 0 0 0 0 transparent inset;
 
-    --border: light-dark(oklch(0.9219 0 0), oklch(0.2308 0 0));
-    --separator: light-dark(oklch(0.9219 0 0), oklch(0.2308 0 0));
+    --bg: var(--tone-page);
+    --background: var(--tone-page);
+    --fg: var(--ink);
+    --foreground: var(--ink);
+
+    --surface: var(--tone-panel);
+    --surface-foreground: var(--ink);
+    --surface-secondary: var(--tone-shelf);
+    --surface-secondary-foreground: var(--ink);
+    --surface-tertiary: var(--tone-well);
+    --surface-tertiary-foreground: var(--ink);
+
+    --trees-sidebar-bg: var(--tone-sidebar);
+
+    --overlay: var(--tone-overlay);
+    --overlay-foreground: var(--ink);
+
+    --muted: var(--tone-muted);
+
+    --default: var(--tone-control);
+    --default-foreground: var(--ink);
+
+    --accent-foreground: var(--ink-inverse);
+
+    --field-background: var(--tone-control);
+    --field-foreground: var(--ink);
+    --field-placeholder: var(--tone-placeholder);
+    --field-border: var(--tone-field-border);
+
+    --success-foreground: var(--eclipse);
+    --warning-foreground: var(--eclipse);
+    --danger-foreground: var(--snow);
+
+    --segment: var(--tone-segment);
+    --segment-foreground: var(--ink);
+
+    --border: var(--tone-border);
+    --separator: var(--tone-border);
+
     --focus: var(--accent);
     --link: var(--accent);
-  }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --surface-shadow: 0 0 0 0 transparent inset;
-      --field-shadow: 0 0 0 0 transparent inset;
-    }
+    --surface-shadow: light-dark(
+      var(--shadow-elevated),
+      var(--shadow-inset-none)
+    );
+    --field-shadow: light-dark(
+      var(--shadow-elevated),
+      var(--shadow-inset-none)
+    );
   }
 }
 
