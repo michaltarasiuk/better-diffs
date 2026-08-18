@@ -24,4 +24,3 @@ export const auth = betterAuth({
 });
 
 export type Session = typeof auth.$Infer.Session;
-export type AuthSession = Awaited<ReturnType<typeof auth.api.getSession>>;

@@ -2,6 +2,6 @@
 
 import {createContext} from 'react';
 
-import type {AuthSession} from '@/lib/auth';
+import type {Session} from '@/lib/auth';
 
-export const SessionContext = createContext<AuthSession>(null);
+export const SessionContext = createContext<Session | null>(null);
