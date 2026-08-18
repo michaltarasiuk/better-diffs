@@ -1,12 +1,7 @@
-import path from 'node:path';
-import {fileURLToPath} from 'node:url';
-
 import {loadEnvConfig} from '@next/env';
 import {defineConfig} from 'drizzle-kit';
 
-const projectRoot = path.dirname(fileURLToPath(import.meta.url));
-
-loadEnvConfig(projectRoot);
+loadEnvConfig(process.cwd());
 
 export default defineConfig({
   dialect: 'sqlite',
