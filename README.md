@@ -8,6 +8,6 @@ A CLI generates a shareable URL for your local changes. The link expires after o
 
 ## Preview
 
-<img src="docs/images/diff-view.png" alt="Diff view with file tree and syntax-highlighted changes" width="720" />
+![Diff view with file tree and syntax-highlighted changes](docs/images/diff-view.png)
 
-<img src="docs/images/add-comment.png" alt="Inline comment on a diff line" width="720" />
+![Inline comment on a diff line](docs/images/add-comment.png)
