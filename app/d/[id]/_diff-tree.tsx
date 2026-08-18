@@ -37,7 +37,7 @@ export function DiffTree({handoff, preloadedData}: DiffTreeProps) {
       <SearchField
         value={search.value}
         onChange={(value) => search.setValue(value || null)}
-        className="border-b p-2"
+        className="bg-trees-sidebar p-2"
       >
         <SearchField.Group>
           <SearchField.SearchIcon />
@@ -48,7 +48,7 @@ export function DiffTree({handoff, preloadedData}: DiffTreeProps) {
       <FileTree
         model={model}
         preloadedData={preloadedData}
-        className="min-h-0 flex-1 pt-2"
+        className="min-h-0 flex-1"
       />
     </div>
   );
