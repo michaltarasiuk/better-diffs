@@ -1,7 +1,6 @@
 import type {ChangeTypes, FileDiffMetadata} from '@pierre/diffs';
 
 import {
-  FILE_TREE_DEFAULT_ITEM_HEIGHT,
   type FileTreeOptions,
   type GitStatus,
   type GitStatusEntry,
@@ -9,30 +8,14 @@ import {
   preparePresortedFileTreeInput,
 } from '@pierre/trees';
 
-const DIFF_TREE_ID = 'diff-file-tree';
-
-// Budget first-render work for a full-height sidebar before the browser measures.
-const DIFF_TREE_INITIAL_VISIBLE_ROW_COUNT = Math.ceil(
-  900 / FILE_TREE_DEFAULT_ITEM_HEIGHT,
-);
-const DIFF_TREE_OVERSCAN = 8;
-
 const DIFF_TREE_OPTIONS = {
-  id: DIFF_TREE_ID,
+  id: 'diff-file-tree',
   flattenEmptyDirectories: true,
   initialExpansion: 'open',
-  initialVisibleRowCount: DIFF_TREE_INITIAL_VISIBLE_ROW_COUNT,
-  overscan: DIFF_TREE_OVERSCAN,
-} as const;
+  initialVisibleRowCount: Infinity,
+} satisfies Partial<FileTreeOptions>;
 
-export interface DiffTreeHandoff {
-  readonly sortedPaths: readonly string[];
-  readonly gitStatus: readonly GitStatusEntry[];
-}
-
-export function prepareDiffTreeHandoff(
-  files: readonly FileDiffMetadata[],
-): DiffTreeHandoff {
+export function prepareDiffTreeHandoff(files: readonly FileDiffMetadata[]) {
   const paths = files.map((file) => file.name);
   const preparedInput = prepareFileTreeInput(paths, {
     flattenEmptyDirectories: true,
@@ -41,8 +24,10 @@ export function prepareDiffTreeHandoff(
   return {
     sortedPaths: preparedInput.paths,
     gitStatus: getDiffGitStatus(files),
-  };
+  } as const;
 }
+
+export type DiffTreeHandoff = ReturnType<typeof prepareDiffTreeHandoff>;
 
 export function getDiffTreeOptions(handoff: DiffTreeHandoff): FileTreeOptions {
   return {
