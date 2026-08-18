@@ -1,6 +1,5 @@
-import {isPresent} from '@/lib/utils/is-present';
-
 import {env} from './lib/env';
+import {isPresent} from './lib/utils/is-present';
 
 let interval: ReturnType<typeof setInterval> | null = null;
 
