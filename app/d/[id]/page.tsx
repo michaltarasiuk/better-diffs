@@ -8,7 +8,7 @@ import {getSession} from '@/lib/auth/server';
 import {findShareWithPatches, touchShare} from '@/lib/db/shares';
 import {preloadShareDiffs} from '@/lib/diffs/preload';
 import {getDiffTreeOptions, prepareDiffTreeHandoff} from '@/lib/diffs/tree';
-import {isDefined} from '@/lib/utils/is-defined';
+import {isPresent} from '@/lib/utils/is-present';
 
 import {DiffList} from './_diff-list';
 import {DiffTree} from './_diff-tree';
@@ -26,7 +26,7 @@ export default async function Page({params}: PageProps<'/d/[id]'>) {
   const {id} = await params;
 
   const share = findShareWithPatches(id);
-  if (!isDefined(share)) {
+  if (!isPresent(share)) {
     notFound();
   }
 

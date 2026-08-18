@@ -1,18 +1,18 @@
 import {timingSafeEqual} from 'node:crypto';
 
-import {isDefined} from '@/lib/utils/is-defined';
+import {isPresent} from '@/lib/utils/is-present';
 
 export function verifyBearerSecret(
   request: Request,
   secret: string | undefined,
 ) {
-  if (!isDefined(secret)) {
+  if (!isPresent(secret)) {
     return false;
   }
 
   const expected = `Bearer ${secret}`;
   const provided = request.headers.get('authorization');
-  if (!isDefined(provided)) {
+  if (!isPresent(provided)) {
     return false;
   }
 

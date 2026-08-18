@@ -16,7 +16,7 @@ import {SessionContext} from '@/lib/auth/context';
 import {DIFF_VIEWER_OPTIONS} from '@/lib/diffs/options';
 import {useOnEscape} from '@/lib/hooks/use-on-escape';
 import {focusRef} from '@/lib/utils/focus-ref';
-import {isDefined} from '@/lib/utils/is-defined';
+import {isPresent} from '@/lib/utils/is-present';
 
 interface AnnotationMetadata {
   type: 'form' | 'thread';
@@ -73,7 +73,7 @@ export function DiffItem({fileDiff, prerenderedHTML}: DiffItemProps) {
           <GutterUtility
             onAddAnnotation={() => {
               const hoveredLine = getHoveredLine();
-              if (isDefined(hoveredLine)) {
+              if (isPresent(hoveredLine)) {
                 addFormAnnotation(hoveredLine);
               } else {
                 console.error('No hovered line');
@@ -135,7 +135,7 @@ function CommentForm({onCancel}: {onCancel: () => void}) {
   const session = use(SessionContext);
   const [message, setMessage] = useState('');
 
-  if (!isDefined(session)) {
+  if (!isPresent(session)) {
     return (
       <Card variant="secondary" className="ms-2 me-2 mbs-1 mbe-2">
         <SignInPrompt />
