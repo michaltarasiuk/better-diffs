@@ -10,7 +10,6 @@ import {
 
 const DIFF_TREE_OPTIONS = {
   id: 'diff-file-tree',
-  fileTreeSearchMode: 'expand-matches',
   flattenEmptyDirectories: true,
   initialExpansion: 'open',
   initialVisibleRowCount: Infinity,
