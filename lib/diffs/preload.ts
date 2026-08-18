@@ -12,27 +12,19 @@ export interface PreloadedDiffItem {
   readonly prerenderedHTML: string;
 }
 
-interface SharePatch {
-  readonly files: readonly FileDiffMetadata[];
-}
-
-export function preloadShareDiffs(
-  patches: readonly SharePatch[],
-): Promise<readonly PreloadedDiffItem[]> {
+export function preloadDiffs(files: readonly FileDiffMetadata[]) {
   return Promise.all(
-    patches.flatMap((patch) =>
-      patch.files.map(async (fileDiff) => {
-        const preloaded = await preloadFileDiff({
-          fileDiff,
-          options: DIFF_VIEWER_OPTIONS,
-        });
+    files.map(async (fileDiff): Promise<PreloadedDiffItem> => {
+      const preloaded = await preloadFileDiff({
+        fileDiff,
+        options: DIFF_VIEWER_OPTIONS,
+      });
 
-        return {
-          id: preloaded.fileDiff.name,
-          fileDiff: preloaded.fileDiff,
-          prerenderedHTML: preloaded.prerenderedHTML,
-        } satisfies PreloadedDiffItem;
-      }),
-    ),
+      return {
+        id: preloaded.fileDiff.name,
+        fileDiff: preloaded.fileDiff,
+        prerenderedHTML: preloaded.prerenderedHTML,
+      };
+    }),
   );
 }

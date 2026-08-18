@@ -15,7 +15,14 @@ const DIFF_TREE_OPTIONS = {
   initialVisibleRowCount: Infinity,
 } satisfies Partial<FileTreeOptions>;
 
-export function prepareDiffTreeHandoff(files: readonly FileDiffMetadata[]) {
+export interface DiffTreeHandoff {
+  readonly sortedPaths: readonly string[];
+  readonly gitStatus: readonly GitStatusEntry[];
+}
+
+export function prepareDiffTreeHandoff(
+  files: readonly FileDiffMetadata[],
+): DiffTreeHandoff {
   const paths = files.map((file) => file.name);
   const preparedInput = prepareFileTreeInput(paths, {
     flattenEmptyDirectories: true,
@@ -24,10 +31,8 @@ export function prepareDiffTreeHandoff(files: readonly FileDiffMetadata[]) {
   return {
     sortedPaths: preparedInput.paths,
     gitStatus: getDiffGitStatus(files),
-  } as const;
+  };
 }
-
-export type DiffTreeHandoff = ReturnType<typeof prepareDiffTreeHandoff>;
 
 export function getDiffTreeOptions(handoff: DiffTreeHandoff): FileTreeOptions {
   return {
