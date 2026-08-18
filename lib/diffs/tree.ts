@@ -40,7 +40,7 @@ export function sortFilesByTreeOrder<T extends {readonly name: string}>(
 ) {
   const order = new Map(sortedPaths.map((path, index) => [path, index]));
 
-  return [...files].sort(
+  return files.toSorted(
     (left, right) =>
       (order.get(left.name) ?? Number.POSITIVE_INFINITY) -
       (order.get(right.name) ?? Number.POSITIVE_INFINITY),
