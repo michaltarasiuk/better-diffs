@@ -34,6 +34,19 @@ export function prepareDiffTreeHandoff(
   };
 }
 
+export function sortFilesByTreeOrder<T extends {readonly name: string}>(
+  files: readonly T[],
+  sortedPaths: readonly string[],
+) {
+  const order = new Map(sortedPaths.map((path, index) => [path, index]));
+
+  return [...files].sort(
+    (left, right) =>
+      (order.get(left.name) ?? Number.POSITIVE_INFINITY) -
+      (order.get(right.name) ?? Number.POSITIVE_INFINITY),
+  );
+}
+
 export function getDiffTreeOptions(handoff: DiffTreeHandoff): FileTreeOptions {
   return {
     ...DIFF_TREE_OPTIONS,

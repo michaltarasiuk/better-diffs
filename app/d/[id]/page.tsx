@@ -7,7 +7,11 @@ import {SessionContext} from '@/lib/auth/context';
 import {getSession} from '@/lib/auth/server';
 import {findShareWithPatches, touchShare} from '@/lib/db/shares';
 import {preloadDiffs} from '@/lib/diffs/preload';
-import {getDiffTreeOptions, prepareDiffTreeHandoff} from '@/lib/diffs/tree';
+import {
+  getDiffTreeOptions,
+  prepareDiffTreeHandoff,
+  sortFilesByTreeOrder,
+} from '@/lib/diffs/tree';
 import {isPresent} from '@/lib/utils/is-present';
 
 import {DiffList} from './_diff-list';
@@ -29,16 +33,19 @@ export default async function Page({params}: PageProps<'/d/[id]'>) {
   if (!isPresent(share)) {
     notFound();
   }
-
   touchShare(id);
+
   const files = share.patches.flatMap((patch) => patch.files);
+  const treeHandoff = prepareDiffTreeHandoff(files);
+  const sortedFiles = sortFilesByTreeOrder(files, treeHandoff.sortedPaths);
+
   const [items, session] = await Promise.all([
-    preloadDiffs(files),
+    preloadDiffs(sortedFiles),
     getSession(),
   ]);
 
-  const treeHandoff = prepareDiffTreeHandoff(files);
-  const preloadedData = preloadFileTree(getDiffTreeOptions(treeHandoff));
+  const treeOptions = getDiffTreeOptions(treeHandoff);
+  const preloadedData = preloadFileTree(treeOptions);
 
   return (
     <SessionContext value={session}>
