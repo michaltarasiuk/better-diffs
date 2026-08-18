@@ -1,5 +1,7 @@
 'use client';
 
+import '@/lib/trees/trees.module.css';
+
 import {SearchField} from '@heroui/react';
 import {
   FileTree,
@@ -9,7 +11,7 @@ import {
 } from '@pierre/trees/react';
 import {useQueryState} from 'nuqs';
 
-import {type DiffTreeHandoff, getDiffTreeOptions} from '@/lib/diffs/tree';
+import {type DiffTreeHandoff, getDiffTreeOptions} from '@/lib/trees/handoff';
 
 import {diffTreeSearchParsers} from './_search-params';
 

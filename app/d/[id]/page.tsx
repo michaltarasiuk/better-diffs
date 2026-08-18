@@ -11,7 +11,7 @@ import {
   getDiffTreeOptions,
   prepareDiffTreeHandoff,
   sortFilesByTreeOrder,
-} from '@/lib/diffs/tree';
+} from '@/lib/trees/handoff';
 import {isPresent} from '@/lib/utils/is-present';
 
 import {DiffList} from './_diff-list';

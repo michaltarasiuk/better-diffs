@@ -1,0 +1,10 @@
+/*
+ * Firefox (macOS) uses classic scrollbars (~11px) while Chrome uses overlay scrollbars (0px).
+ * @pierre/trees runtime-measures scrollbar width and sets --trees-scrollbar-gutter-measured,
+ * which changes virtualized scroll padding and shifts git status lanes after hydration.
+ * Chromium-based "helium" measures 0px, so it looked fine there.
+ */
+:global(file-tree-container) {
+  --trees-scrollbar-gutter-override: 0px;
+  --trees-scrollbar-gutter-measured: 0px;
+}
