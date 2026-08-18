@@ -1,3 +1,5 @@
+import 'server-only';
+
 import type {FileDiffMetadata} from '@pierre/diffs';
 
 import {asc, eq, lt, sql} from 'drizzle-orm';

@@ -1,3 +1,5 @@
+import 'server-only';
+
 import type {FileDiffMetadata} from '@pierre/diffs';
 
 import {type InferSelectModel, relations, sql} from 'drizzle-orm';

@@ -24,6 +24,7 @@
     "@tailwindcss/postcss": "^4.3.3",
     "better-auth": "^1.6.27",
     "better-sqlite3": "^13.0.3",
+    "client-only": "^0.0.1",
     "dedent": "^1.7.2",
     "drizzle-orm": "^0.45.2",
     "lucide-react": "^1.31.0",
@@ -32,6 +33,7 @@
     "postcss": "^8.5.26",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
     "tailwindcss": "^4.3.3",
     "zod": "^4.4.3"
   },
