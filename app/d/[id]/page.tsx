@@ -1,3 +1,4 @@
+import type {FileTreeOptions} from '@pierre/trees';
 import type {Metadata} from 'next';
 
 import {preloadFileTree} from '@pierre/trees/ssr';
@@ -46,7 +47,7 @@ export default async function Page({
 
   const treeHandoff = prepareDiffTreeHandoff(files);
   const sortedFiles = sortFilesByTreeOrder(files, treeHandoff.sortedPaths);
-  const treeOptions = {
+  const treeOptions: FileTreeOptions = {
     ...getDiffTreeOptions(treeHandoff),
     initialSearchQuery: searchQuery,
   };
