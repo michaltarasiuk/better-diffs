@@ -18,8 +18,8 @@ export default function RootLayout({children}: LayoutProps<'/'>) {
         {env.NODE_ENV === 'development' && (
           <Script
             src="//unpkg.com/react-grab/dist/index.global.js"
-            crossOrigin="anonymous"
             strategy="beforeInteractive"
+            crossOrigin="anonymous"
           />
         )}
       </head>

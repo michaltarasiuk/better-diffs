@@ -163,8 +163,8 @@ function CommentForm({onCancel}: CommentFormProps) {
           id={id}
           name="comment"
           aria-label="Comment"
-          placeholder="Leave a comment…"
           value={message}
+          placeholder="Leave a comment…"
           rows={3}
           variant="secondary"
           fullWidth
@@ -175,8 +175,8 @@ function CommentForm({onCancel}: CommentFormProps) {
       <Card.Footer className="justify-end gap-2">
         <Button
           id={`${id}-cancel`}
-          size="sm"
           variant="ghost"
+          size="sm"
           onPress={onCancel}
         >
           Cancel
@@ -204,8 +204,8 @@ function SignInPrompt() {
       <Card.Footer>
         <Button
           id={`${id}-signin`}
-          size="sm"
           variant="tertiary"
+          size="sm"
           fullWidth
           onPress={() =>
             void authClient.signIn.social({
