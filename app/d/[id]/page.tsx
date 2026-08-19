@@ -17,7 +17,7 @@ import {isPresent} from '@/lib/utils/is-present';
 
 import {DiffList} from './_diff-list';
 import {DiffTree} from './_diff-tree';
-import {loadDiffTreeSearchParams} from './_search-params';
+import {loadDiffSearchParams} from './_search-params';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,9 +32,9 @@ export default async function Page({
   params,
   searchParams,
 }: PageProps<'/d/[id]'>) {
-  const [{id}, {q: searchQuery}] = await Promise.all([
+  const [{id}, {q: searchQuery, formAnnotations}] = await Promise.all([
     params,
-    loadDiffTreeSearchParams(searchParams),
+    loadDiffSearchParams(searchParams),
   ]);
 
   const share = findShareWithPatches(id);
@@ -53,7 +53,7 @@ export default async function Page({
   };
 
   const [items, session] = await Promise.all([
-    preloadDiffs(sortedFiles),
+    preloadDiffs(sortedFiles, formAnnotations),
     getSession(),
   ]);
   const preloadedData = preloadFileTree(treeOptions);

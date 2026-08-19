@@ -16,7 +16,7 @@ import {isDirectoryPath} from '@/lib/trees/is-directory-path';
 import {isPresent} from '@/lib/utils/is-present';
 import {setHash} from '@/lib/utils/set-hash';
 
-import {diffTreeSearchParsers} from './_search-params';
+import {diffSearchParsers} from './_search-params';
 
 interface DiffTreeProps {
   readonly handoff: DiffTreeHandoff;
@@ -26,7 +26,7 @@ interface DiffTreeProps {
 export function DiffTree({handoff, preloadedData}: DiffTreeProps) {
   const [searchQuery, setSearchQuery] = useQueryState(
     'q',
-    diffTreeSearchParsers.q.withOptions({history: 'replace'}),
+    diffSearchParsers.q.withOptions({history: 'replace'}),
   );
   const {model} = useFileTree({
     ...getDiffTreeOptions(handoff),

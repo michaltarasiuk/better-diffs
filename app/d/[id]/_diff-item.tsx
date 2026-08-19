@@ -2,13 +2,17 @@
 
 import '@/lib/diffs/diffs.module.css';
 
-import type {FileDiffMetadata, GetHoveredLineResult} from '@pierre/diffs';
-import type {DiffLineAnnotation} from '@pierre/diffs/react';
-
-import {Button, Card, TextArea, TextField} from '@heroui/react';
+import {Button, Card, TextArea} from '@heroui/react';
+import {
+  type FileDiffMetadata,
+  type GetHoveredLineResult,
+  getLineAnnotationName,
+} from '@pierre/diffs';
 import {FileDiff} from '@pierre/diffs/react';
 import {LogInIcon, PlusIcon, SendIcon} from 'lucide-react';
-import {use, useState} from 'react';
+import {createContext, use, useState} from 'react';
+
+import type {AnnotationMetadata, LineAnnotation} from '@/lib/diffs/annotation';
 
 import {authClient} from '@/lib/auth/client';
 import {SessionContext} from '@/lib/auth/context';
@@ -17,27 +21,26 @@ import {useKeyDown} from '@/lib/hooks/use-key-down';
 import {focusRef} from '@/lib/utils/focus-ref';
 import {isPresent} from '@/lib/utils/is-present';
 
-interface AnnotationMetadata {
-  readonly type: 'form' | 'thread';
-}
+const AnnotationIdContext = createContext<string>(null as never);
 
 interface DiffItemProps {
   readonly fileDiff: FileDiffMetadata;
   readonly prerenderedHTML: string;
+  readonly initialLineAnnotations?: LineAnnotation[];
 }
 
-export function DiffItem({fileDiff, prerenderedHTML}: DiffItemProps) {
-  const [lineAnnotations, setLineAnnotations] = useState<
-    DiffLineAnnotation<AnnotationMetadata>[]
-  >([]);
-
-  const hasFormAnnotation = lineAnnotations.some(
-    (a) => a.metadata.type === 'form',
+export function DiffItem({
+  fileDiff,
+  prerenderedHTML,
+  initialLineAnnotations = [],
+}: DiffItemProps) {
+  const [lineAnnotations, setLineAnnotations] = useState<LineAnnotation[]>(
+    initialLineAnnotations,
   );
 
   function addFormAnnotation({lineNumber, side}: GetHoveredLineResult<'diff'>) {
     setLineAnnotations((la) => [
-      ...la.filter((a) => a.metadata.type !== 'form'),
+      ...la,
       {
         lineNumber,
         side,
@@ -48,8 +51,8 @@ export function DiffItem({fileDiff, prerenderedHTML}: DiffItemProps) {
     ]);
   }
 
-  function dismissFormAnnotation() {
-    setLineAnnotations((la) => la.filter((a) => a.metadata.type !== 'form'));
+  function dismissFormAnnotation(annotation: LineAnnotation) {
+    setLineAnnotations((la) => la.filter((a) => a !== annotation));
   }
 
   return (
@@ -59,8 +62,8 @@ export function DiffItem({fileDiff, prerenderedHTML}: DiffItemProps) {
       lineAnnotations={lineAnnotations}
       options={{
         ...DIFF_VIEWER_OPTIONS,
-        enableGutterUtility: !hasFormAnnotation,
-        enableLineSelection: !hasFormAnnotation,
+        enableGutterUtility: true,
+        enableLineSelection: true,
       }}
       renderGutterUtility={(getHoveredLine) => {
         return (
@@ -76,12 +79,14 @@ export function DiffItem({fileDiff, prerenderedHTML}: DiffItemProps) {
           />
         );
       }}
-      renderAnnotation={({metadata}) => {
+      renderAnnotation={(annotation) => {
         return (
-          <Annotation
-            metadata={metadata}
-            onDismissForm={dismissFormAnnotation}
-          />
+          <AnnotationIdContext value={getLineAnnotationName(annotation)}>
+            <Annotation
+              metadata={annotation.metadata}
+              onDismissForm={() => dismissFormAnnotation(annotation)}
+            />
+          </AnnotationIdContext>
         );
       }}
     />
@@ -97,9 +102,9 @@ function GutterUtility({onAddAnnotation}: GutterUtilityProps) {
     <Button
       id="gutter-utility"
       aria-label="Add comment"
+      isIconOnly
       onPress={onAddAnnotation}
       className="me-[calc(-1lh+1ch)] h-lh w-[1lh]"
-      isIconOnly
     >
       <PlusIcon aria-hidden="true" className="size-4" />
     </Button>
@@ -133,8 +138,10 @@ interface CommentFormProps {
 }
 
 function CommentForm({onCancel}: CommentFormProps) {
-  const session = use(SessionContext);
   const [message, setMessage] = useState('');
+
+  const id = use(AnnotationIdContext);
+  const session = use(SessionContext);
 
   if (!isPresent(session)) {
     return (
@@ -151,27 +158,30 @@ function CommentForm({onCancel}: CommentFormProps) {
       className="ms-2 me-2 mbs-1 mbe-2"
     >
       <Card.Content>
-        <TextField
+        <TextArea
+          ref={focusRef}
+          id={id}
           name="comment"
           aria-label="Comment"
+          placeholder="Leave a comment…"
           value={message}
-          onChange={setMessage}
+          rows={3}
+          variant="secondary"
           fullWidth
-        >
-          <TextArea
-            ref={focusRef}
-            placeholder="Leave a comment…"
-            variant="secondary"
-            rows={3}
-            className="min-h-24 w-full resize-none"
-          />
-        </TextField>
+          onChange={(event) => setMessage(event.target.value)}
+          className="min-h-24 resize-none"
+        />
       </Card.Content>
       <Card.Footer className="justify-end gap-2">
-        <Button variant="ghost" size="sm" onPress={onCancel}>
+        <Button
+          id={`${id}-cancel`}
+          size="sm"
+          variant="ghost"
+          onPress={onCancel}
+        >
           Cancel
         </Button>
-        <Button size="sm">
+        <Button id={`${id}-submit`} size="sm">
           <SendIcon aria-hidden="true" className="size-4" />
           Comment
         </Button>
@@ -181,6 +191,8 @@ function CommentForm({onCancel}: CommentFormProps) {
 }
 
 function SignInPrompt() {
+  const id = use(AnnotationIdContext);
+
   return (
     <>
       <Card.Header>
@@ -191,8 +203,9 @@ function SignInPrompt() {
       </Card.Header>
       <Card.Footer>
         <Button
-          variant="tertiary"
+          id={`${id}-signin`}
           size="sm"
+          variant="tertiary"
           fullWidth
           onPress={() =>
             void authClient.signIn.social({

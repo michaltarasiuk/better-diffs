@@ -8,7 +8,7 @@ export function focusRef<T extends HTMLElement>(node: T | null) {
   }
   queueMicrotask(() => {
     if (node.isConnected) {
-      node.focus();
+      node.focus({preventScroll: true});
     }
   });
 }

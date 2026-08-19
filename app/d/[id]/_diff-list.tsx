@@ -4,6 +4,8 @@ import type {FileDiffMetadata} from '@pierre/diffs';
 
 import {useVirtualizer, Virtualizer} from '@pierre/diffs/react';
 
+import type {LineAnnotation} from '@/lib/diffs/annotation';
+
 import {useHashChange} from '@/lib/hooks/use-hash-change';
 import {assertPresent, isPresent} from '@/lib/utils/is-present';
 import {getHash} from '@/lib/utils/set-hash';
@@ -14,6 +16,7 @@ interface DiffListItem {
   readonly id: string;
   readonly fileDiff: FileDiffMetadata;
   readonly prerenderedHTML: string;
+  readonly annotations?: LineAnnotation[];
 }
 
 interface DiffListProps {
@@ -53,9 +56,13 @@ function DiffListContent({items}: DiffListContentProps) {
 
   return (
     <>
-      {items.map(({id, fileDiff, prerenderedHTML}) => (
+      {items.map(({id, fileDiff, prerenderedHTML, annotations}) => (
         <section key={id} id={id}>
-          <DiffItem fileDiff={fileDiff} prerenderedHTML={prerenderedHTML} />
+          <DiffItem
+            fileDiff={fileDiff}
+            prerenderedHTML={prerenderedHTML}
+            initialLineAnnotations={annotations}
+          />
         </section>
       ))}
     </>
