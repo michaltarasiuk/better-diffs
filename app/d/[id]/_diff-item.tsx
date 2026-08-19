@@ -11,6 +11,7 @@ import {
 import {FileDiff} from '@pierre/diffs/react';
 import {LogInIcon, PlusIcon, SendIcon} from 'lucide-react';
 import {createContext, use, useState} from 'react';
+import {useFocusWithin} from 'react-aria/useFocusWithin';
 
 import type {AnnotationMetadata, LineAnnotation} from '@/lib/diffs/annotation';
 
@@ -117,20 +118,29 @@ interface AnnotationProps {
 }
 
 function Annotation({metadata, onDismissForm}: AnnotationProps) {
+  const [isFocusWithin, setFocusWithin] = useState(false);
+  const {focusWithinProps} = useFocusWithin({
+    onFocusWithinChange: (isFocusWithin) => setFocusWithin(isFocusWithin),
+  });
+
   useKeyDown((event) => {
-    if (event.key === 'Escape' && metadata.type === 'form') {
+    if (event.key === 'Escape' && metadata.type === 'form' && isFocusWithin) {
       onDismissForm();
     }
   });
 
+  let annotation: React.ReactNode;
   switch (metadata.type) {
     case 'form':
-      return <CommentForm onCancel={onDismissForm} />;
+      annotation = <CommentForm onCancel={onDismissForm} />;
+      break;
     case 'thread':
-      return <ThreadAnnotation />;
+      annotation = <ThreadAnnotation />;
+      break;
     default:
       metadata.type satisfies never;
   }
+  return <div {...focusWithinProps}>{annotation}</div>;
 }
 
 interface CommentFormProps {

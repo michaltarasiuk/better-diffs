@@ -49,6 +49,13 @@
       "skillPath": "skills/heroui-react/SKILL.md",
       "computedHash": "c9e1bb41fbc3cee782faae08bd465ae05cd685a6ed7cc3392464fdf29b3ab467"
     },
+    "react-aria": {
+      "source": "react-aria.adobe.com",
+      "sourceUrl": "https://react-aria.adobe.com",
+      "sourceType": "well-known",
+      "computedHash": "69a333ca4abfc4c5fd674ef3d505bc74014ee8b1be6e89b44eaa855c81536661",
+      "wellKnownDigest": "sha256:ffc7cd806e4e648bf353d5a5538946bbc882560444a5fae24176e68f239337a3"
+    },
     "setup-pre-commit": {
       "source": "mattpocock/skills",
       "sourceType": "github",
