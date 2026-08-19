@@ -5,7 +5,7 @@ import type {FileDiffMetadata} from '@pierre/diffs';
 import {useVirtualizer, Virtualizer} from '@pierre/diffs/react';
 
 import {useHashChange} from '@/lib/hooks/use-hash-change';
-import {isPresent} from '@/lib/utils/is-present';
+import {assertPresent, isPresent} from '@/lib/utils/is-present';
 import {getHash} from '@/lib/utils/set-hash';
 
 import {DiffItem} from './_diff-item';
@@ -36,9 +36,7 @@ function DiffItems({items}: DiffItemsProps) {
   const virtualizer = useVirtualizer();
 
   useHashChange((event) => {
-    if (!isPresent(virtualizer)) {
-      return;
-    }
+    assertPresent(virtualizer, 'Missing virtualizer');
     const url = new URL(event.newURL);
     const hash = getHash(url);
     if (!isPresent(hash)) {
