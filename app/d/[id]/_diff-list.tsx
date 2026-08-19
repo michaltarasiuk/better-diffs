@@ -23,16 +23,16 @@ interface DiffListProps {
 export function DiffList({items}: DiffListProps) {
   return (
     <Virtualizer className="h-full overflow-auto">
-      <DiffItems items={items} />
+      <DiffListContent items={items} />
     </Virtualizer>
   );
 }
 
-interface DiffItemsProps {
+interface DiffListContentProps {
   readonly items: readonly DiffListItem[];
 }
 
-function DiffItems({items}: DiffItemsProps) {
+function DiffListContent({items}: DiffListContentProps) {
   const virtualizer = useVirtualizer();
 
   useHashChange((event) => {
