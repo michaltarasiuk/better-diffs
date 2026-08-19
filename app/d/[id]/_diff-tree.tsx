@@ -12,6 +12,9 @@ import {
 import {useQueryState} from 'nuqs';
 
 import {type DiffTreeHandoff, getDiffTreeOptions} from '@/lib/trees/handoff';
+import {isDirectoryPath} from '@/lib/trees/is-directory-path';
+import {isPresent} from '@/lib/utils/is-present';
+import {setHash} from '@/lib/utils/set-hash';
 
 import {diffTreeSearchParsers} from './_search-params';
 
@@ -30,6 +33,13 @@ export function DiffTree({handoff, preloadedData}: DiffTreeProps) {
     initialSearchQuery: searchQuery,
     onSearchChange(value) {
       void setSearchQuery(value);
+    },
+    onSelectionChange([selected, ...rest]) {
+      const singleSelection = isPresent(selected) && rest.length === 0;
+      if (!singleSelection || isDirectoryPath(selected)) {
+        return;
+      }
+      setHash(selected);
     },
   });
   const search = useFileTreeSearch(model);

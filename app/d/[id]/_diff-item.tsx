@@ -13,7 +13,7 @@ import {use, useState} from 'react';
 import {authClient} from '@/lib/auth/client';
 import {SessionContext} from '@/lib/auth/context';
 import {DIFF_VIEWER_OPTIONS} from '@/lib/diffs/options';
-import {useOnEscape} from '@/lib/hooks/use-on-escape';
+import {useKeyDown} from '@/lib/hooks/use-key-down';
 import {focusRef} from '@/lib/utils/focus-ref';
 import {isPresent} from '@/lib/utils/is-present';
 
@@ -112,8 +112,8 @@ interface AnnotationProps {
 }
 
 function Annotation({metadata, onDismissForm}: AnnotationProps) {
-  useOnEscape(() => {
-    if (metadata.type === 'form') {
+  useKeyDown((event) => {
+    if (event.key === 'Escape' && metadata.type === 'form') {
       onDismissForm();
     }
   });
