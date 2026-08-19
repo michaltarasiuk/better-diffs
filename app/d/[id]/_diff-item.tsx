@@ -140,6 +140,7 @@ function Annotation({metadata, onDismissForm}: AnnotationProps) {
     default:
       metadata.type satisfies never;
   }
+
   return <div {...focusWithinProps}>{annotation}</div>;
 }
 
