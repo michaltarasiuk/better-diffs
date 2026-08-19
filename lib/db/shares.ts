@@ -4,6 +4,8 @@ import type {FileDiffMetadata} from '@pierre/diffs';
 
 import {asc, eq, lt, sql} from 'drizzle-orm';
 
+import {isPresent} from '@/lib/utils/is-present';
+
 import {db} from '.';
 import {patches, shares} from './schema';
 
@@ -32,7 +34,7 @@ export function createShare(
   sharePatches: readonly (readonly FileDiffMetadata[])[],
 ) {
   return db.transaction((tx) => {
-    const [{id}] = tx
+    const [inserted] = tx
       .insert(shares)
       .values({})
       .returning({
@@ -40,17 +42,21 @@ export function createShare(
       })
       .all();
 
+    if (!isPresent(inserted)) {
+      throw new Error('Failed to create share');
+    }
+
     tx.insert(patches)
       .values(
         sharePatches.map((files, index) => ({
-          shareId: id,
+          shareId: inserted.id,
           files: [...files],
           order: index,
         })),
       )
       .run();
 
-    return id;
+    return inserted.id;
   });
 }
 
