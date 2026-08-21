@@ -50,7 +50,6 @@ import {
   BoldIcon,
   ItalicIcon,
   Redo2Icon,
-  StrikethroughIcon,
   UnderlineIcon,
   Undo2Icon,
 } from 'lucide-react';
@@ -320,10 +319,6 @@ function ToolbarPlugin() {
         <ToggleButton id="underline" aria-label="Underline" isIconOnly>
           <ToggleButtonGroup.Separator />
           <UnderlineIcon aria-hidden className="size-4" />
-        </ToggleButton>
-        <ToggleButton id="strikethrough" aria-label="Strikethrough" isIconOnly>
-          <ToggleButtonGroup.Separator />
-          <StrikethroughIcon aria-hidden className="size-4" />
         </ToggleButton>
       </ToggleButtonGroup>
 
