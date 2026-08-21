@@ -1,7 +1,7 @@
-import type {DiffLineAnnotation, SelectionSide} from '@pierre/diffs';
-
 import {parseAsJson} from 'nuqs/server';
 import {z} from 'zod';
+
+import type {DiffLineAnnotation, SelectionSide} from '@pierre/diffs';
 
 export interface AnnotationMetadata {
   readonly type: 'form' | 'thread';

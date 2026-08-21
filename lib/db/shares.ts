@@ -1,13 +1,13 @@
 import 'server-only';
 
-import type {FileDiffMetadata} from '@pierre/diffs';
-
 import {asc, eq, lt, sql} from 'drizzle-orm';
 
 import {isPresent} from '@/lib/utils/is-present';
 
 import {db} from '.';
 import {patches, shares} from './schema';
+
+import type {FileDiffMetadata} from '@pierre/diffs';
 
 export function findShareWithPatches(id: string) {
   return db.query.shares

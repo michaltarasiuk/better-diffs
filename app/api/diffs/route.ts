@@ -1,9 +1,9 @@
-import type {FileDiffMetadata} from '@pierre/diffs';
-
 import {z} from 'zod';
 
 import {createShare} from '@/lib/db/shares';
 import {env} from '@/lib/env';
+
+import type {FileDiffMetadata} from '@pierre/diffs';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',

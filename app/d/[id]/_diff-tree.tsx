@@ -5,13 +5,13 @@ import '@/lib/trees/trees.module.css';
 import {SearchField} from '@heroui/react';
 import {
   FileTree,
-  type FileTreePreloadedData,
   useFileTree,
   useFileTreeSearch,
+  type FileTreePreloadedData,
 } from '@pierre/trees/react';
 import {useQueryState} from 'nuqs';
 
-import {type DiffTreeHandoff, getDiffTreeOptions} from '@/lib/trees/handoff';
+import {getDiffTreeOptions, type DiffTreeHandoff} from '@/lib/trees/handoff';
 import {isDirectoryPath} from '@/lib/trees/is-directory-path';
 import {isPresent} from '@/lib/utils/is-present';
 import {setHash} from '@/lib/utils/set-hash';

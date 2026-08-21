@@ -1,16 +1,15 @@
 'use client';
 
-import type {FileDiffMetadata} from '@pierre/diffs';
-
 import {useVirtualizer, Virtualizer} from '@pierre/diffs/react';
-
-import type {LineAnnotation} from '@/lib/diffs/annotation';
 
 import {useHashChange} from '@/lib/hooks/use-hash-change';
 import {assertPresent, isPresent} from '@/lib/utils/is-present';
 import {getHash} from '@/lib/utils/set-hash';
 
 import {DiffItem} from './_diff-item';
+
+import type {LineAnnotation} from '@/lib/diffs/annotation';
+import type {FileDiffMetadata} from '@pierre/diffs';
 
 interface DiffListItem {
   readonly id: string;

@@ -1,12 +1,12 @@
-import type {ChangeTypes, FileDiffMetadata} from '@pierre/diffs';
-
 import {
+  prepareFileTreeInput,
+  preparePresortedFileTreeInput,
   type FileTreeOptions,
   type GitStatus,
   type GitStatusEntry,
-  prepareFileTreeInput,
-  preparePresortedFileTreeInput,
 } from '@pierre/trees';
+
+import type {ChangeTypes, FileDiffMetadata} from '@pierre/diffs';
 
 const DIFF_TREE_OPTIONS = {
   id: 'diff-file-tree',

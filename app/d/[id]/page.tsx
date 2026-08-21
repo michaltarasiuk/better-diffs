@@ -1,6 +1,3 @@
-import type {FileTreeOptions} from '@pierre/trees';
-import type {Metadata} from 'next';
-
 import {preloadFileTree} from '@pierre/trees/ssr';
 import {notFound} from 'next/navigation';
 
@@ -18,6 +15,9 @@ import {isPresent} from '@/lib/utils/is-present';
 import {DiffList} from './_diff-list';
 import {DiffTree} from './_diff-tree';
 import {loadDiffSearchParams} from './_search-params';
+
+import type {FileTreeOptions} from '@pierre/trees';
+import type {Metadata} from 'next';
 
 export const dynamic = 'force-dynamic';
 

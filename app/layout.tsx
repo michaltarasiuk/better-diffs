@@ -1,11 +1,11 @@
 import './_globals.css';
 
-import type {Metadata} from 'next';
-
 import Script from 'next/script';
 
 import {Providers} from '@/app/_providers';
 import {env} from '@/lib/env';
+
+import type {Metadata} from 'next';
 
 export const metadata: Metadata = {
   title: 'Better Diffs',

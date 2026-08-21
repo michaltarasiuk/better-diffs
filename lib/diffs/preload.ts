@@ -1,15 +1,14 @@
 import 'server-only';
 
-import type {FileDiffMetadata} from '@pierre/diffs';
-
 import {preloadFileDiff} from '@pierre/diffs/ssr';
+
+import {DIFF_VIEWER_OPTIONS} from './options';
 
 import type {
   FormAnnotationLocation,
   LineAnnotation,
 } from '@/lib/diffs/annotation';
-
-import {DIFF_VIEWER_OPTIONS} from './options';
+import type {FileDiffMetadata} from '@pierre/diffs';
 
 export function preloadDiffs(
   files: readonly FileDiffMetadata[],

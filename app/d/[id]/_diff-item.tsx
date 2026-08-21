@@ -4,16 +4,14 @@ import '@/lib/diffs/diffs.module.css';
 
 import {Button, Card} from '@heroui/react';
 import {
+  getLineAnnotationName,
   type FileDiffMetadata,
   type GetHoveredLineResult,
-  getLineAnnotationName,
 } from '@pierre/diffs';
 import {FileDiff} from '@pierre/diffs/react';
 import {LogInIcon, PlusIcon} from 'lucide-react';
 import {createContext, use, useState} from 'react';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
-
-import type {AnnotationMetadata, LineAnnotation} from '@/lib/diffs/annotation';
 
 import {authClient} from '@/lib/auth/client';
 import {SessionContext} from '@/lib/auth/context';
@@ -22,6 +20,8 @@ import {useKeyDown} from '@/lib/hooks/use-key-down';
 import {isPresent} from '@/lib/utils/is-present';
 
 import {Editor} from './_editor';
+
+import type {AnnotationMetadata, LineAnnotation} from '@/lib/diffs/annotation';
 
 const AnnotationIdContext = createContext<string>(null as never);
 

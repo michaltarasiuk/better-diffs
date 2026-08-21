@@ -4,11 +4,11 @@ import {
   Button,
   ButtonGroup,
   Card,
-  type Key,
   ListBox,
   Select,
   ToggleButton,
   ToggleButtonGroup,
+  type Key,
 } from '@heroui/react';
 import {typographyVariants} from '@heroui/styles';
 import {AutoFocusPlugin} from '@lexical/react/LexicalAutoFocusPlugin';
@@ -36,13 +36,13 @@ import {
   CAN_REDO_COMMAND,
   CAN_UNDO_COMMAND,
   COMMAND_PRIORITY_LOW,
-  type EditorThemeClasses,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
-  type LexicalEditor,
   REDO_COMMAND,
-  type TextFormatType,
   UNDO_COMMAND,
+  type EditorThemeClasses,
+  type LexicalEditor,
+  type TextFormatType,
 } from 'lexical';
 import {
   AlignCenterIcon,
