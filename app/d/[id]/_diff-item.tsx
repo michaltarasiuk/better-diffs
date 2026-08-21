@@ -154,7 +154,7 @@ function CommentForm({onDismiss}: CommentFormProps) {
 
   if (!isPresent(session)) {
     return (
-      <Card variant="secondary" className="ms-2 me-2 mbs-1 mbe-2">
+      <Card variant="secondary" className="m-2 mbs-1">
         <SignInPrompt />
       </Card>
     );
