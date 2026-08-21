@@ -143,15 +143,23 @@ export function Editor({onDismiss}: EditorProps) {
           <ToolbarPlugin />
         </Card.Header>
         <Card.Content>
-          <RichTextPlugin
-            contentEditable={
-              <ContentEditable
-                aria-label="Comment"
-                className="typography typography--body-sm min-h-24 outline-none"
-              />
-            }
-            ErrorBoundary={LexicalErrorBoundary}
-          />
+          <div className="rounded-field relative min-h-24 px-3 py-2">
+            <RichTextPlugin
+              contentEditable={
+                <ContentEditable
+                  aria-label="Comment"
+                  aria-placeholder="Leave a comment…"
+                  placeholder={
+                    <div className="typography typography--body-sm text-field-placeholder pointer-events-none absolute inset-0 px-3 py-2">
+                      Leave a comment…
+                    </div>
+                  }
+                  className="typography typography--body-sm min-h-24 outline-none"
+                />
+              }
+              ErrorBoundary={LexicalErrorBoundary}
+            />
+          </div>
         </Card.Content>
         <Card.Footer className="flex items-center justify-end gap-2">
           {isPresent(onDismiss) && (
@@ -235,7 +243,7 @@ function ToolbarPlugin() {
   }, [editor]);
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="@container flex flex-wrap items-center gap-2">
       <Select
         aria-label="Block type"
         variant="secondary"
@@ -245,7 +253,7 @@ function ToolbarPlugin() {
             applyBlockType(editor, key);
           }
         }}
-        className="w-36"
+        className="me-auto w-36 @xl:me-0"
       >
         <Select.Trigger className="h-9 min-h-0 items-center py-0 md:h-8">
           <Select.Value />
