@@ -154,7 +154,7 @@ export function Editor({onDismiss}: EditorProps) {
                       Leave a comment…
                     </div>
                   }
-                  className="typography typography--body-sm min-h-24 outline-none"
+                  className="typography typography--body-sm max-h-24 min-h-24 overflow-y-auto outline-none"
                 />
               }
               ErrorBoundary={LexicalErrorBoundary}
