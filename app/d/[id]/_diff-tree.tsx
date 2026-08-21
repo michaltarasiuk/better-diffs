@@ -61,6 +61,7 @@ export function DiffTree({handoff, preloadedData}: DiffTreeProps) {
           />
         </SearchField.Group>
       </SearchField>
+
       <FileTree
         aria-label="Changed files"
         model={model}

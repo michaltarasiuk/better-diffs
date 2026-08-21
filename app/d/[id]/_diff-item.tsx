@@ -2,14 +2,14 @@
 
 import '@/lib/diffs/diffs.module.css';
 
-import {Button, Card, TextArea} from '@heroui/react';
+import {Button, Card} from '@heroui/react';
 import {
   type FileDiffMetadata,
   type GetHoveredLineResult,
   getLineAnnotationName,
 } from '@pierre/diffs';
 import {FileDiff} from '@pierre/diffs/react';
-import {LogInIcon, PlusIcon, SendIcon} from 'lucide-react';
+import {LogInIcon, PlusIcon} from 'lucide-react';
 import {createContext, use, useState} from 'react';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
@@ -19,8 +19,9 @@ import {authClient} from '@/lib/auth/client';
 import {SessionContext} from '@/lib/auth/context';
 import {DIFF_VIEWER_OPTIONS} from '@/lib/diffs/options';
 import {useKeyDown} from '@/lib/hooks/use-key-down';
-import {focusRef} from '@/lib/utils/focus-ref';
 import {isPresent} from '@/lib/utils/is-present';
+
+import {Editor} from './_editor';
 
 const AnnotationIdContext = createContext<string>(null as never);
 
@@ -132,7 +133,7 @@ function Annotation({metadata, onDismissForm}: AnnotationProps) {
   let annotation: React.ReactNode;
   switch (metadata.type) {
     case 'form':
-      annotation = <CommentForm onCancel={onDismissForm} />;
+      annotation = <CommentForm onDismiss={onDismissForm} />;
       break;
     case 'thread':
       annotation = <ThreadAnnotation />;
@@ -145,13 +146,10 @@ function Annotation({metadata, onDismissForm}: AnnotationProps) {
 }
 
 interface CommentFormProps {
-  readonly onCancel: () => void;
+  readonly onDismiss: () => void;
 }
 
-function CommentForm({onCancel}: CommentFormProps) {
-  const [message, setMessage] = useState('');
-
-  const id = use(AnnotationIdContext);
+function CommentForm({onDismiss}: CommentFormProps) {
   const session = use(SessionContext);
 
   if (!isPresent(session)) {
@@ -162,43 +160,7 @@ function CommentForm({onCancel}: CommentFormProps) {
     );
   }
 
-  return (
-    <Card
-      aria-label="New comment"
-      variant="secondary"
-      className="ms-2 me-2 mbs-1 mbe-2"
-    >
-      <Card.Content>
-        <TextArea
-          ref={focusRef}
-          id={id}
-          name="comment"
-          aria-label="Comment"
-          value={message}
-          placeholder="Leave a comment…"
-          rows={3}
-          variant="secondary"
-          fullWidth
-          onChange={(event) => setMessage(event.target.value)}
-          className="min-h-24 resize-none"
-        />
-      </Card.Content>
-      <Card.Footer className="justify-end gap-2">
-        <Button
-          id={`${id}-cancel`}
-          variant="ghost"
-          size="sm"
-          onPress={onCancel}
-        >
-          Cancel
-        </Button>
-        <Button id={`${id}-submit`} size="sm">
-          <SendIcon aria-hidden="true" className="size-4" />
-          Comment
-        </Button>
-      </Card.Footer>
-    </Card>
-  );
+  return <Editor onDismiss={onDismiss} />;
 }
 
 function SignInPrompt() {
