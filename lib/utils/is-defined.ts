@@ -1,12 +1,12 @@
-export function isPresent(value: unknown) {
+export function isDefined(value: unknown) {
   return value != null;
 }
 
-export function assertPresent<T>(
+export function assertDefined<T>(
   value: T | null | undefined,
   message: string,
 ): asserts value is T {
-  if (!isPresent(value)) {
+  if (!isDefined(value)) {
     throw new Error(message);
   }
 }

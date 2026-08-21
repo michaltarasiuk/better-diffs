@@ -13,7 +13,7 @@ import {useQueryState} from 'nuqs';
 
 import {getDiffTreeOptions, type DiffTreeHandoff} from '@/lib/trees/handoff';
 import {isDirectoryPath} from '@/lib/trees/is-directory-path';
-import {isPresent} from '@/lib/utils/is-present';
+import {isDefined} from '@/lib/utils/is-defined';
 import {setHash} from '@/lib/utils/set-hash';
 
 import {diffSearchParsers} from './_search-params';
@@ -35,7 +35,7 @@ export function DiffTree({handoff, preloadedData}: DiffTreeProps) {
       void setSearchQuery(value);
     },
     onSelectionChange([selected, ...rest]) {
-      const singleSelection = isPresent(selected) && rest.length === 0;
+      const singleSelection = isDefined(selected) && rest.length === 0;
       if (!singleSelection || isDirectoryPath(selected)) {
         return;
       }

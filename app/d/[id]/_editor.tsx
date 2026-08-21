@@ -57,7 +57,7 @@ import {
 } from 'lucide-react';
 import {useEffect, useEffectEvent, useState} from 'react';
 
-import {isPresent} from '@/lib/utils/is-present';
+import {isDefined} from '@/lib/utils/is-defined';
 
 const BLOCK_TYPES = [
   {label: 'Normal', value: 'paragraph'},
@@ -172,7 +172,7 @@ export function Editor({onDismiss}: EditorProps) {
           </div>
         </Card.Content>
         <Card.Footer className="flex items-center justify-end gap-2">
-          {isPresent(onDismiss) && (
+          {isDefined(onDismiss) && (
             <Button variant="ghost" size="sm" onPress={onDismiss}>
               Cancel
             </Button>
@@ -208,7 +208,7 @@ function ToolbarPlugin() {
       const anchorNode = selection.anchor.getNode();
       let topLevelElement = $findMatchingParent(anchorNode, (e) => {
         const parent = e.getParent();
-        return isPresent(parent) && $isRootOrShadowRoot(parent);
+        return isDefined(parent) && $isRootOrShadowRoot(parent);
       });
       topLevelElement ??= anchorNode.getTopLevelElementOrThrow();
 

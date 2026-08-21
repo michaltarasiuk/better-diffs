@@ -17,7 +17,7 @@ import {authClient} from '@/lib/auth/client';
 import {SessionContext} from '@/lib/auth/context';
 import {DIFF_VIEWER_OPTIONS} from '@/lib/diffs/options';
 import {useKeyDown} from '@/lib/hooks/use-key-down';
-import {isPresent} from '@/lib/utils/is-present';
+import {isDefined} from '@/lib/utils/is-defined';
 
 import {Editor} from './_editor';
 
@@ -72,7 +72,7 @@ export function DiffItem({
           <GutterUtility
             onAddAnnotation={() => {
               const hoveredLine = getHoveredLine();
-              if (isPresent(hoveredLine)) {
+              if (isDefined(hoveredLine)) {
                 addFormAnnotation(hoveredLine);
               } else {
                 console.error('No hovered line');
@@ -152,7 +152,7 @@ interface CommentFormProps {
 function CommentForm({onDismiss}: CommentFormProps) {
   const session = use(SessionContext);
 
-  if (!isPresent(session)) {
+  if (!isDefined(session)) {
     return (
       <Card variant="secondary" className="m-2 mbs-1">
         <SignInPrompt />

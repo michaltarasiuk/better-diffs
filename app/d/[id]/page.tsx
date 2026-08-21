@@ -10,7 +10,7 @@ import {
   prepareDiffTreeHandoff,
   sortFilesByTreeOrder,
 } from '@/lib/trees/handoff';
-import {isPresent} from '@/lib/utils/is-present';
+import {isDefined} from '@/lib/utils/is-defined';
 
 import {DiffList} from './_diff-list';
 import {DiffTree} from './_diff-tree';
@@ -38,7 +38,7 @@ export default async function Page({
   ]);
 
   const share = findShareWithPatches(id);
-  if (!isPresent(share)) {
+  if (!isDefined(share)) {
     notFound();
   }
   touchShare(id);

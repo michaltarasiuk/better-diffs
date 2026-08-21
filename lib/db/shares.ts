@@ -2,7 +2,7 @@ import 'server-only';
 
 import {asc, eq, lt, sql} from 'drizzle-orm';
 
-import {isPresent} from '@/lib/utils/is-present';
+import {isDefined} from '@/lib/utils/is-defined';
 
 import {db} from '.';
 import {patches, shares} from './schema';
@@ -42,7 +42,7 @@ export function createShare(
       })
       .all();
 
-    if (!isPresent(inserted)) {
+    if (!isDefined(inserted)) {
       throw new Error('Failed to create share');
     }
 

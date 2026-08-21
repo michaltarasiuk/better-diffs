@@ -3,7 +3,7 @@
 import {useVirtualizer, Virtualizer} from '@pierre/diffs/react';
 
 import {useHashChange} from '@/lib/hooks/use-hash-change';
-import {assertPresent, isPresent} from '@/lib/utils/is-present';
+import {assertDefined, isDefined} from '@/lib/utils/is-defined';
 import {getHash} from '@/lib/utils/set-hash';
 
 import {DiffItem} from './_diff-item';
@@ -38,14 +38,14 @@ function DiffListContent({items}: DiffListContentProps) {
   const virtualizer = useVirtualizer();
 
   useHashChange((event) => {
-    assertPresent(virtualizer, 'Missing virtualizer');
+    assertDefined(virtualizer, 'Missing virtualizer');
     const url = new URL(event.newURL);
     const hash = getHash(url);
-    if (!isPresent(hash)) {
+    if (!isDefined(hash)) {
       return;
     }
     const element = document.getElementById(hash);
-    if (!isPresent(element)) {
+    if (!isDefined(element)) {
       return;
     }
     virtualizer.scrollTo({

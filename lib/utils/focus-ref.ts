@@ -1,9 +1,9 @@
 import 'client-only';
 
-import {isPresent} from '@/lib/utils/is-present';
+import {isDefined} from '@/lib/utils/is-defined';
 
 export function focusRef<T extends HTMLElement>(node: T | null) {
-  if (!isPresent(node)) {
+  if (!isDefined(node)) {
     return;
   }
   queueMicrotask(() => {
