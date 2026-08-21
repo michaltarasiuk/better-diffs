@@ -185,9 +185,7 @@ function ToolbarPlugin() {
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
 
-  const [selectedTextFormats, setSelectedTextFormats] = useState(
-    () => new Set<Key>(),
-  );
+  const [textFormats, setTextFormats] = useState(() => new Set<Key>());
 
   const $updateToolbar = useEffectEvent(() => {
     const selection = $getSelection();
@@ -195,7 +193,7 @@ function ToolbarPlugin() {
       const formats = new Set<Key>(
         FORMAT_TYPES.filter((format) => selection.hasFormat(format)),
       );
-      setSelectedTextFormats(formats);
+      setTextFormats(formats);
 
       const anchorNode = selection.anchor.getNode();
       let topLevelElement = $findMatchingParent(anchorNode, (e) => {
@@ -248,9 +246,9 @@ function ToolbarPlugin() {
         aria-label="Block type"
         variant="secondary"
         value={blockType}
-        onChange={(key) => {
-          if (typeof key === 'string' && isBlockType(key)) {
-            applyBlockType(editor, key);
+        onChange={(nextBlockType) => {
+          if (typeof nextBlockType === 'string' && isBlockType(nextBlockType)) {
+            applyBlockType(editor, nextBlockType);
           }
         }}
         className="me-auto w-36 @xl:me-0"
@@ -298,10 +296,9 @@ function ToolbarPlugin() {
       <ToggleButtonGroup
         selectionMode="multiple"
         size="sm"
-        selectedKeys={selectedTextFormats}
+        selectedKeys={textFormats}
         onSelectionChange={(nextTextFormats) => {
-          const toggled =
-            nextTextFormats.symmetricDifference(selectedTextFormats);
+          const toggled = nextTextFormats.symmetricDifference(textFormats);
           for (const format of toggled) {
             editor.dispatchCommand(
               FORMAT_TEXT_COMMAND,
