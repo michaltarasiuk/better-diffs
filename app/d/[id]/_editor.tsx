@@ -45,6 +45,7 @@ import {
 } from 'lexical';
 import {
   AlignCenterIcon,
+  AlignJustifyIcon,
   AlignLeftIcon,
   AlignRightIcon,
   BoldIcon,
@@ -191,6 +192,11 @@ function ToolbarPlugin() {
   const $updateToolbar = useEffectEvent(() => {
     const selection = $getSelection();
     if ($isRangeSelection(selection)) {
+      const formats = new Set<Key>(
+        FORMAT_TYPES.filter((format) => selection.hasFormat(format)),
+      );
+      setSelectedTextFormats(formats);
+
       const anchorNode = selection.anchor.getNode();
       let topLevelElement = $findMatchingParent(anchorNode, (e) => {
         const parent = e.getParent();
@@ -204,11 +210,6 @@ function ToolbarPlugin() {
       if (isBlockType(nextBlockType)) {
         setBlockType(nextBlockType);
       }
-
-      const formats = new Set<Key>(
-        FORMAT_TYPES.filter((format) => selection.hasFormat(format)),
-      );
-      setSelectedTextFormats(formats);
     }
   });
 
@@ -322,9 +323,8 @@ function ToolbarPlugin() {
         </ToggleButton>
       </ToggleButtonGroup>
 
-      <ToggleButtonGroup selectionMode="single" size="sm">
-        <ToggleButton
-          id="left"
+      <ButtonGroup variant="tertiary" size="sm">
+        <Button
           aria-label="Align left"
           onPress={() => {
             editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
@@ -332,30 +332,38 @@ function ToolbarPlugin() {
           isIconOnly
         >
           <AlignLeftIcon aria-hidden className="size-4" />
-        </ToggleButton>
-        <ToggleButton
-          id="center"
+        </Button>
+        <Button
           aria-label="Align center"
           onPress={() => {
             editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center');
           }}
           isIconOnly
         >
-          <ToggleButtonGroup.Separator />
+          <ButtonGroup.Separator />
           <AlignCenterIcon aria-hidden className="size-4" />
-        </ToggleButton>
-        <ToggleButton
-          id="right"
+        </Button>
+        <Button
           aria-label="Align right"
           onPress={() => {
             editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right');
           }}
           isIconOnly
         >
-          <ToggleButtonGroup.Separator />
+          <ButtonGroup.Separator />
           <AlignRightIcon aria-hidden className="size-4" />
-        </ToggleButton>
-      </ToggleButtonGroup>
+        </Button>
+        <Button
+          aria-label="Justify"
+          onPress={() => {
+            editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify');
+          }}
+          isIconOnly
+        >
+          <ButtonGroup.Separator />
+          <AlignJustifyIcon aria-hidden className="size-4" />
+        </Button>
+      </ButtonGroup>
     </div>
   );
 }
