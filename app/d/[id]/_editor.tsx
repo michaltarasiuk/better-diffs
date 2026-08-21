@@ -10,6 +10,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@heroui/react';
+import {typographyVariants} from '@heroui/styles';
 import {AutoFocusPlugin} from '@lexical/react/LexicalAutoFocusPlugin';
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -68,13 +69,15 @@ const BLOCK_TYPES = [
 
 const FORMAT_TYPES = ['bold', 'italic', 'underline', 'strikethrough'] as const;
 
+const bodySmTypography = typographyVariants({type: 'body-sm'});
+
 const EDITOR_THEME = {
   heading: {
-    h1: 'typography--h4',
-    h2: 'typography--h5',
-    h3: 'typography--h6',
+    h1: typographyVariants({type: 'h4'}).base(),
+    h2: typographyVariants({type: 'h5'}).base(),
+    h3: typographyVariants({type: 'h6'}).base(),
   },
-  paragraph: 'typography--body-sm',
+  paragraph: bodySmTypography.base(),
   quote: 'border-border text-muted border-s-4 ps-4 italic',
   text: {
     bold: 'font-semibold text-foreground',
@@ -150,11 +153,18 @@ export function Editor({onDismiss}: EditorProps) {
                   aria-label="Comment"
                   aria-placeholder="Leave a comment…"
                   placeholder={
-                    <div className="typography typography--body-sm text-field-placeholder pointer-events-none absolute inset-0 px-3 py-2">
+                    <div
+                      className={bodySmTypography.base({
+                        className:
+                          'text-field-placeholder pointer-events-none absolute inset-0 px-3 py-2',
+                      })}
+                    >
                       Leave a comment…
                     </div>
                   }
-                  className="typography typography--body-sm max-h-24 min-h-24 overflow-y-auto outline-none"
+                  className={bodySmTypography.base({
+                    className: 'max-h-24 min-h-24 overflow-y-auto outline-none',
+                  })}
                 />
               }
               ErrorBoundary={LexicalErrorBoundary}
