@@ -34,9 +34,11 @@ import {
   $isRootOrShadowRoot,
   CAN_REDO_COMMAND,
   CAN_UNDO_COMMAND,
+  COMMAND_PRIORITY_BEFORE_EDITOR,
   COMMAND_PRIORITY_LOW,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
+  KEY_ESCAPE_COMMAND,
   REDO_COMMAND,
   UNDO_COMMAND,
   type EditorThemeClasses,
@@ -181,8 +183,23 @@ export function Editor({onDismiss}: EditorProps) {
       </Card>
 
       <HistoryPlugin />
+      <PreventEscapeBlurPlugin />
     </LexicalComposer>
   );
+}
+
+function PreventEscapeBlurPlugin() {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    return editor.registerCommand(
+      KEY_ESCAPE_COMMAND,
+      () => true,
+      COMMAND_PRIORITY_BEFORE_EDITOR,
+    );
+  }, [editor]);
+
+  return null;
 }
 
 function ToolbarPlugin() {
