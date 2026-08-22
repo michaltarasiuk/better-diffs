@@ -11,7 +11,6 @@ import {
   type Key,
 } from '@heroui/react';
 import {typographyVariants} from '@heroui/styles';
-import {AutoFocusPlugin} from '@lexical/react/LexicalAutoFocusPlugin';
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
@@ -181,7 +180,6 @@ export function Editor({onDismiss}: EditorProps) {
         </Card.Footer>
       </Card>
 
-      <AutoFocusPlugin />
       <HistoryPlugin />
     </LexicalComposer>
   );
