@@ -32,7 +32,7 @@ export default async function Page({
   params,
   searchParams,
 }: PageProps<'/d/[id]'>) {
-  const [{id}, {q: searchQuery, formAnnotations}] = await Promise.all([
+  const [{id}, {q: searchQuery, formLocations}] = await Promise.all([
     params,
     loadDiffSearchParams(searchParams),
   ]);
@@ -53,7 +53,7 @@ export default async function Page({
   };
 
   const [items, session] = await Promise.all([
-    preloadDiffs(sortedFiles, formAnnotations),
+    preloadDiffs(sortedFiles, formLocations),
     getSession(),
   ]);
   const preloadedData = preloadFileTree(treeOptions);

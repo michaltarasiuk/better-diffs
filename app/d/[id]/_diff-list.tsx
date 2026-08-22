@@ -4,9 +4,9 @@ import {useVirtualizer, Virtualizer} from '@pierre/diffs/react';
 import {useQueryState} from 'nuqs';
 
 import {
-  parseAsFormAnnotations,
+  parseAsFormLocations,
   toFormAnnotation,
-  type FormAnnotationLocation,
+  type FormLocation,
 } from '@/lib/diffs/annotation';
 import {useHashChange} from '@/lib/hooks/use-hash-change';
 import {assertDefined, isDefined} from '@/lib/utils/is-defined';
@@ -40,8 +40,8 @@ interface DiffListContentProps {
 
 function DiffListContent({items}: DiffListContentProps) {
   const virtualizer = useVirtualizer();
-  const {getFormAnnotations, addFormAnnotation, removeFormAnnotation} =
-    useFormAnnotations();
+  const {getFormLocations, addFormLocation, removeFormLocation} =
+    useFormLocations();
 
   useHashChange((e) => {
     assertDefined(virtualizer, 'Missing virtualizer');
@@ -62,22 +62,22 @@ function DiffListContent({items}: DiffListContentProps) {
   return (
     <>
       {items.map((i) => {
-        const formAnnotations = getFormAnnotations(i.fileDiff.name);
+        const formLocations = getFormLocations(i.fileDiff.name);
         return (
           <section key={i.id} id={i.id}>
             <DiffItem
               fileDiff={i.fileDiff}
               prerenderedHTML={i.prerenderedHTML}
-              lineAnnotations={formAnnotations.map(toFormAnnotation)}
+              lineAnnotations={formLocations.map(toFormAnnotation)}
               onAddFormAnnotation={(l) =>
-                addFormAnnotation({
+                addFormLocation({
                   file: i.fileDiff.name,
                   lineNumber: l.lineNumber,
                   side: l.side,
                 })
               }
               onRemoveFormAnnotation={(l) =>
-                removeFormAnnotation({
+                removeFormLocation({
                   file: i.fileDiff.name,
                   lineNumber: l.lineNumber,
                   side: l.side,
@@ -91,25 +91,25 @@ function DiffListContent({items}: DiffListContentProps) {
   );
 }
 
-function useFormAnnotations() {
-  const [formAnnotations, setFormAnnotations] = useQueryState(
-    'formAnnotations',
-    parseAsFormAnnotations,
+function useFormLocations() {
+  const [formLocations, setFormLocations] = useQueryState(
+    'formLocations',
+    parseAsFormLocations,
   );
 
-  const formAnnotationsByFile = Map.groupBy(formAnnotations, (a) => a.file);
+  const formLocationsByFile = Map.groupBy(formLocations, (a) => a.file);
 
-  function getFormAnnotations(f: string) {
-    return formAnnotationsByFile.get(f) ?? [];
+  function getFormLocations(f: string) {
+    return formLocationsByFile.get(f) ?? [];
   }
 
-  function addFormAnnotation(l: FormAnnotationLocation) {
-    setFormAnnotations((fa) => [...fa, l]);
+  function addFormLocation(l: FormLocation) {
+    setFormLocations((fl) => [...fl, l]);
   }
 
-  function removeFormAnnotation(l: FormAnnotationLocation) {
-    setFormAnnotations((fa) =>
-      fa.filter(
+  function removeFormLocation(l: FormLocation) {
+    setFormLocations((fl) =>
+      fl.filter(
         (a) =>
           !(
             a.file === l.file &&
@@ -120,5 +120,5 @@ function useFormAnnotations() {
     );
   }
 
-  return {getFormAnnotations, addFormAnnotation, removeFormAnnotation};
+  return {getFormLocations, addFormLocation, removeFormLocation};
 }

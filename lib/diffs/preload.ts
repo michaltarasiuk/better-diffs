@@ -4,7 +4,7 @@ import {preloadFileDiff} from '@pierre/diffs/ssr';
 
 import {
   toFormAnnotation,
-  type FormAnnotationLocation,
+  type FormLocation,
   type ThreadAnnotation,
 } from '@/lib/diffs/annotation';
 
@@ -14,12 +14,9 @@ import type {FileDiffMetadata} from '@pierre/diffs';
 
 export function preloadDiffs(
   files: readonly FileDiffMetadata[],
-  formAnnotationLocations: readonly FormAnnotationLocation[],
+  formLocations: readonly FormLocation[],
 ) {
-  const formLocationsByFile = Map.groupBy(
-    formAnnotationLocations,
-    (a) => a.file,
-  );
+  const formLocationsByFile = Map.groupBy(formLocations, (a) => a.file);
 
   return Promise.all(
     files.map(async (f) => {

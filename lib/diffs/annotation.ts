@@ -18,25 +18,21 @@ const SelectionSideSchema = z.enum([
   'additions',
 ]) satisfies z.ZodType<SelectionSide>;
 
-export const FormAnnotationLocationSchema = z.object({
+export const FormLocationSchema = z.object({
   file: z.string(),
   lineNumber: z.int(),
   side: SelectionSideSchema,
 });
 
-export type FormAnnotationLocation = z.infer<
-  typeof FormAnnotationLocationSchema
->;
+export type FormLocation = z.infer<typeof FormLocationSchema>;
 
-export const FormAnnotationLocationsSchema = z.array(
-  FormAnnotationLocationSchema,
-);
+export const FormLocationsSchema = z.array(FormLocationSchema);
 
-export const parseAsFormAnnotations = parseAsJson(
-  FormAnnotationLocationsSchema,
+export const parseAsFormLocations = parseAsJson(
+  FormLocationsSchema,
 ).withDefault([]);
 
-export function toFormAnnotation(a: FormAnnotationLocation): FormAnnotation {
+export function toFormAnnotation(a: FormLocation): FormAnnotation {
   return {
     lineNumber: a.lineNumber,
     side: a.side,
