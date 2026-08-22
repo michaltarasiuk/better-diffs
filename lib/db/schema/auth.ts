@@ -36,7 +36,7 @@ export const session = sqliteTable(
       .notNull()
       .references(() => user.id, {onDelete: 'cascade'}),
   },
-  (table) => [index('session_userId_idx').on(table.userId)],
+  (t) => [index('session_userId_idx').on(t.userId)],
 );
 
 export const account = sqliteTable(
@@ -66,7 +66,7 @@ export const account = sqliteTable(
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
-  (table) => [index('account_userId_idx').on(table.userId)],
+  (t) => [index('account_userId_idx').on(t.userId)],
 );
 
 export const verification = sqliteTable(
@@ -84,7 +84,7 @@ export const verification = sqliteTable(
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
-  (table) => [index('verification_identifier_idx').on(table.identifier)],
+  (t) => [index('verification_identifier_idx').on(t.identifier)],
 );
 
 export const userRelations = relations(user, ({many}) => ({

@@ -23,7 +23,7 @@ export interface DiffTreeHandoff {
 export function prepareDiffTreeHandoff(
   files: readonly FileDiffMetadata[],
 ): DiffTreeHandoff {
-  const paths = files.map((file) => file.name);
+  const paths = files.map((f) => f.name);
   const preparedInput = prepareFileTreeInput(paths, {
     flattenEmptyDirectories: true,
   });
@@ -38,12 +38,12 @@ export function sortFilesByTreeOrder<T extends {readonly name: string}>(
   files: readonly T[],
   sortedPaths: readonly string[],
 ) {
-  const order = new Map(sortedPaths.map((path, index) => [path, index]));
+  const order = new Map(sortedPaths.map((p, i) => [p, i]));
 
   return files.toSorted(
-    (left, right) =>
-      (order.get(left.name) ?? Number.POSITIVE_INFINITY) -
-      (order.get(right.name) ?? Number.POSITIVE_INFINITY),
+    (a, b) =>
+      (order.get(a.name) ?? Number.POSITIVE_INFINITY) -
+      (order.get(b.name) ?? Number.POSITIVE_INFINITY),
   );
 }
 
@@ -58,14 +58,14 @@ export function getDiffTreeOptions(handoff: DiffTreeHandoff): FileTreeOptions {
 function getDiffGitStatus(
   files: readonly FileDiffMetadata[],
 ): readonly GitStatusEntry[] {
-  return files.map(({name, type}) => ({
-    path: name,
-    status: fileTypeToGitStatus(type),
+  return files.map((f) => ({
+    path: f.name,
+    status: fileTypeToGitStatus(f.type),
   }));
 }
 
-function fileTypeToGitStatus(changeType: ChangeTypes): GitStatus {
-  switch (changeType) {
+function fileTypeToGitStatus(t: ChangeTypes): GitStatus {
+  switch (t) {
     case 'new':
       return 'added';
     case 'deleted':
@@ -76,6 +76,6 @@ function fileTypeToGitStatus(changeType: ChangeTypes): GitStatus {
     case 'rename-changed':
       return 'renamed';
     default:
-      return changeType satisfies never;
+      return t satisfies never;
   }
 }

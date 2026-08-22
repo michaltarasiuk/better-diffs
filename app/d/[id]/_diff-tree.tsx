@@ -31,15 +31,15 @@ export function DiffTree({handoff, preloadedData}: DiffTreeProps) {
   const {model} = useFileTree({
     ...getDiffTreeOptions(handoff),
     initialSearchQuery: searchQuery,
-    onSearchChange(value) {
-      void setSearchQuery(value);
+    onSearchChange(v) {
+      void setSearchQuery(v);
     },
-    onSelectionChange([selected, ...rest]) {
-      const singleSelection = isDefined(selected) && rest.length === 0;
-      if (!singleSelection || isDirectoryPath(selected)) {
+    onSelectionChange([s, ...rest]) {
+      const singleSelection = isDefined(s) && rest.length === 0;
+      if (!singleSelection || isDirectoryPath(s)) {
         return;
       }
-      setHash(selected);
+      setHash(s);
     },
   });
   const search = useFileTreeSearch(model);
@@ -49,7 +49,7 @@ export function DiffTree({handoff, preloadedData}: DiffTreeProps) {
       <SearchField
         aria-label="Search files"
         value={search.value}
-        onChange={(value) => search.setValue(value || null)}
+        onChange={(v) => search.setValue(v || null)}
         className="bg-trees-sidebar p-2"
       >
         <SearchField.Group>

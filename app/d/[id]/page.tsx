@@ -43,7 +43,7 @@ export default async function Page({
   }
   touchShare(id);
 
-  const files = share.patches.flatMap((patch) => patch.files);
+  const files = share.patches.flatMap((p) => p.files);
 
   const treeHandoff = prepareDiffTreeHandoff(files);
   const sortedFiles = sortFilesByTreeOrder(files, treeHandoff.sortedPaths);

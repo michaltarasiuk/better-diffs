@@ -2,33 +2,34 @@ import 'server-only';
 
 import {preloadFileDiff} from '@pierre/diffs/ssr';
 
+import {
+  toFormAnnotation,
+  type FormAnnotationLocation,
+  type ThreadAnnotation,
+} from '@/lib/diffs/annotation';
+
 import {DIFF_VIEWER_OPTIONS} from './options';
 
-import type {
-  FormAnnotationLocation,
-  LineAnnotation,
-} from '@/lib/diffs/annotation';
 import type {FileDiffMetadata} from '@pierre/diffs';
 
 export function preloadDiffs(
   files: readonly FileDiffMetadata[],
-  formAnnotations: readonly FormAnnotationLocation[] = [],
+  formAnnotationLocations: readonly FormAnnotationLocation[],
 ) {
-  const formAnnotationsByFile = Map.groupBy(formAnnotations, ({file}) => file);
+  const formLocationsByFile = Map.groupBy(
+    formAnnotationLocations,
+    (a) => a.file,
+  );
 
   return Promise.all(
-    files.map(async (fileDiff) => {
-      const annotations = (formAnnotationsByFile.get(fileDiff.name) ?? []).map(
-        ({lineNumber, side}): LineAnnotation => ({
-          lineNumber,
-          side,
-          metadata: {type: 'form'},
-        }),
+    files.map(async (f) => {
+      const formAnnotations = (formLocationsByFile.get(f.name) ?? []).map(
+        toFormAnnotation,
       );
 
       const preloaded = await preloadFileDiff({
-        fileDiff,
-        annotations,
+        fileDiff: f,
+        annotations: formAnnotations,
         options: DIFF_VIEWER_OPTIONS,
       });
 
@@ -36,7 +37,7 @@ export function preloadDiffs(
         id: preloaded.fileDiff.name,
         fileDiff: preloaded.fileDiff,
         prerenderedHTML: preloaded.prerenderedHTML,
-        annotations: preloaded.annotations,
+        threadAnnotations: [] as ThreadAnnotation[],
       };
     }),
   );

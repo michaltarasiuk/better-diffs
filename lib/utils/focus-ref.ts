@@ -2,13 +2,13 @@ import 'client-only';
 
 import {isDefined} from '@/lib/utils/is-defined';
 
-export function focusRef<T extends HTMLElement>(node: T | null) {
-  if (!isDefined(node)) {
+export function focusRef<T extends HTMLElement>(n: T | null) {
+  if (!isDefined(n)) {
     return;
   }
   queueMicrotask(() => {
-    if (node.isConnected) {
-      node.focus({preventScroll: true});
+    if (n.isConnected) {
+      n.focus({preventScroll: true});
     }
   });
 }

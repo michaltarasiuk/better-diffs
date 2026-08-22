@@ -1,12 +1,12 @@
-export function isDefined(value: unknown) {
-  return value != null;
+export function isDefined(v: unknown) {
+  return v != null;
 }
 
 export function assertDefined<T>(
-  value: T | null | undefined,
+  v: T | null | undefined,
   message: string,
-): asserts value is T {
-  if (!isDefined(value)) {
+): asserts v is T {
+  if (!isDefined(v)) {
     throw new Error(message);
   }
 }

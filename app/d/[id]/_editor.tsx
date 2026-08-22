@@ -121,8 +121,8 @@ function applyBlockType(editor: LexicalEditor, type: BlockType) {
   }
 }
 
-function isBlockType(value: string): value is BlockType {
-  return BLOCK_TYPES.some((block) => block.value === value);
+function isBlockType(v: string): v is BlockType {
+  return BLOCK_TYPES.some((b) => b.value === v);
 }
 
 interface EditorProps {
@@ -136,8 +136,8 @@ export function Editor({onDismiss}: EditorProps) {
         namespace: 'Better Diffs',
         nodes: [HeadingNode, QuoteNode],
         theme: EDITOR_THEME,
-        onError(error) {
-          console.error(error);
+        onError(e) {
+          console.error(e);
         },
       }}
     >
@@ -201,14 +201,14 @@ function ToolbarPlugin() {
     const selection = $getSelection();
     if ($isRangeSelection(selection)) {
       const formats = new Set<Key>(
-        FORMAT_TYPES.filter((format) => selection.hasFormat(format)),
+        FORMAT_TYPES.filter((f) => selection.hasFormat(f)),
       );
       setTextFormats(formats);
 
       const anchorNode = selection.anchor.getNode();
-      let topLevelElement = $findMatchingParent(anchorNode, (e) => {
-        const parent = e.getParent();
-        return isDefined(parent) && $isRootOrShadowRoot(parent);
+      let topLevelElement = $findMatchingParent(anchorNode, (n) => {
+        const p = n.getParent();
+        return isDefined(p) && $isRootOrShadowRoot(p);
       });
       topLevelElement ??= anchorNode.getTopLevelElementOrThrow();
 
@@ -223,8 +223,8 @@ function ToolbarPlugin() {
 
   useEffect(() => {
     return mergeRegister(
-      editor.registerUpdateListener(({editorState}) => {
-        editorState.read(
+      editor.registerUpdateListener(({editorState: s}) => {
+        s.read(
           () => {
             $updateToolbar();
           },
@@ -233,16 +233,16 @@ function ToolbarPlugin() {
       }),
       editor.registerCommand(
         CAN_UNDO_COMMAND,
-        (payload) => {
-          setCanUndo(payload);
+        (p) => {
+          setCanUndo(p);
           return false;
         },
         COMMAND_PRIORITY_LOW,
       ),
       editor.registerCommand(
         CAN_REDO_COMMAND,
-        (payload) => {
-          setCanRedo(payload);
+        (p) => {
+          setCanRedo(p);
           return false;
         },
         COMMAND_PRIORITY_LOW,
@@ -256,9 +256,9 @@ function ToolbarPlugin() {
         aria-label="Block type"
         variant="secondary"
         value={blockType}
-        onChange={(nextBlockType) => {
-          if (typeof nextBlockType === 'string' && isBlockType(nextBlockType)) {
-            applyBlockType(editor, nextBlockType);
+        onChange={(v) => {
+          if (typeof v === 'string' && isBlockType(v)) {
+            applyBlockType(editor, v);
           }
         }}
         className="me-auto w-36 @xl:me-0"
@@ -269,9 +269,9 @@ function ToolbarPlugin() {
         </Select.Trigger>
         <Select.Popover>
           <ListBox>
-            {BLOCK_TYPES.map(({label, value}) => (
-              <ListBox.Item key={value} id={value} textValue={label}>
-                {label}
+            {BLOCK_TYPES.map((b) => (
+              <ListBox.Item key={b.value} id={b.value} textValue={b.label}>
+                {b.label}
                 <ListBox.ItemIndicator />
               </ListBox.Item>
             ))}
@@ -307,13 +307,10 @@ function ToolbarPlugin() {
         selectionMode="multiple"
         size="sm"
         selectedKeys={textFormats}
-        onSelectionChange={(nextTextFormats) => {
-          const toggled = nextTextFormats.symmetricDifference(textFormats);
-          for (const format of toggled) {
-            editor.dispatchCommand(
-              FORMAT_TEXT_COMMAND,
-              format as TextFormatType,
-            );
+        onSelectionChange={(s) => {
+          const toggled = s.symmetricDifference(textFormats);
+          for (const f of toggled) {
+            editor.dispatchCommand(FORMAT_TEXT_COMMAND, f as TextFormatType);
           }
         }}
       >

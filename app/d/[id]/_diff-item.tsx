@@ -28,35 +28,18 @@ const AnnotationIdContext = createContext<string>(null as never);
 interface DiffItemProps {
   readonly fileDiff: FileDiffMetadata;
   readonly prerenderedHTML: string;
-  readonly initialLineAnnotations?: LineAnnotation[];
+  readonly lineAnnotations: LineAnnotation[];
+  readonly onAddFormAnnotation: (l: GetHoveredLineResult<'diff'>) => void;
+  readonly onRemoveFormAnnotation: (l: GetHoveredLineResult<'diff'>) => void;
 }
 
 export function DiffItem({
   fileDiff,
   prerenderedHTML,
-  initialLineAnnotations = [],
+  lineAnnotations,
+  onAddFormAnnotation,
+  onRemoveFormAnnotation,
 }: DiffItemProps) {
-  const [lineAnnotations, setLineAnnotations] = useState<LineAnnotation[]>(
-    initialLineAnnotations,
-  );
-
-  function addFormAnnotation({lineNumber, side}: GetHoveredLineResult<'diff'>) {
-    setLineAnnotations((la) => [
-      ...la,
-      {
-        lineNumber,
-        side,
-        metadata: {
-          type: 'form',
-        },
-      },
-    ]);
-  }
-
-  function dismissFormAnnotation(annotation: LineAnnotation) {
-    setLineAnnotations((la) => la.filter((a) => a !== annotation));
-  }
-
   return (
     <FileDiff
       fileDiff={fileDiff}
@@ -67,13 +50,13 @@ export function DiffItem({
         enableGutterUtility: true,
         enableLineSelection: true,
       }}
-      renderGutterUtility={(getHoveredLine) => {
+      renderGutterUtility={(g) => {
         return (
           <GutterUtility
             onAddAnnotation={() => {
-              const hoveredLine = getHoveredLine();
-              if (isDefined(hoveredLine)) {
-                addFormAnnotation(hoveredLine);
+              const l = g();
+              if (isDefined(l)) {
+                onAddFormAnnotation(l);
               } else {
                 console.error('No hovered line');
               }
@@ -81,12 +64,17 @@ export function DiffItem({
           />
         );
       }}
-      renderAnnotation={(annotation) => {
+      renderAnnotation={(a) => {
         return (
-          <AnnotationIdContext value={getLineAnnotationName(annotation)}>
+          <AnnotationIdContext value={getLineAnnotationName(a)}>
             <Annotation
-              metadata={annotation.metadata}
-              onDismissForm={() => dismissFormAnnotation(annotation)}
+              metadata={a.metadata}
+              onDismissForm={() => {
+                onRemoveFormAnnotation({
+                  lineNumber: a.lineNumber,
+                  side: a.side,
+                });
+              }}
             />
           </AnnotationIdContext>
         );
@@ -121,11 +109,11 @@ interface AnnotationProps {
 function Annotation({metadata, onDismissForm}: AnnotationProps) {
   const [isFocusWithin, setFocusWithin] = useState(false);
   const {focusWithinProps} = useFocusWithin({
-    onFocusWithinChange: (isFocusWithin) => setFocusWithin(isFocusWithin),
+    onFocusWithinChange: (v) => setFocusWithin(v),
   });
 
-  useKeyDown((event) => {
-    if (event.key === 'Escape' && metadata.type === 'form' && isFocusWithin) {
+  useKeyDown((e) => {
+    if (e.key === 'Escape' && metadata.type === 'form' && isFocusWithin) {
       onDismissForm();
     }
   });

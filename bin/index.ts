@@ -44,9 +44,7 @@ if (flags.help) {
   process.exit(0);
 }
 
-const args = ['git', 'diff', flags.base].filter(
-  (value): value is string => value != null,
-);
+const args = ['git', 'diff', flags.base].filter((v): v is string => v != null);
 if (flags.staged) {
   args.push('--staged');
 }
