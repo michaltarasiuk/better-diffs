@@ -7,6 +7,7 @@ import {
   parseAsFormLocations,
   toFormAnnotation,
   type FormLocation,
+  type ThreadAnnotation,
 } from '@/lib/diffs/annotation';
 import {useHashChange} from '@/lib/hooks/use-hash-change';
 import {assertDefined, isDefined} from '@/lib/utils/is-defined';
@@ -20,6 +21,7 @@ interface DiffListItem {
   readonly id: string;
   readonly fileDiff: FileDiffMetadata;
   readonly prerenderedHTML: string;
+  readonly threadAnnotations: readonly ThreadAnnotation[];
 }
 
 interface DiffListProps {
@@ -68,7 +70,10 @@ function DiffListContent({items}: DiffListContentProps) {
             <DiffItem
               fileDiff={i.fileDiff}
               prerenderedHTML={i.prerenderedHTML}
-              lineAnnotations={formLocations.map(toFormAnnotation)}
+              lineAnnotations={[
+                ...i.threadAnnotations,
+                ...formLocations.map(toFormAnnotation),
+              ]}
               onAddFormAnnotation={(l) =>
                 addFormLocation({
                   file: i.fileDiff.name,
