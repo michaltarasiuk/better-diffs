@@ -20,23 +20,22 @@ export function OPTIONS() {
 }
 
 export async function POST(request: Request) {
+  const init: ResponseInit = {status: 400, headers: CORS_HEADERS};
+
   let json: unknown;
   try {
     json = await request.json();
   } catch {
-    return respond({ok: false, error: 'Invalid JSON body'}, 400);
+    return Response.json({ok: false, error: 'Invalid JSON body'}, init);
   }
 
   const body = Body.safeParse(json);
   if (!body.success) {
-    return respond({ok: false, error: 'Invalid request body'}, 400);
+    return Response.json({ok: false, error: 'Invalid request body'}, init);
   }
 
   const id = createShare(body.data.patches);
+  init.status = 201;
 
-  return respond({ok: true, id, url: `${env.BASE_URL}/d/${id}`}, 201);
-}
-
-function respond(body: unknown, status: number) {
-  return Response.json(body, {status, headers: CORS_HEADERS});
+  return Response.json({ok: true, id, url: `${env.BASE_URL}/d/${id}`}, init);
 }
