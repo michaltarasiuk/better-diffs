@@ -80,8 +80,16 @@ export function DiffTree({handoff, preloadedData, stats}: DiffTreeProps) {
           <SearchField.SearchIcon />
           <SearchField.Input
             ref={searchInputRef}
-            aria-keyshortcuts="/"
+            aria-keyshortcuts="/ Escape"
             placeholder="Search files"
+            onKeyDown={(e) => {
+              if (e.key !== 'Escape') {
+                return;
+              }
+              e.preventDefault();
+              search.setValue(null);
+              e.currentTarget.blur();
+            }}
           />
           <SearchField.ClearButton
             aria-label="Clear search"
