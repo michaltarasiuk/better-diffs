@@ -6,6 +6,8 @@ import {
   type GitStatusEntry,
 } from '@pierre/trees';
 
+import {DIFF_TREE_FOCUS_RING_UNSAFE_CSS} from './focus-ring';
+
 import type {ChangeTypes, FileDiffMetadata} from '@pierre/diffs';
 
 const DIFF_TREE_OPTIONS = {
@@ -13,6 +15,7 @@ const DIFF_TREE_OPTIONS = {
   flattenEmptyDirectories: true,
   initialExpansion: 'open',
   initialVisibleRowCount: Infinity,
+  unsafeCSS: DIFF_TREE_FOCUS_RING_UNSAFE_CSS,
 } satisfies Partial<FileTreeOptions>;
 
 export interface DiffTreeHandoff {
