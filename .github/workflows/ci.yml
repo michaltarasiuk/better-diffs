@@ -23,3 +23,9 @@ jobs:
 
       - run: bun run check
       - run: bun run build
+        env:
+          BASE_URL: http://localhost:3000
+          DATABASE_PATH: ./better-diffs.db
+          BETTER_AUTH_SECRET: ci-better-auth-secret-at-least-32-chars
+          GITHUB_CLIENT_ID: ci-github-client-id
+          GITHUB_CLIENT_SECRET: ci-github-client-secret
