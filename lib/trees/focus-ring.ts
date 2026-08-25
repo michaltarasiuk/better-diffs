@@ -5,7 +5,6 @@ import dedent from 'dedent';
  *
  * Outward rings are clipped by virtualized scroll containers, so the same
  * ring-2 + ring-offset-background layers are drawn inset on ::before.
- * Transition runs on focus-in only; blur is instant.
  */
 export const DIFF_TREE_FOCUS_RING_UNSAFE_CSS = dedent`
   [data-type="item"] {
@@ -35,14 +34,7 @@ export const DIFF_TREE_FOCUS_RING_UNSAFE_CSS = dedent`
         box-shadow:
           inset 0 0 0 var(--diff-tree-ring-width) var(--focus),
           inset 0 0 0 var(--diff-tree-ring-spread) var(--background);
-        transition: box-shadow 150ms var(--ease-out, cubic-bezier(0, 0, 0.2, 1));
       }
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    [data-type="item"]:is([data-item-focused="true"], :focus-visible)::before {
-      transition: none;
     }
   }
 `;
