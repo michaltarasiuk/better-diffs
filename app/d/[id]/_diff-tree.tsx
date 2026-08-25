@@ -10,7 +10,9 @@ import {
   type FileTreePreloadedData,
 } from '@pierre/trees/react';
 import {useQueryState} from 'nuqs';
+import {useRef} from 'react';
 
+import {useKeyDown} from '@/lib/hooks/use-key-down';
 import {getDiffTreeOptions, type DiffTreeHandoff} from '@/lib/trees/handoff';
 import {isDirectoryPath} from '@/lib/trees/is-directory-path';
 import {isDefined} from '@/lib/utils/is-defined';
@@ -47,6 +49,22 @@ export function DiffTree({handoff, preloadedData, stats}: DiffTreeProps) {
     },
   });
   const search = useFileTreeSearch(model);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useKeyDown((e) => {
+    if (
+      e.key !== '/' ||
+      e.metaKey ||
+      e.ctrlKey ||
+      e.altKey ||
+      isEditableTarget(e.target)
+    ) {
+      return;
+    }
+    e.preventDefault();
+    searchInputRef.current?.focus();
+    searchInputRef.current?.select();
+  });
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -60,7 +78,11 @@ export function DiffTree({handoff, preloadedData, stats}: DiffTreeProps) {
       >
         <SearchField.Group className="bg-transparent">
           <SearchField.SearchIcon />
-          <SearchField.Input placeholder="Search files" />
+          <SearchField.Input
+            ref={searchInputRef}
+            aria-keyshortcuts="/"
+            placeholder="Search files"
+          />
           <SearchField.ClearButton
             aria-label="Clear search"
             onClick={() => search.setValue(null)}
@@ -77,5 +99,17 @@ export function DiffTree({handoff, preloadedData, stats}: DiffTreeProps) {
 
       <DiffSummary stats={stats} />
     </div>
+  );
+}
+
+function isEditableTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+  return (
+    target.isContentEditable ||
+    target.tagName === 'INPUT' ||
+    target.tagName === 'TEXTAREA' ||
+    target.tagName === 'SELECT'
   );
 }
