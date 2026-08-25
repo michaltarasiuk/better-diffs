@@ -13,7 +13,8 @@
     "format:check": "prettier --check .",
     "type:check": "next typegen && tsc --noEmit",
     "lint": "eslint",
-    "check": "bun run format:check && bun run type:check && bun run lint"
+    "check": "bun run format:check && bun run type:check && bun run lint",
+    "seed:large-diff": "bun bin/seed-large-diff.ts"
   },
   "dependencies": {
     "@heroui/react": "^3.2.4",

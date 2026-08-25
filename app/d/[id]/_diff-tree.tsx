@@ -16,14 +16,18 @@ import {isDirectoryPath} from '@/lib/trees/is-directory-path';
 import {isDefined} from '@/lib/utils/is-defined';
 import {setHash} from '@/lib/utils/set-hash';
 
+import {DiffSummary} from './_diff-summary';
 import {diffSearchParsers} from './_search-params';
+
+import type {DiffStats} from '@/lib/diffs/stats';
 
 interface DiffTreeProps {
   readonly handoff: DiffTreeHandoff;
   readonly preloadedData: FileTreePreloadedData;
+  readonly stats: DiffStats;
 }
 
-export function DiffTree({handoff, preloadedData}: DiffTreeProps) {
+export function DiffTree({handoff, preloadedData, stats}: DiffTreeProps) {
   const [searchQuery, setSearchQuery] = useQueryState(
     'q',
     diffSearchParsers.q.withOptions({history: 'replace'}),
@@ -45,14 +49,16 @@ export function DiffTree({handoff, preloadedData}: DiffTreeProps) {
   const search = useFileTreeSearch(model);
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <SearchField
+        variant="secondary"
         aria-label="Search files"
         value={search.value}
         onChange={(v) => search.setValue(v || null)}
+        fullWidth
         className="bg-trees-sidebar p-2"
       >
-        <SearchField.Group>
+        <SearchField.Group className="bg-transparent">
           <SearchField.SearchIcon />
           <SearchField.Input placeholder="Search files" />
           <SearchField.ClearButton
@@ -68,6 +74,8 @@ export function DiffTree({handoff, preloadedData}: DiffTreeProps) {
         preloadedData={preloadedData}
         className="min-h-0 flex-1"
       />
+
+      <DiffSummary stats={stats} />
     </div>
   );
 }
