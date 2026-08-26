@@ -1,5 +1,3 @@
-'use client';
-
 import '@/lib/diffs/diffs.module.css';
 
 import {Button, Card} from '@heroui/react';

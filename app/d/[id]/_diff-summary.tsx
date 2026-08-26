@@ -1,5 +1,3 @@
-'use client';
-
 import {Separator, tv, type VariantProps} from '@heroui/react';
 import {Accordion} from '@heroui/react/accordion';
 import {GitCompareIcon} from 'lucide-react';
