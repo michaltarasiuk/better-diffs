@@ -34,6 +34,8 @@ export default async function Page({
   params,
   searchParams,
 }: PageProps<'/d/[id]'>) {
+  const sessionPromise = getSession();
+
   const [{id}, {q: searchQuery, formLocations}] = await Promise.all([
     params,
     loadDiffSearchParams(searchParams),
@@ -46,26 +48,25 @@ export default async function Page({
   touchShare(id);
 
   const files = share.patches.flatMap((p) => p.files);
+  const stats = computeDiffStats(files);
 
   const treeHandoff = prepareDiffTreeHandoff(files);
-  const diffStats = computeDiffStats(files);
-  const sortedFiles = sortFilesByTreeOrder(files, treeHandoff.sortedPaths);
+  const treeSortedFiles = sortFilesByTreeOrder(files, treeHandoff.sortedPaths);
   const treeOptions: FileTreeOptions = {
     ...getDiffTreeOptions(treeHandoff),
     initialSearchQuery: searchQuery,
   };
 
-  const [items, session] = await Promise.all([
-    preloadDiffs(sortedFiles, formLocations),
-    getSession(),
-  ]);
   const preloadedData = preloadFileTree(treeOptions);
+  const itemsPromise = preloadDiffs(treeSortedFiles, formLocations);
+
+  const [items, session] = await Promise.all([itemsPromise, sessionPromise]);
 
   return (
     <div className="flex h-dvh">
       <aside aria-label="Files" className="w-80 shrink-0 border-e">
         <DiffTree handoff={treeHandoff} preloadedData={preloadedData}>
-          <DiffSummary stats={diffStats} />
+          <DiffSummary stats={stats} />
         </DiffTree>
       </aside>
       <main aria-label="Diff" className="min-w-0 flex-1">
