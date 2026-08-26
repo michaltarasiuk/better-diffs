@@ -9,8 +9,8 @@ import {
   type ThreadAnnotation,
 } from '@/lib/diffs/annotation';
 import {useHashChange} from '@/lib/hooks/use-hash-change';
+import {assertDefined, isDefined} from '@/lib/utils/defined';
 import {getHash} from '@/lib/utils/hash';
-import {assertDefined, isDefined} from '@/lib/utils/is-defined';
 
 import {DiffItem} from './_diff-item';
 import {parseAsFormLocations} from './_search-params.parsers';

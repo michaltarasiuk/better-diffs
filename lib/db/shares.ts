@@ -2,7 +2,7 @@ import 'server-only';
 
 import {asc, eq, lt, sql} from 'drizzle-orm';
 
-import {isDefined} from '@/lib/utils/is-defined';
+import {isDefined} from '@/lib/utils/defined';
 
 import {db} from '.';
 import {patches, shares} from './schema';

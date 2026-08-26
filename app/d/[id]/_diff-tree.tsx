@@ -15,8 +15,8 @@ import {useRef} from 'react';
 import {useKeyDown} from '@/lib/hooks/use-key-down';
 import {getDiffTreeOptions, type DiffTreeHandoff} from '@/lib/trees/handoff';
 import {isDirectoryPath} from '@/lib/trees/is-directory-path';
+import {isDefined} from '@/lib/utils/defined';
 import {setHash} from '@/lib/utils/hash';
-import {isDefined} from '@/lib/utils/is-defined';
 
 import {diffSearchParsers} from './_search-params.parsers';
 

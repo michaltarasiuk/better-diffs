@@ -16,7 +16,7 @@ import {authClient} from '@/lib/auth/client';
 import {SessionContext} from '@/lib/auth/context';
 import {DIFF_VIEWER_OPTIONS} from '@/lib/diffs/options';
 import {useKeyDown} from '@/lib/hooks/use-key-down';
-import {isDefined} from '@/lib/utils/is-defined';
+import {isDefined} from '@/lib/utils/defined';
 
 import type {AnnotationMetadata, LineAnnotation} from '@/lib/diffs/annotation';
 

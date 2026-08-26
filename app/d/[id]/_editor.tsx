@@ -56,7 +56,7 @@ import {
 } from 'lucide-react';
 import {useEffect, useEffectEvent, useState} from 'react';
 
-import {isDefined} from '@/lib/utils/is-defined';
+import {isDefined} from '@/lib/utils/defined';
 
 const BLOCK_TYPES = [
   {label: 'Normal', value: 'paragraph'},

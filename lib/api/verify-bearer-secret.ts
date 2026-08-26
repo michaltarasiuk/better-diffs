@@ -2,7 +2,7 @@ import 'server-only';
 
 import {timingSafeEqual} from 'node:crypto';
 
-import {isDefined} from '@/lib/utils/is-defined';
+import {isDefined} from '@/lib/utils/defined';
 
 export function verifyBearerSecret(
   request: Request,
