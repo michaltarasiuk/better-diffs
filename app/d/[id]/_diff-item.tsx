@@ -7,7 +7,7 @@ import {
   type GetHoveredLineResult,
 } from '@pierre/diffs';
 import {FileDiff} from '@pierre/diffs/react';
-import {LogInIcon, PlusIcon} from 'lucide-react';
+import {PlusIcon} from 'lucide-react';
 import dynamic from 'next/dynamic';
 import {createContext, use, useState} from 'react';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
@@ -16,11 +16,14 @@ import {authClient} from '@/lib/auth/client';
 import {SessionContext} from '@/lib/auth/context';
 import {DIFF_VIEWER_OPTIONS} from '@/lib/diffs/options';
 import {useKeyDown} from '@/lib/hooks/use-key-down';
+import {GitHubIcon} from '@/lib/icons/github-icon';
 import {isDefined} from '@/lib/utils/defined';
 
 import type {AnnotationMetadata, LineAnnotation} from '@/lib/diffs/annotation';
 
-const Editor = dynamic(() => import('./_editor').then((m) => m.Editor));
+const DiffEditor = dynamic(() =>
+  import('./_diff-editor').then((m) => m.DiffEditor),
+);
 
 const AnnotationIdContext = createContext<string>(null as never);
 
@@ -140,33 +143,34 @@ function CommentForm({onDismiss}: CommentFormProps) {
   const session = use(SessionContext);
 
   if (!isDefined(session)) {
-    return (
-      <Card variant="secondary" className="m-2 mbs-1">
-        <SignInPrompt />
-      </Card>
-    );
+    return <SignInPrompt onDismiss={onDismiss} />;
   }
 
-  return <Editor onDismiss={onDismiss} />;
+  return <DiffEditor onDismiss={onDismiss} />;
 }
 
-function SignInPrompt() {
+interface SignInPromptProps {
+  readonly onDismiss: () => void;
+}
+
+function SignInPrompt({onDismiss}: SignInPromptProps) {
   const id = use(AnnotationIdContext);
 
   return (
-    <>
+    <Card variant="secondary" className="m-2 mbs-1">
       <Card.Header>
         <Card.Title>Sign in to comment</Card.Title>
         <Card.Description>
           Connect your GitHub account to leave comments on this diff.
         </Card.Description>
       </Card.Header>
-      <Card.Footer>
+      <Card.Footer className="flex items-center justify-end gap-2">
+        <Button variant="ghost" size="sm" onPress={onDismiss}>
+          Cancel
+        </Button>
         <Button
           id={`${id}-signin`}
-          variant="tertiary"
           size="sm"
-          fullWidth
           onPress={() =>
             void authClient.signIn.social({
               provider: 'github',
@@ -174,11 +178,11 @@ function SignInPrompt() {
             })
           }
         >
-          <LogInIcon aria-hidden="true" className="size-4" />
+          <GitHubIcon aria-hidden="true" className="size-4" />
           Continue with GitHub
         </Button>
       </Card.Footer>
-    </>
+    </Card>
   );
 }
 

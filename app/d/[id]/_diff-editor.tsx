@@ -124,11 +124,11 @@ function isBlockType(v: string): v is BlockType {
   return BLOCK_TYPES.some((b) => b.value === v);
 }
 
-interface EditorProps {
+interface DiffEditorProps {
   readonly onDismiss?: () => void;
 }
 
-export function Editor({onDismiss}: EditorProps) {
+export function DiffEditor({onDismiss}: DiffEditorProps) {
   return (
     <LexicalComposer
       initialConfig={{
