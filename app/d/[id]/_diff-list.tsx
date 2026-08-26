@@ -10,8 +10,8 @@ import {
   type ThreadAnnotation,
 } from '@/lib/diffs/annotation';
 import {useHashChange} from '@/lib/hooks/use-hash-change';
+import {getHash} from '@/lib/utils/hash';
 import {assertDefined, isDefined} from '@/lib/utils/is-defined';
-import {getHash} from '@/lib/utils/set-hash';
 
 import {DiffItem} from './_diff-item';
 
