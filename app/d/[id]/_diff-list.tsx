@@ -4,7 +4,6 @@ import {useVirtualizer, Virtualizer} from '@pierre/diffs/react';
 import {useQueryState} from 'nuqs';
 
 import {
-  parseAsFormLocations,
   toFormAnnotation,
   type FormLocation,
   type ThreadAnnotation,
@@ -14,6 +13,7 @@ import {getHash} from '@/lib/utils/hash';
 import {assertDefined, isDefined} from '@/lib/utils/is-defined';
 
 import {DiffItem} from './_diff-item';
+import {parseAsFormLocations} from './_search-params.parsers';
 
 import type {FileDiffMetadata} from '@pierre/diffs';
 

@@ -14,6 +14,7 @@ import {
 import {isDefined} from '@/lib/utils/is-defined';
 
 import {DiffList} from './_diff-list';
+import {DiffSummary} from './_diff-summary';
 import {DiffTree} from './_diff-tree';
 import {loadDiffSearchParams} from './_search-params';
 
@@ -64,11 +65,9 @@ export default async function Page({
     <SessionContext value={session}>
       <div className="flex h-dvh">
         <aside aria-label="Files" className="w-80 shrink-0 border-e">
-          <DiffTree
-            handoff={treeHandoff}
-            preloadedData={preloadedData}
-            stats={diffStats}
-          />
+          <DiffTree handoff={treeHandoff} preloadedData={preloadedData}>
+            <DiffSummary stats={diffStats} />
+          </DiffTree>
         </aside>
         <main aria-label="Diff" className="min-w-0 flex-1">
           <DiffList items={items} />

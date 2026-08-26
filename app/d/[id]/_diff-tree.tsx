@@ -18,18 +18,15 @@ import {isDirectoryPath} from '@/lib/trees/is-directory-path';
 import {setHash} from '@/lib/utils/hash';
 import {isDefined} from '@/lib/utils/is-defined';
 
-import {DiffSummary} from './_diff-summary';
-import {diffSearchParsers} from './_search-params';
-
-import type {DiffStats} from '@/lib/diffs/stats';
+import {diffSearchParsers} from './_search-params.parsers';
 
 interface DiffTreeProps {
   readonly handoff: DiffTreeHandoff;
   readonly preloadedData: FileTreePreloadedData;
-  readonly stats: DiffStats;
+  readonly children: React.ReactNode;
 }
 
-export function DiffTree({handoff, preloadedData, stats}: DiffTreeProps) {
+export function DiffTree({handoff, preloadedData, children}: DiffTreeProps) {
   const [searchQuery, setSearchQuery] = useQueryState(
     'q',
     diffSearchParsers.q.withOptions({history: 'replace'}),
@@ -114,7 +111,7 @@ export function DiffTree({handoff, preloadedData, stats}: DiffTreeProps) {
         className="min-h-0 flex-1"
       />
 
-      <DiffSummary stats={stats} />
+      {children}
     </div>
   );
 }

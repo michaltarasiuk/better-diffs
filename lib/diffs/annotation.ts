@@ -1,4 +1,3 @@
-import {parseAsJson} from 'nuqs/server';
 import {z} from 'zod';
 
 import type {DiffLineAnnotation, SelectionSide} from '@pierre/diffs';
@@ -27,10 +26,6 @@ export const FormLocationSchema = z.object({
 export type FormLocation = z.infer<typeof FormLocationSchema>;
 
 export const FormLocationsSchema = z.array(FormLocationSchema);
-
-export const parseAsFormLocations = parseAsJson(
-  FormLocationsSchema,
-).withDefault([]);
 
 export function toFormAnnotation(a: FormLocation): FormAnnotation {
   return {

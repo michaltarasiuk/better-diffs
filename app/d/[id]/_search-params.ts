@@ -1,10 +1,7 @@
-import {createLoader, parseAsString} from 'nuqs/server';
+import 'server-only';
 
-import {parseAsFormLocations} from '@/lib/diffs/annotation';
+import {createLoader} from 'nuqs/server';
 
-export const diffSearchParsers = {
-  q: parseAsString,
-  formLocations: parseAsFormLocations,
-};
+import {diffSearchParsers} from './_search-params.parsers';
 
 export const loadDiffSearchParams = createLoader(diffSearchParsers);
