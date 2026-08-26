@@ -62,17 +62,17 @@ export default async function Page({
   const preloadedData = preloadFileTree(treeOptions);
 
   return (
-    <SessionContext value={session}>
-      <div className="flex h-dvh">
-        <aside aria-label="Files" className="w-80 shrink-0 border-e">
-          <DiffTree handoff={treeHandoff} preloadedData={preloadedData}>
-            <DiffSummary stats={diffStats} />
-          </DiffTree>
-        </aside>
-        <main aria-label="Diff" className="min-w-0 flex-1">
+    <div className="flex h-dvh">
+      <aside aria-label="Files" className="w-80 shrink-0 border-e">
+        <DiffTree handoff={treeHandoff} preloadedData={preloadedData}>
+          <DiffSummary stats={diffStats} />
+        </DiffTree>
+      </aside>
+      <main aria-label="Diff" className="min-w-0 flex-1">
+        <SessionContext value={session}>
           <DiffList items={items} />
-        </main>
-      </div>
-    </SessionContext>
+        </SessionContext>
+      </main>
+    </div>
   );
 }

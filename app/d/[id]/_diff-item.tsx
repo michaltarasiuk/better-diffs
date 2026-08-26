@@ -8,6 +8,7 @@ import {
 } from '@pierre/diffs';
 import {FileDiff} from '@pierre/diffs/react';
 import {LogInIcon, PlusIcon} from 'lucide-react';
+import dynamic from 'next/dynamic';
 import {createContext, use, useState} from 'react';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
@@ -17,9 +18,9 @@ import {DIFF_VIEWER_OPTIONS} from '@/lib/diffs/options';
 import {useKeyDown} from '@/lib/hooks/use-key-down';
 import {isDefined} from '@/lib/utils/is-defined';
 
-import {Editor} from './_editor';
-
 import type {AnnotationMetadata, LineAnnotation} from '@/lib/diffs/annotation';
+
+const Editor = dynamic(() => import('./_editor').then((m) => m.Editor));
 
 const AnnotationIdContext = createContext<string>(null as never);
 
