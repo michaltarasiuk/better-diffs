@@ -94,13 +94,13 @@ function getGitDiff({flags, positionals}: ReturnType<typeof parseCliArgs>) {
     const stderr = String(result.stderr).trim();
 
     throw new Error(
-      stderr.length > 0
+      stderr
         ? `Failed to run \`${command}\`: ${stderr}`
         : `Failed to run \`${command}\` (exit code ${result.exitCode})`,
     );
   }
 
-  const diff = String(result.stdout);
+  const diff = String(result.stdout).trim();
   if (!diff) {
     throw new Error('No changes found');
   }
