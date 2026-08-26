@@ -1,5 +1,5 @@
-export function getHash(url: URL) {
-  const hash = url.hash.slice(1);
+export function getHash(location: Pick<URL, 'hash'> = window.location) {
+  const hash = location.hash.slice(1);
   return hash.length > 0 ? decodeURIComponent(hash) : null;
 }
 

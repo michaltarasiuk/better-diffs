@@ -47,8 +47,7 @@ function DiffListContent({items}: DiffListContentProps) {
 
   useHashChange((e) => {
     assertDefined(virtualizer, 'Missing virtualizer');
-    const url = new URL(e.newURL);
-    const hash = getHash(url);
+    const hash = getHash(new URL(e.newURL));
     if (!isDefined(hash)) {
       return;
     }
