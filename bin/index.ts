@@ -88,19 +88,19 @@ function getGitDiff({flags, positionals}: ReturnType<typeof parseCliArgs>) {
   }
   args.push(...positionals);
 
-  const result = Bun.spawnSync(args);
-  if (!result.success) {
+  const spawn = Bun.spawnSync(args);
+  if (!spawn.success) {
     const command = args.join(' ');
-    const stderr = String(result.stderr).trim();
+    const stderr = String(spawn.stderr).trim();
 
     throw new Error(
       stderr
         ? `Failed to run \`${command}\`: ${stderr}`
-        : `Failed to run \`${command}\` (exit code ${result.exitCode})`,
+        : `Failed to run \`${command}\` (exit code ${spawn.exitCode})`,
     );
   }
 
-  const diff = String(result.stdout).trim();
+  const diff = String(spawn.stdout).trim();
   if (!diff) {
     throw new Error('No changes found');
   }
