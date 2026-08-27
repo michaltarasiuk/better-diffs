@@ -91,7 +91,7 @@ function getGitDiff({flags, positionals}: ReturnType<typeof parseCliArgs>) {
   const result = Bun.spawnSync(args);
   if (!result.success) {
     const command = args.join(' ');
-    const stderr = result.stderr.toString().trim();
+    const stderr = String(result.stderr).trim();
 
     throw new Error(
       stderr
@@ -100,7 +100,7 @@ function getGitDiff({flags, positionals}: ReturnType<typeof parseCliArgs>) {
     );
   }
 
-  const diff = result.stdout.toString().trim();
+  const diff = String(result.stdout).trim();
   if (!diff) {
     throw new Error('No changes found');
   }

@@ -14,7 +14,7 @@ import {useRef} from 'react';
 
 import {useKeyDown} from '@/lib/hooks/use-key-down';
 import {getDiffTreeOptions, type DiffTreeHandoff} from '@/lib/trees/handoff';
-import {isDirectoryPath} from '@/lib/trees/is-directory-path';
+import {isDirectoryPath} from '@/lib/trees/paths';
 import {isDefined} from '@/lib/utils/defined';
 import {setHash} from '@/lib/utils/hash';
 
