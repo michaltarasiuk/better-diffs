@@ -97,7 +97,7 @@ function DiffListContent({items}: DiffListContentProps) {
 
 function useFormLocations() {
   const [formLocations, setFormLocations] = useQueryState(
-    'formLocations',
+    'draft',
     parseAsFormLocations,
   );
 

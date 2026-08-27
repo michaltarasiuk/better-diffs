@@ -36,7 +36,7 @@ export default async function Page({
 }: PageProps<'/d/[id]'>) {
   const sessionPromise = getSession();
 
-  const [{id}, {q: searchQuery, formLocations}] = await Promise.all([
+  const [{id}, {q: searchQuery, draft: formLocations}] = await Promise.all([
     params,
     loadDiffSearchParams(searchParams),
   ]);

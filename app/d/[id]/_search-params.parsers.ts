@@ -8,5 +8,5 @@ export const parseAsFormLocations = parseAsJson(
 
 export const diffSearchParsers = {
   q: parseAsString,
-  formLocations: parseAsFormLocations,
+  draft: parseAsFormLocations,
 };
