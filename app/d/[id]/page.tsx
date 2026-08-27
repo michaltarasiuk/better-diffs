@@ -7,8 +7,8 @@ import {findShareWithPatches, touchShare} from '@/lib/db/shares';
 import {preloadDiffs} from '@/lib/diffs/preload';
 import {computeDiffStats} from '@/lib/diffs/stats';
 import {
-  getDiffTreeOptions,
-  prepareDiffTreeHandoff,
+  getTreeOptions,
+  prepareTreeHandoff,
   sortFilesByTreeOrder,
 } from '@/lib/trees/handoff';
 import {isDefined} from '@/lib/utils/defined';
@@ -50,10 +50,10 @@ export default async function Page({
   const files = share.patches.flatMap((p) => p.files);
   const stats = computeDiffStats(files);
 
-  const treeHandoff = prepareDiffTreeHandoff(files);
+  const treeHandoff = prepareTreeHandoff(files);
   const treeSortedFiles = sortFilesByTreeOrder(files, treeHandoff.sortedPaths);
   const treeOptions: FileTreeOptions = {
-    ...getDiffTreeOptions(treeHandoff),
+    ...getTreeOptions(treeHandoff),
     initialSearchQuery: searchQuery,
   };
 

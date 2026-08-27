@@ -13,7 +13,7 @@ import {useQueryState} from 'nuqs';
 import {useRef} from 'react';
 
 import {useKeyDown} from '@/lib/hooks/use-key-down';
-import {getDiffTreeOptions, type DiffTreeHandoff} from '@/lib/trees/handoff';
+import {getTreeOptions, type TreeHandoff} from '@/lib/trees/handoff';
 import {isDirectoryPath} from '@/lib/trees/paths';
 import {isDefined} from '@/lib/utils/defined';
 import {setHash} from '@/lib/utils/hash';
@@ -21,7 +21,7 @@ import {setHash} from '@/lib/utils/hash';
 import {diffSearchParsers} from './_search-params.parsers';
 
 interface DiffTreeProps {
-  readonly handoff: DiffTreeHandoff;
+  readonly handoff: TreeHandoff;
   readonly preloadedData: FileTreePreloadedData;
   readonly children: React.ReactNode;
 }
@@ -32,7 +32,7 @@ export function DiffTree({handoff, preloadedData, children}: DiffTreeProps) {
     diffSearchParsers.q.withOptions({history: 'replace'}),
   );
   const {model} = useFileTree({
-    ...getDiffTreeOptions(handoff),
+    ...getTreeOptions(handoff),
     initialSearchQuery: searchQuery,
     onSearchChange(v) {
       void setSearchQuery(v);

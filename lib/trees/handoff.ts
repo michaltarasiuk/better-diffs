@@ -18,9 +18,7 @@ const DIFF_TREE_OPTIONS = {
   unsafeCSS: TREES_FOCUS_RING_UNSAFE_CSS,
 } satisfies Partial<FileTreeOptions>;
 
-export type DiffTreeHandoff = ReturnType<typeof prepareDiffTreeHandoff>;
-
-export function prepareDiffTreeHandoff(files: readonly FileDiffMetadata[]) {
+export function prepareTreeHandoff(files: readonly FileDiffMetadata[]) {
   const paths = files.map((f) => f.name);
   const preparedInput = prepareFileTreeInput(paths, {
     flattenEmptyDirectories: true,
@@ -31,6 +29,8 @@ export function prepareDiffTreeHandoff(files: readonly FileDiffMetadata[]) {
     gitStatus: getDiffGitStatus(files),
   };
 }
+
+export type TreeHandoff = ReturnType<typeof prepareTreeHandoff>;
 
 export function sortFilesByTreeOrder<T extends {readonly name: string}>(
   files: readonly T[],
@@ -45,7 +45,7 @@ export function sortFilesByTreeOrder<T extends {readonly name: string}>(
   );
 }
 
-export function getDiffTreeOptions(handoff: DiffTreeHandoff): FileTreeOptions {
+export function getTreeOptions(handoff: TreeHandoff): FileTreeOptions {
   return {
     ...DIFF_TREE_OPTIONS,
     preparedInput: preparePresortedFileTreeInput(handoff.sortedPaths),
