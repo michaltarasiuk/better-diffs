@@ -6,7 +6,7 @@ import {
   type GitStatusEntry,
 } from '@pierre/trees';
 
-import {TREES_FOCUS_RING_UNSAFE_CSS} from './css';
+import {TREES_FOCUS_RING_UNSAFE_CSS} from './unsafe-css';
 
 import type {ChangeTypes, FileDiffMetadata} from '@pierre/diffs';
 
