@@ -1,10 +1,7 @@
 /*
- * @pierre/trees scrollbar gutter override.
- *
- * Pierre measures scrollbar width at runtime and reserves space via
- * --trees-scrollbar-gutter-measured. On Firefox (macOS), classic scrollbars
- * (~11px) shift virtualized scroll padding and git status lanes after
- * hydration; Chromium overlay scrollbars measure 0px and do not.
+ * Pierre measures the scrollbar after the page loads. Firefox adds ~11px;
+ * Chrome adds 0px. List padding and git icons move after hydrate. Set both
+ * gutter vars to 0px so the server and client look the same.
  */
 :global(file-tree-container) {
   --trees-scrollbar-gutter-override: 0px;

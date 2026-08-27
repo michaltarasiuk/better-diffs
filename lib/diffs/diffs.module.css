@@ -1,10 +1,7 @@
 /*
- * @pierre/diffs scrollbar gutter override.
- *
- * Pierre measures scrollbar width at runtime and reserves space via
- * --diffs-scrollbar-gutter. On Firefox (macOS), classic scrollbars (~11px)
- * narrow split-pane columns and add gap between addition/deletion columns;
- * Chromium overlay scrollbars measure 0px and do not.
+ * Pierre measures the scrollbar after the page loads. Firefox adds ~11px;
+ * Chrome adds 0px. Split panes move after hydrate. Set the gutter override to
+ * 0px so the server and client look the same.
  */
 :global(diffs-container),
 :global([data-diffs]) {
