@@ -170,7 +170,7 @@ export function DiffEditor({onDismiss}: DiffEditorProps) {
             />
           </div>
         </Card.Content>
-        <Card.Footer className="flex items-center justify-end gap-2">
+        <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
           {isDefined(onDismiss) && (
             <Button variant="ghost" size="sm" onPress={onDismiss}>
               Cancel

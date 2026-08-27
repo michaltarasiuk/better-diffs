@@ -57,21 +57,24 @@ export default async function Page({
     initialSearchQuery: searchQuery,
   };
 
-  const preloadedData = preloadFileTree(treeOptions);
-  const itemsPromise = preloadDiffs(treeSortedFiles, formLocations);
+  const preloadedTree = preloadFileTree(treeOptions);
+  const preloadedDiffsPromise = preloadDiffs(treeSortedFiles, formLocations);
 
-  const [items, session] = await Promise.all([itemsPromise, sessionPromise]);
+  const [diffs, session] = await Promise.all([
+    preloadedDiffsPromise,
+    sessionPromise,
+  ]);
 
   return (
     <div className="flex h-dvh">
       <aside aria-label="Files" className="w-80 shrink-0 border-e">
-        <DiffTree handoff={treeHandoff} preloadedData={preloadedData}>
+        <DiffTree handoff={treeHandoff} preloadedData={preloadedTree}>
           <DiffSummary stats={stats} />
         </DiffTree>
       </aside>
       <main aria-label="Diff" className="min-w-0 flex-1">
         <SessionContext value={session}>
-          <DiffList items={items} />
+          <DiffList items={diffs} />
         </SessionContext>
       </main>
     </div>
