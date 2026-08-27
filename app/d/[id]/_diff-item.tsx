@@ -165,7 +165,7 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
           Connect your GitHub account to leave comments on this diff.
         </Card.Description>
       </Card.Header>
-      <Card.Footer className="flex items-center justify-end gap-2">
+      <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
         <Button
           id={`${id}-sign-in-cancel`}
           variant="ghost"
