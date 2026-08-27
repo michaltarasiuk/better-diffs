@@ -165,11 +165,16 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
         </Card.Description>
       </Card.Header>
       <Card.Footer className="flex items-center justify-end gap-2">
-        <Button variant="ghost" size="sm" onPress={onDismiss}>
+        <Button
+          id={`${id}-sign-in-cancel`}
+          variant="ghost"
+          size="sm"
+          onPress={onDismiss}
+        >
           Cancel
         </Button>
         <Button
-          id={`${id}-signin`}
+          id={`${id}-sign-in-github`}
           size="sm"
           onPress={() =>
             void authClient.signIn.social({
