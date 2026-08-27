@@ -1,6 +1,6 @@
 import '@/lib/diffs/diffs.module.css';
 
-import {Button, Card} from '@heroui/react';
+import {Button, Card, Spinner} from '@heroui/react';
 import {
   getLineAnnotationName,
   type FileDiffMetadata,
@@ -98,7 +98,7 @@ function GutterUtility({onAddAnnotation}: GutterUtilityProps) {
       onPress={onAddAnnotation}
       className="me-[calc(-1lh+1ch)] h-lh w-[1lh]"
     >
-      <PlusIcon aria-hidden="true" className="size-4" />
+      <PlusIcon aria-hidden className="size-4" />
     </Button>
   );
 }
@@ -154,6 +154,7 @@ interface SignInPromptProps {
 }
 
 function SignInPrompt({onDismiss}: SignInPromptProps) {
+  const [isSigningIn, setIsSigningIn] = useState(false);
   const id = use(AnnotationIdContext);
 
   return (
@@ -176,15 +177,30 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
         <Button
           id={`${id}-sign-in-github`}
           size="sm"
-          onPress={() =>
-            void authClient.signIn.social({
-              provider: 'github',
-              callbackURL: window.location.href,
-            })
-          }
+          isPending={isSigningIn}
+          onPress={async () => {
+            setIsSigningIn(true);
+            try {
+              await authClient.signIn.social({
+                provider: 'github',
+                callbackURL: window.location.href,
+                fetchOptions: {throw: true},
+              });
+            } catch {
+              setIsSigningIn(false);
+            }
+          }}
         >
-          <GitHubIcon aria-hidden="true" className="size-4" />
-          Continue with GitHub
+          {({isPending}) => (
+            <>
+              {isPending ? (
+                <Spinner aria-hidden color="current" size="sm" />
+              ) : (
+                <GitHubIcon aria-hidden className="size-4" />
+              )}
+              Continue with GitHub
+            </>
+          )}
         </Button>
       </Card.Footer>
     </Card>
