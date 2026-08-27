@@ -16,7 +16,7 @@ const NOT_FOUND_PATCH = dedent`
   -better-diffs --open
 `;
 
-export default function NotFound() {
+export default function NotFoundPage() {
   return (
     <main className="flex min-h-dvh items-center justify-center p-8">
       <div className="w-full max-w-2xl">

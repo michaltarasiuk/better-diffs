@@ -30,7 +30,7 @@ export async function generateMetadata({
   return {title: `Diff ${id}`};
 }
 
-export default async function Page({
+export default async function DiffPage({
   params,
   searchParams,
 }: PageProps<'/d/[id]'>) {
