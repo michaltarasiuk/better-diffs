@@ -25,7 +25,7 @@ const DiffEditor = dynamic(() =>
   import('./_diff-editor').then((m) => m.DiffEditor),
 );
 
-const AnnotationIdContext = createContext<string>(null as never);
+const AnnotationNameContext = createContext<string>(null as never);
 
 interface DiffItemProps {
   readonly fileDiff: FileDiffMetadata;
@@ -68,7 +68,7 @@ export function DiffItem({
       }}
       renderAnnotation={(a) => {
         return (
-          <AnnotationIdContext value={getLineAnnotationName(a)}>
+          <AnnotationNameContext value={getLineAnnotationName(a)}>
             <Annotation
               metadata={a.metadata}
               onDismissForm={() => {
@@ -78,7 +78,7 @@ export function DiffItem({
                 });
               }}
             />
-          </AnnotationIdContext>
+          </AnnotationNameContext>
         );
       }}
     />
@@ -155,7 +155,7 @@ interface SignInPromptProps {
 
 function SignInPrompt({onDismiss}: SignInPromptProps) {
   const [isSigningIn, setIsSigningIn] = useState(false);
-  const id = use(AnnotationIdContext);
+  const name = use(AnnotationNameContext);
 
   return (
     <Card variant="secondary" className="m-2 mbs-1">
@@ -167,7 +167,7 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
       </Card.Header>
       <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
         <Button
-          id={`${id}-sign-in-cancel`}
+          id={`${name}-sign-in-cancel`}
           variant="ghost"
           size="sm"
           onPress={onDismiss}
@@ -175,7 +175,7 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
           Cancel
         </Button>
         <Button
-          id={`${id}-sign-in-github`}
+          id={`${name}-sign-in-github`}
           size="sm"
           isPending={isSigningIn}
           onPress={async () => {
