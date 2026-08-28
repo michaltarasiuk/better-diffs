@@ -114,7 +114,7 @@ function Annotation({metadata, onDismissForm}: AnnotationProps) {
     onFocusWithinChange: (v) => setFocusWithin(v),
   });
 
-  useKeyDown(function dismissForm(e) {
+  useKeyDown((e) => {
     if (e.key === 'Escape' && metadata.type === 'form' && isFocusWithin) {
       onDismissForm();
     }
