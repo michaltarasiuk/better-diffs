@@ -45,9 +45,10 @@ function DiffListContent({items}: DiffListContentProps) {
   const {getFormLocations, addFormLocation, removeFormLocation} =
     useFormLocations();
 
-  useHashChange((e) => {
+  useHashChange(function scrollToHash(e) {
     assertDefined(virtualizer, 'Missing virtualizer');
-    const hash = getHash(new URL(e.newURL));
+    const newURL = new URL(e.newURL);
+    const hash = getHash(newURL);
     if (!isDefined(hash)) {
       return;
     }

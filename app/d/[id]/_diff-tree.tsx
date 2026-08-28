@@ -48,7 +48,7 @@ export function DiffTree({handoff, preloadedData, children}: DiffTreeProps) {
   const search = useFileTreeSearch(model);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  useKeyDown((e) => {
+  useKeyDown(function focusSearch(e) {
     if (
       e.key !== '/' ||
       e.metaKey ||
