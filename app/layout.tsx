@@ -23,7 +23,7 @@ export default function RootLayout({children}: LayoutProps<'/'>) {
           />
         )}
       </head>
-      <body className="bg-background text-foreground">
+      <body className="bg-background text-foreground h-dvh">
         <Providers>{children}</Providers>
       </body>
     </html>

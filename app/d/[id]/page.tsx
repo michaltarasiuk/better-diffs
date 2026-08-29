@@ -71,7 +71,7 @@ export default async function DiffPage({
   ]);
 
   return (
-    <div className="flex h-dvh">
+    <div className="flex h-full">
       <aside aria-label="Files" className="w-80 shrink-0 border-e">
         <DiffTree handoff={treeHandoff} preloadedData={preloadedTree}>
           <DiffSummary stats={stats} />
