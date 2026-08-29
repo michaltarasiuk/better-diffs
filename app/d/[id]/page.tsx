@@ -3,7 +3,7 @@ import {notFound} from 'next/navigation';
 
 import {SessionContext} from '@/lib/auth/context';
 import {getSession} from '@/lib/auth/server';
-import {findShareWithPatches, touchShare} from '@/lib/db/shares';
+import {findShare, touchShare} from '@/lib/db/shares';
 import {preloadDiffs} from '@/lib/diffs/preload';
 import {computeDiffStats} from '@/lib/diffs/stats';
 import {
@@ -41,13 +41,13 @@ export default async function DiffPage({
     loadDiffSearchParams(searchParams),
   ]);
 
-  const share = findShareWithPatches(id);
+  const share = findShare(id);
   if (!isDefined(share)) {
     notFound();
   }
   touchShare(id);
 
-  const files = share.patches.flatMap((p) => p.files);
+  const files = share.patches.flatMap((p) => p.files.map((f) => f.metadata));
   const stats = computeDiffStats(files);
 
   const treeHandoff = prepareTreeHandoff(files);

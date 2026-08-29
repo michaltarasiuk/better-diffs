@@ -37,7 +37,7 @@ try {
   } else {
     const diff = getGitDiff({flags, positionals});
 
-    const patches = parsePatchFiles(diff).map((patch) => patch.files);
+    const patches = parsePatchFiles(diff).map((p) => p.files);
     const shared = await uploadDiff(patches);
 
     console.log(shared.url);
