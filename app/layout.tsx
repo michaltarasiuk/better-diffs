@@ -1,8 +1,8 @@
 import './_globals.css';
 
 import Script from 'next/script';
+import {NuqsAdapter} from 'nuqs/adapters/next/app';
 
-import {Providers} from '@/app/_providers';
 import {env} from '@/lib/env';
 
 import type {Metadata} from 'next';
@@ -24,7 +24,7 @@ export default function RootLayout({children}: LayoutProps<'/'>) {
         )}
       </head>
       <body className="bg-background text-foreground h-full">
-        <Providers>{children}</Providers>
+        <NuqsAdapter>{children}</NuqsAdapter>
       </body>
     </html>
   );
