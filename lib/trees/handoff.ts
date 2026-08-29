@@ -1,4 +1,5 @@
 import {
+  FILE_TREE_DEFAULT_ITEM_HEIGHT,
   prepareFileTreeInput,
   preparePresortedFileTreeInput,
   type FileTreeOptions,
@@ -6,19 +7,28 @@ import {
   type GitStatusEntry,
 } from '@pierre/trees';
 
+import {isDefined} from '@/lib/utils/defined';
+
 import {TREES_FOCUS_RING_UNSAFE_CSS} from './unsafe-css';
 
 import type {ChangeTypes, FileDiffMetadata} from '@pierre/diffs';
 
 const DIFF_TREE_OPTIONS = {
   id: 'diff-file-tree',
-  flattenEmptyDirectories: true,
   initialExpansion: 'open',
-  initialVisibleRowCount: Infinity,
+  overscan: 0,
   unsafeCSS: TREES_FOCUS_RING_UNSAFE_CSS,
 } satisfies Partial<FileTreeOptions>;
 
-export function prepareTreeHandoff(files: readonly FileDiffMetadata[]) {
+const DIFF_TREE_SEARCH_HEIGHT = 52;
+const DIFF_TREE_SUMMARY_HEIGHT = 52;
+
+export type TreeHandoff = ReturnType<typeof prepareTreeHandoff>;
+
+export function prepareTreeHandoff(
+  files: readonly FileDiffMetadata[],
+  {viewportHeight}: {readonly viewportHeight?: number} = {},
+) {
   const paths = files.map((f) => f.name);
   const preparedInput = prepareFileTreeInput(paths, {
     flattenEmptyDirectories: true,
@@ -27,10 +37,19 @@ export function prepareTreeHandoff(files: readonly FileDiffMetadata[]) {
   return {
     sortedPaths: preparedInput.paths,
     gitStatus: getDiffGitStatus(files),
+    ...(isDefined(viewportHeight) && {
+      initialVisibleRowCount: Math.max(
+        1,
+        Math.ceil(
+          (viewportHeight -
+            DIFF_TREE_SEARCH_HEIGHT -
+            DIFF_TREE_SUMMARY_HEIGHT) /
+            FILE_TREE_DEFAULT_ITEM_HEIGHT,
+        ),
+      ),
+    }),
   };
 }
-
-export type TreeHandoff = ReturnType<typeof prepareTreeHandoff>;
 
 export function sortFilesByTreeOrder<T extends {readonly name: string}>(
   files: readonly T[],
@@ -50,6 +69,7 @@ export function getTreeOptions(handoff: TreeHandoff): FileTreeOptions {
     ...DIFF_TREE_OPTIONS,
     preparedInput: preparePresortedFileTreeInput(handoff.sortedPaths),
     gitStatus: handoff.gitStatus,
+    initialVisibleRowCount: handoff.initialVisibleRowCount,
   };
 }
 

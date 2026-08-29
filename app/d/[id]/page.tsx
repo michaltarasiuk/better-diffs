@@ -1,4 +1,5 @@
 import {preloadFileTree} from '@pierre/trees/ssr';
+import {headers} from 'next/headers';
 import {notFound} from 'next/navigation';
 
 import {SessionContext} from '@/lib/auth/context';
@@ -11,6 +12,7 @@ import {
   prepareTreeHandoff,
   sortFilesByTreeOrder,
 } from '@/lib/trees/handoff';
+import {parseClientHints} from '@/lib/utils/client-hints';
 import {isDefined} from '@/lib/utils/defined';
 
 import {DiffList} from './_diff-list';
@@ -18,7 +20,6 @@ import {DiffSummary} from './_diff-summary';
 import {DiffTree} from './_diff-tree';
 import {loadDiffSearchParams} from './_search-params';
 
-import type {FileTreeOptions} from '@pierre/trees';
 import type {Metadata} from 'next';
 
 export const dynamic = 'force-dynamic';
@@ -36,10 +37,12 @@ export default async function DiffPage({
 }: PageProps<'/d/[id]'>) {
   const sessionPromise = getSession();
 
-  const [{id}, {q: searchQuery, draft: formLocations}] = await Promise.all([
-    params,
-    loadDiffSearchParams(searchParams),
-  ]);
+  const [{id}, {q: searchQuery, draft: formLocations}, {viewportHeight}] =
+    await Promise.all([
+      params,
+      loadDiffSearchParams(searchParams),
+      headers().then(parseClientHints),
+    ]);
 
   const share = findShare(id);
   if (!isDefined(share)) {
@@ -50,9 +53,11 @@ export default async function DiffPage({
   const files = share.patches.flatMap((p) => p.files.map((f) => f.metadata));
   const stats = computeDiffStats(files);
 
-  const treeHandoff = prepareTreeHandoff(files);
+  const treeHandoff = prepareTreeHandoff(files, {
+    viewportHeight,
+  });
   const treeSortedFiles = sortFilesByTreeOrder(files, treeHandoff.sortedPaths);
-  const treeOptions: FileTreeOptions = {
+  const treeOptions = {
     ...getTreeOptions(treeHandoff),
     initialSearchQuery: searchQuery,
   };
