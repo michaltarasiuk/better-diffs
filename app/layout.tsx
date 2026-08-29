@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({children}: LayoutProps<'/'>) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-dvh">
       <head>
         {env.NODE_ENV === 'development' && (
           <Script
@@ -23,7 +23,7 @@ export default function RootLayout({children}: LayoutProps<'/'>) {
           />
         )}
       </head>
-      <body className="bg-background text-foreground h-dvh">
+      <body className="bg-background text-foreground h-full">
         <Providers>{children}</Providers>
       </body>
     </html>
