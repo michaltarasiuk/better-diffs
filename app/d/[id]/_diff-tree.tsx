@@ -19,11 +19,11 @@ import {diffSearchParsers} from './_search-params';
 
 interface DiffTreeProps {
   readonly handoff: TreeHandoff;
-  readonly preloadedData: FileTreePreloadedData;
+  readonly preloaded: FileTreePreloadedData;
   readonly children: React.ReactNode;
 }
 
-export function DiffTree({handoff, preloadedData, children}: DiffTreeProps) {
+export function DiffTree({handoff, preloaded, children}: DiffTreeProps) {
   const [searchQuery, setSearchQuery] = useQueryState(
     'q',
     diffSearchParsers.q.withOptions({history: 'replace'}),
@@ -97,7 +97,7 @@ export function DiffTree({handoff, preloadedData, children}: DiffTreeProps) {
       <FileTree
         aria-label="Changed files"
         model={model}
-        preloadedData={preloadedData}
+        preloadedData={preloaded}
         className="min-h-0 flex-1"
       />
 
