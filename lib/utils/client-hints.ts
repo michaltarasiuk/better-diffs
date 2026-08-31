@@ -2,7 +2,7 @@ import 'server-only';
 
 import {z} from 'zod';
 
-const ViewportHeightSchema = z.coerce.number().positive();
+const ViewportHeightSchema = z.coerce.number().int().positive();
 
 export function parseClientHints(headers: Headers) {
   const viewportHeight = ViewportHeightSchema.safeParse(

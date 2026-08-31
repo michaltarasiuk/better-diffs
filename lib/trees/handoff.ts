@@ -16,7 +16,7 @@ import type {ChangeTypes, FileDiffMetadata} from '@pierre/diffs';
 const DIFF_TREE_OPTIONS = {
   id: 'diff-file-tree',
   initialExpansion: 'open',
-  overscan: 0,
+  fileTreeSearchMode: 'hide-non-matches',
   unsafeCSS: TREES_FOCUS_RING_UNSAFE_CSS,
 } satisfies Partial<FileTreeOptions>;
 
