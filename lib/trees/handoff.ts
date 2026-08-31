@@ -53,14 +53,10 @@ export function prepareTreeHandoff(
 
 export function sortFilesByTreeOrder<T extends {readonly name: string}>(
   files: readonly T[],
-  sortedPaths: readonly string[],
+  order: readonly string[],
 ) {
-  const order = new Map(sortedPaths.map((p, i) => [p, i]));
-
   return files.toSorted(
-    (a, b) =>
-      (order.get(a.name) ?? Number.POSITIVE_INFINITY) -
-      (order.get(b.name) ?? Number.POSITIVE_INFINITY),
+    (a, b) => order.indexOf(a.name) - order.indexOf(b.name),
   );
 }
 
