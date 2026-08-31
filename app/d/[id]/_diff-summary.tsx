@@ -4,11 +4,7 @@ import {GitCompareIcon} from 'lucide-react';
 
 import {formatDiffStat, type DiffStats} from '@/lib/diffs/stats';
 
-interface DiffSummaryProps {
-  readonly stats: DiffStats;
-}
-
-export function DiffSummary({stats}: DiffSummaryProps) {
+export function DiffSummary({stats}: {readonly stats: DiffStats}) {
   return (
     <Accordion defaultExpandedKeys={['stats']}>
       <Accordion.Item id="stats">

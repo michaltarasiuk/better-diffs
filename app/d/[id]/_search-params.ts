@@ -1,7 +1,7 @@
-import 'server-only';
+import {createLoader, parseAsString} from 'nuqs/server';
 
-import {createLoader} from 'nuqs/server';
-
-import {diffSearchParsers} from './_search-params.parsers';
+export const diffSearchParsers = {
+  q: parseAsString,
+};
 
 export const loadDiffSearchParams = createLoader(diffSearchParsers);

@@ -15,7 +15,7 @@ import {
 import {parseClientHints} from '@/lib/utils/client-hints';
 import {isDefined} from '@/lib/utils/defined';
 
-import {DiffList} from './_diff-list';
+import {DiffItem} from './_diff-item';
 import {DiffSummary} from './_diff-summary';
 import {DiffTree} from './_diff-tree';
 import {loadDiffSearchParams} from './_search-params';
@@ -37,12 +37,11 @@ export default async function DiffPage({
 }: PageProps<'/d/[id]'>) {
   const sessionPromise = getSession();
 
-  const [{id}, {q: searchQuery, draft: formLocations}, {viewportHeight}] =
-    await Promise.all([
-      params,
-      loadDiffSearchParams(searchParams),
-      headers().then(parseClientHints),
-    ]);
+  const [{id}, {q: searchQuery}, {viewportHeight}] = await Promise.all([
+    params,
+    loadDiffSearchParams(searchParams),
+    headers().then(parseClientHints),
+  ]);
 
   const share = findShare(id);
   if (!isDefined(share)) {
@@ -63,7 +62,7 @@ export default async function DiffPage({
   };
 
   const preloadedTree = preloadFileTree(treeOptions);
-  const preloadedDiffsPromise = preloadDiffs(treeSortedFiles, formLocations);
+  const preloadedDiffsPromise = preloadDiffs(treeSortedFiles);
 
   const [diffs, session] = await Promise.all([
     preloadedDiffsPromise,
@@ -77,9 +76,11 @@ export default async function DiffPage({
           <DiffSummary stats={stats} />
         </DiffTree>
       </aside>
-      <main aria-label="Diff" className="min-w-0 flex-1">
+      <main aria-label="Diff" className="min-w-0 flex-1 overflow-y-auto">
         <SessionContext value={session}>
-          <DiffList items={diffs} />
+          {diffs.map((d) => (
+            <DiffItem key={d.fileDiff.name} preloaded={d} />
+          ))}
         </SessionContext>
       </main>
     </div>

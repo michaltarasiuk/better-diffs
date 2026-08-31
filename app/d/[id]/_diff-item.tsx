@@ -1,11 +1,9 @@
+'use client';
+
 import '@/lib/diffs/diffs.module.css';
 
 import {Button, Card, Spinner} from '@heroui/react';
-import {
-  getLineAnnotationName,
-  type FileDiffMetadata,
-  type GetHoveredLineResult,
-} from '@pierre/diffs';
+import {getLineAnnotationName} from '@pierre/diffs';
 import {FileDiff} from '@pierre/diffs/react';
 import {PlusIcon} from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -14,12 +12,18 @@ import {useFocusWithin} from 'react-aria/useFocusWithin';
 
 import {authClient} from '@/lib/auth/client';
 import {SessionContext} from '@/lib/auth/context';
-import {DIFF_VIEWER_OPTIONS} from '@/lib/diffs/options';
+import {
+  DIFF_VIEWER_OPTIONS,
+  type AnnotationMetadata,
+} from '@/lib/diffs/options';
 import {useKeyDown} from '@/lib/hooks/use-key-down';
 import {GitHubIcon} from '@/lib/icons/github-icon';
 import {isDefined} from '@/lib/utils/defined';
 
-import type {AnnotationMetadata, LineAnnotation} from '@/lib/diffs/annotation';
+import type {
+  DiffLineAnnotation,
+  PreloadFileDiffResult,
+} from '@pierre/diffs/ssr';
 
 const DiffEditor = dynamic(() =>
   import('./_diff-editor').then((m) => m.DiffEditor),
@@ -28,37 +32,35 @@ const DiffEditor = dynamic(() =>
 const AnnotationNameContext = createContext<string>(null as never);
 
 interface DiffItemProps {
-  readonly fileDiff: FileDiffMetadata;
-  readonly prerenderedHTML: string;
-  readonly lineAnnotations: LineAnnotation[];
-  readonly onAddFormAnnotation: (l: GetHoveredLineResult<'diff'>) => void;
-  readonly onRemoveFormAnnotation: (l: GetHoveredLineResult<'diff'>) => void;
+  preloaded: PreloadFileDiffResult<AnnotationMetadata>;
 }
 
-export function DiffItem({
-  fileDiff,
-  prerenderedHTML,
-  lineAnnotations,
-  onAddFormAnnotation,
-  onRemoveFormAnnotation,
-}: DiffItemProps) {
+export function DiffItem({preloaded}: DiffItemProps) {
+  const [lineAnnotations, setLineAnnotations] = useState<
+    DiffLineAnnotation<AnnotationMetadata>[]
+  >([]);
+
   return (
     <FileDiff
-      fileDiff={fileDiff}
-      prerenderedHTML={prerenderedHTML}
+      {...preloaded}
       lineAnnotations={lineAnnotations}
       options={{
         ...DIFF_VIEWER_OPTIONS,
         enableGutterUtility: true,
         enableLineSelection: true,
       }}
-      renderGutterUtility={(g) => {
+      renderGutterUtility={(getHoveredLine) => {
         return (
           <GutterUtility
             onAddAnnotation={() => {
-              const l = g();
-              if (isDefined(l)) {
-                onAddFormAnnotation(l);
+              const hoveredLine = getHoveredLine();
+
+              if (isDefined(hoveredLine)) {
+                const {side, lineNumber} = hoveredLine;
+                setLineAnnotations((la) => [
+                  ...la,
+                  {side, lineNumber, metadata: {type: 'form'}},
+                ]);
               } else {
                 console.error('No hovered line');
               }
@@ -72,10 +74,12 @@ export function DiffItem({
             <Annotation
               metadata={a.metadata}
               onDismissForm={() => {
-                onRemoveFormAnnotation({
-                  lineNumber: a.lineNumber,
-                  side: a.side,
-                });
+                const {side, lineNumber} = a;
+                setLineAnnotations((la) =>
+                  la.filter(
+                    (a) => side !== a.side || lineNumber !== a.lineNumber,
+                  ),
+                );
               }}
             />
           </AnnotationNameContext>

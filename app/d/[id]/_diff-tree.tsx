@@ -14,11 +14,8 @@ import {useRef} from 'react';
 
 import {useKeyDown} from '@/lib/hooks/use-key-down';
 import {getTreeOptions, type TreeHandoff} from '@/lib/trees/handoff';
-import {isDirectoryPath} from '@/lib/trees/paths';
-import {isDefined} from '@/lib/utils/defined';
-import {setHash} from '@/lib/utils/hash';
 
-import {diffSearchParsers} from './_search-params.parsers';
+import {diffSearchParsers} from './_search-params';
 
 interface DiffTreeProps {
   readonly handoff: TreeHandoff;
@@ -36,13 +33,6 @@ export function DiffTree({handoff, preloadedData, children}: DiffTreeProps) {
     initialSearchQuery: searchQuery,
     onSearchChange(v) {
       void setSearchQuery(v);
-    },
-    onSelectionChange([s, ...rest]) {
-      const singleSelection = isDefined(s) && rest.length === 0;
-      if (!singleSelection || isDirectoryPath(s)) {
-        return;
-      }
-      setHash(s);
     },
   });
   const search = useFileTreeSearch(model);
