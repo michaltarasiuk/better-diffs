@@ -275,16 +275,16 @@ function ToolbarPlugin() {
       }),
       editor.registerCommand(
         CAN_UNDO_COMMAND,
-        (p) => {
-          setCanUndo(p);
+        (canUndo) => {
+          setCanUndo(canUndo);
           return false;
         },
         COMMAND_PRIORITY_LOW,
       ),
       editor.registerCommand(
         CAN_REDO_COMMAND,
-        (p) => {
-          setCanRedo(p);
+        (canRedo) => {
+          setCanRedo(canRedo);
           return false;
         },
         COMMAND_PRIORITY_LOW,
@@ -349,8 +349,8 @@ function ToolbarPlugin() {
         selectionMode="multiple"
         size="sm"
         selectedKeys={textFormats}
-        onSelectionChange={(s) => {
-          const toggled = s.symmetricDifference(textFormats);
+        onSelectionChange={(selection) => {
+          const toggled = selection.symmetricDifference(textFormats);
           for (const f of toggled) {
             editor.dispatchCommand(FORMAT_TEXT_COMMAND, f as TextFormatType);
           }

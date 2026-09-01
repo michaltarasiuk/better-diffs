@@ -72,9 +72,9 @@ interface AnnotationBodyProps {
 }
 
 function AnnotationBody({fileId, onDismiss}: AnnotationBodyProps) {
-  const [isFocusWithin, setFocusWithin] = useState(false);
+  const [isFocusWithin, setIsFocusWithin] = useState(false);
   const {focusWithinProps} = useFocusWithin({
-    onFocusWithinChange: (isFocusWithin) => setFocusWithin(isFocusWithin),
+    onFocusWithinChange: (isFocusWithin) => setIsFocusWithin(isFocusWithin),
   });
 
   const {metadata} = use(AnnotationContext);

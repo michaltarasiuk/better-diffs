@@ -30,13 +30,11 @@ interface DiffCodeViewProps {
 }
 
 export function DiffCodeView({files}: DiffCodeViewProps) {
-  const viewerRef = use(DiffViewerContext);
-
   const [items, setItems] = useState<readonly DiffItem[]>(() =>
-    files.map((f) => ({
-      id: f.id,
+    files.map((file) => ({
+      id: file.id,
       type: 'diff',
-      fileDiff: f.metadata,
+      fileDiff: file.metadata,
       annotations: [],
       version: 0,
     })),
@@ -44,19 +42,21 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
   const [selectedLines, setSelectedLines] =
     useState<CodeViewLineSelection | null>(null);
 
+  const viewerRef = use(DiffViewerContext);
+
   function updateAnnotations(
     fileId: string,
-    update: (a: readonly DiffAnnotation[]) => DiffAnnotation[],
+    update: (annotations: readonly DiffAnnotation[]) => DiffAnnotation[],
   ) {
-    setItems((i) =>
-      i.map((di) =>
-        di.id === fileId
+    setItems((items) =>
+      items.map((item) =>
+        item.id === fileId
           ? {
-              ...di,
-              annotations: update(di.annotations ?? []),
-              version: (di.version ?? 0) + 1,
+              ...item,
+              annotations: update(item.annotations ?? []),
+              version: (item.version ?? 0) + 1,
             }
-          : di,
+          : item,
       ),
     );
   }
@@ -69,26 +69,25 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
       options={CODE_VIEW_OPTIONS}
       style={CODE_VIEW_STYLE}
       onSelectedLinesChange={setSelectedLines}
-      renderGutterUtility={(getHoveredLine, di) => (
+      renderGutterUtility={(getHoveredLine, item) => (
         <GutterUtility
           onAddAnnotation={() => {
             const line = getHoveredLine();
             if (!isDefined(line) || !isDiffLine(line)) {
-              console.error('No hovered line');
               return;
             }
 
             const {side, lineNumber} = line;
-            updateAnnotations(di.id, (a) =>
+            updateAnnotations(item.id, (annotations) =>
               sortAnnotations([
-                ...a,
+                ...annotations,
                 {side, lineNumber, metadata: {type: 'form'}},
               ]),
             );
           }}
         />
       )}
-      renderAnnotation={(annotation, di) => {
+      renderAnnotation={(annotation, item) => {
         if (!isDiffLine(annotation)) {
           return null;
         }
@@ -96,10 +95,10 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
         return (
           <Annotation
             annotation={annotation}
-            fileId={di.id}
+            fileId={item.id}
             onDismiss={() => {
-              updateAnnotations(di.id, (a) =>
-                a.filter((an) => an !== annotation),
+              updateAnnotations(item.id, (annotations) =>
+                annotations.toSpliced(annotations.indexOf(annotation), 1),
               );
             }}
           />
