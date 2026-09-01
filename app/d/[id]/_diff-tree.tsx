@@ -29,8 +29,7 @@ export function DiffTree({handoff, preloaded, children}: DiffTreeProps) {
     diffSearchParsers.q.withOptions({history: 'replace'}),
   );
   const {model} = useFileTree({
-    ...getTreeOptions(handoff),
-    initialSearchQuery: searchQuery,
+    ...getTreeOptions(handoff, {searchQuery}),
     onSearchChange(v) {
       void setSearchQuery(v);
     },

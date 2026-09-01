@@ -61,21 +61,19 @@ export function AnnotatedFileDiff({fileId, preloaded}: AnnotatedFileDiffProps) {
         enableGutterUtility: true,
         enableLineSelection: true,
       }}
-      renderGutterUtility={(g) => {
-        return (
-          <GutterUtility
-            onAddAnnotation={() => {
-              const l = g();
-              if (isDefined(l)) {
-                const {side, lineNumber} = l;
-                addAnnotation({side, lineNumber, metadata: {type: 'form'}});
-              } else {
-                console.error('No hovered line');
-              }
-            }}
-          />
-        );
-      }}
+      renderGutterUtility={(g) => (
+        <GutterUtility
+          onAddAnnotation={() => {
+            const l = g();
+            if (isDefined(l)) {
+              const {side, lineNumber} = l;
+              addAnnotation({side, lineNumber, metadata: {type: 'form'}});
+            } else {
+              console.error('No hovered line');
+            }
+          }}
+        />
+      )}
       renderAnnotation={(a) => {
         return (
           <AnnotationContext value={a}>

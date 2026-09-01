@@ -4,10 +4,10 @@ export function computeDiffStats(files: readonly FileDiffMetadata[]) {
   let additions = 0;
   let deletions = 0;
 
-  for (const file of files) {
-    for (const hunk of file.hunks) {
-      additions += hunk.additionLines;
-      deletions += hunk.deletionLines;
+  for (const f of files) {
+    for (const h of f.hunks) {
+      additions += h.additionLines;
+      deletions += h.deletionLines;
     }
   }
 

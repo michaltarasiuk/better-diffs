@@ -55,16 +55,16 @@ export function sortFilesByTreeOrder<T extends {readonly name: string}>(
   return files.toSorted((a, b) => rankOf(a) - rankOf(b));
 }
 
-export function getTreeOptions({
-  paths,
-  gitStatus,
-  initialVisibleRowCount,
-}: TreeHandoff): FileTreeOptions {
+export function getTreeOptions(
+  {paths, gitStatus, initialVisibleRowCount}: TreeHandoff,
+  {searchQuery}: {readonly searchQuery?: string | null} = {},
+): FileTreeOptions {
   return {
     ...DIFF_TREE_OPTIONS,
     preparedInput: preparePresortedFileTreeInput(paths),
     gitStatus,
     initialVisibleRowCount,
+    initialSearchQuery: searchQuery,
   };
 }
 

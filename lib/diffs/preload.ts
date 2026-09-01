@@ -6,7 +6,7 @@ import {DIFF_VIEWER_OPTIONS} from './options';
 
 import type {FileDiffMetadata} from '@pierre/diffs';
 
-interface DiffFile {
+export interface DiffFile {
   readonly id: string;
   readonly metadata: FileDiffMetadata;
 }

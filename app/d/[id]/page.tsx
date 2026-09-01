@@ -1,23 +1,20 @@
 import {preloadFileTree} from '@pierre/trees/ssr';
 import {headers} from 'next/headers';
 import {notFound} from 'next/navigation';
+import {Suspense} from 'react';
 
-import {SessionContext} from '@/lib/auth/context';
-import {getSession} from '@/lib/auth/server';
+import {SessionProvider} from '@/lib/auth/provider';
 import {visitShare} from '@/lib/db/shares';
-import {preloadDiffs} from '@/lib/diffs/preload';
-import {computeDiffStats} from '@/lib/diffs/stats';
-import {
-  getTreeOptions,
-  prepareTreeHandoff,
-  sortFilesByTreeOrder,
-} from '@/lib/trees/handoff';
+import {preloadDiffs, type DiffFile} from '@/lib/diffs/preload';
+import {getTreeOptions} from '@/lib/trees/handoff';
 import {parseClientHints} from '@/lib/utils/client-hints';
 import {isDefined} from '@/lib/utils/defined';
 
 import {AnnotatedFileDiff} from './_diff-file';
+import {DiffFilesShell, diffFilesSpinner} from './_diff-files-shell';
 import {DiffSummary} from './_diff-summary';
 import {DiffTree} from './_diff-tree';
+import {prepareDiffView} from './_diff-view';
 import {loadDiffSearchParams} from './_search-params';
 
 import type {Metadata} from 'next';
@@ -35,57 +32,50 @@ export default async function DiffPage({
   params,
   searchParams,
 }: PageProps<'/d/[id]'>) {
-  const sessionPromise = getSession();
-
   const [{id}, {q: searchQuery}, {viewportHeight}] = await Promise.all([
     params,
     loadDiffSearchParams(searchParams),
     headers().then(parseClientHints),
   ]);
 
-  const files = visitShare(id);
-  if (!isDefined(files)) {
+  const share = visitShare(id);
+  if (!isDefined(share)) {
     notFound();
   }
 
-  const metadata = files.map((f) => f.metadata);
-  const stats = computeDiffStats(metadata);
-
-  const treeHandoff = prepareTreeHandoff(metadata, {
-    viewportHeight,
-  });
-  const treeSortedFiles = sortFilesByTreeOrder(files, treeHandoff.paths);
-  const treeOptions = {
-    ...getTreeOptions(treeHandoff),
-    initialSearchQuery: searchQuery,
-  };
-
-  const preloadedTree = preloadFileTree(treeOptions);
-  const preloadedDiffsPromise = preloadDiffs(treeSortedFiles);
-
-  const [diffs, session] = await Promise.all([
-    preloadedDiffsPromise,
-    sessionPromise,
-  ]);
+  const {tree, stats, files} = prepareDiffView(share, {viewportHeight});
 
   return (
     <div className="flex h-full">
       <aside aria-label="Files" className="w-80 shrink-0 border-e">
-        <DiffTree handoff={treeHandoff} preloaded={preloadedTree}>
+        <DiffTree
+          handoff={tree}
+          preloaded={preloadFileTree(getTreeOptions(tree, {searchQuery}))}
+        >
           <DiffSummary stats={stats} />
         </DiffTree>
       </aside>
       <main aria-label="Diff" className="min-w-0 flex-1 overflow-y-auto">
-        <SessionContext value={session}>
-          {diffs.map(({fileId, preloaded}) => (
-            <AnnotatedFileDiff
-              key={fileId}
-              fileId={fileId}
-              preloaded={preloaded}
-            />
-          ))}
-        </SessionContext>
+        <Suspense fallback={diffFilesSpinner}>
+          <SessionProvider>
+            <DiffFilesShell>
+              <DiffFiles files={files} />
+            </DiffFilesShell>
+          </SessionProvider>
+        </Suspense>
       </main>
     </div>
   );
+}
+
+interface DiffFilesProps {
+  readonly files: readonly DiffFile[];
+}
+
+async function DiffFiles({files}: DiffFilesProps) {
+  const preloadedFiles = await preloadDiffs(files);
+
+  return preloadedFiles.map(({fileId, preloaded}) => (
+    <AnnotatedFileDiff key={fileId} fileId={fileId} preloaded={preloaded} />
+  ));
 }
