@@ -54,7 +54,7 @@ export default async function DiffPage({
   const treeHandoff = prepareTreeHandoff(metadata, {
     viewportHeight,
   });
-  const treeSortedFiles = sortFilesByTreeOrder(files, treeHandoff.sortedPaths);
+  const treeSortedFiles = sortFilesByTreeOrder(files, treeHandoff.paths);
   const treeOptions = {
     ...getTreeOptions(treeHandoff),
     initialSearchQuery: searchQuery,

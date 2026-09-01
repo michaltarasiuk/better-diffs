@@ -11,7 +11,7 @@ import {isDefined} from '@/lib/utils/defined';
 
 import {TREES_FOCUS_RING_UNSAFE_CSS} from './unsafe-css';
 
-import type {ChangeTypes as ChangeType, FileDiffMetadata} from '@pierre/diffs';
+import type {ChangeTypes, FileDiffMetadata} from '@pierre/diffs';
 
 const DIFF_TREE_OPTIONS = {
   id: 'diff-file-tree',
@@ -31,24 +31,16 @@ export function prepareTreeHandoff(
   files: readonly FileDiffMetadata[],
   {viewportHeight}: {readonly viewportHeight?: number} = {},
 ) {
-  const paths = files.map((f) => f.name);
-  const preparedInput = prepareFileTreeInput(paths, {
-    flattenEmptyDirectories: true,
-  });
+  const {paths} = prepareFileTreeInput(
+    files.map((f) => f.name),
+    {flattenEmptyDirectories: true},
+  );
 
   return {
-    sortedPaths: preparedInput.paths,
-    gitStatus: getGitStatus(files),
+    paths,
+    gitStatus: getGitStatusEntries(files),
     initialVisibleRowCount: isDefined(viewportHeight)
-      ? Math.max(
-          1,
-          Math.ceil(
-            (viewportHeight -
-              DIFF_TREE_SEARCH_HEIGHT -
-              DIFF_TREE_SUMMARY_HEIGHT) /
-              FILE_TREE_DEFAULT_ITEM_HEIGHT,
-          ),
-        )
+      ? getInitialVisibleRowCount(viewportHeight)
       : DEFAULT_INITIAL_VISIBLE_ROW_COUNT,
   };
 }
@@ -57,21 +49,26 @@ export function sortFilesByTreeOrder<T extends {readonly name: string}>(
   files: readonly T[],
   order: readonly string[],
 ) {
-  return files.toSorted(
-    (a, b) => order.indexOf(a.name) - order.indexOf(b.name),
-  );
+  const rankByPath = new Map(order.map((path, rank) => [path, rank]));
+  const rankOf = (file: T) => rankByPath.get(file.name) ?? order.length;
+
+  return files.toSorted((a, b) => rankOf(a) - rankOf(b));
 }
 
-export function getTreeOptions(handoff: TreeHandoff): FileTreeOptions {
+export function getTreeOptions({
+  paths,
+  gitStatus,
+  initialVisibleRowCount,
+}: TreeHandoff): FileTreeOptions {
   return {
     ...DIFF_TREE_OPTIONS,
-    preparedInput: preparePresortedFileTreeInput(handoff.sortedPaths),
-    gitStatus: handoff.gitStatus,
-    initialVisibleRowCount: handoff.initialVisibleRowCount,
+    preparedInput: preparePresortedFileTreeInput(paths),
+    gitStatus,
+    initialVisibleRowCount,
   };
 }
 
-function getGitStatus(
+function getGitStatusEntries(
   files: readonly FileDiffMetadata[],
 ): readonly GitStatusEntry[] {
   return files.map((f) => ({
@@ -80,7 +77,14 @@ function getGitStatus(
   }));
 }
 
-function changeTypeToGitStatus(t: ChangeType): GitStatus {
+function getInitialVisibleRowCount(viewportHeight: number) {
+  const rowsHeight =
+    viewportHeight - DIFF_TREE_SEARCH_HEIGHT - DIFF_TREE_SUMMARY_HEIGHT;
+
+  return Math.max(1, Math.ceil(rowsHeight / FILE_TREE_DEFAULT_ITEM_HEIGHT));
+}
+
+function changeTypeToGitStatus(t: ChangeTypes): GitStatus {
   switch (t) {
     case 'new':
       return 'added';
