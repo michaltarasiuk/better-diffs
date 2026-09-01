@@ -11,7 +11,7 @@ import {isDefined} from '@/lib/utils/defined';
 
 import {TREES_FOCUS_RING_UNSAFE_CSS} from './unsafe-css';
 
-import type {ChangeTypes, FileDiffMetadata} from '@pierre/diffs';
+import type {ChangeTypes as ChangeType, FileDiffMetadata} from '@pierre/diffs';
 
 const DIFF_TREE_OPTIONS = {
   id: 'diff-file-tree',
@@ -38,9 +38,17 @@ export function prepareTreeHandoff(
 
   return {
     sortedPaths: preparedInput.paths,
-    gitStatus: getDiffGitStatus(files),
+    gitStatus: getGitStatus(files),
     initialVisibleRowCount: isDefined(viewportHeight)
-      ? computeInitialVisibleRowCount(viewportHeight)
+      ? Math.max(
+          1,
+          Math.ceil(
+            (viewportHeight -
+              DIFF_TREE_SEARCH_HEIGHT -
+              DIFF_TREE_SUMMARY_HEIGHT) /
+              FILE_TREE_DEFAULT_ITEM_HEIGHT,
+          ),
+        )
       : DEFAULT_INITIAL_VISIBLE_ROW_COUNT,
   };
 }
@@ -63,26 +71,16 @@ export function getTreeOptions(handoff: TreeHandoff): FileTreeOptions {
   };
 }
 
-function getDiffGitStatus(
+function getGitStatus(
   files: readonly FileDiffMetadata[],
 ): readonly GitStatusEntry[] {
   return files.map((f) => ({
     path: f.name,
-    status: fileTypeToGitStatus(f.type),
+    status: changeTypeToGitStatus(f.type),
   }));
 }
 
-function computeInitialVisibleRowCount(viewportHeight: number) {
-  return Math.max(
-    1,
-    Math.ceil(
-      (viewportHeight - DIFF_TREE_SEARCH_HEIGHT - DIFF_TREE_SUMMARY_HEIGHT) /
-        FILE_TREE_DEFAULT_ITEM_HEIGHT,
-    ),
-  );
-}
-
-function fileTypeToGitStatus(t: ChangeTypes): GitStatus {
+function changeTypeToGitStatus(t: ChangeType): GitStatus {
   switch (t) {
     case 'new':
       return 'added';
