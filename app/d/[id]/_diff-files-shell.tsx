@@ -3,13 +3,11 @@
 import {Spinner} from '@heroui/react';
 import {useSyncExternalStore} from 'react';
 
-// Pierre FileDiff emits declarative shadow DOM during SSR but attaches it
-// imperatively on the client. Defer rendering children until after hydration.
-export function DiffFilesShell({
-  children,
-}: {
+interface DiffFilesShellProps {
   readonly children: React.ReactNode;
-}) {
+}
+
+export function DiffFilesShell({children}: DiffFilesShellProps) {
   const mounted = useSyncExternalStore(
     () => () => {},
     () => true,

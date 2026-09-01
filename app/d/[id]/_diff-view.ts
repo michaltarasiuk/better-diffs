@@ -3,26 +3,23 @@ import {prepareTreeHandoff, sortFilesByTreeOrder} from '@/lib/trees/handoff';
 
 import type {FileDiffMetadata} from '@pierre/diffs';
 
-interface ShareFile {
+export interface ShareFile {
   readonly id: string;
   readonly name: string;
   readonly metadata: FileDiffMetadata;
 }
 
-interface PrepareDiffViewOptions {
-  readonly viewportHeight?: number;
-}
-
 export function prepareDiffView(
   files: readonly ShareFile[],
-  {viewportHeight}: PrepareDiffViewOptions = {},
+  {viewportHeight}: {readonly viewportHeight?: number} = {},
 ) {
   const metadata = files.map((f) => f.metadata);
   const tree = prepareTreeHandoff(metadata, {viewportHeight});
 
   return {
-    stats: computeDiffStats(metadata),
     tree,
+    stats: computeDiffStats(metadata),
     files: sortFilesByTreeOrder(files, tree.paths),
+    fileIdsByPath: Object.fromEntries(files.map((f) => [f.name, f.id])),
   };
 }

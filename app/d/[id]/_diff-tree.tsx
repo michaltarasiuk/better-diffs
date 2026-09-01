@@ -10,28 +10,44 @@ import {
   type FileTreePreloadedData,
 } from '@pierre/trees/react';
 import {useQueryState} from 'nuqs';
-import {useRef} from 'react';
+import {use, useRef} from 'react';
 
 import {useKeyDown} from '@/lib/hooks/use-key-down';
 import {getTreeOptions, type TreeHandoff} from '@/lib/trees/handoff';
+import {isDefined} from '@/lib/utils/defined';
 
+import {DiffViewerContext} from './_diff-viewer-context';
 import {diffSearchParsers} from './_search-params';
 
 interface DiffTreeProps {
   readonly handoff: TreeHandoff;
   readonly preloaded: FileTreePreloadedData;
+  readonly fileIdsByPath: Readonly<Record<string, string>>;
   readonly children: React.ReactNode;
 }
 
-export function DiffTree({handoff, preloaded, children}: DiffTreeProps) {
+export function DiffTree({
+  handoff,
+  preloaded,
+  fileIdsByPath,
+  children,
+}: DiffTreeProps) {
   const [searchQuery, setSearchQuery] = useQueryState(
     'q',
     diffSearchParsers.q.withOptions({history: 'replace'}),
   );
+  const viewerRef = use(DiffViewerContext);
   const {model} = useFileTree({
     ...getTreeOptions(handoff, {searchQuery}),
     onSearchChange(v) {
       void setSearchQuery(v);
+    },
+    onSelectionChange(selectedPaths) {
+      const [path] = selectedPaths;
+      const id = isDefined(path) ? fileIdsByPath[path] : null;
+      if (isDefined(id)) {
+        viewerRef?.current?.scrollTo({type: 'item', id, align: 'start'});
+      }
     },
   });
   const search = useFileTreeSearch(model);

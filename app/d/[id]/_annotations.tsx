@@ -1,10 +1,7 @@
 'use client';
 
-import '@/lib/diffs/diffs.module.css';
-
 import {Button, Card, Spinner} from '@heroui/react';
 import {getLineAnnotationName} from '@pierre/diffs';
-import {FileDiff} from '@pierre/diffs/react';
 import {PlusIcon} from 'lucide-react';
 import dynamic from 'next/dynamic';
 import {useParams} from 'next/navigation';
@@ -13,88 +10,40 @@ import {useFocusWithin} from 'react-aria/useFocusWithin';
 
 import {authClient} from '@/lib/auth/client';
 import {SessionContext} from '@/lib/auth/context';
-import {
-  DIFF_VIEWER_OPTIONS,
-  type AnnotationMetadata,
-} from '@/lib/diffs/options';
 import {useKeyDown} from '@/lib/hooks/use-key-down';
 import {GitHubIcon} from '@/lib/icons/github-icon';
 import {isDefined} from '@/lib/utils/defined';
 
 import {addComment} from './_actions';
 
-import type {
-  DiffLineAnnotation,
-  PreloadFileDiffResult,
-} from '@pierre/diffs/ssr';
+import type {AnnotationMetadata} from '@/lib/diffs/options';
+import type {DiffLineAnnotation} from '@pierre/diffs';
 
-const DiffEditor = dynamic(() =>
-  import('./_diff-editor').then((m) => m.DiffEditor),
+function preloadDiffEditor() {
+  void import('./_diff-editor');
+}
+
+const DiffEditor = dynamic(
+  () => import('./_diff-editor').then((m) => m.DiffEditor),
+  {loading: () => null},
 );
 
-type Annotation = DiffLineAnnotation<AnnotationMetadata>;
+export type DiffAnnotation = DiffLineAnnotation<AnnotationMetadata>;
 
-const AnnotationContext = createContext<Annotation>(null as never);
-
-interface AnnotatedFileDiffProps {
-  readonly fileId: string;
-  readonly preloaded: PreloadFileDiffResult<AnnotationMetadata>;
-}
-
-export function AnnotatedFileDiff({fileId, preloaded}: AnnotatedFileDiffProps) {
-  const [annotations, setAnnotations] = useState<Annotation[]>([]);
-
-  function addAnnotation(toAdd: Annotation) {
-    setAnnotations((a) => a.toSpliced(a.indexOf(toAdd), 0, toAdd));
-  }
-
-  function removeAnnotation(toRemove: Annotation) {
-    setAnnotations((a) => a.toSpliced(a.indexOf(toRemove), 1));
-  }
-
-  return (
-    <FileDiff
-      {...preloaded}
-      lineAnnotations={annotations}
-      options={{
-        ...DIFF_VIEWER_OPTIONS,
-        enableGutterUtility: true,
-        enableLineSelection: true,
-      }}
-      renderGutterUtility={(g) => (
-        <GutterUtility
-          onAddAnnotation={() => {
-            const l = g();
-            if (isDefined(l)) {
-              const {side, lineNumber} = l;
-              addAnnotation({side, lineNumber, metadata: {type: 'form'}});
-            } else {
-              console.error('No hovered line');
-            }
-          }}
-        />
-      )}
-      renderAnnotation={(a) => {
-        return (
-          <AnnotationContext value={a}>
-            <Annotation fileId={fileId} onDismiss={() => removeAnnotation(a)} />
-          </AnnotationContext>
-        );
-      }}
-    />
-  );
-}
+const AnnotationContext = createContext<DiffAnnotation>(null as never);
 
 interface GutterUtilityProps {
   readonly onAddAnnotation: () => void;
 }
 
-function GutterUtility({onAddAnnotation}: GutterUtilityProps) {
+export function GutterUtility({onAddAnnotation}: GutterUtilityProps) {
   return (
     <Button
       id="gutter-utility"
       aria-label="Add comment"
       isIconOnly
+      onHoverStart={preloadDiffEditor}
+      onFocus={preloadDiffEditor}
       onPress={onAddAnnotation}
       className="me-[calc(-1lh+1ch)] h-lh w-[1lh]"
     >
@@ -104,14 +53,28 @@ function GutterUtility({onAddAnnotation}: GutterUtilityProps) {
 }
 
 interface AnnotationProps {
+  readonly annotation: DiffAnnotation;
   readonly fileId: string;
   readonly onDismiss: () => void;
 }
 
-function Annotation({fileId, onDismiss}: AnnotationProps) {
+export function Annotation({annotation, fileId, onDismiss}: AnnotationProps) {
+  return (
+    <AnnotationContext value={annotation}>
+      <AnnotationBody fileId={fileId} onDismiss={onDismiss} />
+    </AnnotationContext>
+  );
+}
+
+interface AnnotationBodyProps {
+  readonly fileId: string;
+  readonly onDismiss: () => void;
+}
+
+function AnnotationBody({fileId, onDismiss}: AnnotationBodyProps) {
   const [isFocusWithin, setFocusWithin] = useState(false);
   const {focusWithinProps} = useFocusWithin({
-    onFocusWithinChange: (v) => setFocusWithin(v),
+    onFocusWithinChange: (isFocusWithin) => setFocusWithin(isFocusWithin),
   });
 
   const {metadata} = use(AnnotationContext);
