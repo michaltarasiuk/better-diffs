@@ -49,14 +49,13 @@ export function DiffItem({preloaded}: DiffItemProps) {
         enableGutterUtility: true,
         enableLineSelection: true,
       }}
-      renderGutterUtility={(getHoveredLine) => {
+      renderGutterUtility={(g) => {
         return (
           <GutterUtility
             onAddAnnotation={() => {
-              const hoveredLine = getHoveredLine();
-
-              if (isDefined(hoveredLine)) {
-                const {side, lineNumber} = hoveredLine;
+              const l = g();
+              if (isDefined(l)) {
+                const {side, lineNumber} = l;
                 setLineAnnotations((la) => [
                   ...la,
                   {side, lineNumber, metadata: {type: 'form'}},
