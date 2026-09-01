@@ -3,7 +3,7 @@ import {prepareTreeHandoff, sortFilesByTreeOrder} from '@/lib/trees/handoff';
 
 import type {FileDiffMetadata} from '@pierre/diffs';
 
-export interface ShareFile {
+interface ShareFile {
   readonly id: string;
   readonly name: string;
   readonly metadata: FileDiffMetadata;

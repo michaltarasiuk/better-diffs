@@ -47,8 +47,8 @@ export default async function DiffPage({
   });
 
   return (
-    <DiffViewerProvider>
-      <div className="flex h-full">
+    <div className="flex h-full">
+      <DiffViewerProvider>
         <aside aria-label="Files" className="w-80 shrink-0 border-e">
           <DiffTree
             handoff={tree}
@@ -65,7 +65,7 @@ export default async function DiffPage({
             </DiffFilesShell>
           </SessionProvider>
         </main>
-      </div>
-    </DiffViewerProvider>
+      </DiffViewerProvider>
+    </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import '@/lib/diffs/diffs.module.css';
 
+import {isDiffAnnotation} from '@pierre/diffs';
 import {CodeView} from '@pierre/diffs/react';
 import {use, useState} from 'react';
 
@@ -12,13 +13,26 @@ import {Annotation, GutterUtility, type DiffAnnotation} from './_annotations';
 import {DiffViewerContext} from './_diff-viewer-context';
 
 import type {AnnotationMetadata} from '@/lib/diffs/options';
-import type {CodeViewLineSelection, FileDiffMetadata} from '@pierre/diffs';
+import type {
+  CodeViewLineSelection,
+  FileDiffMetadata,
+  GetHoveredLineResult,
+} from '@pierre/diffs';
 import type {CodeViewDiffItem} from '@pierre/diffs/react';
-
-type DiffItem = CodeViewDiffItem<AnnotationMetadata>;
 
 const ANNOTATION_SIDE_ORDER = {deletions: 0, additions: 1} as const;
 const CODE_VIEW_STYLE = {height: '100%', overflow: 'auto'} as const;
+
+type DiffItem = CodeViewDiffItem<AnnotationMetadata>;
+type DiffLine = GetHoveredLineResult<'diff'>;
+type HoveredLine = GetHoveredLineResult<'file'> | DiffLine;
+
+interface FileAnnotations {
+  readonly annotations: DiffAnnotation[];
+  readonly version: number;
+}
+
+const NO_ANNOTATIONS: FileAnnotations = {annotations: [], version: 0};
 
 interface DiffCodeViewFile {
   readonly id: string;
@@ -30,34 +44,57 @@ interface DiffCodeViewProps {
 }
 
 export function DiffCodeView({files}: DiffCodeViewProps) {
-  const [items, setItems] = useState<readonly DiffItem[]>(() =>
-    files.map((file) => ({
-      id: file.id,
-      type: 'diff',
-      fileDiff: file.metadata,
-      annotations: [],
-      version: 0,
-    })),
-  );
+  const [annotationsByFile, setAnnotationsByFile] = useState<
+    ReadonlyMap<string, FileAnnotations>
+  >(() => new Map());
   const [selectedLines, setSelectedLines] =
     useState<CodeViewLineSelection | null>(null);
 
   const viewerRef = use(DiffViewerContext);
 
+  const items: DiffItem[] = files.map((file) => ({
+    id: file.id,
+    type: 'diff',
+    fileDiff: file.metadata,
+    ...(annotationsByFile.get(file.id) ?? NO_ANNOTATIONS),
+  }));
+
   function updateAnnotations(
     fileId: string,
-    update: (annotations: readonly DiffAnnotation[]) => DiffAnnotation[],
+    update: (annotations: DiffAnnotation[]) => DiffAnnotation[],
   ) {
-    setItems((items) =>
-      items.map((item) =>
-        item.id === fileId
-          ? {
-              ...item,
-              annotations: update(item.annotations ?? []),
-              version: (item.version ?? 0) + 1,
-            }
-          : item,
-      ),
+    setAnnotationsByFile((byFile) => {
+      const {annotations, version} = byFile.get(fileId) ?? NO_ANNOTATIONS;
+      const updated = update(annotations);
+      if (updated === annotations) {
+        return byFile;
+      }
+
+      return new Map(byFile).set(fileId, {
+        annotations: updated,
+        version: version + 1,
+      });
+    });
+  }
+
+  function addCommentForm(fileId: string, line: HoveredLine | undefined) {
+    if (!isDefined(line) || !isDiffLine(line)) {
+      return;
+    }
+
+    updateAnnotations(fileId, (annotations) =>
+      hasCommentForm(annotations, line)
+        ? annotations
+        : sortAnnotations([
+            ...annotations,
+            {...line, metadata: {type: 'form'}},
+          ]),
+    );
+  }
+
+  function removeAnnotation(fileId: string, annotation: DiffAnnotation) {
+    updateAnnotations(fileId, (annotations) =>
+      annotations.toSpliced(annotations.indexOf(annotation), 1),
     );
   }
 
@@ -71,47 +108,36 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
       onSelectedLinesChange={setSelectedLines}
       renderGutterUtility={(getHoveredLine, item) => (
         <GutterUtility
-          onAddAnnotation={() => {
-            const line = getHoveredLine();
-            if (!isDefined(line) || !isDiffLine(line)) {
-              return;
-            }
-
-            const {side, lineNumber} = line;
-            updateAnnotations(item.id, (annotations) =>
-              sortAnnotations([
-                ...annotations,
-                {side, lineNumber, metadata: {type: 'form'}},
-              ]),
-            );
-          }}
+          onAddAnnotation={() => addCommentForm(item.id, getHoveredLine())}
         />
       )}
-      renderAnnotation={(annotation, item) => {
-        if (!isDiffLine(annotation)) {
-          return null;
-        }
-
-        return (
+      renderAnnotation={(annotation, item) =>
+        isDiffAnnotation(annotation) ? (
           <Annotation
             annotation={annotation}
             fileId={item.id}
-            onDismiss={() => {
-              updateAnnotations(item.id, (annotations) =>
-                annotations.toSpliced(annotations.indexOf(annotation), 1),
-              );
-            }}
+            onDismiss={() => removeAnnotation(item.id, annotation)}
           />
-        );
-      }}
+        ) : null
+      }
     />
   );
 }
 
-function isDiffLine<T extends {lineNumber: number}>(
-  line: T,
-): line is T & {side: DiffAnnotation['side']} {
+function isDiffLine(line: HoveredLine): line is DiffLine {
   return 'side' in line;
+}
+
+function hasCommentForm(
+  annotations: readonly DiffAnnotation[],
+  line: DiffLine,
+) {
+  return annotations.some(
+    (annotation) =>
+      annotation.metadata.type === 'form' &&
+      annotation.side === line.side &&
+      annotation.lineNumber === line.lineNumber,
+  );
 }
 
 function sortAnnotations(annotations: readonly DiffAnnotation[]) {

@@ -8,13 +8,13 @@ interface DiffFilesShellProps {
 }
 
 export function DiffFilesShell({children}: DiffFilesShellProps) {
-  const mounted = useSyncExternalStore(
+  const isClient = useSyncExternalStore(
     () => () => {},
     () => true,
     () => false,
   );
 
-  if (!mounted) {
+  if (!isClient) {
     return diffFilesSpinner;
   }
 
