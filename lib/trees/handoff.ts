@@ -23,6 +23,8 @@ const DIFF_TREE_OPTIONS = {
 const DIFF_TREE_SEARCH_HEIGHT = 52;
 const DIFF_TREE_SUMMARY_HEIGHT = 52;
 
+const DEFAULT_INITIAL_VISIBLE_ROW_COUNT = 25;
+
 export type TreeHandoff = ReturnType<typeof prepareTreeHandoff>;
 
 export function prepareTreeHandoff(
@@ -37,17 +39,9 @@ export function prepareTreeHandoff(
   return {
     sortedPaths: preparedInput.paths,
     gitStatus: getDiffGitStatus(files),
-    ...(isDefined(viewportHeight) && {
-      initialVisibleRowCount: Math.max(
-        1,
-        Math.ceil(
-          (viewportHeight -
-            DIFF_TREE_SEARCH_HEIGHT -
-            DIFF_TREE_SUMMARY_HEIGHT) /
-            FILE_TREE_DEFAULT_ITEM_HEIGHT,
-        ),
-      ),
-    }),
+    initialVisibleRowCount: isDefined(viewportHeight)
+      ? computeInitialVisibleRowCount(viewportHeight)
+      : DEFAULT_INITIAL_VISIBLE_ROW_COUNT,
   };
 }
 
@@ -76,6 +70,16 @@ function getDiffGitStatus(
     path: f.name,
     status: fileTypeToGitStatus(f.type),
   }));
+}
+
+function computeInitialVisibleRowCount(viewportHeight: number) {
+  return Math.max(
+    1,
+    Math.ceil(
+      (viewportHeight - DIFF_TREE_SEARCH_HEIGHT - DIFF_TREE_SUMMARY_HEIGHT) /
+        FILE_TREE_DEFAULT_ITEM_HEIGHT,
+    ),
+  );
 }
 
 function fileTypeToGitStatus(t: ChangeTypes): GitStatus {
