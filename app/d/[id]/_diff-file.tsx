@@ -31,11 +31,11 @@ const DiffEditor = dynamic(() =>
 
 const AnnotationNameContext = createContext<string>(null as never);
 
-interface DiffItemProps {
+interface DiffFilePanelProps {
   preloaded: PreloadFileDiffResult<AnnotationMetadata>;
 }
 
-export function DiffItem({preloaded}: DiffItemProps) {
+export function AnnotatedFileDiff({preloaded}: DiffFilePanelProps) {
   const [lineAnnotations, setLineAnnotations] = useState<
     DiffLineAnnotation<AnnotationMetadata>[]
   >([]);

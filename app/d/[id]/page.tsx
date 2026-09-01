@@ -15,7 +15,7 @@ import {
 import {parseClientHints} from '@/lib/utils/client-hints';
 import {isDefined} from '@/lib/utils/defined';
 
-import {DiffItem} from './_diff-item';
+import {AnnotatedFileDiff} from './_diff-file';
 import {DiffSummary} from './_diff-summary';
 import {DiffTree} from './_diff-tree';
 import {loadDiffSearchParams} from './_search-params';
@@ -79,7 +79,7 @@ export default async function DiffPage({
       <main aria-label="Diff" className="min-w-0 flex-1 overflow-y-auto">
         <SessionContext value={session}>
           {diffs.map((d) => (
-            <DiffItem key={d.fileDiff.name} preloaded={d} />
+            <AnnotatedFileDiff key={d.fileDiff.name} preloaded={d} />
           ))}
         </SessionContext>
       </main>
