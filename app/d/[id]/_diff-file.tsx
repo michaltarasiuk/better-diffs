@@ -29,21 +29,29 @@ const DiffEditor = dynamic(() =>
   import('./_diff-editor').then((m) => m.DiffEditor),
 );
 
-const AnnotationNameContext = createContext<string>(null as never);
+type Annotation = DiffLineAnnotation<AnnotationMetadata>;
 
-interface DiffFilePanelProps {
+const AnnotationContext = createContext<Annotation>(null as never);
+
+interface AnnotatedFileDiffProps {
   preloaded: PreloadFileDiffResult<AnnotationMetadata>;
 }
 
-export function AnnotatedFileDiff({preloaded}: DiffFilePanelProps) {
-  const [lineAnnotations, setLineAnnotations] = useState<
-    DiffLineAnnotation<AnnotationMetadata>[]
-  >([]);
+export function AnnotatedFileDiff({preloaded}: AnnotatedFileDiffProps) {
+  const [annotations, setAnnotations] = useState<Annotation[]>([]);
+
+  function addAnnotation(annotation: Annotation) {
+    setAnnotations((a) => [...a, annotation]);
+  }
+
+  function removeAnnotation(annotation: Annotation) {
+    setAnnotations((a) => a.filter((a) => a !== annotation));
+  }
 
   return (
     <FileDiff
       {...preloaded}
-      lineAnnotations={lineAnnotations}
+      lineAnnotations={annotations}
       options={{
         ...DIFF_VIEWER_OPTIONS,
         enableGutterUtility: true,
@@ -56,10 +64,7 @@ export function AnnotatedFileDiff({preloaded}: DiffFilePanelProps) {
               const l = g();
               if (isDefined(l)) {
                 const {side, lineNumber} = l;
-                setLineAnnotations((la) => [
-                  ...la,
-                  {side, lineNumber, metadata: {type: 'form'}},
-                ]);
+                addAnnotation({side, lineNumber, metadata: {type: 'form'}});
               } else {
                 console.error('No hovered line');
               }
@@ -69,19 +74,9 @@ export function AnnotatedFileDiff({preloaded}: DiffFilePanelProps) {
       }}
       renderAnnotation={(a) => {
         return (
-          <AnnotationNameContext value={getLineAnnotationName(a)}>
-            <Annotation
-              metadata={a.metadata}
-              onDismissForm={() => {
-                const {side, lineNumber} = a;
-                setLineAnnotations((la) =>
-                  la.filter(
-                    (a) => side !== a.side || lineNumber !== a.lineNumber,
-                  ),
-                );
-              }}
-            />
-          </AnnotationNameContext>
+          <AnnotationContext value={a}>
+            <Annotation onDismiss={() => removeAnnotation(a)} />
+          </AnnotationContext>
         );
       }}
     />
@@ -107,26 +102,27 @@ function GutterUtility({onAddAnnotation}: GutterUtilityProps) {
 }
 
 interface AnnotationProps {
-  readonly metadata: AnnotationMetadata;
-  readonly onDismissForm: () => void;
+  readonly onDismiss: () => void;
 }
 
-function Annotation({metadata, onDismissForm}: AnnotationProps) {
+function Annotation({onDismiss}: AnnotationProps) {
   const [isFocusWithin, setFocusWithin] = useState(false);
   const {focusWithinProps} = useFocusWithin({
     onFocusWithinChange: (v) => setFocusWithin(v),
   });
 
+  const {metadata} = use(AnnotationContext);
+
   useKeyDown((e) => {
     if (e.key === 'Escape' && metadata.type === 'form' && isFocusWithin) {
-      onDismissForm();
+      onDismiss();
     }
   });
 
   let annotation: React.ReactNode;
   switch (metadata.type) {
     case 'form':
-      annotation = <CommentForm onDismiss={onDismissForm} />;
+      annotation = <CommentForm onDismiss={onDismiss} />;
       break;
     case 'thread':
       annotation = <ThreadAnnotation />;
@@ -158,7 +154,8 @@ interface SignInPromptProps {
 
 function SignInPrompt({onDismiss}: SignInPromptProps) {
   const [isSigningIn, setIsSigningIn] = useState(false);
-  const name = use(AnnotationNameContext);
+
+  const annotation = use(AnnotationContext);
 
   return (
     <Card variant="secondary" className="m-2 mbs-1">
@@ -170,7 +167,7 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
       </Card.Header>
       <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
         <Button
-          id={`${name}-sign-in-cancel`}
+          id={`${getLineAnnotationName(annotation)}-sign-in-cancel`}
           variant="ghost"
           size="sm"
           onPress={onDismiss}
@@ -178,7 +175,7 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
           Cancel
         </Button>
         <Button
-          id={`${name}-sign-in-github`}
+          id={`${getLineAnnotationName(annotation)}-sign-in-github`}
           size="sm"
           isPending={isSigningIn}
           onPress={async () => {
