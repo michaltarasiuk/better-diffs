@@ -27,6 +27,7 @@ import {mergeRegister} from '@lexical/utils';
 import {
   $createParagraphNode,
   $findMatchingParent,
+  $getRoot,
   $getSelection,
   $isRangeSelection,
   $isRootOrShadowRoot,
@@ -41,6 +42,7 @@ import {
   UNDO_COMMAND,
   type EditorThemeClasses,
   type LexicalEditor,
+  type SerializedEditorState,
   type TextFormatType,
 } from 'lexical';
 import {
@@ -125,10 +127,11 @@ function isBlockType(v: string): v is BlockType {
 }
 
 interface DiffEditorProps {
+  readonly onComment?: (editorState: SerializedEditorState) => void;
   readonly onDismiss?: () => void;
 }
 
-export function DiffEditor({onDismiss}: DiffEditorProps) {
+export function DiffEditor({onDismiss, onComment}: DiffEditorProps) {
   return (
     <LexicalComposer
       initialConfig={{
@@ -176,13 +179,46 @@ export function DiffEditor({onDismiss}: DiffEditorProps) {
               Cancel
             </Button>
           )}
-          <Button size="sm">Comment</Button>
+          <CommentButton onComment={onComment} />
         </Card.Footer>
       </Card>
 
       <HistoryPlugin />
       <PreventEscapeBlurPlugin />
     </LexicalComposer>
+  );
+}
+
+interface CommentButtonProps {
+  readonly onComment?: (editorState: SerializedEditorState) => void;
+}
+
+function CommentButton({onComment}: CommentButtonProps) {
+  const [editor] = useLexicalComposerContext();
+  const [hasContent, setHasContent] = useState(false);
+
+  const $hasContent = useEffectEvent(() => {
+    return $getRoot().getTextContent().trim().length > 0;
+  });
+
+  useEffect(() => {
+    return editor.registerUpdateListener(({editorState}) => {
+      editorState.read(() => {
+        setHasContent($hasContent());
+      });
+    });
+  }, [editor]);
+
+  return (
+    <Button
+      size="sm"
+      isDisabled={!hasContent}
+      onPress={() => {
+        onComment?.(editor.getEditorState().toJSON());
+      }}
+    >
+      Comment
+    </Button>
   );
 }
 
