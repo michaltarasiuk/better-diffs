@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
     browserToTerminal: true,
   },
   experimental: {
+    authInterrupts: true,
     turbopackRustReactCompiler: true,
     optimizePackageImports: ['@heroui/react'],
   },

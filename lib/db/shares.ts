@@ -5,6 +5,7 @@ import {asc, eq, lt, sql} from 'drizzle-orm';
 import {isDefined} from '@/lib/utils/defined';
 
 import {db} from '.';
+import {newId} from './id';
 import {
   files as filesTable,
   patches as patchesTable,
@@ -13,75 +14,69 @@ import {
 
 import type {FileDiffMetadata} from '@pierre/diffs';
 
-export function findShare(id: string) {
-  return db.query.shares
-    .findFirst({
-      where: eq(sharesTable.id, id),
-      with: {
-        patches: {
-          orderBy: asc(patchesTable.order),
-          with: {
-            files: {
-              orderBy: asc(filesTable.order),
-            },
-          },
-        },
-      },
-    })
-    .sync();
-}
+export function visitShare(id: string) {
+  return db.transaction((tx) => {
+    const share = tx
+      .update(sharesTable)
+      .set({lastVisitedAt: sql`datetime('now')`})
+      .where(eq(sharesTable.id, id))
+      .returning({id: sharesTable.id})
+      .get();
 
-export function touchShare(id: string) {
-  return db
-    .update(sharesTable)
-    .set({lastVisitedAt: sql`datetime('now')`})
-    .where(eq(sharesTable.id, id))
-    .run();
+    if (!isDefined(share)) {
+      return null;
+    }
+
+    return tx
+      .select({
+        id: filesTable.id,
+        name: filesTable.name,
+        metadata: filesTable.metadata,
+      })
+      .from(filesTable)
+      .innerJoin(patchesTable, eq(filesTable.patchId, patchesTable.id))
+      .where(eq(patchesTable.shareId, id))
+      .orderBy(asc(patchesTable.order), asc(filesTable.order))
+      .all();
+  });
 }
 
 export function createShare(patches: readonly (readonly FileDiffMetadata[])[]) {
-  return db.transaction((tx) => {
-    const [inserted] = tx
-      .insert(sharesTable)
-      .values({})
-      .returning({
-        id: sharesTable.id,
-      })
-      .all();
+  const shareId = newId();
+  const patchValues: (typeof patchesTable.$inferInsert)[] = [];
+  const fileValues: (typeof filesTable.$inferInsert)[] = [];
 
-    if (!isDefined(inserted)) {
-      throw new Error('Failed to create share');
-    }
+  for (const [order, patchFiles] of patches.entries()) {
+    const patchId = newId();
+    patchValues.push({
+      id: patchId,
+      shareId,
+      order,
+    });
 
-    const insertedPatches = tx
-      .insert(patchesTable)
-      .values(
-        patches.map((_, i) => ({
-          shareId: inserted.id,
-          order: i,
-        })),
-      )
-      .returning({
-        id: patchesTable.id,
-        order: patchesTable.order,
-      })
-      .all();
-
-    const files = insertedPatches.flatMap((p) =>
-      (patches[p.order] ?? []).map((metadata, i) => ({
-        patchId: p.id,
+    for (const [fileOrder, metadata] of patchFiles.entries()) {
+      fileValues.push({
+        patchId,
         name: metadata.name,
         metadata,
-        order: i,
-      })),
-    );
+        order: fileOrder,
+      });
+    }
+  }
 
-    if (files.length > 0) {
-      tx.insert(filesTable).values(files).run();
+  db.transaction((tx) => {
+    tx.insert(sharesTable).values({id: shareId}).run();
+
+    if (patchValues.length > 0) {
+      tx.insert(patchesTable).values(patchValues).run();
     }
 
-    return inserted.id;
+    if (fileValues.length > 0) {
+      tx.insert(filesTable).values(fileValues).run();
+    }
   });
+
+  return shareId;
 }
 
 interface DeleteExpiredSharesOptions {
@@ -89,7 +84,7 @@ interface DeleteExpiredSharesOptions {
 }
 
 export function deleteExpiredShares({maxAgeHours}: DeleteExpiredSharesOptions) {
-  return db
+  const {changes} = db
     .delete(sharesTable)
     .where(
       lt(
@@ -98,4 +93,6 @@ export function deleteExpiredShares({maxAgeHours}: DeleteExpiredSharesOptions) {
       ),
     )
     .run();
+
+  return changes;
 }

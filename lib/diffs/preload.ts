@@ -6,13 +6,19 @@ import {DIFF_VIEWER_OPTIONS} from './options';
 
 import type {FileDiffMetadata} from '@pierre/diffs';
 
-export function preloadDiffs(files: readonly FileDiffMetadata[]) {
+interface DiffFile {
+  readonly id: string;
+  readonly metadata: FileDiffMetadata;
+}
+
+export function preloadDiffs(files: readonly DiffFile[]) {
   return Promise.all(
-    files.map((f) =>
-      preloadFileDiff({
-        fileDiff: f,
+    files.map(async (f) => ({
+      fileId: f.id,
+      preloaded: await preloadFileDiff({
+        fileDiff: f.metadata,
         options: DIFF_VIEWER_OPTIONS,
       }),
-    ),
+    })),
   );
 }

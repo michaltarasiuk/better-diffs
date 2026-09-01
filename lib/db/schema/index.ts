@@ -1,6 +1,7 @@
 import {relations, sql, type InferSelectModel} from 'drizzle-orm';
 import {index, integer, sqliteTable, text} from 'drizzle-orm/sqlite-core';
 
+import {newId} from '../id';
 import {user} from './auth';
 
 import type {FileDiffMetadata} from '@pierre/diffs';
@@ -8,31 +9,35 @@ import type {SerializedEditorState} from 'lexical';
 
 export * from './auth';
 
-export const shares = sqliteTable('shares', {
-  id: text('id')
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  createdAt: text('created_at')
-    .notNull()
-    .default(sql`(datetime('now'))`),
-  lastVisitedAt: text('last_visited_at')
-    .notNull()
-    .default(sql`(datetime('now'))`),
-});
+export const shares = sqliteTable(
+  'shares',
+  {
+    id: text('id').primaryKey().$defaultFn(newId),
+    createdAt: text('created_at')
+      .notNull()
+      .default(sql`(datetime('now'))`),
+    lastVisitedAt: text('last_visited_at')
+      .notNull()
+      .default(sql`(datetime('now'))`),
+  },
+  (t) => [index('shares_lastVisitedAt_idx').on(t.lastVisitedAt)],
+);
 
 export const sharesRelations = relations(shares, ({many}) => ({
   patches: many(patches),
 }));
 
-export const patches = sqliteTable('patches', {
-  id: text('id')
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  shareId: text('share_id')
-    .notNull()
-    .references(() => shares.id, {onDelete: 'cascade'}),
-  order: integer('order').notNull(),
-});
+export const patches = sqliteTable(
+  'patches',
+  {
+    id: text('id').primaryKey().$defaultFn(newId),
+    shareId: text('share_id')
+      .notNull()
+      .references(() => shares.id, {onDelete: 'cascade'}),
+    order: integer('order').notNull(),
+  },
+  (t) => [index('patches_shareId_idx').on(t.shareId)],
+);
 
 export const patchesRelations = relations(patches, ({one, many}) => ({
   share: one(shares, {fields: [patches.shareId], references: [shares.id]}),
@@ -42,9 +47,7 @@ export const patchesRelations = relations(patches, ({one, many}) => ({
 export const files = sqliteTable(
   'files',
   {
-    id: text('id')
-      .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
+    id: text('id').primaryKey().$defaultFn(newId),
     patchId: text('patch_id')
       .notNull()
       .references(() => patches.id, {onDelete: 'cascade'}),
@@ -65,9 +68,7 @@ export const filesRelations = relations(files, ({one, many}) => ({
 export const threads = sqliteTable(
   'threads',
   {
-    id: text('id')
-      .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
+    id: text('id').primaryKey().$defaultFn(newId),
     fileId: text('file_id')
       .notNull()
       .references(() => files.id, {onDelete: 'cascade'}),
@@ -88,9 +89,7 @@ export const threadsRelations = relations(threads, ({many, one}) => ({
 export const comments = sqliteTable(
   'comments',
   {
-    id: text('id')
-      .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
+    id: text('id').primaryKey().$defaultFn(newId),
     threadId: text('thread_id')
       .notNull()
       .references(() => threads.id, {onDelete: 'cascade'}),

@@ -56,7 +56,7 @@ import {
   UnderlineIcon,
   Undo2Icon,
 } from 'lucide-react';
-import {useEffect, useEffectEvent, useState} from 'react';
+import {useEffect, useEffectEvent, useState, useTransition} from 'react';
 
 import {isDefined} from '@/lib/utils/defined';
 
@@ -126,12 +126,14 @@ function isBlockType(v: string): v is BlockType {
   return BLOCK_TYPES.some((b) => b.value === v);
 }
 
+type OnComment = (body: SerializedEditorState) => void | Promise<unknown>;
+
 interface DiffEditorProps {
-  readonly onComment?: (editorState: SerializedEditorState) => void;
-  readonly onDismiss?: () => void;
+  readonly onComment: OnComment;
+  readonly onDismiss: () => void;
 }
 
-export function DiffEditor({onDismiss, onComment}: DiffEditorProps) {
+export function DiffEditor({onComment, onDismiss}: DiffEditorProps) {
   return (
     <LexicalComposer
       initialConfig={{
@@ -174,11 +176,9 @@ export function DiffEditor({onDismiss, onComment}: DiffEditorProps) {
           </div>
         </Card.Content>
         <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
-          {isDefined(onDismiss) && (
-            <Button variant="ghost" size="sm" onPress={onDismiss}>
-              Cancel
-            </Button>
-          )}
+          <Button variant="ghost" size="sm" onPress={onDismiss}>
+            Cancel
+          </Button>
           <CommentButton onComment={onComment} />
         </Card.Footer>
       </Card>
@@ -190,19 +190,24 @@ export function DiffEditor({onDismiss, onComment}: DiffEditorProps) {
 }
 
 interface CommentButtonProps {
-  readonly onComment?: (editorState: SerializedEditorState) => void;
+  readonly onComment: OnComment;
 }
 
 function CommentButton({onComment}: CommentButtonProps) {
   const [editor] = useLexicalComposerContext();
   const isEmpty = useLexicalIsTextContentEmpty(editor, true);
 
+  const [isPending, startTransition] = useTransition();
+
   return (
     <Button
       size="sm"
       isDisabled={isEmpty}
+      isPending={isPending}
       onPress={() => {
-        onComment?.(editor.getEditorState().toJSON());
+        startTransition(async () => {
+          await onComment(editor.getEditorState().toJSON());
+        });
       }}
     >
       Comment

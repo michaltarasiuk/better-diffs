@@ -4,7 +4,7 @@ import {notFound} from 'next/navigation';
 
 import {SessionContext} from '@/lib/auth/context';
 import {getSession} from '@/lib/auth/server';
-import {findShare, touchShare} from '@/lib/db/shares';
+import {visitShare} from '@/lib/db/shares';
 import {preloadDiffs} from '@/lib/diffs/preload';
 import {computeDiffStats} from '@/lib/diffs/stats';
 import {
@@ -43,16 +43,15 @@ export default async function DiffPage({
     headers().then(parseClientHints),
   ]);
 
-  const share = findShare(id);
-  if (!isDefined(share)) {
+  const files = visitShare(id);
+  if (!isDefined(files)) {
     notFound();
   }
-  touchShare(id);
 
-  const files = share.patches.flatMap((p) => p.files.map((f) => f.metadata));
-  const stats = computeDiffStats(files);
+  const metadata = files.map((f) => f.metadata);
+  const stats = computeDiffStats(metadata);
 
-  const treeHandoff = prepareTreeHandoff(files, {
+  const treeHandoff = prepareTreeHandoff(metadata, {
     viewportHeight,
   });
   const treeSortedFiles = sortFilesByTreeOrder(files, treeHandoff.sortedPaths);
@@ -78,8 +77,12 @@ export default async function DiffPage({
       </aside>
       <main aria-label="Diff" className="min-w-0 flex-1 overflow-y-auto">
         <SessionContext value={session}>
-          {diffs.map((d) => (
-            <AnnotatedFileDiff key={d.fileDiff.name} preloaded={d} />
+          {diffs.map(({fileId, preloaded}) => (
+            <AnnotatedFileDiff
+              key={fileId}
+              fileId={fileId}
+              preloaded={preloaded}
+            />
           ))}
         </SessionContext>
       </main>

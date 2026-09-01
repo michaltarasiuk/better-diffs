@@ -7,6 +7,7 @@ import {getLineAnnotationName} from '@pierre/diffs';
 import {FileDiff} from '@pierre/diffs/react';
 import {PlusIcon} from 'lucide-react';
 import dynamic from 'next/dynamic';
+import {useParams} from 'next/navigation';
 import {createContext, use, useState} from 'react';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
@@ -19,6 +20,8 @@ import {
 import {useKeyDown} from '@/lib/hooks/use-key-down';
 import {GitHubIcon} from '@/lib/icons/github-icon';
 import {isDefined} from '@/lib/utils/defined';
+
+import {addComment} from './_actions';
 
 import type {
   DiffLineAnnotation,
@@ -34,18 +37,19 @@ type Annotation = DiffLineAnnotation<AnnotationMetadata>;
 const AnnotationContext = createContext<Annotation>(null as never);
 
 interface AnnotatedFileDiffProps {
-  preloaded: PreloadFileDiffResult<AnnotationMetadata>;
+  readonly fileId: string;
+  readonly preloaded: PreloadFileDiffResult<AnnotationMetadata>;
 }
 
-export function AnnotatedFileDiff({preloaded}: AnnotatedFileDiffProps) {
+export function AnnotatedFileDiff({fileId, preloaded}: AnnotatedFileDiffProps) {
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
 
-  function addAnnotation(annotation: Annotation) {
-    setAnnotations((a) => [...a, annotation]);
+  function addAnnotation(toAdd: Annotation) {
+    setAnnotations((a) => a.toSpliced(a.indexOf(toAdd), 0, toAdd));
   }
 
-  function removeAnnotation(annotation: Annotation) {
-    setAnnotations((a) => a.filter((a) => a !== annotation));
+  function removeAnnotation(toRemove: Annotation) {
+    setAnnotations((a) => a.toSpliced(a.indexOf(toRemove), 1));
   }
 
   return (
@@ -75,7 +79,7 @@ export function AnnotatedFileDiff({preloaded}: AnnotatedFileDiffProps) {
       renderAnnotation={(a) => {
         return (
           <AnnotationContext value={a}>
-            <Annotation onDismiss={() => removeAnnotation(a)} />
+            <Annotation fileId={fileId} onDismiss={() => removeAnnotation(a)} />
           </AnnotationContext>
         );
       }}
@@ -102,10 +106,11 @@ function GutterUtility({onAddAnnotation}: GutterUtilityProps) {
 }
 
 interface AnnotationProps {
+  readonly fileId: string;
   readonly onDismiss: () => void;
 }
 
-function Annotation({onDismiss}: AnnotationProps) {
+function Annotation({fileId, onDismiss}: AnnotationProps) {
   const [isFocusWithin, setFocusWithin] = useState(false);
   const {focusWithinProps} = useFocusWithin({
     onFocusWithinChange: (v) => setFocusWithin(v),
@@ -122,7 +127,7 @@ function Annotation({onDismiss}: AnnotationProps) {
   let annotation: React.ReactNode;
   switch (metadata.type) {
     case 'form':
-      annotation = <CommentForm onDismiss={onDismiss} />;
+      annotation = <CommentForm fileId={fileId} onDismiss={onDismiss} />;
       break;
     case 'thread':
       annotation = <ThreadAnnotation />;
@@ -135,17 +140,34 @@ function Annotation({onDismiss}: AnnotationProps) {
 }
 
 interface CommentFormProps {
+  readonly fileId: string;
   readonly onDismiss: () => void;
 }
 
-function CommentForm({onDismiss}: CommentFormProps) {
+function CommentForm({fileId, onDismiss}: CommentFormProps) {
+  const {id: shareId} = useParams<{id: string}>();
+
   const session = use(SessionContext);
+  const {side, lineNumber} = use(AnnotationContext);
 
   if (!isDefined(session)) {
     return <SignInPrompt onDismiss={onDismiss} />;
   }
 
-  return <DiffEditor onDismiss={onDismiss} />;
+  return (
+    <DiffEditor
+      onComment={(body) =>
+        addComment({
+          shareId,
+          fileId,
+          side,
+          lineNumber,
+          body,
+        })
+      }
+      onDismiss={onDismiss}
+    />
+  );
 }
 
 interface SignInPromptProps {
