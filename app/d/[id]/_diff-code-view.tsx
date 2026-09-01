@@ -63,14 +63,15 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
     fileId: string,
     update: (annotations: DiffAnnotation[]) => DiffAnnotation[],
   ) {
-    setAnnotationsByFile((byFile) => {
-      const {annotations, version} = byFile.get(fileId) ?? NO_ANNOTATIONS;
+    setAnnotationsByFile((annotationsByFile) => {
+      const {annotations, version} =
+        annotationsByFile.get(fileId) ?? NO_ANNOTATIONS;
       const updated = update(annotations);
       if (updated === annotations) {
-        return byFile;
+        return annotationsByFile;
       }
 
-      return new Map(byFile).set(fileId, {
+      return new Map(annotationsByFile).set(fileId, {
         annotations: updated,
         version: version + 1,
       });
