@@ -78,10 +78,14 @@ function getGitStatusEntries(
 }
 
 function getInitialVisibleRowCount(viewportHeight: number) {
-  const rowsHeight =
-    viewportHeight - DIFF_TREE_SEARCH_HEIGHT - DIFF_TREE_SUMMARY_HEIGHT;
-
-  return Math.max(1, Math.ceil(rowsHeight / FILE_TREE_DEFAULT_ITEM_HEIGHT));
+  return Math.max(
+    1,
+    Math.ceil(
+      viewportHeight -
+        DIFF_TREE_SEARCH_HEIGHT -
+        DIFF_TREE_SUMMARY_HEIGHT / FILE_TREE_DEFAULT_ITEM_HEIGHT,
+    ),
+  );
 }
 
 function changeTypeToGitStatus(t: ChangeTypes): GitStatus {
