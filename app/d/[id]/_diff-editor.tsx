@@ -15,6 +15,7 @@ import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {LexicalErrorBoundary} from '@lexical/react/LexicalErrorBoundary';
 import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
 import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
+import {useLexicalIsTextContentEmpty} from '@lexical/react/useLexicalIsTextContentEmpty';
 import {
   $createHeadingNode,
   $createQuoteNode,
@@ -27,7 +28,6 @@ import {mergeRegister} from '@lexical/utils';
 import {
   $createParagraphNode,
   $findMatchingParent,
-  $getRoot,
   $getSelection,
   $isRangeSelection,
   $isRootOrShadowRoot,
@@ -195,24 +195,12 @@ interface CommentButtonProps {
 
 function CommentButton({onComment}: CommentButtonProps) {
   const [editor] = useLexicalComposerContext();
-  const [hasContent, setHasContent] = useState(false);
-
-  const $hasContent = useEffectEvent(() => {
-    return $getRoot().getTextContent().trim().length > 0;
-  });
-
-  useEffect(() => {
-    return editor.registerUpdateListener(({editorState}) => {
-      editorState.read(() => {
-        setHasContent($hasContent());
-      });
-    });
-  }, [editor]);
+  const isEmpty = useLexicalIsTextContentEmpty(editor, true);
 
   return (
     <Button
       size="sm"
-      isDisabled={!hasContent}
+      isDisabled={isEmpty}
       onPress={() => {
         onComment?.(editor.getEditorState().toJSON());
       }}
