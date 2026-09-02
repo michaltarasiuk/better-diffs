@@ -50,7 +50,7 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
 
   const viewerRef = use(DiffViewerContext);
 
-  const items = files.map((file): DiffItem => ({
+  const items: DiffItem[] = files.map((file) => ({
     id: file.id,
     type: 'diff',
     fileDiff: file.metadata,
