@@ -8,7 +8,6 @@ export function parseClientHints(headers: Headers) {
   const viewportHeight = ViewportHeightSchema.safeParse(
     headers.get('sec-ch-viewport-height'),
   );
-
   return {
     ...(viewportHeight.success && {viewportHeight: viewportHeight.data}),
   };

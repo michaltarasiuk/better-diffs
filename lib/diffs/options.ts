@@ -1,4 +1,4 @@
-import {DEFAULT_THEMES} from '@pierre/diffs';
+import {DEFAULT_CODE_VIEW_LAYOUT, DEFAULT_THEMES} from '@pierre/diffs';
 
 import type {FileDiffOptions} from '@pierre/diffs';
 import type {CodeViewReactOptions} from '@pierre/diffs/react';
@@ -22,4 +22,9 @@ export const CODE_VIEW_OPTIONS: CodeViewReactOptions<AnnotationMetadata> = {
   stickyHeaders: true,
   enableGutterUtility: true,
   enableLineSelection: true,
+  layout: {
+    ...DEFAULT_CODE_VIEW_LAYOUT,
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
 };
