@@ -10,9 +10,9 @@ dist
 .env*
 !.env.example
 
-# data (sqlite sidecars are runtime-only)
-data/*.db-shm
-data/*.db-wal
+# data
+data/*
+!data/.gitkeep
 
 # os
 .DS_Store
