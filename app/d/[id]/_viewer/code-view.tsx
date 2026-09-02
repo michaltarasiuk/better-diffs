@@ -9,14 +9,11 @@ import {use, useState} from 'react';
 import {CODE_VIEW_OPTIONS} from '@/lib/diffs/options';
 import {isDefined} from '@/lib/utils/defined';
 
+import {useSelectedLines} from '../_lib/use-selected-lines';
 import {Annotation, GutterUtility, type DiffAnnotation} from './annotations';
 import {DiffViewerContext} from './context';
 
-import type {
-  CodeViewLineSelection,
-  FileDiffMetadata,
-  GetHoveredLineResult,
-} from '@pierre/diffs';
+import type {FileDiffMetadata, GetHoveredLineResult} from '@pierre/diffs';
 
 const ANNOTATION_SIDE_ORDER = {deletions: 0, additions: 1} as const;
 const CODE_VIEW_STYLE = {height: '100%', overflow: 'auto'} as const;
@@ -42,8 +39,7 @@ export function DiffCodeView({files}: CodeViewProps) {
   const [annotationsByFile, setAnnotationsByFile] = useState(
     () => new Map() as ReadonlyMap<string, FileAnnotations>,
   );
-  const [selectedLines, setSelectedLines] =
-    useState<CodeViewLineSelection | null>(null);
+  const {selectedLines, setSelectedLines} = useSelectedLines();
 
   const viewerRef = use(DiffViewerContext);
 
@@ -52,8 +48,10 @@ export function DiffCodeView({files}: CodeViewProps) {
     update: (annotations: DiffAnnotation[]) => DiffAnnotation[],
   ) {
     setAnnotationsByFile((annotationsByFile) => {
-      const {annotations = [], version = 0} =
-        annotationsByFile.get(fileId) ?? {};
+      const {annotations, version} = annotationsByFile.get(fileId) ?? {
+        annotations: [],
+        version: 0,
+      };
 
       return new Map(annotationsByFile).set(fileId, {
         annotations: update(annotations),

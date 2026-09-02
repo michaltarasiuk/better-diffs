@@ -7,8 +7,9 @@ import type {CodeViewHandle} from '@pierre/diffs/react';
 
 type DiffViewer = CodeViewHandle<AnnotationMetadata>;
 
-export const DiffViewerContext =
-  createContext<RefObject<DiffViewer | null> | null>(null);
+export const DiffViewerContext = createContext<RefObject<DiffViewer | null>>({
+  current: null,
+});
 
 export function DiffViewerProvider({children}: {children: ReactNode}) {
   const viewerRef = useRef<DiffViewer>(null);

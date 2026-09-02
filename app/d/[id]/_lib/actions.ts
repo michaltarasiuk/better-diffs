@@ -6,6 +6,7 @@ import {z} from 'zod';
 import {getSession} from '@/lib/auth/server';
 import {shareContainsFile} from '@/lib/db/files';
 import {createThread} from '@/lib/db/threads';
+import {SelectionSide} from '@/lib/diffs/schemas';
 import {isDefined} from '@/lib/utils/defined';
 
 import type {SerializedEditorState} from 'lexical';
@@ -13,7 +14,7 @@ import type {SerializedEditorState} from 'lexical';
 const AddCommentInput = z.object({
   shareId: z.uuid(),
   fileId: z.uuid(),
-  side: z.enum(['deletions', 'additions']),
+  side: SelectionSide,
   lineNumber: z.int().positive(),
   body: z.custom<SerializedEditorState>(isDefined),
 });
