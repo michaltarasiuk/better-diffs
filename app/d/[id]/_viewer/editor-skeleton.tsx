@@ -18,7 +18,7 @@ export function DiffEditorSkeleton() {
         </div>
       </Card.Header>
       <Card.Content>
-        <div className="rounded-field relative min-h-24 px-3 py-2">
+        <div className="rounded-field relative min-h-24 py-2">
           <Skeleton className="max-h-24 min-h-24 w-full" />
         </div>
       </Card.Content>

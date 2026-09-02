@@ -62,7 +62,7 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
     });
   }
 
-  function addCommentForm(fileId: string, line: HoveredLine | undefined) {
+  function addCommentForm(fileId: string, line?: HoveredLine) {
     if (!isDefined(line) || !isDiffLine(line)) {
       return;
     }
