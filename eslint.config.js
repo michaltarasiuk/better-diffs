@@ -29,6 +29,19 @@ const eslintConfig = defineConfig([
           argsIgnorePattern: '^_',
         },
       ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "ImportDeclaration[source.value='react'] ImportSpecifier[importKind='type']",
+          message: 'Use the React namespace for types (e.g. React.ReactNode).',
+        },
+        {
+          selector:
+            "ImportDeclaration[source.value='react'][importKind='type']",
+          message: 'Use the React namespace for types (e.g. React.ReactNode).',
+        },
+      ],
       'perfectionist/sort-exports': 'error',
       'perfectionist/sort-named-exports': [
         'error',

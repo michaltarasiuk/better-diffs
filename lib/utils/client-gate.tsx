@@ -1,10 +1,10 @@
 'use client';
 
-import {useSyncExternalStore, type ReactNode} from 'react';
+import {useSyncExternalStore} from 'react';
 
 interface ClientGateProps {
-  readonly children: ReactNode;
-  readonly fallback: ReactNode;
+  readonly children: React.ReactNode;
+  readonly fallback: React.ReactNode;
 }
 
 export function ClientGate({children, fallback}: ClientGateProps) {
