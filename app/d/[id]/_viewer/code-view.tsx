@@ -26,16 +26,16 @@ interface FileAnnotations {
   readonly version: number;
 }
 
-interface CodeViewFile {
+interface DiffCodeViewFile {
   readonly id: string;
   readonly metadata: FileDiffMetadata;
 }
 
-interface CodeViewProps {
-  readonly files: readonly CodeViewFile[];
+interface DiffCodeViewProps {
+  readonly files: readonly DiffCodeViewFile[];
 }
 
-export function DiffCodeView({files}: CodeViewProps) {
+export function DiffCodeView({files}: DiffCodeViewProps) {
   const [annotationsByFile, setAnnotationsByFile] = useState(
     () => new Map() as ReadonlyMap<string, FileAnnotations>,
   );
