@@ -20,9 +20,7 @@ export function prepareDiffView(
     tree,
     stats: computeDiffStats(fileDiffs),
     files: orderFilesByTree(files, tree),
-    get fileIdsByPath() {
-      return Object.fromEntries(this.files.map(({name, id}) => [name, id]));
-    },
+    fileIdsByPath: Object.fromEntries(files.map(({name, id}) => [name, id])),
   };
 }
 
