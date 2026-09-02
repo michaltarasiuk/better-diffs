@@ -3,7 +3,7 @@
 import {useSyncExternalStore, type ReactNode} from 'react';
 
 interface ClientGateProps {
-  readonly children: () => ReactNode;
+  readonly children: ReactNode;
   readonly fallback: ReactNode;
 }
 
@@ -14,5 +14,5 @@ export function ClientGate({children, fallback}: ClientGateProps) {
     () => false,
   );
 
-  return isClient ? children() : fallback;
+  return isClient ? children : fallback;
 }

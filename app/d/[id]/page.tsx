@@ -62,7 +62,7 @@ export default async function DiffPage({
         <main aria-label="Diff" className="min-h-0 min-w-0 flex-1">
           <SessionProvider>
             <ClientGate fallback={diffFilesSpinner}>
-              {() => <DiffCodeView files={files} />}
+              <DiffCodeView files={files} />
             </ClientGate>
           </SessionProvider>
         </main>
