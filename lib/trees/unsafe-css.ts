@@ -1,9 +1,8 @@
 import dedent from 'dedent';
 
 /**
- * Tree rows should use the same focus ring as HeroUI (2px ring, then a gap).
- * The scroll box hides rings drawn outside the row. Paint the ring inside on
- * ::before instead.
+ * The scroll box hides focus rings drawn outside the row. Paint the ring
+ * inside on ::before so tree rows match HeroUI (2px ring, then a gap).
  */
 export const TREES_FOCUS_RING_UNSAFE_CSS = dedent`
   [data-type="item"] {

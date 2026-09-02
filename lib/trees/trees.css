@@ -1,7 +1,7 @@
 /*
  * Pierre measures the scrollbar after the page loads. Firefox adds ~11px;
- * Chrome adds 0px. List padding and git icons move after hydrate. Set both
- * gutter vars to 0px so the server and client look the same.
+ * Chrome adds 0px. List padding and git icons shift after hydrate. Set both
+ * gutter vars to 0px so the server and client match.
  */
 file-tree-container {
   --trees-scrollbar-gutter-override: 0px;

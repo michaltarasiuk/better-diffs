@@ -1,7 +1,7 @@
 /*
  * Pierre measures the scrollbar after the page loads. Firefox adds ~11px;
- * Chrome adds 0px. Split panes move after hydrate. Set the gutter override to
- * 0px so the server and client look the same.
+ * Chrome adds 0px. Split panes shift after hydrate. Set the gutter override
+ * to 0px so the server and client match.
  */
 diffs-container,
 [data-diffs] {
