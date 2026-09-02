@@ -60,11 +60,7 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
     });
   }
 
-  function addCommentForm(fileId: string, line?: HoveredLine) {
-    if (!isDefined(line) || !isDiffLine(line)) {
-      return;
-    }
-
+  function addCommentForm(fileId: string, line: DiffLine) {
     updateAnnotations(fileId, (annotations) =>
       sortAnnotations([
         ...annotations,
@@ -95,7 +91,12 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
       onSelectedLinesChange={setSelectedLines}
       renderGutterUtility={(getHoveredLine, item) => (
         <GutterUtility
-          onAddAnnotation={() => addCommentForm(item.id, getHoveredLine())}
+          onAddAnnotation={() => {
+            const line = getHoveredLine();
+            if (isDefined(line) && isDiffLine(line)) {
+              addCommentForm(item.id, line);
+            }
+          }}
         />
       )}
       renderAnnotation={(annotation, item) =>
