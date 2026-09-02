@@ -93,9 +93,7 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
         ...annotationsByFile.get(file.id),
       }))}
       selectedLines={selectedLines}
-      options={CODE_VIEW_OPTIONS}
-      style={CODE_VIEW_STYLE}
-      onSelectedLinesChange={setSelectedLines}
+      onSelectedLinesChange={(selection) => setSelectedLines(selection)}
       renderGutterUtility={(getHoveredLine, item) => (
         <GutterUtility
           onAddAnnotation={() => addCommentForm(item.id, getHoveredLine())}
@@ -110,6 +108,8 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
           />
         ) : null
       }
+      options={CODE_VIEW_OPTIONS}
+      style={CODE_VIEW_STYLE}
     />
   );
 }
