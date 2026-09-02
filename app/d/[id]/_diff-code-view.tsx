@@ -12,18 +12,15 @@ import {isDefined} from '@/lib/utils/defined';
 import {Annotation, GutterUtility, type DiffAnnotation} from './_annotations';
 import {DiffViewerContext} from './_diff-viewer-context';
 
-import type {AnnotationMetadata} from '@/lib/diffs/options';
 import type {
   CodeViewLineSelection,
   FileDiffMetadata,
   GetHoveredLineResult,
 } from '@pierre/diffs';
-import type {CodeViewDiffItem} from '@pierre/diffs/react';
 
 const ANNOTATION_SIDE_ORDER = {deletions: 0, additions: 1} as const;
 const CODE_VIEW_STYLE = {height: '100%', overflow: 'auto'} as const;
 
-type DiffItem = CodeViewDiffItem<AnnotationMetadata>;
 type DiffLine = GetHoveredLineResult<'diff'>;
 type HoveredLine = GetHoveredLineResult<'file'> | DiffLine;
 
@@ -49,13 +46,6 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
     useState<CodeViewLineSelection | null>(null);
 
   const viewerRef = use(DiffViewerContext);
-
-  const items: DiffItem[] = files.map((file) => ({
-    id: file.id,
-    type: 'diff',
-    fileDiff: file.metadata,
-    ...annotationsByFile.get(file.id),
-  }));
 
   function updateAnnotations(
     fileId: string,
@@ -96,7 +86,12 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
   return (
     <CodeView
       ref={viewerRef}
-      items={items}
+      items={files.map((file) => ({
+        id: file.id,
+        type: 'diff',
+        fileDiff: file.metadata,
+        ...annotationsByFile.get(file.id),
+      }))}
       selectedLines={selectedLines}
       options={CODE_VIEW_OPTIONS}
       style={CODE_VIEW_STYLE}
