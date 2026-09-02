@@ -1,14 +1,23 @@
 import 'server-only';
 
+import {headers} from 'next/headers';
 import {z} from 'zod';
 
-const ViewportHeightSchema = z.coerce.number().int().positive();
+export const ClientHintsSchema = z.object({
+  viewportHeight: z.coerce
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .catch(undefined),
+});
 
-export function parseClientHints(headers: Headers) {
-  const viewportHeight = ViewportHeightSchema.safeParse(
-    headers.get('sec-ch-viewport-height'),
-  );
-  return {
-    ...(viewportHeight.success && {viewportHeight: viewportHeight.data}),
-  };
+export type ClientHints = z.infer<typeof ClientHintsSchema>;
+
+export async function loadClientHints() {
+  const h = await headers();
+
+  return ClientHintsSchema.parse({
+    viewportHeight: h.get('sec-ch-viewport-height'),
+  });
 }

@@ -1,13 +1,12 @@
 import {Spinner} from '@heroui/react';
 import {preloadFileTree} from '@pierre/trees/ssr';
-import {headers} from 'next/headers';
 import {notFound} from 'next/navigation';
 
 import {SessionProvider} from '@/lib/auth/provider';
 import {visitShare} from '@/lib/db/shares';
 import {getTreeOptions} from '@/lib/trees/handoff';
 import {ClientGate} from '@/lib/utils/client-gate';
-import {parseClientHints} from '@/lib/utils/client-hints';
+import {loadClientHints} from '@/lib/utils/client-hints';
 import {isDefined} from '@/lib/utils/defined';
 
 import {prepareDiffView} from './_lib/prepare-view';
@@ -35,7 +34,7 @@ export default async function DiffPage({
   const [{id}, {q: searchQuery}, {viewportHeight}] = await Promise.all([
     params,
     loadDiffSearchParams(searchParams),
-    headers().then(parseClientHints),
+    loadClientHints(),
   ]);
 
   const share = visitShare(id);
