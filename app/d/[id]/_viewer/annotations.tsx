@@ -10,23 +10,22 @@ import {useFocusWithin} from 'react-aria/useFocusWithin';
 
 import {authClient} from '@/lib/auth/client';
 import {SessionContext} from '@/lib/auth/context';
+import {GitHubIcon} from '@/lib/auth/github-icon';
 import {useKeyDown} from '@/lib/hooks/use-key-down';
-import {GitHubIcon} from '@/lib/icons/github-icon';
 import {isDefined} from '@/lib/utils/defined';
 
-import {addComment} from './_actions';
+import {addComment} from '../_lib/actions';
 
 import type {AnnotationMetadata} from '@/lib/diffs/options';
 import type {DiffLineAnnotation} from '@pierre/diffs';
 
 function preloadDiffEditor() {
-  void import('./_diff-editor');
+  void import('./editor');
 }
 
-const DiffEditor = dynamic(
-  () => import('./_diff-editor').then((m) => m.DiffEditor),
-  {loading: () => null},
-);
+const DiffEditor = dynamic(() => import('./editor').then((m) => m.DiffEditor), {
+  loading: () => null,
+});
 
 export type DiffAnnotation = DiffLineAnnotation<AnnotationMetadata>;
 

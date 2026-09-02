@@ -1,6 +1,6 @@
 import 'server-only';
 
-import {db} from '.';
+import {db} from './client';
 import {newId} from './id';
 import {comments, threads} from './schema';
 

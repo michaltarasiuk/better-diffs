@@ -1,4 +1,4 @@
-import {verifyBearerSecret} from '@/lib/api/verify-bearer-secret';
+import {verifyBearerSecret} from '@/lib/auth/bearer';
 import {deleteExpiredShares} from '@/lib/db/shares';
 import {env} from '@/lib/env';
 

@@ -3,7 +3,7 @@
  * Chrome adds 0px. List padding and git icons move after hydrate. Set both
  * gutter vars to 0px so the server and client look the same.
  */
-:global(file-tree-container) {
+file-tree-container {
   --trees-scrollbar-gutter-override: 0px;
   --trees-scrollbar-gutter-measured: 0px;
 }

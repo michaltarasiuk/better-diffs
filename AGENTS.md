@@ -11,3 +11,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Commit messages
 
 Use imperative mood, sentence case, no trailing period. Start with a capital verb, lowercase the rest unless a proper noun.
+
+## Comments
+
+Only comment to record a constraint the code cannot show — an upstream quirk, a browser difference, a non-obvious ordering requirement. Never narrate what the code does, and never explain a change you just made.
+
+Always use block form: `/** … */` on an exported symbol so the note surfaces on hover at call sites, `/* … */` everywhere else. Open and close on their own lines, align a leading asterisk under the first one on every continuation line, wrap at 80 columns, and write full sentences. Lead with the external constraint, then the workaround it forces.
+
+Tool directives (`@type`, `@__PURE__`, `/// <reference>`) are exempt; leave them in whatever form the tool requires.

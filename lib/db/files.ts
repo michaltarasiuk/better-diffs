@@ -4,7 +4,7 @@ import {and, eq} from 'drizzle-orm';
 
 import {isDefined} from '@/lib/utils/defined';
 
-import {db} from '.';
+import {db} from './client';
 import {files as filesTable, patches as patchesTable} from './schema';
 
 export function shareContainsFile(shareId: string, fileId: string) {

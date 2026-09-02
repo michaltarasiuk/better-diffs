@@ -1,4 +1,4 @@
-import '@/lib/diffs/diffs.module.css';
+import '@/lib/diffs/diffs.css';
 
 import {PatchDiff} from '@pierre/diffs/react';
 import dedent from 'dedent';

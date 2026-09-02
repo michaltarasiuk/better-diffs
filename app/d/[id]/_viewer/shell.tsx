@@ -21,7 +21,7 @@ export function DiffFilesShell({children}: DiffFilesShellProps) {
   return children;
 }
 
-export const diffFilesSpinner = (
+const diffFilesSpinner = (
   <div className="flex h-full items-center justify-center">
     <Spinner aria-label="Loading diff" />
   </div>

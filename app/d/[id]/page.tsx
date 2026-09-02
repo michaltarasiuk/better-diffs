@@ -8,13 +8,13 @@ import {getTreeOptions} from '@/lib/trees/handoff';
 import {parseClientHints} from '@/lib/utils/client-hints';
 import {isDefined} from '@/lib/utils/defined';
 
-import {DiffCodeView} from './_diff-code-view';
-import {DiffFilesShell} from './_diff-files-shell';
-import {DiffSummary} from './_diff-summary';
-import {DiffTree} from './_diff-tree';
-import {prepareDiffView} from './_diff-view';
-import {DiffViewerProvider} from './_diff-viewer-context';
-import {loadDiffSearchParams} from './_search-params';
+import {prepareDiffView} from './_lib/prepare-view';
+import {loadDiffSearchParams} from './_lib/search-params';
+import {DiffTree} from './_sidebar/file-tree';
+import {DiffSummary} from './_sidebar/summary';
+import {DiffCodeView} from './_viewer/code-view';
+import {DiffViewerProvider} from './_viewer/context';
+import {DiffFilesShell} from './_viewer/shell';
 
 import type {Metadata} from 'next';
 

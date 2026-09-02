@@ -4,7 +4,7 @@ import {betterAuth} from 'better-auth';
 import {drizzleAdapter} from 'better-auth/adapters/drizzle';
 import {nextCookies} from 'better-auth/next-js';
 
-import {db} from '@/lib/db';
+import {db} from '@/lib/db/client';
 import * as authSchema from '@/lib/db/schema/auth';
 import {env} from '@/lib/env';
 

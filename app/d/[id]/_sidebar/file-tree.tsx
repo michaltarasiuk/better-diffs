@@ -1,6 +1,6 @@
 'use client';
 
-import '@/lib/trees/trees.module.css';
+import '@/lib/trees/trees.css';
 
 import {SearchField} from '@heroui/react';
 import {
@@ -16,8 +16,8 @@ import {useKeyDown} from '@/lib/hooks/use-key-down';
 import {getTreeOptions, type TreeHandoff} from '@/lib/trees/handoff';
 import {isDefined} from '@/lib/utils/defined';
 
-import {DiffViewerContext} from './_diff-viewer-context';
-import {diffSearchParsers} from './_search-params';
+import {diffSearchParsers} from '../_lib/search-params';
+import {DiffViewerContext} from '../_viewer/context';
 
 interface DiffTreeProps {
   readonly handoff: TreeHandoff;

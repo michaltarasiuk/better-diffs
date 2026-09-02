@@ -3,7 +3,7 @@
  * Chrome adds 0px. Split panes move after hydrate. Set the gutter override to
  * 0px so the server and client look the same.
  */
-:global(diffs-container),
-:global([data-diffs]) {
+diffs-container,
+[data-diffs] {
   --diffs-scrollbar-gutter-override: 0px;
 }

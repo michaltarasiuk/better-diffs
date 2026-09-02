@@ -1,6 +1,6 @@
 'use client';
 
-import '@/lib/diffs/diffs.module.css';
+import '@/lib/diffs/diffs.css';
 
 import {isDiffAnnotation} from '@pierre/diffs';
 import {CodeView} from '@pierre/diffs/react';
@@ -9,8 +9,8 @@ import {use, useState} from 'react';
 import {CODE_VIEW_OPTIONS} from '@/lib/diffs/options';
 import {isDefined} from '@/lib/utils/defined';
 
-import {Annotation, GutterUtility, type DiffAnnotation} from './_annotations';
-import {DiffViewerContext} from './_diff-viewer-context';
+import {Annotation, GutterUtility, type DiffAnnotation} from './annotations';
+import {DiffViewerContext} from './context';
 
 import type {
   CodeViewLineSelection,

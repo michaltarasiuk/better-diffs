@@ -4,7 +4,7 @@ import {asc, eq, lt, sql} from 'drizzle-orm';
 
 import {isDefined} from '@/lib/utils/defined';
 
-import {db} from '.';
+import {db} from './client';
 import {newId} from './id';
 import {
   files as filesTable,
