@@ -3,8 +3,8 @@
 import {usePageShow} from '@/lib/hooks/use-page-show';
 
 export default function DiffLayout({children}: LayoutProps<'/d/[id]'>) {
-  usePageShow(function bypassBfcache(e) {
-    if (e.persisted) {
+  usePageShow(function bypassBfcache(event) {
+    if (event.persisted) {
       window.location.reload();
     }
   });

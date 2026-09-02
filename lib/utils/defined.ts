@@ -1,3 +1,3 @@
-export function isDefined(v: unknown) {
-  return v != null;
+export function isDefined(value: unknown) {
+  return value != null;
 }

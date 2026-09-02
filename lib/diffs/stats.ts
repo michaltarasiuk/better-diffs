@@ -1,18 +1,18 @@
 import type {FileDiffMetadata} from '@pierre/diffs';
 
-export function computeDiffStats(files: readonly FileDiffMetadata[]) {
+export function computeDiffStats(fileDiffs: readonly FileDiffMetadata[]) {
   let additions = 0;
   let deletions = 0;
 
-  for (const f of files) {
-    for (const h of f.hunks) {
-      additions += h.additionLines;
-      deletions += h.deletionLines;
+  for (const file of fileDiffs) {
+    for (const hunk of file.hunks) {
+      additions += hunk.additionLines;
+      deletions += hunk.deletionLines;
     }
   }
 
   return {
-    files: files.length,
+    files: fileDiffs.length,
     additions,
     deletions,
     lines: additions + deletions,

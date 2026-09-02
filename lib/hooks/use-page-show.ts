@@ -1,6 +1,6 @@
 import {useEffect, useEffectEvent} from 'react';
 
-export function usePageShow(onPageShow: (e: PageTransitionEvent) => void) {
+export function usePageShow(onPageShow: (event: PageTransitionEvent) => void) {
   const onPageShowEvent = useEffectEvent(onPageShow);
   useEffect(() => {
     window.addEventListener('pageshow', onPageShowEvent);

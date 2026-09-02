@@ -15,9 +15,9 @@ export const ClientHintsSchema = z.object({
 export type ClientHints = z.infer<typeof ClientHintsSchema>;
 
 export async function loadClientHints() {
-  const h = await headers();
+  const requestHeaders = await headers();
 
   return ClientHintsSchema.parse({
-    viewportHeight: h.get('sec-ch-viewport-height'),
+    viewportHeight: requestHeaders.get('sec-ch-viewport-height'),
   });
 }

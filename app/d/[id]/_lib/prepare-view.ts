@@ -1,5 +1,5 @@
 import {computeDiffStats} from '@/lib/diffs/stats';
-import {prepareTreeHandoff, sortFilesByTreeOrder} from '@/lib/trees/handoff';
+import {prepareTreeHandoff, type TreeHandoff} from '@/lib/trees/handoff';
 
 import type {FileDiffMetadata} from '@pierre/diffs';
 
@@ -13,13 +13,25 @@ export function prepareDiffView(
   files: readonly ShareFile[],
   {viewportHeight}: {readonly viewportHeight?: number} = {},
 ) {
-  const metadata = files.map((file) => file.metadata);
-  const tree = prepareTreeHandoff(metadata, {viewportHeight});
+  const fileDiffs = files.map((file) => file.metadata);
+  const tree = prepareTreeHandoff(fileDiffs, {viewportHeight});
 
   return {
     tree,
-    stats: computeDiffStats(metadata),
-    files: sortFilesByTreeOrder(files, tree.paths),
-    fileIdsByPath: Object.fromEntries(files.map(({name, id}) => [name, id])),
+    stats: computeDiffStats(fileDiffs),
+    files: orderFilesByTree(files, tree),
+    get fileIdsByPath() {
+      return Object.fromEntries(this.files.map(({name, id}) => [name, id]));
+    },
   };
+}
+
+function orderFilesByTree(files: readonly ShareFile[], tree: TreeHandoff) {
+  const rankByPath = new Map(tree.paths.map((path, rank) => [path, rank]));
+
+  return files.toSorted(
+    (a, b) =>
+      (rankByPath.get(a.name) ?? Number.MAX_SAFE_INTEGER) -
+      (rankByPath.get(b.name) ?? Number.MAX_SAFE_INTEGER),
+  );
 }

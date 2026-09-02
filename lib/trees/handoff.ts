@@ -4,14 +4,13 @@ import {
   preparePresortedFileTreeInput,
   type FileTreeOptions,
   type GitStatus,
-  type GitStatusEntry,
 } from '@pierre/trees';
 
 import {isDefined} from '@/lib/utils/defined';
 
 import {TREES_FOCUS_RING_UNSAFE_CSS} from './unsafe-css';
 
-import type {ChangeTypes, FileDiffMetadata} from '@pierre/diffs';
+import type {FileDiffMetadata} from '@pierre/diffs';
 
 const DIFF_TREE_OPTIONS = {
   id: 'diff-file-tree',
@@ -28,53 +27,40 @@ const DEFAULT_INITIAL_VISIBLE_ROW_COUNT = 25;
 export type TreeHandoff = ReturnType<typeof prepareTreeHandoff>;
 
 export function prepareTreeHandoff(
-  files: readonly FileDiffMetadata[],
+  fileDiffs: readonly FileDiffMetadata[],
   {viewportHeight}: {readonly viewportHeight?: number} = {},
 ) {
   const {paths} = prepareFileTreeInput(
-    files.map((f) => f.name),
+    fileDiffs.map((file) => file.name),
     {flattenEmptyDirectories: true},
   );
 
+  let initialVisibleRowCount = DEFAULT_INITIAL_VISIBLE_ROW_COUNT;
+  if (isDefined(viewportHeight)) {
+    initialVisibleRowCount = getInitialVisibleRowCount(viewportHeight);
+  }
+
   return {
     paths,
-    gitStatus: getGitStatusEntries(files),
-    initialVisibleRowCount: isDefined(viewportHeight)
-      ? getInitialVisibleRowCount(viewportHeight)
-      : DEFAULT_INITIAL_VISIBLE_ROW_COUNT,
+    initialVisibleRowCount,
+    gitStatus: fileDiffs.map((file) => ({
+      path: file.name,
+      status: changeTypeToGitStatus(file.type),
+    })),
   };
-}
-
-export function sortFilesByTreeOrder<T extends {readonly name: string}>(
-  files: readonly T[],
-  order: readonly string[],
-) {
-  const rankByPath = new Map(order.map((path, rank) => [path, rank]));
-  const rankOf = (file: T) => rankByPath.get(file.name) ?? order.length;
-
-  return files.toSorted((a, b) => rankOf(a) - rankOf(b));
 }
 
 export function getTreeOptions(
   {paths, gitStatus, initialVisibleRowCount}: TreeHandoff,
-  {searchQuery}: {readonly searchQuery?: string | null} = {},
-): FileTreeOptions {
+  {searchQuery}: {readonly searchQuery: string | null},
+) {
   return {
     ...DIFF_TREE_OPTIONS,
     preparedInput: preparePresortedFileTreeInput(paths),
-    gitStatus,
     initialVisibleRowCount,
     initialSearchQuery: searchQuery,
-  };
-}
-
-function getGitStatusEntries(
-  files: readonly FileDiffMetadata[],
-): readonly GitStatusEntry[] {
-  return files.map((f) => ({
-    path: f.name,
-    status: changeTypeToGitStatus(f.type),
-  }));
+    gitStatus,
+  } satisfies FileTreeOptions;
 }
 
 function getInitialVisibleRowCount(viewportHeight: number) {
@@ -88,8 +74,10 @@ function getInitialVisibleRowCount(viewportHeight: number) {
   );
 }
 
-function changeTypeToGitStatus(t: ChangeTypes): GitStatus {
-  switch (t) {
+function changeTypeToGitStatus(
+  changeType: 'change' | 'rename-pure' | 'rename-changed' | 'new' | 'deleted',
+): GitStatus {
+  switch (changeType) {
     case 'new':
       return 'added';
     case 'deleted':
@@ -100,6 +88,6 @@ function changeTypeToGitStatus(t: ChangeTypes): GitStatus {
     case 'rename-changed':
       return 'renamed';
     default:
-      return t satisfies never;
+      return changeType satisfies never;
   }
 }
