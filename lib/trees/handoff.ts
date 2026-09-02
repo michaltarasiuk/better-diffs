@@ -51,7 +51,7 @@ export function prepareTreeHandoff(
 }
 
 export function getTreeOptions(
-  {paths, gitStatus, initialVisibleRowCount}: TreeHandoff,
+  {paths, initialVisibleRowCount, gitStatus}: TreeHandoff,
   {searchQuery}: {readonly searchQuery: string | null},
 ) {
   return {

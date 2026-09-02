@@ -11,10 +11,10 @@ interface ShareFile {
 
 export function prepareDiffView(
   files: readonly ShareFile[],
-  {viewportHeight}: {readonly viewportHeight?: number} = {},
+  options: {readonly viewportHeight?: number} = {},
 ) {
   const fileDiffs = files.map((file) => file.metadata);
-  const tree = prepareTreeHandoff(fileDiffs, {viewportHeight});
+  const tree = prepareTreeHandoff(fileDiffs, options);
 
   return {
     tree,
