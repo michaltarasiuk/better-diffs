@@ -93,7 +93,7 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
         ...annotationsByFile.get(file.id),
       }))}
       selectedLines={selectedLines}
-      onSelectedLinesChange={(selection) => setSelectedLines(selection)}
+      onSelectedLinesChange={setSelectedLines}
       renderGutterUtility={(getHoveredLine, item) => (
         <GutterUtility
           onAddAnnotation={() => addCommentForm(item.id, getHoveredLine())}
