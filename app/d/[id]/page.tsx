@@ -52,7 +52,7 @@ export default async function DiffPage({
   const stats = computeDiffStats(fileDiffs);
 
   const files = orderFilesByTree(share, tree);
-  const fileIdsByPath = Object.fromEntries(
+  const fileIdByPath = Object.fromEntries(
     files.map((file) => [file.name, file.id]),
   );
 
@@ -63,7 +63,7 @@ export default async function DiffPage({
           <DiffTree
             handoff={tree}
             preloaded={preloadFileTree(getTreeOptions(tree, {searchQuery}))}
-            fileIdsByPath={fileIdsByPath}
+            fileIdByPath={fileIdByPath}
           >
             <DiffSummary stats={stats} />
           </DiffTree>

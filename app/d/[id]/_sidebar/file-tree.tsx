@@ -21,14 +21,14 @@ import {DiffViewerContext} from '../_viewer/context';
 interface DiffTreeProps {
   readonly handoff: TreeHandoff;
   readonly preloaded: FileTreePreloadedData;
-  readonly fileIdsByPath: Readonly<Record<string, string>>;
+  readonly fileIdByPath: Readonly<Record<string, string>>;
   readonly children: React.ReactNode;
 }
 
 export function DiffTree({
   handoff,
   preloaded,
-  fileIdsByPath,
+  fileIdByPath,
   children,
 }: DiffTreeProps) {
   const {searchQuery, setSearchQuery} = useSearchQuery();
@@ -39,7 +39,7 @@ export function DiffTree({
       void setSearchQuery(value);
     },
     onSelectionChange([selectedPath]) {
-      const id = isDefined(selectedPath) ? fileIdsByPath[selectedPath] : null;
+      const id = isDefined(selectedPath) ? fileIdByPath[selectedPath] : null;
       if (isDefined(id)) {
         viewerRef.current?.scrollTo({type: 'item', id, align: 'start'});
       }
