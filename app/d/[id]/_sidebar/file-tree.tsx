@@ -9,14 +9,13 @@ import {
   useFileTreeSearch,
   type FileTreePreloadedData,
 } from '@pierre/trees/react';
-import {useQueryState} from 'nuqs';
 import {use, useRef} from 'react';
 
 import {useKeyDown} from '@/lib/hooks/use-key-down';
 import {getTreeOptions, type TreeHandoff} from '@/lib/trees/handoff';
 import {isDefined} from '@/lib/utils/defined';
 
-import {diffSearchParsers} from '../_lib/search-params';
+import {useSearchQuery} from '../_lib/use-search-query';
 import {DiffViewerContext} from '../_viewer/context';
 
 interface DiffTreeProps {
@@ -32,10 +31,7 @@ export function DiffTree({
   fileIdsByPath,
   children,
 }: DiffTreeProps) {
-  const [searchQuery, setSearchQuery] = useQueryState(
-    'q',
-    diffSearchParsers.q.withOptions({history: 'replace'}),
-  );
+  const {searchQuery, setSearchQuery} = useSearchQuery();
   const viewerRef = use(DiffViewerContext);
   const {model} = useFileTree({
     ...getTreeOptions(handoff, {searchQuery}),
