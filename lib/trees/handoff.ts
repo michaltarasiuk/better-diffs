@@ -50,6 +50,19 @@ export function prepareTreeHandoff(
   };
 }
 
+export function orderFilesByTree<T extends {readonly name: string}>(
+  files: readonly T[],
+  tree: TreeHandoff,
+) {
+  const rankByPath = new Map(tree.paths.map((path, rank) => [path, rank]));
+
+  return files.toSorted(
+    (a, b) =>
+      (rankByPath.get(a.name) ?? Number.MAX_SAFE_INTEGER) -
+      (rankByPath.get(b.name) ?? Number.MAX_SAFE_INTEGER),
+  );
+}
+
 export function getTreeOptions(
   {paths, initialVisibleRowCount, gitStatus}: TreeHandoff,
   {searchQuery}: {readonly searchQuery: string | null},
