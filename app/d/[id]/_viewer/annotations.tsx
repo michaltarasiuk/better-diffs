@@ -15,6 +15,7 @@ import {useKeyDown} from '@/lib/hooks/use-key-down';
 import {isDefined} from '@/lib/utils/defined';
 
 import {addComment} from '../_lib/actions';
+import {DiffEditorSkeleton} from './editor-skeleton';
 
 import type {AnnotationMetadata} from '@/lib/diffs/options';
 import type {DiffLineAnnotation} from '@pierre/diffs';
@@ -24,7 +25,7 @@ function preloadDiffEditor() {
 }
 
 const DiffEditor = dynamic(() => import('./editor').then((m) => m.DiffEditor), {
-  loading: () => null,
+  loading: () => <DiffEditorSkeleton />,
 });
 
 export type DiffAnnotation = DiffLineAnnotation<AnnotationMetadata>;
