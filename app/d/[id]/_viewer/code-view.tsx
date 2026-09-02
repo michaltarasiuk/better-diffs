@@ -29,16 +29,16 @@ interface FileAnnotations {
   readonly version: number;
 }
 
-interface DiffCodeViewFile {
+interface CodeViewFile {
   readonly id: string;
   readonly metadata: FileDiffMetadata;
 }
 
-interface DiffCodeViewProps {
-  readonly files: readonly DiffCodeViewFile[];
+interface CodeViewProps {
+  readonly files: readonly CodeViewFile[];
 }
 
-export function DiffCodeView({files}: DiffCodeViewProps) {
+export function DiffCodeView({files}: CodeViewProps) {
   const [annotationsByFile, setAnnotationsByFile] = useState(
     () => new Map() as ReadonlyMap<string, FileAnnotations>,
   );
@@ -68,12 +68,13 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
     }
 
     updateAnnotations(fileId, (annotations) =>
-      hasCommentForm(annotations, line)
-        ? annotations
-        : sortAnnotations([
-            ...annotations,
-            {...line, metadata: {type: 'form'}},
-          ]),
+      sortAnnotations([
+        ...annotations,
+        {
+          ...line,
+          metadata: {type: 'form'},
+        },
+      ]),
     );
   }
 
@@ -116,18 +117,6 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
 
 function isDiffLine(line: HoveredLine): line is DiffLine {
   return 'side' in line;
-}
-
-function hasCommentForm(
-  annotations: readonly DiffAnnotation[],
-  line: DiffLine,
-) {
-  return annotations.some(
-    (annotation) =>
-      annotation.metadata.type === 'form' &&
-      annotation.side === line.side &&
-      annotation.lineNumber === line.lineNumber,
-  );
 }
 
 function sortAnnotations(annotations: readonly DiffAnnotation[]) {
