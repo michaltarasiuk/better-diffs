@@ -32,8 +32,6 @@ interface FileAnnotations {
   readonly version: number;
 }
 
-const NO_ANNOTATIONS: FileAnnotations = {annotations: [], version: 0};
-
 interface DiffCodeViewFile {
   readonly id: string;
   readonly metadata: FileDiffMetadata;
@@ -44,19 +42,19 @@ interface DiffCodeViewProps {
 }
 
 export function DiffCodeView({files}: DiffCodeViewProps) {
-  const [annotationsByFile, setAnnotationsByFile] = useState<
-    ReadonlyMap<string, FileAnnotations>
-  >(() => new Map());
+  const [annotationsByFile, setAnnotationsByFile] = useState(
+    () => new Map() as ReadonlyMap<string, FileAnnotations>,
+  );
   const [selectedLines, setSelectedLines] =
     useState<CodeViewLineSelection | null>(null);
 
   const viewerRef = use(DiffViewerContext);
 
-  const items: DiffItem[] = files.map((file) => ({
+  const items = files.map((file): DiffItem => ({
     id: file.id,
     type: 'diff',
     fileDiff: file.metadata,
-    ...(annotationsByFile.get(file.id) ?? NO_ANNOTATIONS),
+    ...annotationsByFile.get(file.id),
   }));
 
   function updateAnnotations(
@@ -64,12 +62,9 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
     update: (annotations: DiffAnnotation[]) => DiffAnnotation[],
   ) {
     setAnnotationsByFile((annotationsByFile) => {
-      const {annotations, version} =
-        annotationsByFile.get(fileId) ?? NO_ANNOTATIONS;
+      const {annotations = [], version = 0} =
+        annotationsByFile.get(fileId) ?? {};
       const updated = update(annotations);
-      if (updated === annotations) {
-        return annotationsByFile;
-      }
 
       return new Map(annotationsByFile).set(fileId, {
         annotations: updated,
