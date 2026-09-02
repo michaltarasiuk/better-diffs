@@ -38,11 +38,10 @@ export function DiffTree({
     onSearchChange(value) {
       void setSearchQuery(value);
     },
-    onSelectionChange(selectedPaths) {
-      const [path] = selectedPaths;
-      const id = isDefined(path) ? fileIdsByPath[path] : null;
+    onSelectionChange([selectedPath]) {
+      const id = isDefined(selectedPath) ? fileIdsByPath[selectedPath] : null;
       if (isDefined(id)) {
-        viewerRef?.current?.scrollTo({type: 'item', id, align: 'start'});
+        viewerRef.current?.scrollTo({type: 'item', id, align: 'start'});
       }
     },
   });
