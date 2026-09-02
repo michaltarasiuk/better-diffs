@@ -10,9 +10,10 @@ dist
 .env*
 !.env.example
 
-# data
-data/*
-!data/.gitkeep
+# data (sqlite database is local-only)
+/data/*.db
+/data/*.db-shm
+/data/*.db-wal
 
 # os
 .DS_Store
