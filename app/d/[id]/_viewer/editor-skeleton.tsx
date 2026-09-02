@@ -4,8 +4,8 @@ import {Skeleton} from '@heroui/react/skeleton';
 export function DiffEditorSkeleton() {
   return (
     <Card
-      aria-busy="true"
       aria-label="Loading comment editor"
+      aria-busy="true"
       variant="secondary"
       className="m-2 mbs-1"
     >
