@@ -86,8 +86,8 @@ export function DiffCodeView({files}: CodeViewProps) {
     <CodeView
       ref={viewerRef}
       items={files.map((file) => ({
-        type: 'diff',
         id: file.id,
+        type: 'diff',
         fileDiff: file.metadata,
         ...annotationsByFile.get(file.id),
       }))}
