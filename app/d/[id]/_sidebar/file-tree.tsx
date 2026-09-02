@@ -39,8 +39,8 @@ export function DiffTree({
   const viewerRef = use(DiffViewerContext);
   const {model} = useFileTree({
     ...getTreeOptions(handoff, {searchQuery}),
-    onSearchChange(v) {
-      void setSearchQuery(v);
+    onSearchChange(value) {
+      void setSearchQuery(value);
     },
     onSelectionChange(selectedPaths) {
       const [path] = selectedPaths;
@@ -53,17 +53,17 @@ export function DiffTree({
   const search = useFileTreeSearch(model);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  useKeyDown(function focusSearch(e) {
+  useKeyDown(function focusSearch(event) {
     if (
-      e.key !== '/' ||
-      e.metaKey ||
-      e.ctrlKey ||
-      e.altKey ||
-      isEditableTarget(e.target)
+      event.key !== '/' ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.altKey ||
+      isEditableTarget(event.target)
     ) {
       return;
     }
-    e.preventDefault();
+    event.preventDefault();
     searchInputRef.current?.focus();
     searchInputRef.current?.select();
   });
@@ -74,7 +74,7 @@ export function DiffTree({
         variant="secondary"
         aria-label="Search files"
         value={search.value}
-        onChange={(v) => search.setValue(v || null)}
+        onChange={(value) => search.setValue(value || null)}
         fullWidth
         className="bg-trees-sidebar p-2"
       >
@@ -84,20 +84,20 @@ export function DiffTree({
             ref={searchInputRef}
             aria-keyshortcuts="/ Escape"
             placeholder="Search files"
-            onKeyDown={(e) => {
-              switch (e.key) {
+            onKeyDown={(event) => {
+              switch (event.key) {
                 case 'ArrowUp':
-                  e.preventDefault();
+                  event.preventDefault();
                   search.focusPreviousMatch();
                   break;
                 case 'ArrowDown':
-                  e.preventDefault();
+                  event.preventDefault();
                   search.focusNextMatch();
                   break;
                 case 'Escape':
-                  e.preventDefault();
+                  event.preventDefault();
                   search.setValue(null);
-                  e.currentTarget.blur();
+                  event.currentTarget.blur();
                   break;
               }
             }}

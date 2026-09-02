@@ -89,8 +89,8 @@ function applyBlockType(editor: LexicalEditor, type: BlockType) {
   }
 }
 
-function isBlockType(v: string): v is BlockType {
-  return BLOCK_TYPES.some((b) => b.value === v);
+function isBlockType(value: string): value is BlockType {
+  return BLOCK_TYPES.some((blockType) => blockType.value === value);
 }
 
 export function ToolbarPlugin() {
@@ -107,14 +107,14 @@ export function ToolbarPlugin() {
     const selection = $getSelection();
     if ($isRangeSelection(selection)) {
       const formats = new Set<Key>(
-        FORMAT_TYPES.filter((f) => selection.hasFormat(f)),
+        FORMAT_TYPES.filter((formatType) => selection.hasFormat(formatType)),
       );
       setTextFormats(formats);
 
       const anchorNode = selection.anchor.getNode();
-      let topLevelElement = $findMatchingParent(anchorNode, (n) => {
-        const p = n.getParent();
-        return isDefined(p) && $isRootOrShadowRoot(p);
+      let topLevelElement = $findMatchingParent(anchorNode, (node) => {
+        const parent = node.getParent();
+        return isDefined(parent) && $isRootOrShadowRoot(parent);
       });
       topLevelElement ??= anchorNode.getTopLevelElementOrThrow();
 
@@ -129,8 +129,8 @@ export function ToolbarPlugin() {
 
   useEffect(() => {
     return mergeRegister(
-      editor.registerUpdateListener(({editorState: s}) => {
-        s.read(
+      editor.registerUpdateListener(({editorState}) => {
+        editorState.read(
           () => {
             $updateToolbar();
           },
@@ -162,9 +162,9 @@ export function ToolbarPlugin() {
         aria-label="Block type"
         variant="secondary"
         value={blockType}
-        onChange={(v) => {
-          if (typeof v === 'string' && isBlockType(v)) {
-            applyBlockType(editor, v);
+        onChange={(value) => {
+          if (typeof value === 'string' && isBlockType(value)) {
+            applyBlockType(editor, value);
           }
         }}
         className="me-auto w-36 @xl:me-0"
@@ -175,9 +175,13 @@ export function ToolbarPlugin() {
         </Select.Trigger>
         <Select.Popover>
           <ListBox>
-            {BLOCK_TYPES.map((b) => (
-              <ListBox.Item key={b.value} id={b.value} textValue={b.label}>
-                {b.label}
+            {BLOCK_TYPES.map((blockType) => (
+              <ListBox.Item
+                key={blockType.value}
+                id={blockType.value}
+                textValue={blockType.label}
+              >
+                {blockType.label}
                 <ListBox.ItemIndicator />
               </ListBox.Item>
             ))}
@@ -215,8 +219,11 @@ export function ToolbarPlugin() {
         selectedKeys={textFormats}
         onSelectionChange={(selection) => {
           const toggled = selection.symmetricDifference(textFormats);
-          for (const f of toggled) {
-            editor.dispatchCommand(FORMAT_TEXT_COMMAND, f as TextFormatType);
+          for (const formatType of toggled) {
+            editor.dispatchCommand(
+              FORMAT_TEXT_COMMAND,
+              formatType as TextFormatType,
+            );
           }
         }}
       >

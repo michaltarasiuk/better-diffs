@@ -51,8 +51,8 @@ export function DiffEditor({onComment, onDismiss}: DiffEditorProps) {
         namespace: 'Better Diffs',
         nodes: [HeadingNode, QuoteNode],
         theme: EDITOR_THEME,
-        onError(e) {
-          console.error(e);
+        onError(error) {
+          console.error(error);
         },
       }}
     >

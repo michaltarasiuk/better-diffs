@@ -24,9 +24,10 @@ function preloadDiffEditor() {
   void import('./editor');
 }
 
-const DiffEditor = dynamic(() => import('./editor').then((m) => m.DiffEditor), {
-  loading: () => <DiffEditorSkeleton />,
-});
+const DiffEditor = dynamic(
+  () => import('./editor').then((module) => module.DiffEditor),
+  {loading: () => <DiffEditorSkeleton />},
+);
 
 export type DiffAnnotation = DiffLineAnnotation<AnnotationMetadata>;
 
@@ -79,8 +80,8 @@ function AnnotationBody({fileId, onDismiss}: AnnotationBodyProps) {
 
   const {metadata} = use(AnnotationContext);
 
-  useKeyDown((e) => {
-    if (e.key === 'Escape' && metadata.type === 'form' && isFocusWithin) {
+  useKeyDown((event) => {
+    if (event.key === 'Escape' && metadata.type === 'form' && isFocusWithin) {
       onDismiss();
     }
   });

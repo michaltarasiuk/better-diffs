@@ -13,13 +13,15 @@ export function prepareDiffView(
   files: readonly ShareFile[],
   {viewportHeight}: {readonly viewportHeight?: number} = {},
 ) {
-  const metadata = files.map((f) => f.metadata);
+  const metadata = files.map((file) => file.metadata);
   const tree = prepareTreeHandoff(metadata, {viewportHeight});
 
   return {
     tree,
     stats: computeDiffStats(metadata),
     files: sortFilesByTreeOrder(files, tree.paths),
-    fileIdsByPath: Object.fromEntries(files.map((f) => [f.name, f.id])),
+    fileIdsByPath: Object.fromEntries(
+      files.map((file) => [file.name, file.id]),
+    ),
   };
 }
