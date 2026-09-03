@@ -60,15 +60,13 @@ import {useEffect, useEffectEvent, useState, useTransition} from 'react';
 
 import {isDefined} from '@/lib/utils/defined';
 
-const bodySmTypography = typographyVariants({type: 'body-sm'});
-
 const EDITOR_THEME = {
   heading: {
     h1: typographyVariants({type: 'h4'}).base(),
     h2: typographyVariants({type: 'h5'}).base(),
     h3: typographyVariants({type: 'h6'}).base(),
   },
-  paragraph: bodySmTypography.base(),
+  paragraph: typographyVariants({type: 'body-sm'}).base(),
   quote: 'border-border text-muted border-s-4 ps-4 italic',
   text: {
     bold: 'font-semibold text-foreground',
@@ -158,7 +156,7 @@ export function DiffEditor({onComment, onDismiss}: DiffEditorProps) {
                   aria-placeholder="Leave a comment…"
                   placeholder={
                     <div
-                      className={bodySmTypography.base({
+                      className={typographyVariants({type: 'body-sm'}).base({
                         className:
                           'text-field-placeholder pointer-events-none absolute inset-0 px-3 py-2',
                       })}
@@ -166,7 +164,7 @@ export function DiffEditor({onComment, onDismiss}: DiffEditorProps) {
                       Leave a comment…
                     </div>
                   }
-                  className={bodySmTypography.base({
+                  className={typographyVariants({type: 'body-sm'}).base({
                     className: 'max-h-24 min-h-24 overflow-y-auto outline-none',
                   })}
                 />

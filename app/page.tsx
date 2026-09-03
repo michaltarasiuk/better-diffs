@@ -32,7 +32,12 @@ export default async function HomePage() {
   return (
     <main className="mx-auto h-full max-w-2xl space-y-8 px-6 py-12 sm:px-8 sm:py-16">
       <header className="space-y-2">
-        <Typography.Heading level={1} className={heading.base()}>
+        <Typography.Heading
+          level={1}
+          className={typographyVariants({type: 'h2'}).base({
+            className: 'font-mono tracking-tight',
+          })}
+        >
           Better Diffs
         </Typography.Heading>
 
@@ -47,7 +52,7 @@ export default async function HomePage() {
         <Typography.Heading
           id="install"
           level={2}
-          className={sectionHeading.base()}
+          className={typographyVariants({type: 'h6'}).base()}
         >
           Install
         </Typography.Heading>
@@ -79,7 +84,7 @@ export default async function HomePage() {
         <Typography.Heading
           id="usage"
           level={2}
-          className={sectionHeading.base()}
+          className={typographyVariants({type: 'h6'}).base()}
         >
           Usage
         </Typography.Heading>
@@ -89,12 +94,3 @@ export default async function HomePage() {
     </main>
   );
 }
-
-const heading = typographyVariants({
-  type: 'h2',
-  className: 'font-mono tracking-tight',
-});
-
-const sectionHeading = typographyVariants({
-  type: 'h6',
-});
