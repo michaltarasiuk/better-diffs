@@ -65,11 +65,18 @@ export default async function HomePage() {
             `}
           />
 
-          <Typography.Paragraph size="sm" color="muted">
-            Downloads a prebuilt binary for macOS or Linux into{' '}
-            <Typography.Code className="text-xs">~/.local/bin</Typography.Code>{' '}
-            and points it at this instance. Needs{' '}
-            <Typography.Code className="text-xs">git</Typography.Code> to run.
+          <Typography.Paragraph size="xs" color="muted">
+            {[
+              'Downloads a prebuilt binary for macOS or Linux into ',
+              <Typography.Code key="bin" className="text-xs">
+                ~/.local/bin
+              </Typography.Code>,
+              ' and points it at this instance. Needs ',
+              <Typography.Code key="git" className="text-xs">
+                git
+              </Typography.Code>,
+              ' to run.',
+            ]}
           </Typography.Paragraph>
         </div>
       </section>
@@ -94,5 +101,5 @@ export default async function HomePage() {
 }
 
 const sectionHeading = typographyVariants({
-  type: 'body-sm',
+  type: 'body-xs',
 });
