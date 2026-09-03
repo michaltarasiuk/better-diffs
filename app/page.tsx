@@ -32,7 +32,12 @@ export default async function HomePage() {
   return (
     <main className="mx-auto h-full max-w-2xl space-y-8 px-6 py-12 sm:px-8 sm:py-16">
       <header className="space-y-2">
-        <Typography.Heading level={1} className="font-mono tracking-tight">
+        <Typography.Heading
+          level={1}
+          className={heading.base({
+            className: 'font-mono tracking-tight',
+          })}
+        >
           better-diffs
         </Typography.Heading>
 
@@ -99,6 +104,10 @@ export default async function HomePage() {
     </main>
   );
 }
+
+const heading = typographyVariants({
+  type: 'h2',
+});
 
 const sectionHeading = typographyVariants({
   type: 'body-xs',
