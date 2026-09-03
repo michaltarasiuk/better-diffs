@@ -19,7 +19,7 @@ export function CopyCommand({command, label}: CopyCommandProps) {
 
   return (
     <div className="bg-surface-secondary border-border rounded-field flex items-start gap-2 border p-2 ps-3">
-      <code className="min-w-0 flex-1 py-1.5 font-mono text-xs leading-relaxed whitespace-pre-wrap">
+      <code className="min-w-0 flex-1 py-2 font-mono text-xs leading-relaxed whitespace-pre-wrap">
         {command}
       </code>
       <Button
