@@ -6,18 +6,10 @@ import {
   type GitStatus,
 } from '@pierre/trees';
 
+import {TREES_FOCUS_RING_UNSAFE_CSS} from '@/lib/trees/unsafe-css';
 import {isDefined} from '@/lib/utils/defined';
 
-import {TREES_FOCUS_RING_UNSAFE_CSS} from './unsafe-css';
-
 import type {FileDiffMetadata} from '@pierre/diffs';
-
-const DIFF_TREE_OPTIONS = {
-  id: 'diff-file-tree',
-  initialExpansion: 'open',
-  fileTreeSearchMode: 'hide-non-matches',
-  unsafeCSS: TREES_FOCUS_RING_UNSAFE_CSS,
-} satisfies Partial<FileTreeOptions>;
 
 const DIFF_TREE_SEARCH_HEIGHT = 52;
 const DIFF_TREE_SUMMARY_HEIGHT = 52;
@@ -30,23 +22,22 @@ export function prepareTreeHandoff(
   fileDiffs: readonly FileDiffMetadata[],
   {viewportHeight}: {readonly viewportHeight?: number} = {},
 ) {
+  const gitStatus = fileDiffs.map(({name, type}) => ({
+    path: name,
+    status: changeTypeToGitStatus(type),
+  }));
+
   const {paths} = prepareFileTreeInput(
-    fileDiffs.map((file) => file.name),
+    gitStatus.map(({path}) => path),
     {flattenEmptyDirectories: true},
   );
 
-  let initialVisibleRowCount = DEFAULT_INITIAL_VISIBLE_ROW_COUNT;
-  if (isDefined(viewportHeight)) {
-    initialVisibleRowCount = getInitialVisibleRowCount(viewportHeight);
-  }
-
   return {
     paths,
-    initialVisibleRowCount,
-    gitStatus: fileDiffs.map((file) => ({
-      path: file.name,
-      status: changeTypeToGitStatus(file.type),
-    })),
+    initialVisibleRowCount: isDefined(viewportHeight)
+      ? getInitialVisibleRowCount(viewportHeight)
+      : DEFAULT_INITIAL_VISIBLE_ROW_COUNT,
+    gitStatus,
   };
 }
 
@@ -68,11 +59,14 @@ export function getTreeOptions(
   {searchQuery}: {readonly searchQuery: string | null},
 ) {
   return {
-    ...DIFF_TREE_OPTIONS,
+    id: 'diff-file-tree',
     preparedInput: preparePresortedFileTreeInput(paths),
-    initialVisibleRowCount,
+    initialExpansion: 'open',
+    fileTreeSearchMode: 'hide-non-matches',
     initialSearchQuery: searchQuery,
+    initialVisibleRowCount,
     gitStatus,
+    unsafeCSS: TREES_FOCUS_RING_UNSAFE_CSS,
   } satisfies FileTreeOptions;
 }
 
