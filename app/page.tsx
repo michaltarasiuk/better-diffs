@@ -80,8 +80,9 @@ export default async function HomePage() {
           <CopyCommand command={INSTALL.command} label="Copy install command" />
           <Typography.Paragraph size="xs" color="muted">
             Downloads a prebuilt binary for macOS or Linux into{' '}
-            <Typography.Code>{INSTALL.dir}</Typography.Code> and points it at
-            this instance. Needs <Typography.Code>git</Typography.Code> to run.
+            <Typography.Code className="text-xs">{INSTALL.dir}</Typography.Code>{' '}
+            and points it at this instance. Needs{' '}
+            <Typography.Code className="text-xs">git</Typography.Code> to run.
           </Typography.Paragraph>
         </section>
 
