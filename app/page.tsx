@@ -1,6 +1,7 @@
 import '@/lib/diffs/diffs.css';
 
 import {PatchDiff} from '@pierre/diffs/react';
+import {preloadPatchDiff} from '@pierre/diffs/ssr';
 import dedent from 'dedent';
 
 import {DIFF_VIEWER_OPTIONS} from '@/lib/diffs/options';
@@ -10,13 +11,33 @@ import {CopyCommand} from './_home/copy-command';
 
 import type {Metadata} from 'next';
 
-const USAGE_DIFF_OPTIONS = {
-  ...DIFF_VIEWER_OPTIONS,
-  diffStyle: 'unified',
-} as const;
-
 const DESCRIPTION =
   'Share your current changes with teammates without creating a PR.';
+
+const INSTALL = {
+  dir: '~/.local/bin',
+  command: dedent`
+    BASE_URL='${env.BASE_URL}'
+    curl -fsSL "$BASE_URL/install.sh" | sh
+  `,
+} as const;
+
+const USAGE = {
+  patch: dedent`
+    diff --git a/usage b/usage
+    --- a/usage
+    +++ b/usage
+    @@ -1 +1,4 @@
+     better-diffs
+    +better-diffs --staged
+    +better-diffs --base main -- src/
+    +better-diffs --open
+  `,
+  diffOptions: {
+    ...DIFF_VIEWER_OPTIONS,
+    diffStyle: 'unified',
+  } as const,
+} as const;
 
 export const metadata: Metadata = {
   description: DESCRIPTION,
@@ -24,24 +45,11 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-const USAGE_PATCH = dedent`
-  diff --git a/usage b/usage
-  --- a/usage
-  +++ b/usage
-  @@ -1 +1,4 @@
-   better-diffs
-  +better-diffs --staged
-  +better-diffs --base main -- src/
-  +better-diffs --open
-`;
-
-const INSTALL_DIR = '~/.local/bin';
-
-export default function HomePage() {
-  const installCommand = dedent`
-    BASE_URL='${env.BASE_URL}'
-    curl -fsSL "$BASE_URL/install.sh" | sh
-  `;
+export default async function HomePage() {
+  const preloadedPatchDiff = await preloadPatchDiff({
+    patch: USAGE.patch,
+    options: USAGE.diffOptions,
+  });
 
   return (
     <main className="flex min-h-dvh items-center justify-center p-8">
@@ -58,21 +66,17 @@ export default function HomePage() {
 
         <section aria-labelledby="install" className="flex flex-col gap-3">
           <SectionHeading id="install">Install</SectionHeading>
-          <CopyCommand command={installCommand} label="Copy install command" />
+          <CopyCommand command={INSTALL.command} label="Copy install command" />
           <p className="text-muted text-xs">
             Downloads a prebuilt binary for macOS or Linux into{' '}
-            <InlineCode>{INSTALL_DIR}</InlineCode> and points it at this
+            <InlineCode>{INSTALL.dir}</InlineCode> and points it at this
             instance. Needs <InlineCode>git</InlineCode> to run.
           </p>
         </section>
 
         <section aria-labelledby="usage" className="flex flex-col gap-3">
           <SectionHeading id="usage">Usage</SectionHeading>
-          <PatchDiff
-            patch={USAGE_PATCH}
-            options={USAGE_DIFF_OPTIONS}
-            className="w-full"
-          />
+          <PatchDiff {...preloadedPatchDiff} className="w-full" />
         </section>
       </div>
     </main>
