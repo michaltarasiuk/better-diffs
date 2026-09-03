@@ -46,14 +46,14 @@ export default async function DiffPage({
     notFound();
   }
 
-  const fileDiffs = share.map((file) => file.metadata);
+  const fileDiffs = share.map(({metadata}) => metadata);
 
   const tree = prepareTreeHandoff(fileDiffs, {viewportHeight});
   const stats = computeDiffStats(fileDiffs);
 
   const files = orderFilesByTree(share, tree);
   const fileIdByPath = Object.fromEntries(
-    files.map((file) => [file.name, file.id]),
+    files.map(({id, name}) => [name, id]),
   );
 
   return (
