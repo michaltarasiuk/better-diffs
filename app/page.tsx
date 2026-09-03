@@ -1,5 +1,7 @@
 import '@/lib/diffs/diffs.css';
 
+import {Typography} from '@heroui/react';
+import {typographyVariants} from '@heroui/styles';
 import {PatchDiff} from '@pierre/diffs/react';
 import {preloadPatchDiff} from '@pierre/diffs/ssr';
 import dedent from 'dedent';
@@ -45,6 +47,12 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
+const sectionHeading = typographyVariants({
+  type: 'body-xs',
+  color: 'muted',
+  weight: 'medium',
+});
+
 export default async function HomePage() {
   const preloadedPatchDiff = await preloadPatchDiff({
     patch: USAGE.patch,
@@ -55,23 +63,23 @@ export default async function HomePage() {
     <main className="flex min-h-dvh items-center justify-center p-8">
       <div className="flex w-full max-w-2xl flex-col gap-10">
         <header className="flex flex-col gap-2">
-          <h1 className="font-mono text-2xl font-semibold tracking-tight">
+          <Typography type="h3" className="font-mono tracking-tight">
             better-diffs
-          </h1>
-          <p className="text-muted text-sm">
+          </Typography>
+          <Typography type="body-sm" color="muted">
             {DESCRIPTION} They can view the diff and leave comments. Links
             expire one day after the last visit.
-          </p>
+          </Typography>
         </header>
 
         <section aria-labelledby="install" className="flex flex-col gap-3">
           <SectionHeading id="install">Install</SectionHeading>
           <CopyCommand command={INSTALL.command} label="Copy install command" />
-          <p className="text-muted text-xs">
+          <Typography.Paragraph size="xs" color="muted">
             Downloads a prebuilt binary for macOS or Linux into{' '}
-            <InlineCode>{INSTALL.dir}</InlineCode> and points it at this
-            instance. Needs <InlineCode>git</InlineCode> to run.
-          </p>
+            <Typography.Code>{INSTALL.dir}</Typography.Code> and points it at
+            this instance. Needs <Typography.Code>git</Typography.Code> to run.
+          </Typography.Paragraph>
         </section>
 
         <section aria-labelledby="usage" className="flex flex-col gap-3">
@@ -92,17 +100,11 @@ function SectionHeading({id, children}: SectionHeadingProps) {
   return (
     <h2
       id={id}
-      className="text-muted text-xs font-medium tracking-wider uppercase"
+      className={sectionHeading.base({
+        className: 'tracking-wider uppercase',
+      })}
     >
       {children}
     </h2>
-  );
-}
-
-function InlineCode({children}: {readonly children: React.ReactNode}) {
-  return (
-    <code className="bg-surface-secondary rounded-sm px-1 py-0.5 font-mono">
-      {children}
-    </code>
   );
 }
