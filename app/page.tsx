@@ -30,31 +30,29 @@ export default async function HomePage() {
   });
 
   return (
-    <main className="mx-auto h-full max-w-2xl space-y-8 px-6 py-12 sm:px-8 sm:py-16">
-      <header className="space-y-2">
+    <main className="mx-auto h-full max-w-2xl space-y-10 px-6 py-12 sm:space-y-12 sm:px-8 sm:py-16">
+      <header className="space-y-3">
         <Typography.Heading level={1} className={heading.base()}>
           better-diffs
         </Typography.Heading>
 
-        <Typography.Paragraph size="sm" color="muted">
+        <Typography.Paragraph color="muted">
           Share your current changes with teammates without creating a PR. They
           can view the diff and leave comments. Links expire one day after the
           last visit.
         </Typography.Paragraph>
       </header>
 
-      <section aria-labelledby="install" className="space-y-2">
+      <section aria-labelledby="install" className="space-y-3">
         <Typography.Heading
           id="install"
           level={2}
-          color="muted"
-          weight="medium"
           className={sectionHeading.base()}
         >
           Install
         </Typography.Heading>
 
-        <div className="space-y-1">
+        <div className="space-y-2">
           <CopyCommand
             label="Copy install command"
             command={dedent`
@@ -63,28 +61,22 @@ export default async function HomePage() {
             `}
           />
 
-          <Typography.Paragraph size="xs" color="muted">
+          <Typography.Paragraph size="sm" color="muted">
             {[
               'Downloads a prebuilt binary for macOS or Linux into ',
-              <Typography.Code key="bin" className="text-xs">
-                ~/.local/bin
-              </Typography.Code>,
+              <Typography.Code key="bin">~/.local/bin</Typography.Code>,
               ' and points it at this instance. Needs ',
-              <Typography.Code key="git" className="text-xs">
-                git
-              </Typography.Code>,
+              <Typography.Code key="git">git</Typography.Code>,
               ' to run.',
             ]}
           </Typography.Paragraph>
         </div>
       </section>
 
-      <section aria-labelledby="usage" className="space-y-2">
+      <section aria-labelledby="usage" className="space-y-3">
         <Typography.Heading
           id="usage"
           level={2}
-          color="muted"
-          weight="medium"
           className={sectionHeading.base()}
         >
           Usage
@@ -97,11 +89,10 @@ export default async function HomePage() {
 }
 
 const heading = typographyVariants({
-  type: 'h2',
+  type: 'h1',
   className: 'font-mono tracking-tight',
 });
 
 const sectionHeading = typographyVariants({
-  type: 'body-xs',
-  className: 'tracking-wider uppercase',
+  type: 'h6',
 });
