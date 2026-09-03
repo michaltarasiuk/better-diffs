@@ -94,6 +94,5 @@ const heading = typographyVariants({
 });
 
 const sectionHeading = typographyVariants({
-  type: 'body-sm',
-  weight: 'semibold',
+  type: 'h6',
 });
