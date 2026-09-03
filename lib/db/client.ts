@@ -1,27 +1,27 @@
 import 'server-only';
 
-import Database from 'better-sqlite3';
-import {drizzle} from 'drizzle-orm/better-sqlite3';
+import {createClient, type Client} from '@libsql/client';
+import {drizzle} from 'drizzle-orm/libsql';
 
 import {env} from '@/lib/env';
 
 import * as schema from './schema';
 
 declare global {
-  var __sqlite: Database.Database | undefined;
+  var __libsql: Client | undefined;
 }
 
-function createSqlite() {
-  const sqlite = new Database(env.DATABASE_PATH);
-  sqlite.pragma('journal_mode = WAL');
-  sqlite.pragma('foreign_keys = ON');
-  return sqlite;
+function createLibsql() {
+  return createClient({
+    url: env.DATABASE_URL,
+    authToken: env.DATABASE_AUTH_TOKEN,
+  });
 }
 
-const sqlite = globalThis.__sqlite ?? createSqlite();
+const client = globalThis.__libsql ?? createLibsql();
 
 if (env.NODE_ENV !== 'production') {
-  globalThis.__sqlite = sqlite;
+  globalThis.__libsql = client;
 }
 
-export const db = drizzle(sqlite, {schema});
+export const db = drizzle(client, {schema});

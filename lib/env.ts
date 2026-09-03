@@ -10,7 +10,8 @@ export const env = createEnv({
       .enum(['development', 'production', 'test'])
       .default('development'),
     BASE_URL: z.url(),
-    DATABASE_PATH: z.string(),
+    DATABASE_URL: z.string(),
+    DATABASE_AUTH_TOKEN: z.string().optional(),
     BETTER_AUTH_SECRET: z.string(),
     GITHUB_CLIENT_ID: z.string(),
     GITHUB_CLIENT_SECRET: z.string(),

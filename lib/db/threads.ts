@@ -14,28 +14,24 @@ interface CreateThreadInput {
   readonly body: SerializedEditorState;
 }
 
-export function createThread(input: CreateThreadInput) {
+export async function createThread(input: CreateThreadInput) {
   const threadId = newId();
   const commentId = newId();
 
-  db.transaction((tx) => {
-    tx.insert(threads)
-      .values({
-        id: threadId,
-        fileId: input.fileId,
-        side: input.side,
-        lineNumber: input.lineNumber,
-      })
-      .run();
+  await db.transaction(async (tx) => {
+    await tx.insert(threads).values({
+      id: threadId,
+      fileId: input.fileId,
+      side: input.side,
+      lineNumber: input.lineNumber,
+    });
 
-    tx.insert(comments)
-      .values({
-        id: commentId,
-        threadId,
-        authorId: input.authorId,
-        body: input.body,
-      })
-      .run();
+    await tx.insert(comments).values({
+      id: commentId,
+      threadId,
+      authorId: input.authorId,
+      body: input.body,
+    });
   });
 
   return {threadId, commentId};

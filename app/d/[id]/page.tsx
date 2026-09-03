@@ -41,7 +41,7 @@ export default async function DiffPage({
     loadClientHints(),
   ]);
 
-  const share = visitShare(id);
+  const share = await visitShare(id);
   if (!isDefined(share)) {
     notFound();
   }

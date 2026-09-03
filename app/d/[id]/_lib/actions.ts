@@ -28,11 +28,11 @@ export async function addComment(input: z.infer<typeof AddCommentInput>) {
     unauthorized();
   }
 
-  if (!shareContainsFile(shareId, fileId)) {
+  if (!(await shareContainsFile(shareId, fileId))) {
     notFound();
   }
 
-  return createThread({
+  return await createThread({
     fileId,
     side,
     lineNumber,

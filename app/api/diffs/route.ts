@@ -43,7 +43,7 @@ export async function POST(request: Request) {
         );
   }
 
-  const id = createShare(read.patches);
+  const id = await createShare(read.patches);
   const url = `${env.BASE_URL}/d/${id}`;
 
   return asPlainText
