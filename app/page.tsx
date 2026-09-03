@@ -56,7 +56,7 @@ export default async function HomePage() {
           Install
         </Typography.Heading>
 
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <CopyCommand
             label="Copy install command"
             command={dedent`
@@ -94,5 +94,5 @@ export default async function HomePage() {
 }
 
 const sectionHeading = typographyVariants({
-  type: 'body-xs',
+  type: 'body-sm',
 });
