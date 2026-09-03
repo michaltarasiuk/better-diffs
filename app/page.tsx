@@ -50,12 +50,6 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-const sectionHeading = typographyVariants({
-  type: 'body-xs',
-  color: 'muted',
-  weight: 'medium',
-});
-
 export default async function HomePage() {
   const preloadedPatchDiff = await preloadPatchDiff({
     patch: USAGE.patch,
@@ -123,3 +117,9 @@ function SectionHeading({id, children}: SectionHeadingProps) {
     </h2>
   );
 }
+
+const sectionHeading = typographyVariants({
+  type: 'body-xs',
+  color: 'muted',
+  weight: 'medium',
+});
