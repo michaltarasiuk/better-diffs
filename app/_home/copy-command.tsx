@@ -22,6 +22,7 @@ export function CopyCommand({command, label}: CopyCommandProps) {
       <code className="min-w-0 flex-1 py-2 font-mono text-xs leading-relaxed whitespace-pre-wrap">
         {command}
       </code>
+
       <Button
         aria-label={isCopied ? 'Copied' : label}
         variant="ghost"

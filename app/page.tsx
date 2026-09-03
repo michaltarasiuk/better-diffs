@@ -64,30 +64,41 @@ export default async function HomePage() {
 
   return (
     <main className="flex min-h-dvh items-center justify-center p-8">
-      <div className="flex w-full max-w-2xl flex-col gap-10">
-        <header className="flex flex-col gap-2">
+      <div className="w-full max-w-2xl space-y-10">
+        <header className="space-y-2">
           <Typography type="h3" className="font-mono tracking-tight">
             better-diffs
           </Typography>
+
           <Typography type="body-sm" color="muted">
             {DESCRIPTION} They can view the diff and leave comments. Links
             expire one day after the last visit.
           </Typography>
         </header>
 
-        <section aria-labelledby="install" className="flex flex-col gap-3">
+        <section aria-labelledby="install" className="space-y-2">
           <SectionHeading id="install">Install</SectionHeading>
-          <CopyCommand command={INSTALL.command} label="Copy install command" />
-          <Typography.Paragraph size="xs" color="muted">
-            Downloads a prebuilt binary for macOS or Linux into{' '}
-            <Typography.Code className="text-xs">{INSTALL.dir}</Typography.Code>{' '}
-            and points it at this instance. Needs{' '}
-            <Typography.Code className="text-xs">git</Typography.Code> to run.
-          </Typography.Paragraph>
+
+          <div className="space-y-1">
+            <CopyCommand
+              command={INSTALL.command}
+              label="Copy install command"
+            />
+
+            <Typography.Paragraph size="sm" color="muted">
+              Downloads a prebuilt binary for macOS or Linux into{' '}
+              <Typography.Code className="text-xs">
+                {INSTALL.dir}
+              </Typography.Code>{' '}
+              and points it at this instance. Needs{' '}
+              <Typography.Code className="text-xs">git</Typography.Code> to run.
+            </Typography.Paragraph>
+          </div>
         </section>
 
-        <section aria-labelledby="usage" className="flex flex-col gap-3">
+        <section aria-labelledby="usage">
           <SectionHeading id="usage">Usage</SectionHeading>
+
           <PatchDiff {...preloadedPatchDiff} className="w-full" />
         </section>
       </div>
