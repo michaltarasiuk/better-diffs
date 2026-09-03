@@ -62,13 +62,15 @@ export default async function HomePage() {
           />
 
           <Typography.Paragraph size="xs" color="muted">
-            {[
-              'Downloads a prebuilt binary for macOS or Linux into ',
-              <Typography.Code key="bin">~/.local/bin</Typography.Code>,
-              ' and points it at this instance. Needs ',
-              <Typography.Code key="git">git</Typography.Code>,
-              ' to run.',
-            ]}
+            Downloads a prebuilt binary for macOS or Linux into
+            <Typography.Code className="mx-1 text-xs leading-5">
+              ~/.local/bin
+            </Typography.Code>
+            and points it at this instance. Needs
+            <Typography.Code className="mx-1 text-xs leading-5">
+              git
+            </Typography.Code>
+            to run.
           </Typography.Paragraph>
         </div>
       </section>
