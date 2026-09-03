@@ -9,9 +9,7 @@ type DiffViewer = CodeViewHandle<AnnotationMetadata>;
 
 export const DiffViewerContext = createContext<
   React.RefObject<DiffViewer | null>
->({
-  current: null,
-});
+>({current: null});
 
 export function DiffViewerProvider({children}: {children: React.ReactNode}) {
   const viewerRef = useRef<DiffViewer>(null);

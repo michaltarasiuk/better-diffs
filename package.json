@@ -1,8 +1,5 @@
 {
   "type": "module",
-  "bin": {
-    "better-diffs": "./bin/index.ts"
-  },
   "scripts": {
     "prepare": "husky",
     "dev": "next dev",

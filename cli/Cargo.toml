@@ -1,0 +1,19 @@
+[package]
+name = "better-diffs"
+version = "0.1.0"
+description = "Create shareable links for code diffs"
+repository = "https://github.com/michaltarasiuk/better-diffs"
+edition = "2024"
+
+[[bin]]
+name = "better-diffs"
+path = "src/main.rs"
+
+[profile.release]
+codegen-units = 1
+lto = true
+panic = "abort"
+strip = true
+
+[dependencies]
+ureq = { version = "3.4.0", default-features = false, features = ["platform-verifier", "rustls"] }
