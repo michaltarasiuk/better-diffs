@@ -42,10 +42,10 @@ export function GutterUtility({onAddAnnotation}: GutterUtilityProps) {
     <Button
       id="gutter-utility"
       aria-label="Add comment"
-      isIconOnly
       onHoverStart={preloadDiffEditor}
       onFocus={preloadDiffEditor}
       onPress={onAddAnnotation}
+      isIconOnly
       className="me-[calc(-1lh+1ch)] h-lh w-[1lh]"
     >
       <PlusIcon aria-hidden className="size-4" />

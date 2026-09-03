@@ -3,7 +3,7 @@ import '@/lib/diffs/diffs.css';
 import {PatchDiff} from '@pierre/diffs/react';
 import dedent from 'dedent';
 
-import {DIFF_VIEWER_OPTIONS} from '@/lib/diffs/options';
+import {PATCH_DIFF_OPTIONS} from '@/lib/diffs/options';
 
 const NOT_FOUND_PATCH = dedent`
   diff --git a/share/link b/share/link
@@ -22,7 +22,7 @@ export default function NotFoundPage() {
       <div className="w-full max-w-2xl">
         <PatchDiff
           patch={NOT_FOUND_PATCH}
-          options={DIFF_VIEWER_OPTIONS}
+          options={PATCH_DIFF_OPTIONS}
           className="w-full"
         />
       </div>

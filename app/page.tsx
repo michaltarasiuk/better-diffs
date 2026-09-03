@@ -6,7 +6,7 @@ import {PatchDiff} from '@pierre/diffs/react';
 import {preloadPatchDiff} from '@pierre/diffs/ssr';
 import dedent from 'dedent';
 
-import {DIFF_VIEWER_OPTIONS} from '@/lib/diffs/options';
+import {PATCH_DIFF_OPTIONS} from '@/lib/diffs/options';
 import {env} from '@/lib/env';
 
 import {CopyCommand} from './_home/copy-command';
@@ -36,12 +36,7 @@ const USAGE = {
     +better-diffs --base main -- src/
     +better-diffs --open
   `,
-  diffOptions: {
-    ...DIFF_VIEWER_OPTIONS,
-    diffStyle: 'unified',
-    stickyHeader: false,
-    overflow: 'wrap',
-  } as const,
+  diffOptions: PATCH_DIFF_OPTIONS,
 } as const;
 
 export const metadata: Metadata = {
