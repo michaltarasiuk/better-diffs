@@ -30,20 +30,20 @@ export default async function HomePage() {
   });
 
   return (
-    <main className="mx-auto h-full max-w-2xl space-y-10 px-6 py-12 sm:space-y-12 sm:px-8 sm:py-16">
-      <header className="space-y-3">
+    <main className="mx-auto h-full max-w-2xl space-y-8 px-6 py-12 sm:px-8 sm:py-16">
+      <header className="space-y-2">
         <Typography.Heading level={1} className={heading.base()}>
           better-diffs
         </Typography.Heading>
 
-        <Typography.Paragraph color="muted">
+        <Typography.Paragraph size="sm" color="muted">
           Share your current changes with teammates without creating a PR. They
           can view the diff and leave comments. Links expire one day after the
           last visit.
         </Typography.Paragraph>
       </header>
 
-      <section aria-labelledby="install" className="space-y-3">
+      <section aria-labelledby="install" className="space-y-2">
         <Typography.Heading
           id="install"
           level={2}
@@ -52,7 +52,7 @@ export default async function HomePage() {
           Install
         </Typography.Heading>
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           <CopyCommand
             label="Copy install command"
             command={dedent`
@@ -61,7 +61,7 @@ export default async function HomePage() {
             `}
           />
 
-          <Typography.Paragraph size="sm" color="muted">
+          <Typography.Paragraph size="xs" color="muted">
             {[
               'Downloads a prebuilt binary for macOS or Linux into ',
               <Typography.Code key="bin">~/.local/bin</Typography.Code>,
@@ -73,7 +73,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section aria-labelledby="usage" className="space-y-3">
+      <section aria-labelledby="usage" className="space-y-2">
         <Typography.Heading
           id="usage"
           level={2}
@@ -89,10 +89,11 @@ export default async function HomePage() {
 }
 
 const heading = typographyVariants({
-  type: 'h1',
+  type: 'h2',
   className: 'font-mono tracking-tight',
 });
 
 const sectionHeading = typographyVariants({
-  type: 'h6',
+  type: 'body-sm',
+  weight: 'semibold',
 });
