@@ -2,7 +2,9 @@
 
 import {Button} from '@heroui/react';
 import {CheckIcon, CopyIcon} from 'lucide-react';
-import {useEffect, useState} from 'react';
+import {useRef, useState} from 'react';
+
+import {isDefined} from '@/lib/utils/defined';
 
 const COPIED_FEEDBACK_MS = 2000;
 
@@ -13,15 +15,7 @@ interface CopyCommandProps {
 
 export function CopyCommand({command, label}: CopyCommandProps) {
   const [isCopied, setIsCopied] = useState(false);
-
-  useEffect(() => {
-    if (!isCopied) {
-      return;
-    }
-
-    const timeout = setTimeout(() => setIsCopied(false), COPIED_FEEDBACK_MS);
-    return () => clearTimeout(timeout);
-  }, [isCopied]);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   return (
     <div className="bg-surface-secondary border-border rounded-field flex items-start gap-2 border p-2 ps-3">
@@ -35,8 +29,17 @@ export function CopyCommand({command, label}: CopyCommandProps) {
         isIconOnly
         onPress={async () => {
           try {
+            if (isDefined(timeoutRef.current)) {
+              clearTimeout(timeoutRef.current);
+            }
+
             await navigator.clipboard.writeText(command);
+
             setIsCopied(true);
+            timeoutRef.current = setTimeout(
+              () => setIsCopied(false),
+              COPIED_FEEDBACK_MS,
+            );
           } catch {
             /*
              * Clipboard access is denied outside secure contexts, and there is
