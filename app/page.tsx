@@ -33,7 +33,7 @@ export default async function HomePage() {
     <main className="mx-auto h-full max-w-2xl space-y-8 px-6 py-12 sm:px-8 sm:py-16">
       <header className="space-y-2">
         <Typography.Heading level={1} className={heading.base()}>
-          better-diffs
+          Better Diffs
         </Typography.Heading>
 
         <Typography.Paragraph size="sm" color="muted">
