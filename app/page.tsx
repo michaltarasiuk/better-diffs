@@ -32,12 +32,7 @@ export default async function HomePage() {
   return (
     <main className="mx-auto h-full max-w-2xl space-y-8 px-6 py-12 sm:px-8 sm:py-16">
       <header className="space-y-2">
-        <Typography.Heading
-          level={1}
-          className={heading.base({
-            className: 'font-mono tracking-tight',
-          })}
-        >
+        <Typography.Heading level={1} className={heading.base()}>
           better-diffs
         </Typography.Heading>
 
@@ -54,9 +49,7 @@ export default async function HomePage() {
           level={2}
           color="muted"
           weight="medium"
-          className={sectionHeading.base({
-            className: 'tracking-wider uppercase',
-          })}
+          className={sectionHeading.base()}
         >
           Install
         </Typography.Heading>
@@ -92,9 +85,7 @@ export default async function HomePage() {
           level={2}
           color="muted"
           weight="medium"
-          className={sectionHeading.base({
-            className: 'tracking-wider uppercase',
-          })}
+          className={sectionHeading.base()}
         >
           Usage
         </Typography.Heading>
@@ -107,8 +98,10 @@ export default async function HomePage() {
 
 const heading = typographyVariants({
   type: 'h2',
+  className: 'font-mono tracking-tight',
 });
 
 const sectionHeading = typographyVariants({
   type: 'body-xs',
+  className: 'tracking-wider uppercase',
 });
