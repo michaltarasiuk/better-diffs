@@ -75,8 +75,8 @@ export default async function HomePage() {
 
           <div className="space-y-1">
             <CopyCommand
-              command={INSTALL.command}
               label="Copy install command"
+              command={INSTALL.command}
             />
 
             <Typography.Paragraph size="sm" color="muted">

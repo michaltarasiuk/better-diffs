@@ -6,14 +6,14 @@ import {useRef, useState} from 'react';
 
 import {isDefined} from '@/lib/utils/defined';
 
-const COPIED_FEEDBACK_MS = 2000;
+const COPIED_FEEDBACK_MS = 2_000;
 
 interface CopyCommandProps {
-  readonly command: string;
   readonly label: string;
+  readonly command: string;
 }
 
-export function CopyCommand({command, label}: CopyCommandProps) {
+export function CopyCommand({label, command}: CopyCommandProps) {
   const [isCopied, setIsCopied] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
