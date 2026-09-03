@@ -26,11 +26,12 @@ const INSTALL = {
 
 const USAGE = {
   patch: dedent`
-    diff --git a/usage b/usage
-    --- a/usage
-    +++ b/usage
+    diff --git a/share.sh b/share.sh
+    --- a/share.sh
+    +++ b/share.sh
     @@ -1 +1,4 @@
-     better-diffs
+    -git diff
+    +better-diffs
     +better-diffs --staged
     +better-diffs --base main -- src/
     +better-diffs --open
@@ -38,6 +39,8 @@ const USAGE = {
   diffOptions: {
     ...DIFF_VIEWER_OPTIONS,
     diffStyle: 'unified',
+    stickyHeader: false,
+    overflow: 'wrap',
   } as const,
 } as const;
 
