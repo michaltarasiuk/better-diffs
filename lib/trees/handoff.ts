@@ -22,15 +22,15 @@ export function prepareTreeHandoff(
   fileDiffs: readonly FileDiffMetadata[],
   {viewportHeight}: {readonly viewportHeight?: number} = {},
 ) {
+  const {paths} = prepareFileTreeInput(
+    fileDiffs.map(({name}) => name),
+    {flattenEmptyDirectories: true},
+  );
+
   const gitStatus = fileDiffs.map(({name, type}) => ({
     path: name,
     status: changeTypeToGitStatus(type),
   }));
-
-  const {paths} = prepareFileTreeInput(
-    gitStatus.map(({path}) => path),
-    {flattenEmptyDirectories: true},
-  );
 
   return {
     paths,
