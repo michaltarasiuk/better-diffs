@@ -150,11 +150,11 @@ export function ColorSlider({label, ...props}: ColorSliderProps) {
       {...props}
       className={composeTailwindRenderProps(
         props.className,
-        'orientation-horizontal:grid orientation-vertical:flex orientation-horizontal:w-56 grid-cols-[1fr_auto] flex-col items-center gap-2 font-sans',
+        'grid-cols-[1fr_auto] flex-col items-center gap-2 font-sans orientation-horizontal:grid orientation-horizontal:w-56 orientation-vertical:flex',
       )}
     >
       <Label>{label}</Label>
-      <SliderOutput className="orientation-vertical:hidden text-sm font-medium text-neutral-500 dark:text-neutral-400" />
+      <SliderOutput className="text-sm font-medium text-neutral-500 dark:text-neutral-400 orientation-vertical:hidden" />
       <SliderTrack
         className={trackStyles}
         style={({defaultStyle, isDisabled}) => ({

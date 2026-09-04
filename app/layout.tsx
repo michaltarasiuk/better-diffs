@@ -23,7 +23,7 @@ export default function RootLayout({children}: LayoutProps<'/'>) {
           />
         )}
       </head>
-      <body className="bg-background text-foreground h-full">
+      <body className="h-full bg-background text-foreground">
         <NuqsAdapter>{children}</NuqsAdapter>
       </body>
     </html>

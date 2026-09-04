@@ -18,7 +18,7 @@ export function CopyCommand({label, command}: CopyCommandProps) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   return (
-    <div className="bg-surface-secondary border-border rounded-field flex items-start gap-2 border p-2 ps-3">
+    <div className="flex items-start gap-2 rounded-field border border-border bg-surface-secondary p-2 ps-3">
       <code className="min-w-0 flex-1 py-2 font-mono text-xs leading-relaxed whitespace-pre-wrap">
         {command}
       </code>
@@ -50,7 +50,7 @@ export function CopyCommand({label, command}: CopyCommandProps) {
         }}
       >
         {isCopied ? (
-          <CheckIcon aria-hidden className="text-success size-4" />
+          <CheckIcon aria-hidden className="size-4 text-success" />
         ) : (
           <CopyIcon aria-hidden className="size-4" />
         )}

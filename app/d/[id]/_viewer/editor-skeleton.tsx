@@ -11,20 +11,20 @@ export function DiffEditorSkeleton() {
     >
       <Card.Header>
         <div className="@container flex flex-wrap items-center gap-2">
-          <Skeleton className="rounded-field me-auto h-8 w-36 shrink-0 @xl:me-0" />
-          <Skeleton className="rounded-field h-8 w-16 shrink-0" />
-          <Skeleton className="rounded-field h-8 w-24 shrink-0" />
-          <Skeleton className="rounded-field h-8 w-32 shrink-0" />
+          <Skeleton className="me-auto h-8 w-36 shrink-0 rounded-field @xl:me-0" />
+          <Skeleton className="h-8 w-16 shrink-0 rounded-field" />
+          <Skeleton className="h-8 w-24 shrink-0 rounded-field" />
+          <Skeleton className="h-8 w-32 shrink-0 rounded-field" />
         </div>
       </Card.Header>
       <Card.Content>
-        <div className="rounded-field relative min-h-24 py-2">
+        <div className="relative min-h-24 rounded-field py-2">
           <Skeleton className="max-h-24 min-h-24 w-full" />
         </div>
       </Card.Content>
       <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
-        <Skeleton className="rounded-field h-8 w-17.25" />
-        <Skeleton className="rounded-field h-8 w-22" />
+        <Skeleton className="h-8 w-17.25 rounded-field" />
+        <Skeleton className="h-8 w-22 rounded-field" />
       </Card.Footer>
     </Card>
   );

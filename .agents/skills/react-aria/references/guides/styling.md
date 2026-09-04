@@ -182,7 +182,7 @@ isQuiet
 With the plugin installed, you can access all states without the `data-` prefix. If you have the [Tailwind VSCode Extension](https://tailwindcss.com/docs/editor-setup#intelli-sense-for-vs-code) installed, you'll also get autocomplete for all states in your editor.
 
 ```jsx
-<ListBoxItem className="selected:bg-blue-400 disabled:bg-gray-100">
+<ListBoxItem className="disabled:bg-gray-100 selected:bg-blue-400">
   Item
 </ListBoxItem>
 ```

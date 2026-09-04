@@ -10,7 +10,7 @@ export function DiffSummary({stats}: {readonly stats: DiffStats}) {
       <Accordion.Item id="stats">
         <Accordion.Heading>
           <Accordion.Trigger className="hover:bg-inherit">
-            <GitCompareIcon className="text-muted me-3 size-4 shrink-0" />
+            <GitCompareIcon className="me-3 size-4 shrink-0 text-muted" />
             Diff Stats
             <Accordion.Indicator />
           </Accordion.Trigger>

@@ -310,12 +310,12 @@ export function Slider<T extends number | number[]>({
       {...props}
       className={composeTailwindRenderProps(
         props.className,
-        'orientation-horizontal:grid orientation-vertical:flex orientation-horizontal:w-64 orientation-horizontal:max-w-[calc(100%-10px)] grid-cols-[1fr_auto] flex-col items-center gap-2 font-sans',
+        'grid-cols-[1fr_auto] flex-col items-center gap-2 font-sans orientation-horizontal:grid orientation-horizontal:w-64 orientation-horizontal:max-w-[calc(100%-10px)] orientation-vertical:flex',
       )}
     >
       <Label>{label}</Label>
-      <SliderOutput className="orientation-vertical:hidden text-sm text-neutral-500 dark:text-neutral-400" />
-      <SliderTrack className="group orientation-horizontal:h-5 orientation-vertical:w-5 orientation-vertical:h-38 col-span-2 flex items-center">
+      <SliderOutput className="text-sm text-neutral-500 dark:text-neutral-400 orientation-vertical:hidden" />
+      <SliderTrack className="group col-span-2 flex items-center orientation-horizontal:h-5 orientation-vertical:h-38 orientation-vertical:w-5">
         {({state, ...renderProps}) => (
           <>
             <div className={trackStyles(renderProps)}>
