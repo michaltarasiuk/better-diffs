@@ -12,8 +12,6 @@ declare global {
 }
 
 function createLibsql() {
-  console.log(env);
-
   return createClient({
     url: env.DATABASE_URL,
     authToken: env.DATABASE_AUTH_TOKEN,
