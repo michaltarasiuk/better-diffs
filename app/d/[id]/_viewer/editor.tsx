@@ -4,6 +4,7 @@ import {
   Card,
   ListBox,
   Select,
+  Spinner,
   ToggleButton,
   ToggleButtonGroup,
   type Key,
@@ -53,6 +54,7 @@ import {
   BoldIcon,
   ItalicIcon,
   Redo2Icon,
+  SendIcon,
   UnderlineIcon,
   Undo2Icon,
 } from 'lucide-react';
@@ -209,7 +211,16 @@ function CommentButton({onComment}: CommentButtonProps) {
         });
       }}
     >
-      Comment
+      {({isPending}) => (
+        <>
+          {isPending ? (
+            <Spinner aria-hidden color="current" size="sm" />
+          ) : (
+            <SendIcon aria-hidden className="size-4" />
+          )}
+          {isPending ? 'Posting…' : 'Comment'}
+        </>
+      )}
     </Button>
   );
 }

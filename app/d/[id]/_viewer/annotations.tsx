@@ -182,7 +182,7 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
               ) : (
                 <GitHubIcon aria-hidden className="size-4" />
               )}
-              Continue with GitHub
+              {isPending ? 'Signing in…' : 'Continue with GitHub'}
             </>
           )}
         </Button>
