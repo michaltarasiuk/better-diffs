@@ -43,8 +43,7 @@ export default async function HomePage() {
 
         <Typography.Paragraph size="sm" color="muted">
           Share your current changes with teammates without creating a PR. They
-          can view the diff and leave comments. Links expire one day after the
-          last visit.
+          can view the diff and leave comments.
         </Typography.Paragraph>
       </header>
 
