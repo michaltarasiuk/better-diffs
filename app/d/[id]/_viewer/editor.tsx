@@ -150,7 +150,7 @@ export function DiffEditor({onComment, onDismiss}: DiffEditorProps) {
           <ToolbarPlugin />
         </Card.Header>
         <Card.Content>
-          <div className="rounded-field relative min-h-24 px-3 py-2">
+          <div className="relative min-h-24 rounded-field px-3 py-2">
             <RichTextPlugin
               contentEditable={
                 <ContentEditable
@@ -160,7 +160,7 @@ export function DiffEditor({onComment, onDismiss}: DiffEditorProps) {
                     <div
                       className={typographyVariants({type: 'body-sm'}).base({
                         className:
-                          'text-field-placeholder pointer-events-none absolute inset-0 px-3 py-2',
+                          'pointer-events-none absolute inset-0 px-3 py-2 text-field-placeholder',
                       })}
                     >
                       Leave a comment…

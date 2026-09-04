@@ -16,6 +16,7 @@ import {isDefined} from '@/lib/utils/defined';
 
 import {loadDiffSearchParams} from './_lib/search-params';
 import {DiffTree} from './_sidebar/file-tree';
+import {ResizableSidebar} from './_sidebar/resizable-sidebar';
 import {DiffSummary} from './_sidebar/summary';
 import {DiffCodeView} from './_viewer/code-view';
 import {DiffViewerProvider} from './_viewer/context';
@@ -59,7 +60,7 @@ export default async function DiffPage({
   return (
     <div className="flex h-full">
       <DiffViewerProvider>
-        <aside aria-label="Files" className="w-80 shrink-0 border-e">
+        <ResizableSidebar aria-label="Files">
           <DiffTree
             handoff={tree}
             preloaded={preloadFileTree(getTreeOptions(tree, {searchQuery}))}
@@ -67,7 +68,7 @@ export default async function DiffPage({
           >
             <DiffSummary stats={stats} />
           </DiffTree>
-        </aside>
+        </ResizableSidebar>
         <main aria-label="Diff" className="min-h-0 min-w-0 flex-1">
           <SessionProvider>
             <ClientGate fallback={diffFilesSpinner}>
