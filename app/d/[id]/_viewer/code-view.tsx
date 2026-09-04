@@ -67,7 +67,7 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
     update: (state: FileViewState) => FileViewState,
   ) {
     setFileStateById((fileStateById) => {
-      const state = fileStateById.get(fileId) ?? DEFAULT_FILE_VIEW_STATE;
+      const state = getFileState(fileId);
 
       return new Map(fileStateById).set(fileId, {
         ...update(state),
