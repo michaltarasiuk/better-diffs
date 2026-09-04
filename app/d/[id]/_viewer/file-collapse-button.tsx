@@ -1,7 +1,5 @@
-'use client';
-
-import {Button} from '@heroui/react';
-import {ChevronRightIcon} from 'lucide-react';
+import {Button, cn} from '@heroui/react';
+import {ChevronDownIcon} from 'lucide-react';
 
 interface FileCollapseButtonProps {
   readonly collapsed: boolean;
@@ -16,14 +14,18 @@ export function FileCollapseButton({
     <Button
       aria-expanded={!collapsed}
       aria-label={collapsed ? 'Expand file' : 'Collapse file'}
+      variant="ghost"
+      size="sm"
       isIconOnly
       onPress={onToggle}
-      size="sm"
-      variant="ghost"
+      className="size-7 min-w-7 shrink-0"
     >
-      <ChevronRightIcon
+      <ChevronDownIcon
         aria-hidden
-        className={`size-4 transition-transform${collapsed ? '' : 'rotate-90'}`}
+        className={cn(
+          'size-4 shrink-0 transition-transform',
+          collapsed && '-rotate-90',
+        )}
       />
     </Button>
   );
