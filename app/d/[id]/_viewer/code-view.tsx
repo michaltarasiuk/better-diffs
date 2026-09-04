@@ -12,17 +12,32 @@ import {isDefined} from '@/lib/utils/defined';
 import {useSelectedLines} from '../_lib/use-selected-lines';
 import {Annotation, GutterUtility, type DiffAnnotation} from './annotations';
 import {DiffViewerContext} from './context';
+import {FileCollapseButton} from './file-collapse-button';
 
 import type {FileDiffMetadata, GetHoveredLineResult} from '@pierre/diffs';
 
-const ANNOTATION_SIDE_ORDER = {deletions: 0, additions: 1} as const;
-const CODE_VIEW_STYLE = {height: '100%', overflow: 'auto'} as const;
+const ANNOTATION_SIDE_ORDER = {
+  deletions: 0,
+  additions: 1,
+} as const;
+
+const CODE_VIEW_STYLE = {
+  height: '100%',
+  overflow: 'auto',
+} satisfies React.CSSProperties;
+
+const DEFAULT_FILE_VIEW_STATE = {
+  annotations: [],
+  collapsed: false,
+  version: 0,
+} satisfies FileViewState;
 
 type DiffLine = GetHoveredLineResult<'diff'>;
 type HoveredLine = GetHoveredLineResult<'file'> | DiffLine;
 
-interface FileAnnotations {
+interface FileViewState {
   readonly annotations: DiffAnnotation[];
+  readonly collapsed: boolean;
   readonly version: number;
 }
 
@@ -36,28 +51,46 @@ interface DiffCodeViewProps {
 }
 
 export function DiffCodeView({files}: DiffCodeViewProps) {
-  const [annotationsByFile, setAnnotationsByFile] = useState(
-    () => new Map() as ReadonlyMap<string, FileAnnotations>,
+  const [fileStateById, setFileStateById] = useState(
+    () => new Map() as ReadonlyMap<string, FileViewState>,
   );
   const {selectedLines, setSelectedLines} = useSelectedLines();
 
   const viewerRef = use(DiffViewerContext);
 
+  function getFileState(fileId: string) {
+    return fileStateById.get(fileId) ?? DEFAULT_FILE_VIEW_STATE;
+  }
+
+  function updateFileState(
+    fileId: string,
+    update: (state: FileViewState) => FileViewState,
+  ) {
+    setFileStateById((fileStateById) => {
+      const state = fileStateById.get(fileId) ?? DEFAULT_FILE_VIEW_STATE;
+
+      return new Map(fileStateById).set(fileId, {
+        ...update(state),
+        version: state.version + 1,
+      });
+    });
+  }
+
   function updateAnnotations(
     fileId: string,
     update: (annotations: DiffAnnotation[]) => DiffAnnotation[],
   ) {
-    setAnnotationsByFile((annotationsByFile) => {
-      const {annotations, version} = annotationsByFile.get(fileId) ?? {
-        annotations: [],
-        version: 0,
-      };
+    updateFileState(fileId, (state) => ({
+      ...state,
+      annotations: update(state.annotations),
+    }));
+  }
 
-      return new Map(annotationsByFile).set(fileId, {
-        annotations: update(annotations),
-        version: version + 1,
-      });
-    });
+  function toggleFileCollapsed(fileId: string) {
+    updateFileState(fileId, (state) => ({
+      ...state,
+      collapsed: !state.collapsed,
+    }));
   }
 
   function addCommentForm(fileId: string, line: DiffLine) {
@@ -81,12 +114,24 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
   return (
     <CodeView
       ref={viewerRef}
-      items={files.map((file) => ({
-        id: file.id,
-        type: 'diff',
-        fileDiff: file.metadata,
-        ...annotationsByFile.get(file.id),
-      }))}
+      items={files.map((file) => {
+        const {annotations, collapsed, version} = getFileState(file.id);
+
+        return {
+          id: file.id,
+          type: 'diff',
+          fileDiff: file.metadata,
+          annotations,
+          collapsed,
+          version,
+        };
+      })}
+      renderHeaderPrefix={(item) => (
+        <FileCollapseButton
+          collapsed={getFileState(item.id).collapsed}
+          onToggle={() => toggleFileCollapsed(item.id)}
+        />
+      )}
       selectedLines={selectedLines}
       onSelectedLinesChange={setSelectedLines}
       renderGutterUtility={(getHoveredLine, item) => (
