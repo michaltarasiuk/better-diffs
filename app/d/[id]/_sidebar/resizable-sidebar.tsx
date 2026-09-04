@@ -1,5 +1,6 @@
 'use client';
 
+import {cn} from '@heroui/styles';
 import {mergeProps} from '@react-aria/utils';
 import React, {useState} from 'react';
 import {useFocusRing} from 'react-aria/useFocusRing';
@@ -11,6 +12,8 @@ const MAX_WIDTH = 480;
 const DEFAULT_WIDTH = 320;
 
 export function ResizableSidebar({
+  className,
+  style,
   children,
   ...props
 }: React.ComponentProps<'aside'>) {
@@ -31,9 +34,9 @@ export function ResizableSidebar({
 
   return (
     <aside
-      className="relative hidden shrink-0 border-e md:block"
-      style={{width}}
       {...props}
+      style={{width, ...style}}
+      className={cn('relative shrink-0 border-e', className)}
     >
       {children}
       <div
@@ -44,7 +47,7 @@ export function ResizableSidebar({
           'aria-valuemin': MIN_WIDTH,
           'aria-valuemax': MAX_WIDTH,
           'aria-valuenow': width,
-          'data-resizing': isResizing || undefined,
+          'data-resizing': isResizing || null,
         })}
         className="absolute inset-y-0 -inset-e-px z-10 w-2 cursor-col-resize touch-none after:absolute after:inset-y-0 after:inset-s-1/2 after:w-px after:-translate-x-1/2 after:bg-transparent hover:after:bg-border focus-visible:after:bg-border resizing:after:bg-border"
       />

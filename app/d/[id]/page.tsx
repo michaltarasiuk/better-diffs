@@ -60,7 +60,7 @@ export default async function DiffPage({
   return (
     <div className="flex h-full">
       <DiffViewerProvider>
-        <ResizableSidebar aria-label="Files">
+        <ResizableSidebar aria-label="Files" className="hidden md:block">
           <DiffTree
             handoff={tree}
             preloaded={preloadFileTree(getTreeOptions(tree, {searchQuery}))}
