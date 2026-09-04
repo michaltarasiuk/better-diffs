@@ -2,6 +2,8 @@
 
 import {createContext, useRef} from 'react';
 
+import {DiffWorkerPoolProvider} from '@/lib/diffs/worker-pool';
+
 import type {AnnotationMetadata} from '@/lib/diffs/options';
 import type {CodeViewHandle} from '@pierre/diffs/react';
 
@@ -12,5 +14,9 @@ export const DiffViewerContext = createContext<
 export function DiffViewerProvider({children}: {children: React.ReactNode}) {
   const viewerRef = useRef<CodeViewHandle<AnnotationMetadata>>(null);
 
-  return <DiffViewerContext value={viewerRef}>{children}</DiffViewerContext>;
+  return (
+    <DiffWorkerPoolProvider>
+      <DiffViewerContext value={viewerRef}>{children}</DiffViewerContext>
+    </DiffWorkerPoolProvider>
+  );
 }

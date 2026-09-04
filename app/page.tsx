@@ -2,11 +2,11 @@ import '@/lib/diffs/diffs.css';
 
 import {Typography} from '@heroui/react';
 import {typographyVariants} from '@heroui/styles';
-import {PatchDiff} from '@pierre/diffs/react';
 import {preloadPatchDiff} from '@pierre/diffs/ssr';
 import dedent from 'dedent';
 
 import {PATCH_DIFF_OPTIONS} from '@/lib/diffs/options';
+import {PatchDiffSurface} from '@/lib/diffs/patch-diff';
 import {env} from '@/lib/env';
 
 import {CopyCommand} from './_home/copy-command';
@@ -88,7 +88,7 @@ export default async function HomePage() {
           Usage
         </Typography.Heading>
 
-        <PatchDiff {...preloadedPatchDiff} className="w-full" />
+        <PatchDiffSurface {...preloadedPatchDiff} className="w-full" />
       </section>
     </main>
   );
