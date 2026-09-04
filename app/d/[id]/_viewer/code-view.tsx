@@ -7,6 +7,7 @@ import {CodeView} from '@pierre/diffs/react';
 import {use, useState} from 'react';
 
 import {CODE_VIEW_OPTIONS} from '@/lib/diffs/options';
+import {useIsDesktop} from '@/lib/hooks/use-media-query';
 import {isDefined} from '@/lib/utils/defined';
 
 import {useSelectedLines} from '../_lib/use-selected-lines';
@@ -55,6 +56,8 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
     () => new Map() as ReadonlyMap<string, FileViewState>,
   );
   const {selectedLines, setSelectedLines} = useSelectedLines();
+
+  const isDesktop = useIsDesktop();
 
   const viewerRef = use(DiffViewerContext);
 
@@ -153,7 +156,10 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
           />
         ) : null
       }
-      options={CODE_VIEW_OPTIONS}
+      options={{
+        ...CODE_VIEW_OPTIONS,
+        diffStyle: isDesktop ? 'split' : 'unified',
+      }}
       style={CODE_VIEW_STYLE}
     />
   );
