@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @plugin 'tailwindcss-react-aria-components';
 @import '@heroui/styles';
+
 @import './_themes/typography.css';
 @import './_themes/pierre.css';
