@@ -2,7 +2,7 @@
 
 import {cn} from '@heroui/styles';
 import {mergeProps} from '@react-aria/utils';
-import React, {useState} from 'react';
+import {useState} from 'react';
 import {Separator} from 'react-aria-components/Separator';
 import {useFocusRing} from 'react-aria/useFocusRing';
 import {useMove} from 'react-aria/useMove';
@@ -37,7 +37,7 @@ export function ResizableSidebar({
     <aside
       {...props}
       style={{width, ...style}}
-      className={cn('relative shrink-0 border-e', className)}
+      className={cn('relative shrink-0', className)}
     >
       {children}
       <Separator
@@ -48,7 +48,7 @@ export function ResizableSidebar({
         aria-valuemax={MAX_WIDTH}
         aria-valuenow={width}
         data-resizing={isResizing || null}
-        className="absolute inset-y-0 -inset-e-px z-10 w-2 cursor-col-resize touch-none after:absolute after:inset-y-0 after:inset-s-1/2 after:w-px after:-translate-x-1/2 after:bg-transparent hover:after:bg-border focus-visible:after:bg-border resizing:after:bg-border"
+        className="absolute inset-y-0 inset-e-0 z-10 w-4 translate-x-1/2 cursor-col-resize touch-none after:absolute after:inset-y-0 after:inset-s-1/2 after:w-0.5 after:-translate-x-1/2 after:bg-transparent hover:after:bg-accent focus-visible:after:bg-accent resizing:after:w-0.5 resizing:after:bg-accent"
       />
     </aside>
   );

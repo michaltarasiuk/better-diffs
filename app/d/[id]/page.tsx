@@ -16,6 +16,7 @@ import {isDefined} from '@/lib/utils/defined';
 import {loadDiffSearchParams} from './_lib/search-params';
 import {DiffTree} from './_sidebar/file-tree';
 import {ResizableSidebar} from './_sidebar/resizable-sidebar';
+import {SidebarSheet} from './_sidebar/sidebar-sheet';
 import {DiffSummary} from './_sidebar/summary';
 import {DiffCodeView} from './_viewer/code-view';
 import {DiffViewerProvider} from './_viewer/context';
@@ -34,7 +35,7 @@ export async function generateMetadata({
 export default async function DiffPage({
   params,
   searchParams,
-}: PageProps<'/d/[id]'>) {
+}: PageProps<'/d/[id]'>): Promise<React.ReactElement> {
   const [{id}, {q: searchQuery}] = await Promise.all([
     params,
     loadDiffSearchParams(searchParams),
@@ -55,17 +56,21 @@ export default async function DiffPage({
     files.map(({id, name}) => [name, id]),
   );
 
+  const diffTreeNode = (
+    <DiffTree
+      handoff={tree}
+      preloaded={preloadFileTree(getTreeOptions(tree, {searchQuery}))}
+      fileIdByPath={fileIdByPath}
+    >
+      <DiffSummary stats={stats} />
+    </DiffTree>
+  );
+
   return (
     <div className="flex h-full">
       <DiffViewerProvider>
         <ResizableSidebar aria-label="Files" className="hidden md:block">
-          <DiffTree
-            handoff={tree}
-            preloaded={preloadFileTree(getTreeOptions(tree, {searchQuery}))}
-            fileIdByPath={fileIdByPath}
-          >
-            <DiffSummary stats={stats} />
-          </DiffTree>
+          {diffTreeNode}
         </ResizableSidebar>
         <main aria-label="Diff" className="min-h-0 min-w-0 flex-1">
           <SessionProvider>
@@ -74,6 +79,9 @@ export default async function DiffPage({
             </ClientGate>
           </SessionProvider>
         </main>
+        <div aria-label="Files" className="md:hidden">
+          <SidebarSheet>{diffTreeNode}</SidebarSheet>
+        </div>
       </DiffViewerProvider>
     </div>
   );
