@@ -35,7 +35,7 @@ export async function generateMetadata({
 export default async function DiffPage({
   params,
   searchParams,
-}: PageProps<'/d/[id]'>): Promise<React.ReactElement> {
+}: PageProps<'/d/[id]'>) {
   const [{id}, {q: searchQuery}] = await Promise.all([
     params,
     loadDiffSearchParams(searchParams),

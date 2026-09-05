@@ -1,7 +1,8 @@
 /*
- * Pierre measures the scrollbar after the page loads. Firefox adds ~11px;
- * Chrome adds 0px. Split panes shift after hydrate. Set the gutter override
- * to 0px so the server and client match.
+ * @pierre/diffs measures scrollbar width only after hydration, and the
+ * value differs by browser (~11px in Firefox, 0px in Chrome). Fix
+ * --diffs-scrollbar-gutter-override at 0px so SSR and the first client
+ * paint agree.
  */
 diffs-container,
 [data-diffs] {

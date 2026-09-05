@@ -1,7 +1,8 @@
 /*
- * Pierre measures the scrollbar after the page loads. Firefox adds ~11px;
- * Chrome adds 0px. List padding and git icons shift after hydrate. Set both
- * gutter vars to 0px so the server and client match.
+ * @pierre/trees measures scrollbar width only after hydration, and the
+ * value differs by browser (~11px in Firefox, 0px in Chrome). Fix
+ * --trees-scrollbar-gutter-override and --trees-scrollbar-gutter-measured
+ * at 0px so SSR and the first client paint agree.
  */
 file-tree-container {
   --trees-scrollbar-gutter-override: 0px;

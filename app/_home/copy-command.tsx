@@ -43,8 +43,9 @@ export function CopyCommand({label, command}: CopyCommandProps) {
             );
           } catch {
             /*
-             * Clipboard access is denied outside secure contexts, and there is
-             * nothing to recover: the command stays selectable in the DOM.
+             * navigator.clipboard.writeText() rejects outside secure
+             * contexts with no fallback API. Rely on manual selection in
+             * the DOM instead.
              */
           }
         }}
