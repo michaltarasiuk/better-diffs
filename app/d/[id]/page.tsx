@@ -16,8 +16,8 @@ import {isDefined} from '@/lib/utils/defined';
 import {DiffHandleProvider} from './_lib/handle-context';
 import {loadDiffSearchParams} from './_lib/search-params';
 import {DiffReview} from './_review/review';
-import {ResizableSidebar} from './_sidebar/resizable-sidebar';
-import {SidebarSheet} from './_sidebar/sidebar-sheet';
+import {ResizableSidebar} from './_sidebar/resizable';
+import {SidebarSheet} from './_sidebar/sheet';
 import {DiffSummary} from './_sidebar/summary';
 import {DiffTree} from './_sidebar/tree';
 
