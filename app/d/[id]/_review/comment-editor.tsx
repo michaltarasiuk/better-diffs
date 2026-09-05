@@ -56,7 +56,6 @@ import {
   BoldIcon,
   ItalicIcon,
   Redo2Icon,
-  SendIcon,
   UnderlineIcon,
   Undo2Icon,
 } from 'lucide-react';
@@ -215,11 +214,7 @@ function SubmitCommentButton({onComment}: SubmitCommentButtonProps) {
     >
       {({isPending}) => (
         <>
-          {isPending ? (
-            <Spinner aria-hidden color="current" size="sm" />
-          ) : (
-            <SendIcon aria-hidden className="size-4" />
-          )}
+          {isPending ? <Spinner aria-hidden color="current" size="sm" /> : null}
           {isPending ? 'Posting…' : 'Comment'}
         </>
       )}
