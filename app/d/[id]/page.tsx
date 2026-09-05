@@ -11,7 +11,6 @@ import {
   prepareTreeHandoff,
 } from '@/lib/trees/handoff';
 import {ClientGate} from '@/lib/utils/client-gate';
-import {loadClientHints} from '@/lib/utils/client-hints';
 import {isDefined} from '@/lib/utils/defined';
 
 import {loadDiffSearchParams} from './_lib/search-params';
@@ -36,10 +35,9 @@ export default async function DiffPage({
   params,
   searchParams,
 }: PageProps<'/d/[id]'>) {
-  const [{id}, {q: searchQuery}, {viewportHeight}] = await Promise.all([
+  const [{id}, {q: searchQuery}] = await Promise.all([
     params,
     loadDiffSearchParams(searchParams),
-    loadClientHints(),
   ]);
 
   const share = await visitShare(id);
@@ -49,7 +47,7 @@ export default async function DiffPage({
 
   const fileDiffs = share.map(({metadata}) => metadata);
 
-  const tree = prepareTreeHandoff(fileDiffs, {viewportHeight});
+  const tree = prepareTreeHandoff(fileDiffs);
   const stats = computeDiffStats(fileDiffs);
 
   const files = orderFilesByTree(share, tree);
