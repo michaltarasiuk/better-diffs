@@ -10,16 +10,16 @@ import {
   orderFilesByTree,
   prepareTreeHandoff,
 } from '@/lib/trees/handoff';
-import {ClientGate} from '@/lib/utils/client-gate';
+import {ClientOnly} from '@/lib/utils/client-only';
 import {isDefined} from '@/lib/utils/defined';
 
+import {DiffHandleProvider} from './_lib/handle-context';
 import {loadDiffSearchParams} from './_lib/search-params';
-import {DiffTree} from './_sidebar/file-tree';
+import {DiffReview} from './_review/review';
 import {ResizableSidebar} from './_sidebar/resizable-sidebar';
 import {SidebarSheet} from './_sidebar/sidebar-sheet';
 import {DiffSummary} from './_sidebar/summary';
-import {DiffCodeView} from './_viewer/code-view';
-import {DiffViewerProvider} from './_viewer/context';
+import {DiffTree} from './_sidebar/tree';
 
 import type {Metadata} from 'next';
 
@@ -68,21 +68,21 @@ export default async function DiffPage({
 
   return (
     <div className="flex h-full">
-      <DiffViewerProvider>
+      <DiffHandleProvider>
         <ResizableSidebar aria-label="Files" className="hidden md:block">
           {diffTreeNode}
         </ResizableSidebar>
         <main aria-label="Diff" className="min-h-0 min-w-0 flex-1">
           <SessionProvider>
-            <ClientGate fallback={diffFilesSpinner}>
-              <DiffCodeView files={files} />
-            </ClientGate>
+            <ClientOnly fallback={diffFilesSpinner}>
+              <DiffReview files={files} />
+            </ClientOnly>
           </SessionProvider>
         </main>
         <div aria-label="Files" className="md:hidden">
           <SidebarSheet>{diffTreeNode}</SidebarSheet>
         </div>
-      </DiffViewerProvider>
+      </DiffHandleProvider>
     </div>
   );
 }

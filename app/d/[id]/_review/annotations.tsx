@@ -15,18 +15,18 @@ import {useKeyDown} from '@/lib/hooks/use-key-down';
 import {isDefined} from '@/lib/utils/defined';
 
 import {addComment} from '../_lib/actions';
-import {DiffEditorSkeleton} from './editor-skeleton';
+import {CommentEditorSkeleton} from './comment-editor-skeleton';
 
 import type {AnnotationMetadata} from '@/lib/diffs/options';
 import type {DiffLineAnnotation} from '@pierre/diffs';
 
-function preloadDiffEditor() {
-  void import('./editor');
+function preloadCommentEditor() {
+  void import('./comment-editor');
 }
 
-const DiffEditor = dynamic(
-  () => import('./editor').then((module) => module.DiffEditor),
-  {loading: () => <DiffEditorSkeleton />},
+const CommentEditor = dynamic(
+  () => import('./comment-editor').then((module) => module.CommentEditor),
+  {loading: () => <CommentEditorSkeleton />},
 );
 
 export type DiffAnnotation = DiffLineAnnotation<AnnotationMetadata>;
@@ -42,8 +42,8 @@ export function GutterUtility({onAddAnnotation}: GutterUtilityProps) {
     <Button
       id="gutter-utility"
       aria-label="Add comment"
-      onHoverStart={preloadDiffEditor}
-      onFocus={preloadDiffEditor}
+      onHoverStart={preloadCommentEditor}
+      onFocus={preloadCommentEditor}
       onPress={onAddAnnotation}
       isIconOnly
       className="me-[calc(-1lh+1ch)] h-lh w-[1lh]"
@@ -117,7 +117,7 @@ function CommentForm({fileId, onDismiss}: CommentFormProps) {
   }
 
   return (
-    <DiffEditor
+    <CommentEditor
       onComment={(body) =>
         addComment({
           shareId,

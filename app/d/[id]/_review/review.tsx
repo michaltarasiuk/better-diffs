@@ -10,9 +10,9 @@ import {CODE_VIEW_OPTIONS} from '@/lib/diffs/options';
 import {useIsDesktop} from '@/lib/hooks/use-media-query';
 import {isDefined} from '@/lib/utils/defined';
 
+import {DiffHandleContext} from '../_lib/handle-context';
 import {useSelectedLines} from '../_lib/use-selected-lines';
 import {Annotation, GutterUtility, type DiffAnnotation} from './annotations';
-import {DiffViewerContext} from './context';
 import {FileCollapseButton} from './file-collapse-button';
 
 import type {FileDiffMetadata, GetHoveredLineResult} from '@pierre/diffs';
@@ -42,16 +42,14 @@ interface FileViewState {
   readonly version: number;
 }
 
-interface DiffCodeViewFile {
-  readonly id: string;
-  readonly metadata: FileDiffMetadata;
+interface DiffReviewProps {
+  readonly files: readonly {
+    readonly id: string;
+    readonly metadata: FileDiffMetadata;
+  }[];
 }
 
-interface DiffCodeViewProps {
-  readonly files: readonly DiffCodeViewFile[];
-}
-
-export function DiffCodeView({files}: DiffCodeViewProps) {
+export function DiffReview({files}: DiffReviewProps) {
   const [fileStateById, setFileStateById] = useState(
     () => new Map() as ReadonlyMap<string, FileViewState>,
   );
@@ -59,7 +57,7 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
 
   const isDesktop = useIsDesktop();
 
-  const viewerRef = use(DiffViewerContext);
+  const diffHandleRef = use(DiffHandleContext);
 
   function getFileState(fileId: string, fileStateMap = fileStateById) {
     return fileStateMap.get(fileId) ?? DEFAULT_FILE_VIEW_STATE;
@@ -116,7 +114,7 @@ export function DiffCodeView({files}: DiffCodeViewProps) {
 
   return (
     <CodeView
-      ref={viewerRef}
+      ref={diffHandleRef}
       items={files.map((file) => {
         const {annotations, collapsed, version} = getFileState(file.id);
 

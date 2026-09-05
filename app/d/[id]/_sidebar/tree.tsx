@@ -15,8 +15,8 @@ import {useKeyDown} from '@/lib/hooks/use-key-down';
 import {getTreeOptions, type TreeHandoff} from '@/lib/trees/handoff';
 import {isDefined} from '@/lib/utils/defined';
 
+import {DiffHandleContext} from '../_lib/handle-context';
 import {useSearchQuery} from '../_lib/use-search-query';
-import {DiffViewerContext} from '../_viewer/context';
 
 interface DiffTreeProps {
   readonly handoff: TreeHandoff;
@@ -32,7 +32,7 @@ export function DiffTree({
   children,
 }: DiffTreeProps) {
   const {searchQuery, setSearchQuery} = useSearchQuery();
-  const viewerRef = use(DiffViewerContext);
+  const handleRef = use(DiffHandleContext);
   const {model} = useFileTree({
     ...getTreeOptions(handoff, {searchQuery}),
     onSearchChange(value) {
@@ -41,7 +41,7 @@ export function DiffTree({
     onSelectionChange([selectedPath]) {
       const id = isDefined(selectedPath) ? fileIdByPath[selectedPath] : null;
       if (isDefined(id)) {
-        viewerRef.current?.scrollTo({type: 'item', id, align: 'start'});
+        handleRef.current?.scrollTo({type: 'item', id, align: 'start'});
       }
     },
   });

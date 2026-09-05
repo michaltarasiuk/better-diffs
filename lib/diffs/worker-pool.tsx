@@ -20,11 +20,7 @@ const WORKER_HIGHLIGHTER_OPTIONS = {
   theme: DEFAULT_THEMES,
 } satisfies WorkerInitializationRenderOptions;
 
-export function DiffWorkerPoolProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function DiffProvider({children}: {children: React.ReactNode}) {
   return (
     <WorkerPoolContextProvider
       poolOptions={WORKER_POOL_OPTIONS}

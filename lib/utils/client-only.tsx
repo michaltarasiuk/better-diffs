@@ -2,12 +2,12 @@
 
 import {useSyncExternalStore} from 'react';
 
-interface ClientGateProps {
+interface ClientOnlyProps {
   readonly children: React.ReactNode;
   readonly fallback: React.ReactNode;
 }
 
-export function ClientGate({children, fallback}: ClientGateProps) {
+export function ClientOnly({children, fallback}: ClientOnlyProps) {
   const isClient = useSyncExternalStore(
     () => () => {},
     () => true,

@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Button,
   ButtonGroup,
@@ -128,12 +130,12 @@ function isBlockType(value: string): value is BlockType {
 
 type OnComment = (body: SerializedEditorState) => void | Promise<unknown>;
 
-interface DiffEditorProps {
+interface CommentEditorProps {
   readonly onComment: OnComment;
   readonly onDismiss: () => void;
 }
 
-export function DiffEditor({onComment, onDismiss}: DiffEditorProps) {
+export function CommentEditor({onComment, onDismiss}: CommentEditorProps) {
   return (
     <LexicalComposer
       initialConfig={{
@@ -147,7 +149,7 @@ export function DiffEditor({onComment, onDismiss}: DiffEditorProps) {
     >
       <Card variant="secondary" className="m-2 mbs-1">
         <Card.Header>
-          <ToolbarPlugin />
+          <RichTextToolbarPlugin />
         </Card.Header>
         <Card.Content>
           <div className="relative min-h-24 rounded-field px-3 py-2">
@@ -179,7 +181,7 @@ export function DiffEditor({onComment, onDismiss}: DiffEditorProps) {
           <Button variant="ghost" size="sm" onPress={onDismiss}>
             Cancel
           </Button>
-          <CommentButton onComment={onComment} />
+          <SubmitCommentButton onComment={onComment} />
         </Card.Footer>
       </Card>
 
@@ -189,11 +191,11 @@ export function DiffEditor({onComment, onDismiss}: DiffEditorProps) {
   );
 }
 
-interface CommentButtonProps {
+interface SubmitCommentButtonProps {
   readonly onComment: OnComment;
 }
 
-function CommentButton({onComment}: CommentButtonProps) {
+function SubmitCommentButton({onComment}: SubmitCommentButtonProps) {
   const [editor] = useLexicalComposerContext();
   const isEmpty = useLexicalIsTextContentEmpty(editor, true);
 
@@ -239,7 +241,7 @@ function PreventEscapeBlurPlugin() {
   return null;
 }
 
-function ToolbarPlugin() {
+function RichTextToolbarPlugin() {
   const [editor] = useLexicalComposerContext();
 
   const [blockType, setBlockType] = useState<BlockType>('paragraph');
