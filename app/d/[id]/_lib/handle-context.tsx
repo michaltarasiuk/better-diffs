@@ -2,7 +2,7 @@
 
 import {createContext, useRef} from 'react';
 
-import {DiffProvider} from '@/lib/diffs/worker-pool';
+import {DiffProvider} from '@/lib/diffs/provider';
 
 import type {AnnotationMetadata} from '@/lib/diffs/options';
 import type {CodeViewHandle} from '@pierre/diffs/react';
