@@ -300,130 +300,133 @@ function RichTextToolbarPlugin() {
   }, [editor]);
 
   return (
-    <div className="@container flex flex-wrap items-center gap-2">
-      <Select
-        aria-label="Block type"
-        variant="secondary"
-        value={blockType}
-        onChange={(value) => {
-          if (typeof value === 'string' && isBlockType(value)) {
-            applyBlockType(editor, value);
-          }
-        }}
-        className="me-auto w-36 @xl:me-0"
-      >
-        <Select.Trigger className="h-9 min-h-0 items-center py-0 md:h-8">
-          <Select.Value />
-          <Select.Indicator />
-        </Select.Trigger>
-        <Select.Popover>
-          <ListBox>
-            {BLOCK_TYPES.map((blockType) => (
-              <ListBox.Item
-                key={blockType.value}
-                id={blockType.value}
-                textValue={blockType.label}
-              >
-                {blockType.label}
-                <ListBox.ItemIndicator />
-              </ListBox.Item>
-            ))}
-          </ListBox>
-        </Select.Popover>
-      </Select>
+    <div className="@container">
+      <div className="flex [scrollbar-width:none] items-center gap-2 overflow-x-auto @xl:flex-wrap @xl:overflow-visible">
+        <Select
+          aria-label="Block type"
+          variant="secondary"
+          value={blockType}
+          onChange={(value) => {
+            if (typeof value === 'string' && isBlockType(value)) {
+              applyBlockType(editor, value);
+            }
+          }}
+          className="w-36 shrink-0"
+        >
+          <Select.Trigger className="h-9 min-h-0 items-center py-0 md:h-8">
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {BLOCK_TYPES.map((blockType) => (
+                <ListBox.Item
+                  key={blockType.value}
+                  id={blockType.value}
+                  textValue={blockType.label}
+                >
+                  {blockType.label}
+                  <ListBox.ItemIndicator />
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
 
-      <ButtonGroup variant="tertiary" size="sm">
-        <Button
-          aria-label="Undo"
-          isDisabled={!canUndo}
-          onPress={() => {
-            editor.dispatchCommand(UNDO_COMMAND);
-          }}
-          isIconOnly
-        >
-          <Undo2Icon aria-hidden className="size-4" />
-        </Button>
-        <Button
-          aria-label="Redo"
-          isDisabled={!canRedo}
-          onPress={() => {
-            editor.dispatchCommand(REDO_COMMAND);
-          }}
-          isIconOnly
-        >
-          <ButtonGroup.Separator />
-          <Redo2Icon aria-hidden className="size-4" />
-        </Button>
-      </ButtonGroup>
+        <ButtonGroup className="shrink-0" variant="tertiary" size="sm">
+          <Button
+            aria-label="Undo"
+            isDisabled={!canUndo}
+            onPress={() => {
+              editor.dispatchCommand(UNDO_COMMAND);
+            }}
+            isIconOnly
+          >
+            <Undo2Icon aria-hidden className="size-4" />
+          </Button>
+          <Button
+            aria-label="Redo"
+            isDisabled={!canRedo}
+            onPress={() => {
+              editor.dispatchCommand(REDO_COMMAND);
+            }}
+            isIconOnly
+          >
+            <ButtonGroup.Separator />
+            <Redo2Icon aria-hidden className="size-4" />
+          </Button>
+        </ButtonGroup>
 
-      <ToggleButtonGroup
-        selectionMode="multiple"
-        size="sm"
-        selectedKeys={textFormats}
-        onSelectionChange={(selection) => {
-          const toggled = selection.symmetricDifference(textFormats);
-          for (const formatType of toggled) {
-            editor.dispatchCommand(
-              FORMAT_TEXT_COMMAND,
-              formatType as TextFormatType,
-            );
-          }
-        }}
-      >
-        <ToggleButton id="bold" aria-label="Bold" isIconOnly>
-          <BoldIcon aria-hidden className="size-4" />
-        </ToggleButton>
-        <ToggleButton id="italic" aria-label="Italic" isIconOnly>
-          <ToggleButtonGroup.Separator />
-          <ItalicIcon aria-hidden className="size-4" />
-        </ToggleButton>
-        <ToggleButton id="underline" aria-label="Underline" isIconOnly>
-          <ToggleButtonGroup.Separator />
-          <UnderlineIcon aria-hidden className="size-4" />
-        </ToggleButton>
-      </ToggleButtonGroup>
+        <ToggleButtonGroup
+          className="shrink-0"
+          selectionMode="multiple"
+          size="sm"
+          selectedKeys={textFormats}
+          onSelectionChange={(selection) => {
+            const toggled = selection.symmetricDifference(textFormats);
+            for (const formatType of toggled) {
+              editor.dispatchCommand(
+                FORMAT_TEXT_COMMAND,
+                formatType as TextFormatType,
+              );
+            }
+          }}
+        >
+          <ToggleButton id="bold" aria-label="Bold" isIconOnly>
+            <BoldIcon aria-hidden className="size-4" />
+          </ToggleButton>
+          <ToggleButton id="italic" aria-label="Italic" isIconOnly>
+            <ToggleButtonGroup.Separator />
+            <ItalicIcon aria-hidden className="size-4" />
+          </ToggleButton>
+          <ToggleButton id="underline" aria-label="Underline" isIconOnly>
+            <ToggleButtonGroup.Separator />
+            <UnderlineIcon aria-hidden className="size-4" />
+          </ToggleButton>
+        </ToggleButtonGroup>
 
-      <ButtonGroup variant="tertiary" size="sm">
-        <Button
-          aria-label="Align left"
-          onPress={() => {
-            editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
-          }}
-          isIconOnly
-        >
-          <AlignLeftIcon aria-hidden className="size-4" />
-        </Button>
-        <Button
-          aria-label="Align center"
-          onPress={() => {
-            editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center');
-          }}
-          isIconOnly
-        >
-          <ButtonGroup.Separator />
-          <AlignCenterIcon aria-hidden className="size-4" />
-        </Button>
-        <Button
-          aria-label="Align right"
-          onPress={() => {
-            editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right');
-          }}
-          isIconOnly
-        >
-          <ButtonGroup.Separator />
-          <AlignRightIcon aria-hidden className="size-4" />
-        </Button>
-        <Button
-          aria-label="Justify"
-          onPress={() => {
-            editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify');
-          }}
-          isIconOnly
-        >
-          <ButtonGroup.Separator />
-          <AlignJustifyIcon aria-hidden className="size-4" />
-        </Button>
-      </ButtonGroup>
+        <ButtonGroup className="shrink-0" variant="tertiary" size="sm">
+          <Button
+            aria-label="Align left"
+            onPress={() => {
+              editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
+            }}
+            isIconOnly
+          >
+            <AlignLeftIcon aria-hidden className="size-4" />
+          </Button>
+          <Button
+            aria-label="Align center"
+            onPress={() => {
+              editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center');
+            }}
+            isIconOnly
+          >
+            <ButtonGroup.Separator />
+            <AlignCenterIcon aria-hidden className="size-4" />
+          </Button>
+          <Button
+            aria-label="Align right"
+            onPress={() => {
+              editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right');
+            }}
+            isIconOnly
+          >
+            <ButtonGroup.Separator />
+            <AlignRightIcon aria-hidden className="size-4" />
+          </Button>
+          <Button
+            aria-label="Justify"
+            onPress={() => {
+              editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify');
+            }}
+            isIconOnly
+          >
+            <ButtonGroup.Separator />
+            <AlignJustifyIcon aria-hidden className="size-4" />
+          </Button>
+        </ButtonGroup>
+      </div>
     </div>
   );
 }
