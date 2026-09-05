@@ -27,11 +27,11 @@ const CODE_VIEW_STYLE = {
   overflow: 'auto',
 } satisfies React.CSSProperties;
 
-const DEFAULT_FILE_VIEW_STATE = {
+const DEFAULT_FILE_STATE = {
   annotations: [],
   collapsed: false,
   version: 0,
-} satisfies FileViewState;
+} satisfies FileState;
 
 type DiffLine = GetHoveredLineResult<'diff'>;
 type HoveredLine = GetHoveredLineResult<'file'> | DiffLine;
@@ -60,7 +60,7 @@ export function DiffReview({files}: DiffReviewProps) {
   const diffHandleRef = use(DiffHandleContext);
 
   function getFileState(fileId: string, fileStateMap = fileStateById) {
-    return fileStateMap.get(fileId) ?? DEFAULT_FILE_VIEW_STATE;
+    return fileStateMap.get(fileId) ?? DEFAULT_FILE_STATE;
   }
 
   function updateFileState(
