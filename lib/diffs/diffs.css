@@ -1,10 +1,13 @@
-/*
- * @pierre/diffs measures scrollbar width only after hydration, and the
- * value differs by browser (~11px in Firefox, 0px in Chrome). Fix
- * --diffs-scrollbar-gutter-override at 0px so SSR and the first client
- * paint agree.
- */
 diffs-container,
 [data-diffs] {
+  --diffs-font-family: var(--font-mono);
+  --diffs-header-font-family: var(--font-sans);
+
+  /*
+   * @pierre/diffs measures scrollbar width only after hydration, and the
+   * value differs by browser (~11px in Firefox, 0px in Chrome). Fix
+   * --diffs-scrollbar-gutter-override at 0px so SSR and the first client
+   * paint agree.
+   */
   --diffs-scrollbar-gutter-override: 0px;
 }

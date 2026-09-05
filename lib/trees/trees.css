@@ -1,10 +1,12 @@
-/*
- * @pierre/trees measures scrollbar width only after hydration, and the
- * value differs by browser (~11px in Firefox, 0px in Chrome). Fix
- * --trees-scrollbar-gutter-override and --trees-scrollbar-gutter-measured
- * at 0px so SSR and the first client paint agree.
- */
 file-tree-container {
+  --trees-font-family-override: var(--font-sans);
+
+  /*
+   * @pierre/trees measures scrollbar width only after hydration, and the
+   * value differs by browser (~11px in Firefox, 0px in Chrome). Fix
+   * --trees-scrollbar-gutter-override and --trees-scrollbar-gutter-measured
+   * at 0px so SSR and the first client paint agree.
+   */
   --trees-scrollbar-gutter-override: 0px;
   --trees-scrollbar-gutter-measured: 0px;
 }
