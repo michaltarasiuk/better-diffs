@@ -36,7 +36,7 @@ const DEFAULT_FILE_VIEW_STATE = {
 type DiffLine = GetHoveredLineResult<'diff'>;
 type HoveredLine = GetHoveredLineResult<'file'> | DiffLine;
 
-interface FileViewState {
+interface FileState {
   readonly annotations: DiffAnnotation[];
   readonly collapsed: boolean;
   readonly version: number;
@@ -51,7 +51,7 @@ interface DiffReviewProps {
 
 export function DiffReview({files}: DiffReviewProps) {
   const [fileStateById, setFileStateById] = useState(
-    () => new Map() as ReadonlyMap<string, FileViewState>,
+    () => new Map() as ReadonlyMap<string, FileState>,
   );
   const {selectedLines, setSelectedLines} = useSelectedLines();
 
@@ -65,7 +65,7 @@ export function DiffReview({files}: DiffReviewProps) {
 
   function updateFileState(
     fileId: string,
-    update: (state: FileViewState) => FileViewState,
+    update: (state: FileState) => FileState,
   ) {
     setFileStateById((fileStateById) => {
       const state = getFileState(fileId, fileStateById);
