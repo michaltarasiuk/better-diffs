@@ -11,7 +11,12 @@ export function SidebarSheet({children}: SidebarSheetProps) {
   return (
     <Drawer>
       <Pressable>
-        <div className="fixed inset-x-0 bottom-0 py-7 outline-none focus-visible:status-focused">
+        <div
+          aria-label="Open files"
+          className="fixed inset-x-0 bottom-0 py-7 outline-none focus-visible:status-focused"
+          role="button"
+          tabIndex={0}
+        >
           <Drawer.Handle className="py-0" />
         </div>
       </Pressable>
