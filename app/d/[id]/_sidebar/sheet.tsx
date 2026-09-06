@@ -1,7 +1,6 @@
 'use client';
 
 import {Drawer} from '@heroui/react';
-import {Button} from 'react-aria-components/Button';
 
 interface SidebarSheetProps {
   readonly children: React.ReactNode;
@@ -10,12 +9,12 @@ interface SidebarSheetProps {
 export function SidebarSheet({children}: SidebarSheetProps) {
   return (
     <Drawer>
-      <Button
+      <Drawer.Trigger
         aria-label="Open files"
         className="fixed inset-x-0 bottom-0 py-7 outline-none focus-visible:status-focused"
       >
         <Drawer.Handle className="py-0" />
-      </Button>
+      </Drawer.Trigger>
 
       <Drawer.Backdrop>
         <Drawer.Content placement="bottom">
