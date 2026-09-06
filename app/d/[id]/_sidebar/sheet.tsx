@@ -1,7 +1,7 @@
 'use client';
 
 import {Drawer} from '@heroui/react';
-import {Pressable} from 'react-aria-components/Modal';
+import {Button} from 'react-aria-components/Button';
 
 interface SidebarSheetProps {
   readonly children: React.ReactNode;
@@ -10,16 +10,12 @@ interface SidebarSheetProps {
 export function SidebarSheet({children}: SidebarSheetProps) {
   return (
     <Drawer>
-      <Pressable>
-        <div
-          aria-label="Open files"
-          className="fixed inset-x-0 bottom-0 py-7 outline-none focus-visible:status-focused"
-          role="button"
-          tabIndex={0}
-        >
-          <Drawer.Handle className="py-0" />
-        </div>
-      </Pressable>
+      <Button
+        aria-label="Open files"
+        className="fixed inset-x-0 bottom-0 py-7 outline-none focus-visible:status-focused"
+      >
+        <Drawer.Handle className="py-0" />
+      </Button>
 
       <Drawer.Backdrop>
         <Drawer.Content placement="bottom">
