@@ -7,7 +7,7 @@ import {CodeView} from '@pierre/diffs/react';
 import {use, useState} from 'react';
 
 import {CODE_VIEW_OPTIONS} from '@/lib/diffs/options';
-import {useIsDesktop} from '@/lib/hooks/use-media-query';
+import {useIsMobile} from '@/lib/hooks/use-media-query';
 import {isDefined} from '@/lib/utils/defined';
 
 import {DiffHandleContext} from '../_lib/handle-context';
@@ -55,7 +55,7 @@ export function DiffReview({files}: DiffReviewProps) {
   );
   const {selectedLines, setSelectedLines} = useSelectedLines();
 
-  const isDesktop = useIsDesktop();
+  const isMobile = useIsMobile();
 
   const diffHandleRef = use(DiffHandleContext);
 
@@ -156,7 +156,7 @@ export function DiffReview({files}: DiffReviewProps) {
       }
       options={{
         ...CODE_VIEW_OPTIONS,
-        diffStyle: isDesktop ? 'split' : 'unified',
+        diffStyle: isMobile ? 'unified' : 'split',
       }}
       style={CODE_VIEW_STYLE}
     />
