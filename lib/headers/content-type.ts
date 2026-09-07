@@ -1,8 +1,6 @@
 import {parseParams, quote} from '@/lib/headers/param-values';
 import {isDefined} from '@/lib/utils/defined';
 
-import type {HeaderValue} from '@/lib/headers/header-value';
-
 export interface ContentTypeInit {
   boundary?: string;
   charset?: string;
@@ -16,7 +14,7 @@ export interface ContentTypeInit {
  *
  * [HTTP/1.1 Specification](https://datatracker.ietf.org/doc/html/rfc7231#section-3.1.1.5)
  */
-export class ContentType implements HeaderValue, ContentTypeInit {
+export class ContentType implements ContentTypeInit {
   boundary?: string;
   charset?: string;
   mediaType?: string;

@@ -2,8 +2,6 @@ import {parseParams} from '@/lib/headers/param-values';
 import {isDefined} from '@/lib/utils/defined';
 import {isIterable} from '@/lib/utils/iterable';
 
-import type {HeaderValue} from '@/lib/headers/header-value';
-
 export type AcceptInit =
   Iterable<string | [string, number]> | Record<string, number>;
 
@@ -14,7 +12,7 @@ export type AcceptInit =
  *
  * [HTTP/1.1 Specification](https://datatracker.ietf.org/doc/html/rfc7231#section-5.3.2)
  */
-export class Accept implements HeaderValue, Iterable<[string, number]> {
+export class Accept implements Iterable<[string, number]> {
   #map!: Map<string, number>;
 
   constructor(init?: string | AcceptInit) {
