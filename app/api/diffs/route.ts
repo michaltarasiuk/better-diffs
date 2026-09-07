@@ -38,19 +38,16 @@ export async function POST(request: NextRequest) {
   let textBody = false;
   let textResponse = false;
 
-  const contentTypeHeader = request.headers.get('Content-Type');
-  if (isDefined(contentTypeHeader)) {
-    const contentType = new ContentType(contentTypeHeader);
-    if (isDefined(contentType.mediaType)) {
-      textBody = contentType.mediaType.startsWith('text/');
-    }
+  const mediaType = ContentType.from(
+    request.headers.get('Content-Type'),
+  ).mediaType;
+  if (isDefined(mediaType)) {
+    textBody = mediaType.startsWith('text/');
   }
 
-  const acceptHeader = request.headers.get('Accept');
-  if (isDefined(acceptHeader)) {
-    const accept = new Accept(acceptHeader);
-    textResponse = accept.accepts('text/plain');
-  }
+  textResponse = Accept.from(request.headers.get('Accept')).accepts(
+    'text/plain',
+  );
 
   const read = textBody
     ? await readPatchText(request)

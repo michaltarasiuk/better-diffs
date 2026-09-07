@@ -1,5 +1,7 @@
-import {parseParams, quote, type HeaderValue} from '@/lib/headers/utils';
+import {parseParams, quote} from '@/lib/headers/param-values';
 import {isDefined} from '@/lib/utils/defined';
+
+import type {HeaderValue} from '@/lib/headers/header-value';
 
 export interface ContentTypeInit {
   boundary?: string;
@@ -20,26 +22,7 @@ export class ContentType implements HeaderValue, ContentTypeInit {
   mediaType?: string;
 
   constructor(init?: string | ContentTypeInit) {
-    if (isDefined(init)) {
-      if (typeof init === 'string') {
-        const params = parseParams(init);
-        const first = params[0];
-        if (isDefined(first)) {
-          this.mediaType = first[0];
-          for (const [name, value] of params.slice(1)) {
-            if (name === 'boundary') {
-              this.boundary = value;
-            } else if (name === 'charset') {
-              this.charset = value;
-            }
-          }
-        }
-      } else {
-        this.boundary = init.boundary;
-        this.charset = init.charset;
-        this.mediaType = init.mediaType;
-      }
-    }
+    if (isDefined(init)) return ContentType.from(init);
   }
 
   toString() {
@@ -57,5 +40,32 @@ export class ContentType implements HeaderValue, ContentTypeInit {
     }
 
     return parts.join('; ');
+  }
+
+  static from(value: string | ContentTypeInit | null) {
+    const header = new ContentType();
+
+    if (isDefined(value)) {
+      if (typeof value === 'string') {
+        const params = parseParams(value);
+        const first = params[0];
+        if (isDefined(first)) {
+          header.mediaType = first[0];
+          for (const [name, val] of params.slice(1)) {
+            if (name === 'boundary') {
+              header.boundary = val;
+            } else if (name === 'charset') {
+              header.charset = val;
+            }
+          }
+        }
+      } else {
+        header.boundary = value.boundary;
+        header.charset = value.charset;
+        header.mediaType = value.mediaType;
+      }
+    }
+
+    return header;
   }
 }

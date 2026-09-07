@@ -1,12 +1,6 @@
-export interface HeaderValue {
-  toString(): string;
-}
+import {isDefined} from '@/lib/utils/defined';
 
 export function parseParams(input: string, delimiter: ';' | ',' = ';') {
-  /*
-   * Splits on the delimiter and unquotes values like
-   * `filename="the\\ filename.txt"`.
-   */
   const parser =
     delimiter === ';'
       ? /(?:^|;)\s*([^=;\s]+)(\s*=\s*(?:"((?:[^"\\]|\\.)*)"|((?:[^;]|\\\;)+))?)?/g
@@ -17,7 +11,7 @@ export function parseParams(input: string, delimiter: ';' | ',' = ';') {
   let match: RegExpExecArray | null;
   while ((match = parser.exec(input)) !== null) {
     const keyMatch = match[1];
-    if (!keyMatch) continue;
+    if (!isDefined(keyMatch)) continue;
 
     const key = keyMatch.trim();
 
@@ -32,17 +26,9 @@ export function parseParams(input: string, delimiter: ';' | ',' = ';') {
   return params;
 }
 
-export function quote(value: string): string {
+export function quote(value: string) {
   if (value.includes('"') || value.includes(';') || value.includes(' ')) {
     return `"${value.replace(/"/g, '\\"')}"`;
   }
   return value;
-}
-
-export function isIterable<T>(value: unknown): value is Iterable<T> {
-  if (value == null || typeof value !== 'object') {
-    return false;
-  }
-
-  return typeof (value as Iterable<T>)[Symbol.iterator] === 'function';
 }

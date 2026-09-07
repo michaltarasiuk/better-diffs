@@ -1,5 +1,8 @@
-import {isIterable, parseParams, type HeaderValue} from '@/lib/headers/utils';
+import {parseParams} from '@/lib/headers/param-values';
 import {isDefined} from '@/lib/utils/defined';
+import {isIterable} from '@/lib/utils/iterable';
+
+import type {HeaderValue} from '@/lib/headers/header-value';
 
 export type AcceptInit =
   Iterable<string | [string, number]> | Record<string, number>;
@@ -12,53 +15,11 @@ export type AcceptInit =
  * [HTTP/1.1 Specification](https://datatracker.ietf.org/doc/html/rfc7231#section-5.3.2)
  */
 export class Accept implements HeaderValue, Iterable<[string, number]> {
-  #map: Map<string, number>;
+  #map!: Map<string, number>;
 
   constructor(init?: string | AcceptInit) {
+    if (isDefined(init)) return Accept.from(init);
     this.#map = new Map();
-
-    if (isDefined(init)) {
-      if (typeof init === 'string') {
-        for (const piece of init.split(/\s*,\s*/)) {
-          const params = parseParams(piece);
-          const first = params[0];
-          if (!isDefined(first)) continue;
-
-          const mediaType = first[0];
-          let weight = 1;
-
-          for (let i = 1; i < params.length; i++) {
-            const param = params[i];
-            if (!isDefined(param)) continue;
-
-            const [key, value] = param;
-            if (key === 'q') {
-              weight = Number(value);
-              break;
-            }
-          }
-
-          this.#map.set(mediaType.toLowerCase(), weight);
-        }
-      } else if (isIterable(init)) {
-        for (const mediaType of init) {
-          if (Array.isArray(mediaType)) {
-            this.#map.set(mediaType[0].toLowerCase(), mediaType[1]);
-          } else {
-            this.#map.set(mediaType.toLowerCase(), 1);
-          }
-        }
-      } else {
-        for (const mediaType of Object.getOwnPropertyNames(init)) {
-          const weight = init[mediaType];
-          if (!isDefined(weight)) continue;
-
-          this.#map.set(mediaType.toLowerCase(), weight);
-        }
-      }
-
-      this.#sort();
-    }
   }
 
   #sort() {
@@ -97,7 +58,7 @@ export class Accept implements HeaderValue, Iterable<[string, number]> {
     return 0;
   }
 
-  getPreferred(mediaTypes: string[]) {
+  getPreferred<mediaType extends string>(mediaTypes: readonly mediaType[]) {
     const sorted = mediaTypes
       .map((mediaType) => [mediaType, this.getWeight(mediaType)] as const)
       .sort((a, b) => b[1] - a[1]);
@@ -153,5 +114,54 @@ export class Accept implements HeaderValue, Iterable<[string, number]> {
     }
 
     return pairs.join(',');
+  }
+
+  static from(value: string | AcceptInit | null) {
+    const header = new Accept();
+
+    if (isDefined(value)) {
+      if (typeof value === 'string') {
+        for (const piece of value.split(/\s*,\s*/)) {
+          const params = parseParams(piece);
+          const first = params[0];
+          if (!isDefined(first)) continue;
+
+          const mediaType = first[0];
+          let weight = 1;
+
+          for (let i = 1; i < params.length; i++) {
+            const param = params[i];
+            if (!isDefined(param)) continue;
+
+            const [key, val] = param;
+            if (key === 'q') {
+              weight = Number(val);
+              break;
+            }
+          }
+
+          header.#map.set(mediaType.toLowerCase(), weight);
+        }
+      } else if (isIterable(value)) {
+        for (const mediaType of value) {
+          if (Array.isArray(mediaType)) {
+            header.#map.set(mediaType[0].toLowerCase(), mediaType[1]);
+          } else {
+            header.#map.set(mediaType.toLowerCase(), 1);
+          }
+        }
+      } else {
+        for (const mediaType of Object.getOwnPropertyNames(value)) {
+          const weight = value[mediaType];
+          if (!isDefined(weight)) continue;
+
+          header.#map.set(mediaType.toLowerCase(), weight);
+        }
+      }
+
+      header.#sort();
+    }
+
+    return header;
   }
 }
