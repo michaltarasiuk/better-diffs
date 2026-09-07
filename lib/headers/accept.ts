@@ -1,6 +1,7 @@
-import {parseParams} from './param-values';
 import {isDefined} from '@/lib/utils/defined';
 import {isIterable} from '@/lib/utils/iterable';
+
+import {parseParams} from './param-values';
 
 export type AcceptInit =
   Iterable<string | [string, number]> | Record<string, number>;
