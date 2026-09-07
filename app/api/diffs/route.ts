@@ -1,10 +1,15 @@
 import {parsePatchFiles} from '@pierre/diffs';
+import {NextResponse} from 'next/server';
 import {z} from 'zod';
 
 import {createShare} from '@/lib/db/shares';
 import {env} from '@/lib/env';
+import {Accept} from '@/lib/headers/accept';
+import {ContentType} from '@/lib/headers/content-type';
+import {isDefined} from '@/lib/utils/defined';
 
 import type {FileDiffMetadata} from '@pierre/diffs';
+import type {NextRequest} from 'next/server';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -13,7 +18,7 @@ const CORS_HEADERS = {
 };
 
 const Body = z.object({
-  patches: z.array(z.array(z.custom<FileDiffMetadata>()).min(1)).min(1),
+  patches: z.array(z.array(z.custom<FileDiffMetadata>())),
 });
 
 type Patches = readonly (readonly FileDiffMetadata[])[];
@@ -23,54 +28,89 @@ type ReadResult =
   | {readonly ok: false; readonly error: string};
 
 export function OPTIONS() {
-  return new Response(null, {status: 204, headers: CORS_HEADERS});
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
 }
 
-export async function POST(request: Request) {
-  const asPlainText =
-    request.headers.get('Accept')?.includes('text/plain') === true;
+export async function POST(request: NextRequest) {
+  let textBody = false;
+  let textResponse = false;
 
-  const read = request.headers.get('Content-Type')?.startsWith('text/')
+  const contentTypeHeader = request.headers.get('Content-Type');
+  if (isDefined(contentTypeHeader)) {
+    const contentType = new ContentType(contentTypeHeader);
+    if (isDefined(contentType.mediaType)) {
+      textBody = contentType.mediaType.startsWith('text/');
+    }
+  }
+
+  const acceptHeader = request.headers.get('Accept');
+  if (isDefined(acceptHeader)) {
+    const accept = new Accept(acceptHeader);
+    textResponse = accept.accepts('text/plain');
+  }
+
+  const read = textBody
     ? await readPatchText(request)
     : await readPatchJson(request);
 
   if (!read.ok) {
-    return asPlainText
-      ? textResponse(read.error, 400)
-      : Response.json(
-          {ok: false, error: read.error},
-          {status: 400, headers: CORS_HEADERS},
-        );
+    if (!textResponse) {
+      return NextResponse.json(
+        {ok: false, error: read.error},
+        {status: 400, headers: CORS_HEADERS},
+      );
+    }
+
+    return new NextResponse(read.error, {
+      status: 400,
+      headers: CORS_HEADERS,
+    });
   }
 
   const id = await createShare(read.patches);
   const url = `${env.BASE_URL}/d/${id}`;
 
-  return asPlainText
-    ? textResponse(url, 201)
-    : Response.json({ok: true, id, url}, {status: 201, headers: CORS_HEADERS});
+  if (!textResponse) {
+    return NextResponse.json(
+      {ok: true, url},
+      {status: 201, headers: CORS_HEADERS},
+    );
+  }
+
+  return new NextResponse(url, {
+    status: 201,
+    headers: CORS_HEADERS,
+  });
 }
 
-async function readPatchText(request: Request): Promise<ReadResult> {
-  const patch = await request.text();
+async function readPatchText(request: NextRequest): Promise<ReadResult> {
+  let text: string;
+  try {
+    text = await request.text();
+  } catch {
+    return {ok: false, error: 'Invalid patch body'};
+  }
 
   let patches: Patches;
   try {
-    patches = parsePatchFiles(patch)
-      .map((parsed) => parsed.files)
+    patches = parsePatchFiles(text)
+      .map((patch) => patch.files)
       .filter((files) => files.length > 0);
   } catch {
-    return {ok: false, error: 'Invalid patch'};
+    return {ok: false, error: 'Invalid patch text'};
   }
 
   if (patches.length === 0) {
-    return {ok: false, error: 'No diffs found in patch'};
+    return {ok: false, error: 'Invalid patches'};
   }
 
   return {ok: true, patches};
 }
 
-async function readPatchJson(request: Request): Promise<ReadResult> {
+async function readPatchJson(request: NextRequest): Promise<ReadResult> {
   let json: unknown;
   try {
     json = await request.json();
@@ -79,16 +119,9 @@ async function readPatchJson(request: Request): Promise<ReadResult> {
   }
 
   const body = Body.safeParse(json);
-  if (!body.success) {
-    return {ok: false, error: 'Invalid request body'};
+  if (!body.success || body.data.patches.length === 0) {
+    return {ok: false, error: 'Invalid patches'};
   }
 
   return {ok: true, patches: body.data.patches};
-}
-
-function textResponse(body: string, status: number) {
-  return new Response(`${body}\n`, {
-    status,
-    headers: {...CORS_HEADERS, 'Content-Type': 'text/plain; charset=utf-8'},
-  });
 }
