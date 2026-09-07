@@ -19,7 +19,7 @@ export function CommentEditorSkeleton() {
       </Card.Header>
       <Card.Content>
         <div className="relative block h-24 w-full rounded-field px-3 py-2">
-          <Skeleton className="h-full w-full rounded-field" />
+          <Skeleton className="pointer-events-none absolute start-3 top-2 h-4.5 w-32" />
         </div>
       </Card.Content>
       <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
