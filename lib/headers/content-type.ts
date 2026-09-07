@@ -1,4 +1,4 @@
-import {parseParams, quote} from '@/lib/headers/param-values';
+import {parseParams, quote} from './param-values';
 import {isDefined} from '@/lib/utils/defined';
 
 export interface ContentTypeInit {

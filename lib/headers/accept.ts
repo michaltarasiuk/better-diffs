@@ -1,4 +1,4 @@
-import {parseParams} from '@/lib/headers/param-values';
+import {parseParams} from './param-values';
 import {isDefined} from '@/lib/utils/defined';
 import {isIterable} from '@/lib/utils/iterable';
 
