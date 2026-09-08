@@ -60,6 +60,15 @@ async function syncEvents(shareId: string) {
 
 const syncPromises = new Map<string, Promise<ShareEvent[]>>();
 
+function getSyncEventsPromise(shareId: string) {
+  let eventsPromise = syncPromises.get(shareId);
+  if (!isDefined(eventsPromise)) {
+    eventsPromise = syncEvents(shareId);
+    syncPromises.set(shareId, eventsPromise);
+  }
+  return eventsPromise;
+}
+
 export const ShareStateContext =
   createContext<FoldedShareState>(EMPTY_FOLDED_STATE);
 
@@ -68,13 +77,7 @@ export function EventSync({children}: {readonly children: React.ReactNode}) {
 
   const shareId = useShareId();
 
-  let eventsPromise = syncPromises.get(shareId);
-  if (!isDefined(eventsPromise)) {
-    eventsPromise = syncEvents(shareId);
-    syncPromises.set(shareId, eventsPromise);
-  }
-
-  const events = use(eventsPromise);
+  const events = use(getSyncEventsPromise(shareId));
   const state = foldEvents(events);
 
   return (
