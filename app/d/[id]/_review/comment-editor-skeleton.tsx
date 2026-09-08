@@ -17,9 +17,11 @@ export function CommentEditorSkeleton() {
           <Skeleton className="h-9 w-32 shrink-0 rounded-field md:h-8" />
         </div>
       </Card.Header>
+
       <Card.Content>
         <Skeleton className="h-24 w-full rounded-field px-3 py-2" />
       </Card.Content>
+
       <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
         <Skeleton className="h-9 w-17.25 rounded-field md:h-8" />
         <Skeleton className="h-9 w-22 rounded-field md:h-8" />

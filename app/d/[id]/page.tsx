@@ -73,6 +73,7 @@ export default async function DiffPage({
         <ResizableSidebar aria-label="Files" className="hidden md:block">
           {diffTreeNode}
         </ResizableSidebar>
+
         <main aria-label="Diff" className="min-h-0 min-w-0 flex-1">
           <SessionProvider>
             <Suspense fallback={diffFilesSpinner}>
@@ -82,6 +83,7 @@ export default async function DiffPage({
             </Suspense>
           </SessionProvider>
         </main>
+
         <div aria-label="Files" className="md:hidden">
           <SidebarSheet>{diffTreeNode}</SidebarSheet>
         </div>

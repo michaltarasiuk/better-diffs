@@ -20,6 +20,7 @@ export function SidebarSheet({children}: SidebarSheetProps) {
         <Drawer.Content placement="bottom">
           <Drawer.Dialog className="h-[85dvh] max-h-[85dvh] bg-trees-sidebar px-0 pb-0">
             <Drawer.Handle />
+
             <Drawer.Body>{children}</Drawer.Body>
           </Drawer.Dialog>
         </Drawer.Content>

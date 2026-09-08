@@ -40,6 +40,7 @@ export function ResizableSidebar({
       className={cn('relative shrink-0', className)}
     >
       {children}
+
       <Separator
         {...mergeProps(moveProps, focusProps)}
         orientation="vertical"

@@ -150,6 +150,7 @@ export function CommentEditor({onComment, onDismiss}: CommentEditorProps) {
         <Card.Header>
           <RichTextToolbarPlugin />
         </Card.Header>
+
         <Card.Content>
           <div className="relative block h-24 w-full rounded-field px-3 py-2">
             <RichTextPlugin
@@ -176,6 +177,7 @@ export function CommentEditor({onComment, onDismiss}: CommentEditorProps) {
             />
           </div>
         </Card.Content>
+
         <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
           <Button variant="ghost" size="sm" onPress={() => onDismiss()}>
             Cancel
