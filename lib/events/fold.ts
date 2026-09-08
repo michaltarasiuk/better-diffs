@@ -40,7 +40,7 @@ export function foldEvents(events: readonly ShareEvent[]) {
   return state;
 }
 
-export function applyEvent(
+function applyEvent(
   state: FoldedShareState,
   event: ShareEvent,
 ): FoldedShareState {

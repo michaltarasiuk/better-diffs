@@ -13,7 +13,7 @@ const Anchor = z.object({
 });
 export type Anchor = z.infer<typeof Anchor>;
 
-export const LexicalBody = z.custom<SerializedEditorState>(isDefined);
+const LexicalBody = z.custom<SerializedEditorState>(isDefined);
 export type LexicalBody = z.infer<typeof LexicalBody>;
 
 const ThreadOpenedPayload = z.object({
@@ -78,18 +78,3 @@ export const ShareEvent = z.object({
   createdAt: z.iso.datetime(),
 });
 export type ShareEvent = z.infer<typeof ShareEvent>;
-
-export function subjectIdFromPayload(payload: ShareEventPayload) {
-  switch (payload.$type) {
-    case 'thread.opened':
-    case 'thread.resolved':
-      return payload.threadId;
-    case 'comment.created':
-    case 'comment.edited':
-    case 'comment.deleted':
-      return payload.commentId;
-    default:
-      payload satisfies never;
-      throw new Error('Unknown payload type');
-  }
-}
