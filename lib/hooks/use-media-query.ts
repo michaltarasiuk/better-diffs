@@ -6,7 +6,7 @@ export function useIsMobile() {
   return !useMediaQuery('(min-width: 48rem)');
 }
 
-export function useMediaQuery(query: string) {
+function useMediaQuery(query: string) {
   return useSyncExternalStore(
     (onStoreChange) => {
       const mediaQueryList = getMediaQueryList(query);

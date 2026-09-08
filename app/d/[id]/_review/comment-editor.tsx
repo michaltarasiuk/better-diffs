@@ -11,7 +11,7 @@ import {
   ToggleButtonGroup,
   type Key,
 } from '@heroui/react';
-import {typographyVariants} from '@heroui/styles';
+import {cn, typographyVariants} from '@heroui/styles';
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
@@ -70,13 +70,13 @@ const EDITOR_THEME = {
     h3: typographyVariants({type: 'h6'}).base(),
   },
   paragraph: typographyVariants({type: 'body-sm'}).base(),
-  quote: 'border-border text-muted border-s-4 ps-4 italic',
+  quote: cn('border-border text-muted border-s-4 ps-4 italic'),
   text: {
-    bold: 'font-semibold text-foreground',
-    italic: 'italic',
-    underline: 'underline',
-    strikethrough: 'line-through',
-    underlineStrikethrough: 'underline line-through',
+    bold: cn('font-semibold text-foreground'),
+    italic: cn('italic'),
+    underline: cn('underline'),
+    strikethrough: cn('line-through'),
+    underlineStrikethrough: cn('underline-strikethroug'),
   },
 } satisfies EditorThemeClasses;
 
@@ -138,7 +138,7 @@ export function CommentEditor({onComment, onDismiss}: CommentEditorProps) {
   return (
     <LexicalComposer
       initialConfig={{
-        namespace: 'Better Diffs',
+        namespace: 'Comment Editor',
         nodes: [HeadingNode, QuoteNode],
         theme: EDITOR_THEME,
         onError(error) {
@@ -177,7 +177,7 @@ export function CommentEditor({onComment, onDismiss}: CommentEditorProps) {
           </div>
         </Card.Content>
         <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
-          <Button variant="ghost" size="sm" onPress={onDismiss}>
+          <Button variant="ghost" size="sm" onPress={() => onDismiss()}>
             Cancel
           </Button>
           <SubmitCommentButton onComment={onComment} />
@@ -191,7 +191,7 @@ export function CommentEditor({onComment, onDismiss}: CommentEditorProps) {
 }
 
 interface SubmitCommentButtonProps {
-  readonly onComment: OnComment;
+  readonly onComment?: OnComment;
 }
 
 function SubmitCommentButton({onComment}: SubmitCommentButtonProps) {
@@ -208,7 +208,7 @@ function SubmitCommentButton({onComment}: SubmitCommentButtonProps) {
       onPress={() => {
         startTransition(async () => {
           const editorState = editor.getEditorState();
-          await onComment(editorState.toJSON());
+          await onComment?.(editorState.toJSON());
         });
       }}
     >

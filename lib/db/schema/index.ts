@@ -1,11 +1,12 @@
-import {relations, sql, type InferSelectModel} from 'drizzle-orm';
+import {relations, sql} from 'drizzle-orm';
 import {index, integer, sqliteTable, text} from 'drizzle-orm/sqlite-core';
+
+import {EVENT_TYPES, type ShareEventPayload} from '@/lib/events/schemas';
 
 import {newId} from '../id';
 import {user} from './auth';
 
 import type {FileDiffMetadata} from '@pierre/diffs';
-import type {SerializedEditorState} from 'lexical';
 
 export * from './auth';
 
@@ -25,6 +26,7 @@ export const shares = sqliteTable(
 
 export const sharesRelations = relations(shares, ({many}) => ({
   patches: many(patches),
+  events: many(events),
 }));
 
 export const patches = sqliteTable(
@@ -60,58 +62,49 @@ export const files = sqliteTable(
   (t) => [index('files_patchId_idx').on(t.patchId)],
 );
 
-export const filesRelations = relations(files, ({one, many}) => ({
+export const filesRelations = relations(files, ({one}) => ({
   patch: one(patches, {fields: [files.patchId], references: [patches.id]}),
-  threads: many(threads),
 }));
 
-export const threads = sqliteTable(
-  'threads',
+export const events = sqliteTable(
+  'events',
   {
     id: text('id').primaryKey().$defaultFn(newId),
-    fileId: text('file_id')
+    shareId: text('share_id')
       .notNull()
-      .references(() => files.id, {onDelete: 'cascade'}),
-    side: text('side', {enum: ['deletions', 'additions']}).notNull(),
-    lineNumber: integer('line_number').notNull(),
-    createdAt: text('created_at')
-      .notNull()
-      .default(sql`(datetime('now'))`),
-  },
-  (t) => [index('threads_fileId_idx').on(t.fileId)],
-);
-
-export const threadsRelations = relations(threads, ({many, one}) => ({
-  file: one(files, {fields: [threads.fileId], references: [files.id]}),
-  comments: many(comments),
-}));
-
-export const comments = sqliteTable(
-  'comments',
-  {
-    id: text('id').primaryKey().$defaultFn(newId),
-    threadId: text('thread_id')
-      .notNull()
-      .references(() => threads.id, {onDelete: 'cascade'}),
-    authorId: text('author_id')
+      .references(() => shares.id, {onDelete: 'cascade'}),
+    seq: integer('seq').notNull(),
+    type: text('type', {enum: EVENT_TYPES}).notNull(),
+    subjectId: text('subject_id').notNull(),
+    actorId: text('actor_id')
       .notNull()
       .references(() => user.id, {onDelete: 'cascade'}),
-    body: text('body', {mode: 'json'}).$type<SerializedEditorState>().notNull(),
+    payload: text('payload', {mode: 'json'})
+      .$type<ShareEventPayload>()
+      .notNull(),
     createdAt: text('created_at')
       .notNull()
       .default(sql`(datetime('now'))`),
-    updatedAt: text('updated_at'),
   },
-  (t) => [index('comments_threadId_idx').on(t.threadId)],
+  (t) => [
+    index('events_shareId_seq_idx').on(t.shareId, t.seq),
+    index('events_shareId_idx').on(t.shareId),
+  ],
 );
 
-export const commentsRelations = relations(comments, ({one}) => ({
-  thread: one(threads, {fields: [comments.threadId], references: [threads.id]}),
-  author: one(user, {fields: [comments.authorId], references: [user.id]}),
+export const eventsRelations = relations(events, ({one}) => ({
+  share: one(shares, {fields: [events.shareId], references: [shares.id]}),
+  actor: one(user, {fields: [events.actorId], references: [user.id]}),
 }));
 
-export type Share = InferSelectModel<typeof shares>;
-export type Patch = InferSelectModel<typeof patches>;
-export type File = InferSelectModel<typeof files>;
-export type Thread = InferSelectModel<typeof threads>;
-export type Comment = InferSelectModel<typeof comments>;
+export type Share = typeof shares.$inferSelect;
+export type NewShare = typeof shares.$inferInsert;
+
+export type Patch = typeof patches.$inferSelect;
+export type NewPatch = typeof patches.$inferInsert;
+
+export type File = typeof files.$inferSelect;
+export type NewFile = typeof files.$inferInsert;
+
+export type Event = typeof events.$inferSelect;
+export type NewEvent = typeof events.$inferInsert;

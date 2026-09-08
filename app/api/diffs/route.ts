@@ -88,7 +88,7 @@ async function readPatchText(request: NextRequest): Promise<ReadResult> {
   try {
     text = await request.text();
   } catch {
-    return {ok: false, error: 'Invalid patch body'};
+    return {ok: false, error: 'Invalid text body'};
   }
 
   let patches: Patches;

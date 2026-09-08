@@ -4,3 +4,7 @@
 
 @import './_themes/typography.css';
 @import './_themes/pierre.css';
+
+@utility underline-strikethrough {
+  text-decoration-line: underline line-through;
+}

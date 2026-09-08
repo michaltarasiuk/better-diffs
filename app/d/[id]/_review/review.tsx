@@ -15,6 +15,7 @@ import {useSelectedLines} from '../_lib/use-selected-lines';
 import {Annotation, GutterUtility, type DiffAnnotation} from './annotations';
 import {FileCollapseButton} from './file-collapse-button';
 
+import type {AnnotationMetadata} from '@/lib/diffs/options';
 import type {FileDiffMetadata, GetHoveredLineResult} from '@pierre/diffs';
 
 const ANNOTATION_SIDE_ORDER = {
@@ -146,10 +147,9 @@ export function DiffReview({files}: DiffReviewProps) {
         />
       )}
       renderAnnotation={(annotation, item) =>
-        isDiffAnnotation(annotation) ? (
+        isDiffAnnotation<AnnotationMetadata>(annotation) ? (
           <Annotation
             annotation={annotation}
-            fileId={item.id}
             onDismiss={() => removeAnnotation(item.id, annotation)}
           />
         ) : null

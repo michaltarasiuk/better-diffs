@@ -79,13 +79,11 @@ export async function createShare(
   return shareId;
 }
 
-interface DeleteExpiredSharesOptions {
-  readonly maxAgeHours: number;
-}
-
 export async function deleteExpiredShares({
   maxAgeHours,
-}: DeleteExpiredSharesOptions) {
+}: {
+  readonly maxAgeHours: number;
+}) {
   const deleted = await db
     .delete(sharesTable)
     .where(

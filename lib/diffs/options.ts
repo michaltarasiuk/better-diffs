@@ -3,9 +3,9 @@ import {DEFAULT_CODE_VIEW_LAYOUT, DEFAULT_THEMES} from '@pierre/diffs';
 import type {FileDiffOptions} from '@pierre/diffs';
 import type {CodeViewReactOptions} from '@pierre/diffs/react';
 
-export interface AnnotationMetadata {
-  readonly type: 'form' | 'thread';
-}
+export type AnnotationMetadata =
+  | {readonly type: 'form'}
+  | {readonly type: 'thread'; readonly threadId: string};
 
 export const PATCH_DIFF_OPTIONS: FileDiffOptions<AnnotationMetadata> = {
   theme: DEFAULT_THEMES,

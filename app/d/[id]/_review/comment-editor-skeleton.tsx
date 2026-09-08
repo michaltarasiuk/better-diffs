@@ -1,5 +1,5 @@
 import {Card} from '@heroui/react';
-import {Skeleton} from '@heroui/react/skeleton';
+import {Skeleton} from '@heroui/react';
 
 export function CommentEditorSkeleton() {
   return (

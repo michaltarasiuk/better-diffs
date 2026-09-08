@@ -4,7 +4,6 @@ import {Button, Card, Spinner} from '@heroui/react';
 import {getLineAnnotationName} from '@pierre/diffs';
 import {PlusIcon} from 'lucide-react';
 import dynamic from 'next/dynamic';
-import {useParams} from 'next/navigation';
 import {createContext, use, useState} from 'react';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
@@ -12,9 +11,9 @@ import {authClient} from '@/lib/auth/client';
 import {SessionContext} from '@/lib/auth/context';
 import {GitHubIcon} from '@/lib/auth/github-icon';
 import {useKeyDown} from '@/lib/hooks/use-key-down';
+import {assert} from '@/lib/utils/assert';
 import {isDefined} from '@/lib/utils/defined';
 
-import {addComment} from '../_lib/actions';
 import {CommentEditorSkeleton} from './comment-editor-skeleton';
 
 import type {AnnotationMetadata} from '@/lib/diffs/options';
@@ -30,6 +29,14 @@ const CommentEditor = dynamic(
 );
 
 export type DiffAnnotation = DiffLineAnnotation<AnnotationMetadata>;
+
+type FormDiffAnnotation = DiffLineAnnotation<{readonly type: 'form'}>;
+
+function isFormAnnotation(
+  annotation: DiffAnnotation,
+): annotation is FormDiffAnnotation {
+  return annotation.metadata.type === 'form';
+}
 
 const AnnotationContext = createContext<DiffAnnotation>(null as never);
 
@@ -55,24 +62,22 @@ export function GutterUtility({onAddAnnotation}: GutterUtilityProps) {
 
 interface AnnotationProps {
   readonly annotation: DiffAnnotation;
-  readonly fileId: string;
   readonly onDismiss: () => void;
 }
 
-export function Annotation({annotation, fileId, onDismiss}: AnnotationProps) {
+export function Annotation({annotation, onDismiss}: AnnotationProps) {
   return (
     <AnnotationContext value={annotation}>
-      <AnnotationBody fileId={fileId} onDismiss={onDismiss} />
+      <AnnotationBody onDismiss={onDismiss} />
     </AnnotationContext>
   );
 }
 
 interface AnnotationBodyProps {
-  readonly fileId: string;
   readonly onDismiss: () => void;
 }
 
-function AnnotationBody({fileId, onDismiss}: AnnotationBodyProps) {
+function AnnotationBody({onDismiss}: AnnotationBodyProps) {
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const {focusWithinProps} = useFocusWithin({
     onFocusWithinChange: (isFocusWithin) => setIsFocusWithin(isFocusWithin),
@@ -89,47 +94,30 @@ function AnnotationBody({fileId, onDismiss}: AnnotationBodyProps) {
   let annotation: React.ReactNode;
   switch (metadata.type) {
     case 'form':
-      annotation = <CommentForm fileId={fileId} onDismiss={onDismiss} />;
+      annotation = <CommentForm onDismiss={onDismiss} />;
       break;
     case 'thread':
       annotation = <ThreadAnnotation />;
       break;
     default:
-      metadata.type satisfies never;
+      metadata satisfies never;
   }
 
   return <div {...focusWithinProps}>{annotation}</div>;
 }
 
 interface CommentFormProps {
-  readonly fileId: string;
   readonly onDismiss: () => void;
 }
 
-function CommentForm({fileId, onDismiss}: CommentFormProps) {
-  const {id: shareId} = useParams<{id: string}>();
-
+function CommentForm({onDismiss}: CommentFormProps) {
   const session = use(SessionContext);
-  const {side, lineNumber} = use(AnnotationContext);
 
   if (!isDefined(session)) {
     return <SignInPrompt onDismiss={onDismiss} />;
   }
 
-  return (
-    <CommentEditor
-      onComment={(body) =>
-        addComment({
-          shareId,
-          fileId,
-          side,
-          lineNumber,
-          body,
-        })
-      }
-      onDismiss={onDismiss}
-    />
-  );
+  return <CommentEditor onComment={() => {}} onDismiss={onDismiss} />;
 }
 
 interface SignInPromptProps {
@@ -140,6 +128,7 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
   const [isSigningIn, setIsSigningIn] = useState(false);
 
   const annotation = use(AnnotationContext);
+  assert(isFormAnnotation(annotation), 'Annotation must be a form');
 
   return (
     <Card variant="secondary" className="m-2 mbs-1">

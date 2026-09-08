@@ -1,5 +1,5 @@
 import {Separator, tv, type VariantProps} from '@heroui/react';
-import {Accordion} from '@heroui/react/accordion';
+import {Accordion} from '@heroui/react';
 import {GitCompareIcon} from 'lucide-react';
 
 import {formatDiffStat, type DiffStats} from '@/lib/diffs/stats';

@@ -1,6 +1,7 @@
 import {Spinner} from '@heroui/react';
 import {preloadFileTree} from '@pierre/trees/ssr';
 import {notFound} from 'next/navigation';
+import {Suspense} from 'react';
 
 import {SessionProvider} from '@/lib/auth/provider';
 import {visitShare} from '@/lib/db/shares';
@@ -10,9 +11,9 @@ import {
   orderFilesByTree,
   prepareTreeHandoff,
 } from '@/lib/trees/handoff';
-import {ClientOnly} from '@/lib/utils/client-only';
 import {isDefined} from '@/lib/utils/defined';
 
+import {EventSync} from './_lib/event-sync';
 import {DiffHandleProvider} from './_lib/handle-context';
 import {loadDiffSearchParams} from './_lib/search-params';
 import {DiffReview} from './_review/review';
@@ -74,9 +75,11 @@ export default async function DiffPage({
         </ResizableSidebar>
         <main aria-label="Diff" className="min-h-0 min-w-0 flex-1">
           <SessionProvider>
-            <ClientOnly fallback={diffFilesSpinner}>
-              <DiffReview files={files} />
-            </ClientOnly>
+            <Suspense fallback={diffFilesSpinner}>
+              <EventSync>
+                <DiffReview files={files} />
+              </EventSync>
+            </Suspense>
           </SessionProvider>
         </main>
         <div aria-label="Files" className="md:hidden">
