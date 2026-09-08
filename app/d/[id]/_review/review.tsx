@@ -2,8 +2,10 @@
 
 import '@/lib/diffs/diffs.css';
 
+import {Button, cn} from '@heroui/react';
 import {isDiffAnnotation} from '@pierre/diffs';
 import {CodeView} from '@pierre/diffs/react';
+import {ChevronDownIcon} from 'lucide-react';
 import {use, useState} from 'react';
 
 import {CODE_VIEW_OPTIONS} from '@/lib/diffs/options';
@@ -13,7 +15,6 @@ import {isDefined} from '@/lib/utils/defined';
 import {DiffHandleContext} from '../_lib/handle-context';
 import {useSelectedLines} from '../_lib/use-selected-lines';
 import {Annotation, GutterUtility, type DiffAnnotation} from './annotations';
-import {FileCollapseButton} from './file-collapse-button';
 
 import type {AnnotationMetadata} from '@/lib/diffs/options';
 import type {FileDiffMetadata, GetHoveredLineResult} from '@pierre/diffs';
@@ -160,6 +161,33 @@ export function DiffReview({files}: DiffReviewProps) {
       }}
       style={CODE_VIEW_STYLE}
     />
+  );
+}
+
+interface FileCollapseButtonProps {
+  readonly collapsed: boolean;
+  readonly onToggle: () => void;
+}
+
+function FileCollapseButton({collapsed, onToggle}: FileCollapseButtonProps) {
+  return (
+    <Button
+      aria-expanded={!collapsed}
+      aria-label={collapsed ? 'Expand file' : 'Collapse file'}
+      variant="ghost"
+      size="sm"
+      isIconOnly
+      onPress={onToggle}
+      className="size-7 min-w-7 shrink-0"
+    >
+      <ChevronDownIcon
+        aria-hidden
+        className={cn(
+          'size-4 shrink-0 transition-transform',
+          collapsed && '-rotate-90',
+        )}
+      />
+    </Button>
   );
 }
 
