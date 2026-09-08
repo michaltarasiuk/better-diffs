@@ -76,7 +76,6 @@ export function EventSync({children}: {readonly children: React.ReactNode}) {
   use(browser());
 
   const shareId = useShareId();
-
   const events = use(getSyncEventsPromise(shareId));
   const state = foldEvents(events);
 
