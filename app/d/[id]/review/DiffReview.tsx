@@ -9,12 +9,12 @@ import {ChevronDownIcon} from 'lucide-react';
 import {use, useState} from 'react';
 
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
-import {useIsMobile} from '@/hooks/use-media-query';
+import {useIsMobile} from '@/hooks/useMediaQuery';
 import {isDefined} from '@/utils/defined';
 
-import {DiffHandleContext} from '../handle-context';
-import {useSelectedLines} from '../use-selected-lines';
-import {Annotation, GutterUtility, type DiffAnnotation} from './annotations';
+import {DiffHandleContext} from '../DiffHandleContext';
+import {useSelectedLines} from '../useSelectedLines';
+import {Annotation, GutterUtility, type DiffAnnotation} from './Annotations';
 
 import type {AnnotationMetadata} from '@/diffs/options';
 import type {FileDiffMetadata, GetHoveredLineResult} from '@pierre/diffs';

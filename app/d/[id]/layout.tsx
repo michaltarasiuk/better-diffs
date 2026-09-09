@@ -1,6 +1,6 @@
 'use client';
 
-import {usePageShow} from '@/hooks/use-page-show';
+import {usePageShow} from '@/hooks/usePageShow';
 
 export default function DiffLayout({children}: LayoutProps<'/d/[id]'>) {
   usePageShow(function bypassBfcache(event) {

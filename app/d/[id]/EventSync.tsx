@@ -9,7 +9,7 @@ import {EMPTY_FOLDED_STATE, foldEvents} from '@/events/fold';
 import {getEvents, getLastSeq, putEvents} from '@/events/idb';
 import {isDefined} from '@/utils/defined';
 
-import {useShareId} from './use-share-id';
+import {useShareId} from './useShareId';
 
 import type {FoldedShareState} from '@/events/fold';
 import type {ShareEvent} from '@/events/schemas';

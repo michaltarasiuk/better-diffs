@@ -11,12 +11,12 @@ import {
 } from '@pierre/trees/react';
 import {use, useRef} from 'react';
 
-import {useKeyDown} from '@/hooks/use-key-down';
+import {useKeyDown} from '@/hooks/useKeyDown';
 import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';
 import {isDefined} from '@/utils/defined';
 
-import {DiffHandleContext} from '../handle-context';
-import {useSearchQuery} from '../use-search-query';
+import {DiffHandleContext} from '../DiffHandleContext';
+import {useSearchQuery} from '../useSearchQuery';
 
 interface DiffTreeProps {
   readonly handoff: TreeHandoff;

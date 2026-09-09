@@ -1,6 +1,6 @@
 import {useQueryState} from 'nuqs';
 
-import {diffSearchParsers} from './search-params';
+import {diffSearchParsers} from './searchParams';
 
 export function useSelectedLines() {
   const [selectedLines, setSelectedLines] = useQueryState(

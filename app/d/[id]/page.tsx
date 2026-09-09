@@ -13,14 +13,14 @@ import {
 } from '@/trees/handoff';
 import {isDefined} from '@/utils/defined';
 
-import {EventSync} from './event-sync';
-import {DiffHandleProvider} from './handle-context';
-import {DiffReview} from './review/review';
-import {loadDiffSearchParams} from './search-params';
-import {ResizableSidebar} from './sidebar/resizable';
-import {SidebarSheet} from './sidebar/sheet';
-import {DiffSummary} from './sidebar/summary';
-import {DiffTree} from './sidebar/tree';
+import {DiffHandleProvider} from './DiffHandleContext';
+import {EventSync} from './EventSync';
+import {DiffReview} from './review/DiffReview';
+import {loadDiffSearchParams} from './searchParams';
+import {DiffSummary} from './sidebar/DiffSummary';
+import {DiffTree} from './sidebar/DiffTree';
+import {ResizableSidebar} from './sidebar/ResizableSidebar';
+import {SidebarSheet} from './sidebar/SidebarSheet';
 
 import type {Metadata} from 'next';
 

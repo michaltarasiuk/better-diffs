@@ -10,21 +10,21 @@ import {useFocusWithin} from 'react-aria/useFocusWithin';
 import {authClient} from '@/auth/client';
 import {SessionContext} from '@/auth/context';
 import {GitHubIcon} from '@/auth/github-icon';
-import {useKeyDown} from '@/hooks/use-key-down';
+import {useKeyDown} from '@/hooks/useKeyDown';
 import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 
-import {CommentEditorSkeleton} from './comment-editor-skeleton';
+import {CommentEditorSkeleton} from './CommentEditorSkeleton';
 
 import type {AnnotationMetadata} from '@/diffs/options';
 import type {DiffLineAnnotation} from '@pierre/diffs';
 
 function preloadCommentEditor() {
-  void import('./comment-editor');
+  void import('./CommentEditor');
 }
 
 const CommentEditor = dynamic(
-  () => import('./comment-editor').then((module) => module.CommentEditor),
+  () => import('./CommentEditor').then((module) => module.CommentEditor),
   {loading: () => <CommentEditorSkeleton />},
 );
 
