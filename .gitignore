@@ -11,10 +11,8 @@ dist
 .env*
 !.env.example
 
-# data (sqlite database is local-only)
-/data/*.db
-/data/*.db-shm
-/data/*.db-wal
+# local sqlite database
+.local/
 
 # os
 .DS_Store

@@ -3,7 +3,15 @@
     "strings": "on"
   },
   "tailwindCSS.experimental.configFile": {
-    "app/_styles/globals.css": ["app/**", "lib/**"]
+    "app/globals.css": [
+      "app/**",
+      "auth/**",
+      "data/**",
+      "components/**",
+      "diffs/**",
+      "events/**",
+      "trees/**"
+    ]
   },
   "tailwindCSS.classFunctions": ["cn", "tv"]
 }

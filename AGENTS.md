@@ -8,19 +8,6 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-## App Router layout
-
-Each route segment uses underscore-prefixed private folders (not routable):
-
-- `_components/` — UI for that segment; group by feature in subfolders when there
-  are several (`_components/sidebar/`, `_components/review/`)
-- `_lib/` — hooks, contexts, search-param loaders, and other non-UI logic scoped
-  to the segment
-- `_styles/` — CSS entry points and partials for the segment (root layout only)
-
-Route files (`page.tsx`, `layout.tsx`, `route.ts`) stay at the segment root.
-Shared domain code lives in top-level `lib/`, not under `app/`.
-
 ## Commit messages
 
 Use imperative mood, sentence case, no trailing period. Start with a capital verb, lowercase the rest unless a proper noun.

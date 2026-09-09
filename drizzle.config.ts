@@ -1,10 +1,10 @@
 import {defineConfig} from 'drizzle-kit';
 
-import {env} from './lib/env';
+import {env} from './env';
 
 export default defineConfig({
   dialect: 'turso',
-  schema: './lib/db/schema',
+  schema: './data/schema',
   dbCredentials: {
     url: env.DATABASE_URL,
     authToken: env.DATABASE_AUTH_TOKEN,

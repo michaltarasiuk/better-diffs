@@ -1,11 +1,11 @@
-import './_styles/globals.css';
+import './globals.css';
 
 import {cn} from '@heroui/styles';
 import Script from 'next/script';
 import {NuqsAdapter} from 'nuqs/adapters/next/app';
 
-import {env} from '@/lib/env';
-import {fontMono, fontSans} from '@/lib/fonts';
+import {env} from '@/env';
+import {fontMono, fontSans} from '@/fonts';
 
 import type {Metadata} from 'next';
 

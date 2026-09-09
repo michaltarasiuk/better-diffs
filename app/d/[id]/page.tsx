@@ -3,24 +3,24 @@ import {preloadFileTree} from '@pierre/trees/ssr';
 import {notFound} from 'next/navigation';
 import {Suspense} from 'react';
 
-import {SessionProvider} from '@/lib/auth/provider';
-import {visitShare} from '@/lib/db/shares';
-import {computeDiffStats} from '@/lib/diffs/stats';
+import {SessionProvider} from '@/auth/provider';
+import {visitShare} from '@/data/shares';
+import {computeDiffStats} from '@/diffs/stats';
 import {
   getTreeOptions,
   orderFilesByTree,
   prepareTreeHandoff,
-} from '@/lib/trees/handoff';
-import {isDefined} from '@/lib/utils/defined';
+} from '@/trees/handoff';
+import {isDefined} from '@/utils/defined';
 
-import {DiffReview} from './_components/review/review';
-import {ResizableSidebar} from './_components/sidebar/resizable';
-import {SidebarSheet} from './_components/sidebar/sheet';
-import {DiffSummary} from './_components/sidebar/summary';
-import {DiffTree} from './_components/sidebar/tree';
-import {EventSync} from './_lib/event-sync';
-import {DiffHandleProvider} from './_lib/handle-context';
-import {loadDiffSearchParams} from './_lib/search-params';
+import {EventSync} from './event-sync';
+import {DiffHandleProvider} from './handle-context';
+import {DiffReview} from './review/review';
+import {loadDiffSearchParams} from './search-params';
+import {ResizableSidebar} from './sidebar/resizable';
+import {SidebarSheet} from './sidebar/sheet';
+import {DiffSummary} from './sidebar/summary';
+import {DiffTree} from './sidebar/tree';
 
 import type {Metadata} from 'next';
 

@@ -1,4 +1,4 @@
-import '@/lib/diffs/diffs.css';
+import '@/diffs/diffs.css';
 
 import {Typography} from '@heroui/react';
 import {typographyVariants} from '@heroui/styles';
@@ -6,10 +6,10 @@ import {PatchDiff} from '@pierre/diffs/react';
 import {preloadPatchDiff} from '@pierre/diffs/ssr';
 import dedent from 'dedent';
 
-import {PATCH_DIFF_OPTIONS} from '@/lib/diffs/options';
-import {env} from '@/lib/env';
+import {PATCH_DIFF_OPTIONS} from '@/diffs/options';
+import {env} from '@/env';
 
-import {CopyCommand} from './_components/home/copy-command';
+import {CopyCommand} from './CopyCommand';
 
 export const dynamic = 'force-dynamic';
 

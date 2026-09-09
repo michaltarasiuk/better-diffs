@@ -1,9 +1,9 @@
-import '@/lib/diffs/diffs.css';
+import '@/diffs/diffs.css';
 
 import {PatchDiff} from '@pierre/diffs/react';
 import dedent from 'dedent';
 
-import {PATCH_DIFF_OPTIONS} from '@/lib/diffs/options';
+import {PATCH_DIFF_OPTIONS} from '@/diffs/options';
 
 const NOT_FOUND_PATCH = dedent`
   diff --git a/share/link b/share/link

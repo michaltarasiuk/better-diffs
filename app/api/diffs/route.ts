@@ -2,11 +2,11 @@ import {parsePatchFiles} from '@pierre/diffs';
 import {NextResponse} from 'next/server';
 import {z} from 'zod';
 
-import {createShare} from '@/lib/db/shares';
-import {env} from '@/lib/env';
-import {Accept} from '@/lib/headers/accept';
-import {ContentType} from '@/lib/headers/content-type';
-import {isDefined} from '@/lib/utils/defined';
+import {createShare} from '@/data/shares';
+import {env} from '@/env';
+import {Accept} from '@/headers/accept';
+import {ContentType} from '@/headers/content-type';
+import {isDefined} from '@/utils/defined';
 
 import type {FileDiffMetadata} from '@pierre/diffs';
 import type {NextRequest} from 'next/server';

@@ -1,8 +1,8 @@
 import {NextResponse, type NextRequest} from 'next/server';
 
-import {getEvents} from '@/lib/db/events';
+import {getEvents} from '@/data/events';
 
-import {loadEventsSearchParams} from './_lib/search-params';
+import {loadEventsSearchParams} from './search-params';
 
 export async function GET(
   request: NextRequest,
