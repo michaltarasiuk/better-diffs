@@ -58,13 +58,13 @@ async function syncEvents(shareId: string) {
   return getEvents(shareId);
 }
 
-const syncPromises = new Map<string, Promise<ShareEvent[]>>();
+const eventsPromises = new Map<string, Promise<ShareEvent[]>>();
 
-function getSyncEventsPromise(shareId: string) {
-  let eventsPromise = syncPromises.get(shareId);
+function getEventsPromise(shareId: string) {
+  let eventsPromise = eventsPromises.get(shareId);
   if (!isDefined(eventsPromise)) {
     eventsPromise = syncEvents(shareId);
-    syncPromises.set(shareId, eventsPromise);
+    eventsPromises.set(shareId, eventsPromise);
   }
   return eventsPromise;
 }
@@ -76,7 +76,7 @@ export function EventSync({children}: {readonly children: React.ReactNode}) {
   use(browser());
 
   const shareId = useShareId();
-  const events = use(getSyncEventsPromise(shareId));
+  const events = use(getEventsPromise(shareId));
   const state = foldEvents(events);
 
   return (
