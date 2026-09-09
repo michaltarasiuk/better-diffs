@@ -3,8 +3,8 @@ import {preloadFileTree} from '@pierre/trees/ssr';
 import {notFound} from 'next/navigation';
 import {Suspense} from 'react';
 
-import {SessionProvider} from '@/auth/provider';
-import {visitShare} from '@/data/shares';
+import {SessionProvider} from '@/auth/SessionProvider';
+import {visitShare} from '@/db/shares';
 import {computeDiffStats} from '@/diffs/stats';
 import {
   getTreeOptions,
@@ -14,13 +14,13 @@ import {
 import {isDefined} from '@/utils/defined';
 
 import {DiffHandleProvider} from './DiffHandleContext';
+import {DiffReview} from './DiffReview';
+import {DiffSummary} from './DiffSummary';
+import {DiffTree} from './DiffTree';
 import {EventSync} from './EventSync';
-import {DiffReview} from './review/DiffReview';
+import {ResizableSidebar} from './ResizableSidebar';
 import {loadDiffSearchParams} from './searchParams';
-import {DiffSummary} from './sidebar/DiffSummary';
-import {DiffTree} from './sidebar/DiffTree';
-import {ResizableSidebar} from './sidebar/ResizableSidebar';
-import {SidebarSheet} from './sidebar/SidebarSheet';
+import {SidebarSheet} from './SidebarSheet';
 
 import type {Metadata} from 'next';
 

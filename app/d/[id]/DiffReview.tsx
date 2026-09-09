@@ -12,9 +12,9 @@ import {CODE_VIEW_OPTIONS} from '@/diffs/options';
 import {useIsMobile} from '@/hooks/useMediaQuery';
 import {isDefined} from '@/utils/defined';
 
-import {DiffHandleContext} from '../DiffHandleContext';
-import {useSelectedLines} from '../useSelectedLines';
 import {Annotation, GutterUtility, type DiffAnnotation} from './Annotations';
+import {DiffHandleContext} from './DiffHandleContext';
+import {useSelectedLines} from './useSelectedLines';
 
 import type {AnnotationMetadata} from '@/diffs/options';
 import type {FileDiffMetadata, GetHoveredLineResult} from '@pierre/diffs';

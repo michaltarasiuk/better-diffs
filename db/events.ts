@@ -2,8 +2,8 @@ import 'server-only';
 
 import {and, asc, eq, gt} from 'drizzle-orm';
 
-import {db} from '@/data/db';
-import {events as eventsTable} from '@/data/schema';
+import {db} from '@/db/db';
+import {events as eventsTable} from '@/db/schema';
 
 export function getEvents(shareId: string, afterSeq = 0) {
   const where = and(

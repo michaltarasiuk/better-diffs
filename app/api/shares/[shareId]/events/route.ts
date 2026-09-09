@@ -1,6 +1,6 @@
 import {NextResponse, type NextRequest} from 'next/server';
 
-import {getEvents} from '@/data/events';
+import {getEvents} from '@/db/events';
 
 import {loadEventsSearchParams} from './searchParams';
 

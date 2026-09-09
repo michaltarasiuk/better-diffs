@@ -1,5 +1,5 @@
 import {verifyBearerSecret} from '@/auth/bearer';
-import {deleteExpiredShares} from '@/data/shares';
+import {deleteExpiredShares} from '@/db/shares';
 import {env} from '@/env';
 
 import type {NextRequest} from 'next/server';

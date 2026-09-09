@@ -8,8 +8,8 @@ import {createContext, use, useState} from 'react';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
 import {authClient} from '@/auth/client';
-import {SessionContext} from '@/auth/context';
-import {GitHubIcon} from '@/auth/github-icon';
+import {GitHubIcon} from '@/auth/GitHubIcon';
+import {SessionContext} from '@/auth/SessionContext';
 import {useKeyDown} from '@/hooks/useKeyDown';
 import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
