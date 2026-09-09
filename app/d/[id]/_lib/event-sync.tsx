@@ -76,28 +76,32 @@ export function EventSync({children}: {readonly children: React.ReactNode}) {
   use(browser());
 
   const shareId = useShareId();
+  const eventsPromise = getEventsPromise(shareId);
 
   return (
     <ErrorBoundary
-      resetKeys={[shareId]}
+      resetKeys={[shareId, eventsPromise]}
       fallback={
         <ShareStateContext value={EMPTY_FOLDED_STATE}>
           {children}
         </ShareStateContext>
       }
     >
-      <ShareStateProvider shareId={shareId}>{children}</ShareStateProvider>
+      <ShareStateProvider eventsPromise={eventsPromise}>
+        {children}
+      </ShareStateProvider>
     </ErrorBoundary>
   );
 }
 
-interface ShareStateProviderProps {
-  readonly shareId: string;
+function ShareStateProvider({
+  eventsPromise,
+  children,
+}: {
+  readonly eventsPromise: Promise<ShareEvent[]>;
   readonly children: React.ReactNode;
-}
-
-function ShareStateProvider({shareId, children}: ShareStateProviderProps) {
-  const events = use(getEventsPromise(shareId));
+}) {
+  const events = use(eventsPromise);
   const state = foldEvents(events);
 
   return <ShareStateContext value={state}>{children}</ShareStateContext>;
