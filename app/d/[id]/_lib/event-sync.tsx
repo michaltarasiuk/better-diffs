@@ -79,14 +79,7 @@ export function EventSync({children}: {readonly children: React.ReactNode}) {
   const eventsPromise = getEventsPromise(shareId);
 
   return (
-    <ErrorBoundary
-      resetKeys={[shareId, eventsPromise]}
-      fallback={
-        <ShareStateContext value={EMPTY_FOLDED_STATE}>
-          {children}
-        </ShareStateContext>
-      }
-    >
+    <ErrorBoundary resetKeys={[shareId, eventsPromise]} fallback={null}>
       <ShareStateProvider eventsPromise={eventsPromise}>
         {children}
       </ShareStateProvider>
