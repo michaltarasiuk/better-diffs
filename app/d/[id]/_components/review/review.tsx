@@ -12,8 +12,8 @@ import {CODE_VIEW_OPTIONS} from '@/lib/diffs/options';
 import {useIsMobile} from '@/lib/hooks/use-media-query';
 import {isDefined} from '@/lib/utils/defined';
 
-import {DiffHandleContext} from '../_lib/handle-context';
-import {useSelectedLines} from '../_lib/use-selected-lines';
+import {DiffHandleContext} from '../../_lib/handle-context';
+import {useSelectedLines} from '../../_lib/use-selected-lines';
 import {Annotation, GutterUtility, type DiffAnnotation} from './annotations';
 
 import type {AnnotationMetadata} from '@/lib/diffs/options';

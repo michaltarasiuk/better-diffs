@@ -2,8 +2,8 @@
 @plugin 'tailwindcss-react-aria-components';
 @import '@heroui/styles';
 
-@import './_themes/typography.css';
-@import './_themes/pierre.css';
+@import './themes/typography.css';
+@import './themes/pierre.css';
 
 @utility underline-strikethrough {
   text-decoration-line: underline line-through;

@@ -16,11 +16,11 @@ import {isDefined} from '@/lib/utils/defined';
 import {EventSync} from './_lib/event-sync';
 import {DiffHandleProvider} from './_lib/handle-context';
 import {loadDiffSearchParams} from './_lib/search-params';
-import {DiffReview} from './_review/review';
-import {ResizableSidebar} from './_sidebar/resizable';
-import {SidebarSheet} from './_sidebar/sheet';
-import {DiffSummary} from './_sidebar/summary';
-import {DiffTree} from './_sidebar/tree';
+import {DiffReview} from './_components/review/review';
+import {ResizableSidebar} from './_components/sidebar/resizable';
+import {SidebarSheet} from './_components/sidebar/sheet';
+import {DiffSummary} from './_components/sidebar/summary';
+import {DiffTree} from './_components/sidebar/tree';
 
 import type {Metadata} from 'next';
 
@@ -60,7 +60,11 @@ export default async function DiffPage({
   const diffTreeNode = (
     <DiffTree
       handoff={tree}
-      preloaded={preloadFileTree(getTreeOptions(tree, {searchQuery}))}
+      preloaded={preloadFileTree(
+        getTreeOptions(tree, {
+          searchQuery,
+        }),
+      )}
       fileIdByPath={fileIdByPath}
     >
       <DiffSummary stats={stats} />

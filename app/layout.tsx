@@ -1,4 +1,4 @@
-import './_globals.css';
+import './_styles/globals.css';
 
 import {cn} from '@heroui/styles';
 import Script from 'next/script';

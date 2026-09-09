@@ -9,7 +9,7 @@ import dedent from 'dedent';
 import {PATCH_DIFF_OPTIONS} from '@/lib/diffs/options';
 import {env} from '@/lib/env';
 
-import {CopyCommand} from './_home/copy-command';
+import {CopyCommand} from './_components/copy-command';
 
 export const dynamic = 'force-dynamic';
 
