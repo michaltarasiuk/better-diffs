@@ -13,14 +13,14 @@ import {
 } from '@/trees/handoff';
 import {isDefined} from '@/utils/defined';
 
-import {DiffHandleProvider} from './DiffHandleProvider';
-import {DiffReview} from './DiffReview';
-import {DiffSummary} from './DiffSummary';
-import {DiffTree} from './DiffTree';
-import {EventSync} from './EventSync';
-import {ResizableSidebar} from './ResizableSidebar';
+import {CodeViewProvider} from './CodeViewProvider';
+import {DiffFiles} from './DiffFiles';
+import {DiffStats} from './DiffStats';
+import {FilesDrawer} from './FilesDrawer';
+import {FilesPanel} from './FilesPanel';
 import {loadDiffSearchParams} from './searchParams';
-import {SidebarSheet} from './SidebarSheet';
+import {ShareProvider} from './ShareProvider';
+import {Sidebar} from './Sidebar';
 
 import type {Metadata} from 'next';
 
@@ -57,8 +57,8 @@ export default async function DiffPage({
     files.map(({id, name}) => [name, id]),
   );
 
-  const diffTreeNode = (
-    <DiffTree
+  const filesPanel = (
+    <FilesPanel
       handoff={tree}
       preloaded={preloadFileTree(
         getTreeOptions(tree, {
@@ -67,31 +67,31 @@ export default async function DiffPage({
       )}
       fileIdByPath={fileIdByPath}
     >
-      <DiffSummary stats={stats} />
-    </DiffTree>
+      <DiffStats stats={stats} />
+    </FilesPanel>
   );
 
   return (
     <div className="flex h-full">
-      <DiffHandleProvider>
-        <ResizableSidebar aria-label="Files" className="hidden md:block">
-          {diffTreeNode}
-        </ResizableSidebar>
+      <CodeViewProvider>
+        <Sidebar aria-label="Files" className="hidden md:block">
+          {filesPanel}
+        </Sidebar>
 
         <main aria-label="Diff" className="min-h-0 min-w-0 flex-1">
           <SessionProvider>
             <Suspense fallback={diffFilesSpinner}>
-              <EventSync>
-                <DiffReview files={files} />
-              </EventSync>
+              <ShareProvider>
+                <DiffFiles files={files} />
+              </ShareProvider>
             </Suspense>
           </SessionProvider>
         </main>
 
         <div aria-label="Files" className="md:hidden">
-          <SidebarSheet>{diffTreeNode}</SidebarSheet>
+          <FilesDrawer>{filesPanel}</FilesDrawer>
         </div>
-      </DiffHandleProvider>
+      </CodeViewProvider>
     </div>
   );
 }

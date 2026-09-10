@@ -2,11 +2,11 @@
 
 import {Drawer} from '@heroui/react';
 
-interface SidebarSheetProps {
+interface FilesDrawerProps {
   readonly children: React.ReactNode;
 }
 
-export function SidebarSheet({children}: SidebarSheetProps) {
+export function FilesDrawer({children}: FilesDrawerProps) {
   return (
     <Drawer>
       <Drawer.Trigger

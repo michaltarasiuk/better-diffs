@@ -40,11 +40,11 @@ function isFormAnnotation(
 
 const AnnotationContext = createContext<DiffAnnotation>(null as never);
 
-interface GutterUtilityProps {
+interface AddCommentButtonProps {
   readonly onAddAnnotation: () => void;
 }
 
-export function GutterUtility({onAddAnnotation}: GutterUtilityProps) {
+export function AddCommentButton({onAddAnnotation}: AddCommentButtonProps) {
   return (
     <Button
       id="gutter-utility"

@@ -72,7 +72,11 @@ function getEventsPromise(shareId: string) {
 export const ShareStateContext =
   createContext<FoldedShareState>(EMPTY_FOLDED_STATE);
 
-export function EventSync({children}: {readonly children: React.ReactNode}) {
+export function ShareProvider({
+  children,
+}: {
+  readonly children: React.ReactNode;
+}) {
   use(browser());
 
   const shareId = useShareId();

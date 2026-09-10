@@ -4,21 +4,21 @@ import {useRef} from 'react';
 
 import {DiffProvider} from '@/diffs/DiffProvider';
 
-import {DiffHandleContext} from './handleContext';
+import {CodeViewContext} from './codeViewContext';
 
 import type {AnnotationMetadata} from '@/diffs/options';
 import type {CodeViewHandle} from '@pierre/diffs/react';
 
-interface DiffHandleProviderProps {
+interface CodeViewProviderProps {
   readonly children: React.ReactNode;
 }
 
-export function DiffHandleProvider({children}: DiffHandleProviderProps) {
+export function CodeViewProvider({children}: CodeViewProviderProps) {
   const handleRef = useRef<CodeViewHandle<AnnotationMetadata>>(null);
 
   return (
     <DiffProvider>
-      <DiffHandleContext value={handleRef}>{children}</DiffHandleContext>
+      <CodeViewContext value={handleRef}>{children}</CodeViewContext>
     </DiffProvider>
   );
 }

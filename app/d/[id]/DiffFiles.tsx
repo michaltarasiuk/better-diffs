@@ -12,8 +12,8 @@ import {CODE_VIEW_OPTIONS} from '@/diffs/options';
 import {useIsMobile} from '@/hooks/useMediaQuery';
 import {isDefined} from '@/utils/defined';
 
-import {Annotation, GutterUtility, type DiffAnnotation} from './Annotations';
-import {DiffHandleContext} from './handleContext';
+import {AddCommentButton, Annotation, type DiffAnnotation} from './Annotation';
+import {CodeViewContext} from './codeViewContext';
 import {useSelectedLines} from './useSelectedLines';
 
 import type {AnnotationMetadata} from '@/diffs/options';
@@ -44,14 +44,14 @@ interface FileState {
   readonly version: number;
 }
 
-interface DiffReviewProps {
+interface DiffFilesProps {
   readonly files: readonly {
     readonly id: string;
     readonly metadata: FileDiffMetadata;
   }[];
 }
 
-export function DiffReview({files}: DiffReviewProps) {
+export function DiffFiles({files}: DiffFilesProps) {
   const [fileStateById, setFileStateById] = useState(
     () => new Map() as ReadonlyMap<string, FileState>,
   );
@@ -59,7 +59,7 @@ export function DiffReview({files}: DiffReviewProps) {
 
   const isMobile = useIsMobile();
 
-  const diffHandleRef = use(DiffHandleContext);
+  const diffHandleRef = use(CodeViewContext);
 
   function getFileState(fileId: string, fileStateMap = fileStateById) {
     return fileStateMap.get(fileId) ?? DEFAULT_FILE_STATE;
@@ -138,7 +138,7 @@ export function DiffReview({files}: DiffReviewProps) {
       selectedLines={selectedLines}
       onSelectedLinesChange={setSelectedLines}
       renderGutterUtility={(getHoveredLine, item) => (
-        <GutterUtility
+        <AddCommentButton
           onAddAnnotation={() => {
             const line = getHoveredLine();
             if (isDefined(line) && isDiffLine(line)) {

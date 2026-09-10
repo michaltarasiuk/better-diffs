@@ -15,24 +15,24 @@ import {useKeyDown} from '@/hooks/useKeyDown';
 import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';
 import {isDefined} from '@/utils/defined';
 
-import {DiffHandleContext} from './handleContext';
+import {CodeViewContext} from './codeViewContext';
 import {useSearchQuery} from './useSearchQuery';
 
-interface DiffTreeProps {
+interface FilesPanelProps {
   readonly handoff: TreeHandoff;
   readonly preloaded: FileTreePreloadedData;
   readonly fileIdByPath: Readonly<Record<string, string>>;
   readonly children: React.ReactNode;
 }
 
-export function DiffTree({
+export function FilesPanel({
   handoff,
   preloaded,
   fileIdByPath,
   children,
-}: DiffTreeProps) {
+}: FilesPanelProps) {
   const {searchQuery, setSearchQuery} = useSearchQuery();
-  const handleRef = use(DiffHandleContext);
+  const handleRef = use(CodeViewContext);
   const {model} = useFileTree({
     ...getTreeOptions(handoff, {searchQuery}),
     onSearchChange(value) {

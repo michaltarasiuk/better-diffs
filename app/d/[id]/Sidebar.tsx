@@ -12,7 +12,7 @@ const MAX_WIDTH = 480;
 
 const DEFAULT_WIDTH = 320;
 
-export function ResizableSidebar({
+export function Sidebar({
   children,
   style,
   className,
