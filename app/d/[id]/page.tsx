@@ -13,7 +13,7 @@ import {
 } from '@/trees/handoff';
 import {isDefined} from '@/utils/defined';
 
-import {DiffHandleProvider} from './DiffHandleContext';
+import {DiffHandleProvider} from './DiffHandleProvider';
 import {DiffReview} from './DiffReview';
 import {DiffSummary} from './DiffSummary';
 import {DiffTree} from './DiffTree';

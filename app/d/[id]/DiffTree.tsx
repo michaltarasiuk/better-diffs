@@ -15,7 +15,7 @@ import {useKeyDown} from '@/hooks/useKeyDown';
 import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';
 import {isDefined} from '@/utils/defined';
 
-import {DiffHandleContext} from './DiffHandleContext';
+import {DiffHandleContext} from './diffHandleContext';
 import {useSearchQuery} from './useSearchQuery';
 
 interface DiffTreeProps {

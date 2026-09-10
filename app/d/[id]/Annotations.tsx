@@ -9,7 +9,7 @@ import {useFocusWithin} from 'react-aria/useFocusWithin';
 
 import {authClient} from '@/auth/client';
 import {GitHubIcon} from '@/auth/GitHubIcon';
-import {SessionContext} from '@/auth/SessionContext';
+import {SessionContext} from '@/auth/sessionContext';
 import {useKeyDown} from '@/hooks/useKeyDown';
 import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';

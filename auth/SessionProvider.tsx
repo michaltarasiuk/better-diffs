@@ -1,7 +1,7 @@
 import 'server-only';
 
 import {getSession} from './server';
-import {SessionContext} from './SessionContext';
+import {SessionContext} from './sessionContext';
 
 interface SessionProviderProps {
   readonly children: React.ReactNode;

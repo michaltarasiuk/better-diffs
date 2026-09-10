@@ -1,17 +1,19 @@
 'use client';
 
-import {createContext, useRef} from 'react';
+import {useRef} from 'react';
 
 import {DiffProvider} from '@/diffs/DiffProvider';
+
+import {DiffHandleContext} from './diffHandleContext';
 
 import type {AnnotationMetadata} from '@/diffs/options';
 import type {CodeViewHandle} from '@pierre/diffs/react';
 
-export const DiffHandleContext = createContext<
-  React.RefObject<CodeViewHandle<AnnotationMetadata> | null>
->({current: null});
+interface DiffHandleProviderProps {
+  readonly children: React.ReactNode;
+}
 
-export function DiffHandleProvider({children}: {children: React.ReactNode}) {
+export function DiffHandleProvider({children}: DiffHandleProviderProps) {
   const handleRef = useRef<CodeViewHandle<AnnotationMetadata>>(null);
 
   return (
