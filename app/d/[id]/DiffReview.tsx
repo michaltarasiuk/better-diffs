@@ -13,7 +13,7 @@ import {useIsMobile} from '@/hooks/useMediaQuery';
 import {isDefined} from '@/utils/defined';
 
 import {Annotation, GutterUtility, type DiffAnnotation} from './Annotations';
-import {DiffHandleContext} from './diffHandleContext';
+import {DiffHandleContext} from './handleContext';
 import {useSelectedLines} from './useSelectedLines';
 
 import type {AnnotationMetadata} from '@/diffs/options';

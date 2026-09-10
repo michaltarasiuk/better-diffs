@@ -4,7 +4,7 @@ import {useRef} from 'react';
 
 import {DiffProvider} from '@/diffs/DiffProvider';
 
-import {DiffHandleContext} from './diffHandleContext';
+import {DiffHandleContext} from './handleContext';
 
 import type {AnnotationMetadata} from '@/diffs/options';
 import type {CodeViewHandle} from '@pierre/diffs/react';
