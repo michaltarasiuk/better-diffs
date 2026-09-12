@@ -1,6 +1,6 @@
 'use client';
 
-import {createContext, use, useState} from 'react';
+import {createContext, use, useState, useSyncExternalStore} from 'react';
 import {browser} from 'react-dom';
 import z from 'zod';
 
@@ -83,14 +83,14 @@ export function SyncEvents({children}: {readonly children: React.ReactNode}) {
 
   return (
     <ErrorBoundary resetKeys={[shareId, eventsPromise]} fallback={null}>
-      <ShareStateProvider eventsPromise={eventsPromise}>
+      <SyncedShareState eventsPromise={eventsPromise}>
         {children}
-      </ShareStateProvider>
+      </SyncedShareState>
     </ErrorBoundary>
   );
 }
 
-function ShareStateProvider({
+function SyncedShareState({
   eventsPromise,
   children,
 }: {
@@ -98,15 +98,31 @@ function ShareStateProvider({
   readonly children: React.ReactNode;
 }) {
   const events = use(eventsPromise);
-  const [shareState] = useState(() => {
+  return <ShareStateProvider events={events}>{children}</ShareStateProvider>;
+}
+
+function ShareStateProvider({
+  events,
+  children,
+}: {
+  readonly events: readonly ShareEvent[];
+  readonly children: React.ReactNode;
+}) {
+  const [store] = useState(() => {
     const state = new ShareState();
     state.ingest(events);
     return state;
   });
 
-  return (
-    <ShareStateContext value={shareState.getSnapshot()}>
-      {children}
-    </ShareStateContext>
+  const snapshot = useSyncExternalStore(
+    store.subscribe,
+    store.getSnapshot,
+    getServerSnapshot,
   );
+
+  return <ShareStateContext value={snapshot}>{children}</ShareStateContext>;
+}
+
+function getServerSnapshot(): FoldedShareState {
+  return EMPTY_FOLDED_STATE;
 }

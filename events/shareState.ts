@@ -44,6 +44,7 @@ export class ShareState {
   readonly comments = new Map<string, CommentState>();
   #latestSeq = 0;
   #snapshot: FoldedShareState | undefined;
+  #subscribers = new Set<() => void>();
 
   ingest(events: readonly ShareEvent[]) {
     let changed = false;
@@ -59,13 +60,20 @@ export class ShareState {
     }
 
     if (changed) {
-      this.#snapshot = undefined;
+      this.#commit();
     }
 
     return changed;
   }
 
-  getSnapshot(): FoldedShareState {
+  subscribe = (subscriber: () => void) => {
+    this.#subscribers.add(subscriber);
+    return () => {
+      this.#subscribers.delete(subscriber);
+    };
+  };
+
+  getSnapshot = (): FoldedShareState => {
     if (!this.#snapshot) {
       this.#snapshot = {
         threads: this.threads,
@@ -73,6 +81,13 @@ export class ShareState {
       };
     }
     return this.#snapshot;
+  };
+
+  #commit() {
+    this.#snapshot = undefined;
+    for (const subscriber of this.#subscribers) {
+      subscriber();
+    }
   }
 
   #apply(event: ShareEvent) {
