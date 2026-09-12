@@ -15,7 +15,7 @@ import {useKeyDown} from '@/hooks/useKeyDown';
 import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';
 import {isDefined} from '@/utils/defined';
 
-import {CodeViewContext} from './codeViewContext';
+import {HandleContext} from './handleContext';
 import {useSearchQuery} from './useSearchQuery';
 
 interface FilesPanelProps {
@@ -32,7 +32,7 @@ export function FilesPanel({
   children,
 }: FilesPanelProps) {
   const {searchQuery, setSearchQuery} = useSearchQuery();
-  const handleRef = use(CodeViewContext);
+  const handleRef = use(HandleContext);
   const {model} = useFileTree({
     ...getTreeOptions(handoff, {searchQuery}),
     onSearchChange(value) {

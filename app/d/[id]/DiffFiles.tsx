@@ -13,7 +13,7 @@ import {useIsMobile} from '@/hooks/useMediaQuery';
 import {isDefined} from '@/utils/defined';
 
 import {AddCommentButton, Annotation, type DiffAnnotation} from './Annotation';
-import {CodeViewContext} from './codeViewContext';
+import {HandleContext} from './handleContext';
 import {useSelectedLines} from './useSelectedLines';
 
 import type {AnnotationMetadata} from '@/diffs/options';
@@ -59,7 +59,7 @@ export function DiffFiles({files}: DiffFilesProps) {
 
   const isMobile = useIsMobile();
 
-  const diffHandleRef = use(CodeViewContext);
+  const handleRef = use(HandleContext);
 
   function getFileState(fileId: string, fileStateMap = fileStateById) {
     return fileStateMap.get(fileId) ?? DEFAULT_FILE_STATE;
@@ -116,7 +116,7 @@ export function DiffFiles({files}: DiffFilesProps) {
 
   return (
     <CodeView
-      ref={diffHandleRef}
+      ref={handleRef}
       items={files.map((file) => {
         const {annotations, collapsed, version} = getFileState(file.id);
 

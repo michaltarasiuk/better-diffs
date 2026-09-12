@@ -19,8 +19,8 @@ import {DiffStats} from './DiffStats';
 import {FilesDrawer} from './FilesDrawer';
 import {FilesPanel} from './FilesPanel';
 import {loadDiffSearchParams} from './searchParams';
-import {ShareProvider} from './ShareProvider';
 import {Sidebar} from './Sidebar';
+import {SyncEvents} from './SyncEvents';
 
 import type {Metadata} from 'next';
 
@@ -74,16 +74,14 @@ export default async function DiffPage({
   return (
     <div className="flex h-full">
       <CodeViewProvider>
-        <Sidebar aria-label="Files" className="hidden md:block">
-          {filesPanel}
-        </Sidebar>
+        <Sidebar>{filesPanel}</Sidebar>
 
         <main aria-label="Diff" className="min-h-0 min-w-0 flex-1">
           <SessionProvider>
             <Suspense fallback={diffFilesSpinner}>
-              <ShareProvider>
+              <SyncEvents>
                 <DiffFiles files={files} />
-              </ShareProvider>
+              </SyncEvents>
             </Suspense>
           </SessionProvider>
         </main>

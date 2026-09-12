@@ -2,11 +2,7 @@
 
 import {Drawer} from '@heroui/react';
 
-interface FilesDrawerProps {
-  readonly children: React.ReactNode;
-}
-
-export function FilesDrawer({children}: FilesDrawerProps) {
+export function FilesDrawer({children}: {readonly children: React.ReactNode}) {
   return (
     <Drawer>
       <Drawer.Trigger

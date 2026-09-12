@@ -1,6 +1,5 @@
 'use client';
 
-import {cn} from '@heroui/styles';
 import {mergeProps} from '@react-aria/utils';
 import {useState} from 'react';
 import {Separator} from 'react-aria-components/Separator';
@@ -12,12 +11,7 @@ const MAX_WIDTH = 480;
 
 const DEFAULT_WIDTH = 320;
 
-export function Sidebar({
-  children,
-  style,
-  className,
-  ...props
-}: React.ComponentProps<'aside'>) {
+export function Sidebar({children}: {readonly children: React.ReactNode}) {
   const [width, setWidth] = useState(DEFAULT_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
   const {moveProps} = useMove({
@@ -35,9 +29,9 @@ export function Sidebar({
 
   return (
     <aside
-      {...props}
-      style={{width, ...style}}
-      className={cn('relative shrink-0', className)}
+      aria-label="Files"
+      style={{width}}
+      className="relative hidden shrink-0 md:block"
     >
       {children}
 
