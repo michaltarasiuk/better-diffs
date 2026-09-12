@@ -54,7 +54,7 @@ export default async function DiffPage({
 
   const orderedFiles = orderFilesByTree(files, tree);
   const fileIdByPath = Object.fromEntries(
-    orderedFiles.map(({id, name}) => [name, id]),
+    files.map(({id, name}) => [name, id]),
   );
 
   const filesPanel = (
