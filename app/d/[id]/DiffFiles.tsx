@@ -61,8 +61,8 @@ export function DiffFiles({files}: DiffFilesProps) {
 
   const handleRef = use(HandleContext);
 
-  function getFileState(fileId: string, fileStateMap = fileStateById) {
-    return fileStateMap.get(fileId) ?? DEFAULT_FILE_STATE;
+  function getFileState(fileId: string, stateById = fileStateById) {
+    return stateById.get(fileId) ?? DEFAULT_FILE_STATE;
   }
 
   function updateFileState(

@@ -1,11 +1,11 @@
 'use client';
 
-import {createContext, use} from 'react';
+import {createContext, use, useRef} from 'react';
 import {browser} from 'react-dom';
 import z from 'zod';
 
 import {ErrorBoundary} from '@/components/ErrorBoundary';
-import {EMPTY_FOLDED_STATE, foldEvents} from '@/events/fold';
+import {EMPTY_FOLDED_STATE, ShareState} from '@/events/fold';
 import {getEvents, getLastSeq, putEvents} from '@/events/idb';
 import {isDefined} from '@/utils/defined';
 
@@ -95,7 +95,14 @@ function ShareStateProvider({
   readonly children: React.ReactNode;
 }) {
   const events = use(eventsPromise);
-  const state = foldEvents(events);
+  const shareStateRef = useRef<ShareState | null>(null);
+  if (shareStateRef.current === null) {
+    const shareState = new ShareState();
+    shareState.ingest(events);
+    shareStateRef.current = shareState;
+  }
+
+  const state = shareStateRef.current.getSnapshot();
 
   return <ShareStateContext value={state}>{children}</ShareStateContext>;
 }

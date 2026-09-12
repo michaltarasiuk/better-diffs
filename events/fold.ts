@@ -1,24 +1,24 @@
 import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 
-import type {Anchor, ShareEvent} from './schemas';
+import type {Anchor, ShareEvent, ShareEventPayload} from './schemas';
 import type {SerializedEditorState} from 'lexical';
 
-interface ThreadState {
+export interface ThreadState {
   readonly id: string;
   readonly anchor: Anchor;
   readonly actorId: string;
-  readonly resolved: boolean;
-  readonly commentIds: readonly string[];
+  resolved: boolean;
+  commentIds: string[];
   readonly createdAt: string;
 }
 
-interface CommentState {
+export interface CommentState {
   readonly id: string;
   readonly threadId: string;
   readonly actorId: string;
-  readonly body: SerializedEditorState;
-  readonly deleted: boolean;
+  body: SerializedEditorState;
+  deleted: boolean;
   readonly createdAt: string;
 }
 
@@ -32,29 +32,59 @@ export const EMPTY_FOLDED_STATE: FoldedShareState = {
   comments: new Map(),
 };
 
-export function foldEvents(events: readonly ShareEvent[]) {
-  let state = EMPTY_FOLDED_STATE;
-  for (const event of events) {
-    state = applyEvent(state, event);
-  }
-  return state;
+export function isType<T extends ShareEventPayload['$type']>(
+  type: T,
+  payload: ShareEventPayload,
+): payload is Extract<ShareEventPayload, {$type: T}> {
+  return payload.$type === type;
 }
 
-function applyEvent(
-  state: FoldedShareState,
-  event: ShareEvent,
-): FoldedShareState {
-  const {payload, actorId, createdAt} = event;
+export class ShareState {
+  readonly threads = new Map<string, ThreadState>();
+  readonly comments = new Map<string, CommentState>();
+  #latestSeq = 0;
+  #snapshot: FoldedShareState | undefined;
 
-  switch (payload.$type) {
-    case 'thread.opened': {
+  ingest(events: readonly ShareEvent[]) {
+    let changed = false;
+
+    for (const event of events) {
+      if (event.seq <= this.#latestSeq) {
+        continue;
+      }
+
+      this.#latestSeq = event.seq;
+      this.#apply(event);
+      changed = true;
+    }
+
+    if (changed) {
+      this.#snapshot = undefined;
+    }
+
+    return changed;
+  }
+
+  getSnapshot(): FoldedShareState {
+    if (!this.#snapshot) {
+      this.#snapshot = {
+        threads: this.threads,
+        comments: this.comments,
+      };
+    }
+    return this.#snapshot;
+  }
+
+  #apply(event: ShareEvent) {
+    const {payload, actorId, createdAt} = event;
+
+    if (isType('thread.opened', payload)) {
       assert(
-        !state.threads.has(payload.threadId),
+        !this.threads.has(payload.threadId),
         `Thread already opened: ${payload.threadId}`,
       );
 
-      const threads = new Map(state.threads);
-      threads.set(payload.threadId, {
+      this.threads.set(payload.threadId, {
         id: payload.threadId,
         anchor: payload.anchor,
         actorId,
@@ -62,26 +92,26 @@ function applyEvent(
         commentIds: [],
         createdAt,
       });
-      return {...state, threads};
+      return;
     }
 
-    case 'comment.created': {
-      const thread = state.threads.get(payload.threadId);
+    if (isType('comment.created', payload)) {
+      const thread = this.threads.get(payload.threadId);
       assert(
         isDefined(thread),
         `Comment on unknown thread: ${payload.threadId}`,
       );
-
       assert(
-        !state.comments.has(payload.commentId),
+        !this.comments.has(payload.commentId),
         `Comment already created: ${payload.commentId}`,
       );
+      assert(
+        !thread.commentIds.includes(payload.commentId),
+        `Comment already on thread: ${payload.commentId}`,
+      );
 
-      const threads = new Map(state.threads);
-      const comments = new Map(state.comments);
-      threads.set(payload.threadId, appendCommentId(thread, payload.commentId));
-
-      comments.set(payload.commentId, {
+      thread.commentIds.push(payload.commentId);
+      this.comments.set(payload.commentId, {
         id: payload.commentId,
         threadId: payload.threadId,
         actorId,
@@ -89,54 +119,42 @@ function applyEvent(
         deleted: false,
         createdAt,
       });
-
-      return {...state, threads, comments};
+      return;
     }
 
-    case 'comment.edited': {
-      const comment = state.comments.get(payload.commentId);
+    if (isType('comment.edited', payload)) {
+      const comment = this.comments.get(payload.commentId);
       assert(isDefined(comment), `Comment not found: ${payload.commentId}`);
-
       assert(!comment.deleted, `Comment already deleted: ${payload.commentId}`);
 
-      const comments = new Map(state.comments);
-      comments.set(payload.commentId, {...comment, body: payload.body});
-      return {...state, comments};
+      comment.body = payload.body;
+      return;
     }
 
-    case 'comment.deleted': {
-      const comment = state.comments.get(payload.commentId);
+    if (isType('comment.deleted', payload)) {
+      const comment = this.comments.get(payload.commentId);
       assert(isDefined(comment), `Comment not found: ${payload.commentId}`);
-
       assert(!comment.deleted, `Comment already deleted: ${payload.commentId}`);
 
-      const comments = new Map(state.comments);
-      comments.set(payload.commentId, {...comment, deleted: true});
-      return {...state, comments};
+      comment.deleted = true;
+      return;
     }
 
-    case 'thread.resolved': {
-      const thread = state.threads.get(payload.threadId);
+    if (isType('thread.resolved', payload)) {
+      const thread = this.threads.get(payload.threadId);
       assert(isDefined(thread), `Thread not found: ${payload.threadId}`);
-
       assert(!thread.resolved, `Thread already resolved: ${payload.threadId}`);
 
-      const threads = new Map(state.threads);
-      threads.set(payload.threadId, {...thread, resolved: true});
-      return {...state, threads};
+      thread.resolved = true;
+      return;
     }
 
-    default:
-      payload satisfies never;
-      return state;
+    payload satisfies never;
   }
 }
 
-function appendCommentId(thread: ThreadState, commentId: string): ThreadState {
-  assert(
-    !thread.commentIds.includes(commentId),
-    `Comment already on thread: ${commentId}`,
-  );
-
-  return {...thread, commentIds: [...thread.commentIds, commentId]};
+export function foldEvents(events: readonly ShareEvent[]) {
+  const state = new ShareState();
+  state.ingest(events);
+  return state.getSnapshot();
 }
