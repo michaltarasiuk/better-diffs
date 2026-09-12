@@ -1,6 +1,6 @@
 'use client';
 
-import {createContext, use, useRef} from 'react';
+import {createContext, use, useState} from 'react';
 import {browser} from 'react-dom';
 import z from 'zod';
 
@@ -95,14 +95,15 @@ function ShareStateProvider({
   readonly children: React.ReactNode;
 }) {
   const events = use(eventsPromise);
-  const shareStateRef = useRef<ShareState | null>(null);
-  if (shareStateRef.current === null) {
-    const shareState = new ShareState();
-    shareState.ingest(events);
-    shareStateRef.current = shareState;
-  }
+  const [shareState] = useState(() => {
+    const state = new ShareState();
+    state.ingest(events);
+    return state;
+  });
 
-  const state = shareStateRef.current.getSnapshot();
-
-  return <ShareStateContext value={state}>{children}</ShareStateContext>;
+  return (
+    <ShareStateContext value={shareState.getSnapshot()}>
+      {children}
+    </ShareStateContext>
+  );
 }
