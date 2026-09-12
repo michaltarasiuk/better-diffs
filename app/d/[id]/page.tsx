@@ -80,7 +80,7 @@ export default async function DiffPage({
           <SessionProvider>
             <Suspense fallback={diffFilesSpinner}>
               <SyncEvents>
-                <DiffFiles files={files} />
+                <DiffFiles files={orderedFiles} />
               </SyncEvents>
             </Suspense>
           </SessionProvider>
