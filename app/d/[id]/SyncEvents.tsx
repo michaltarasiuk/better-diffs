@@ -5,19 +5,19 @@ import {browser} from 'react-dom';
 import z from 'zod';
 
 import {ErrorBoundary} from '@/components/ErrorBoundary';
-import {EMPTY_FOLDED_STATE, ShareState} from '@/events/fold';
 import {getEvents, getLastSeq, putEvents} from '@/events/idb';
+import {ShareEvent} from '@/events/schemas';
+import {EMPTY_FOLDED_STATE, ShareState} from '@/events/shareState';
 import {isDefined} from '@/utils/defined';
 
 import {useShareId} from './useShareId';
 
-import type {FoldedShareState} from '@/events/fold';
-import type {ShareEvent} from '@/events/schemas';
+import type {FoldedShareState} from '@/events/shareState';
 
 const EventsResponse = z.discriminatedUnion('ok', [
   z.object({
     ok: z.literal(true),
-    events: z.custom<ShareEvent[]>(),
+    events: z.array(ShareEvent),
   }),
   z.object({
     ok: z.literal(false),
@@ -55,7 +55,7 @@ async function syncEvents(shareId: string) {
     await putEvents(events);
   }
 
-  return getEvents(shareId);
+  return z.array(ShareEvent).parse(await getEvents(shareId));
 }
 
 const eventsPromises = new Map<string, Promise<ShareEvent[]>>();
@@ -63,7 +63,10 @@ const eventsPromises = new Map<string, Promise<ShareEvent[]>>();
 function getEventsPromise(shareId: string) {
   let eventsPromise = eventsPromises.get(shareId);
   if (!isDefined(eventsPromise)) {
-    eventsPromise = syncEvents(shareId);
+    eventsPromise = syncEvents(shareId).catch((error) => {
+      eventsPromises.delete(shareId);
+      throw error;
+    });
     eventsPromises.set(shareId, eventsPromise);
   }
   return eventsPromise;
