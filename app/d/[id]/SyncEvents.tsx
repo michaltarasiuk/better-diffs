@@ -26,24 +26,18 @@ const EventsResponse = z.discriminatedUnion('ok', [
 ]);
 
 async function fetchEvents(shareId: string, afterSeq: number | null) {
-  const params = new URLSearchParams();
-
-  if (isDefined(afterSeq)) {
-    params.set('afterSeq', String(afterSeq));
-  }
-
-  let url = `/api/shares/${shareId}/events`;
-  if (params.size > 0) {
-    url += `?${params}`;
-  }
-
-  const response = await fetch(url, {cache: 'no-store'});
-  const data = EventsResponse.parse(await response.json());
+  const searchParams = isDefined(afterSeq)
+    ? `?${new URLSearchParams({afterSeq: String(afterSeq)})}`
+    : '';
+  const response = await fetch(`/api/shares/${shareId}/events${searchParams}`, {
+    cache: 'no-store',
+  });
+  const json = await response.json();
+  const data = EventsResponse.parse(json);
 
   if (!data.ok) {
     throw new Error(data.error);
   }
-
   return data.events;
 }
 
@@ -54,8 +48,7 @@ async function syncEvents(shareId: string) {
   if (events.length > 0) {
     await putEvents(events);
   }
-
-  return z.array(ShareEvent).parse(await getEvents(shareId));
+  return await getEvents(shareId);
 }
 
 const eventsPromises = new Map<string, Promise<ShareEvent[]>>();
