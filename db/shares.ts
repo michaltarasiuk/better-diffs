@@ -14,7 +14,7 @@ import {
 
 import type {FileDiffMetadata} from '@pierre/diffs';
 
-export async function visitShare(id: string) {
+export async function openShare(id: string) {
   return db.transaction(async (tx) => {
     const [share] = await tx
       .update(sharesTable)

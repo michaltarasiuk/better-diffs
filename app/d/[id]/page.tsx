@@ -4,7 +4,7 @@ import {notFound} from 'next/navigation';
 import {Suspense} from 'react';
 
 import {SessionProvider} from '@/auth/SessionProvider';
-import {visitShare} from '@/db/shares';
+import {openShare} from '@/db/shares';
 import {computeDiffStats} from '@/diffs/stats';
 import {
   getTreeOptions,
@@ -42,19 +42,19 @@ export default async function DiffPage({
     loadDiffSearchParams(searchParams),
   ]);
 
-  const share = await visitShare(id);
-  if (!isDefined(share)) {
+  const files = await openShare(id);
+  if (!isDefined(files)) {
     notFound();
   }
 
-  const fileDiffs = share.map(({metadata}) => metadata);
+  const fileDiffs = files.map(({metadata}) => metadata);
 
   const tree = prepareTreeHandoff(fileDiffs);
   const stats = computeDiffStats(fileDiffs);
 
-  const files = orderFilesByTree(share, tree);
+  const orderedFiles = orderFilesByTree(files, tree);
   const fileIdByPath = Object.fromEntries(
-    files.map(({id, name}) => [name, id]),
+    orderedFiles.map(({id, name}) => [name, id]),
   );
 
   const filesPanel = (
