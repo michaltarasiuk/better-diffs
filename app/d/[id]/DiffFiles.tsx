@@ -35,16 +35,6 @@ interface FileState {
   readonly version: number;
 }
 
-const ANNOTATION_SIDE_ORDER = {
-  deletions: 0,
-  additions: 1,
-} as const;
-
-const CODE_VIEW_STYLE = {
-  height: '100%',
-  overflow: 'auto',
-} satisfies React.CSSProperties;
-
 const DEFAULT_FILE_STATE = {
   forms: [],
   collapsed: false,
@@ -52,6 +42,11 @@ const DEFAULT_FILE_STATE = {
 } satisfies FileState;
 
 const EMPTY_THREADS: readonly ThreadState[] = [];
+
+const CODE_VIEW_STYLE = {
+  height: '100%',
+  overflow: 'auto',
+} satisfies React.CSSProperties;
 
 interface DiffFilesProps {
   readonly files: readonly {
@@ -69,7 +64,6 @@ export function DiffFiles({files}: DiffFilesProps) {
   const {selectedLines, setSelectedLines} = useSelectedLines();
 
   const isMobile = useIsMobile();
-
   const handleRef = use(HandleContext);
 
   const threadsByFilePath = Map.groupBy(
@@ -200,6 +194,11 @@ function toThreadAnnotation(thread: ThreadState): DiffAnnotation {
     metadata: {type: 'thread', threadId: thread.id},
   };
 }
+
+const ANNOTATION_SIDE_ORDER = {
+  deletions: 0,
+  additions: 1,
+} as const;
 
 function sortAnnotations<T extends DiffAnnotation>(annotations: readonly T[]) {
   return annotations.toSorted(
