@@ -188,7 +188,7 @@ export class ShareState {
     };
 
     for (const event of this.#pending.values()) {
-      const {payload, actorId, createdAt} = event;
+      const {actorId, createdAt, payload} = event;
 
       if (isType('thread.opened', payload)) {
         threads.set(payload.threadId, {
@@ -368,7 +368,7 @@ export class ShareState {
   }
 
   #apply(event: ShareEvent) {
-    const {payload, actorId, createdAt} = event;
+    const {actorId, payload, createdAt} = event;
 
     if (isType('thread.opened', payload)) {
       assert(
