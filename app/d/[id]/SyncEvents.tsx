@@ -74,6 +74,8 @@ function getEventsPromise(shareId: string) {
 export const ShareStateContext =
   createContext<FoldedShareState>(EMPTY_FOLDED_STATE);
 
+export const ShareStoreContext = createContext<ShareState>(null as never);
+
 export function SyncEvents({children}: {readonly children: React.ReactNode}) {
   use(browser());
 
@@ -119,9 +121,13 @@ function ShareStateProvider({
     getServerSnapshot,
   );
 
-  return <ShareStateContext value={snapshot}>{children}</ShareStateContext>;
+  return (
+    <ShareStoreContext value={store}>
+      <ShareStateContext value={snapshot}>{children}</ShareStateContext>
+    </ShareStoreContext>
+  );
 }
 
-function getServerSnapshot(): FoldedShareState {
+function getServerSnapshot() {
   return EMPTY_FOLDED_STATE;
 }

@@ -15,6 +15,8 @@ import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 
 import {CommentEditorSkeleton} from './CommentEditorSkeleton';
+import {ShareStoreContext} from './SyncEvents';
+import {useShareId} from './useShareId';
 
 import type {AnnotationMetadata} from '@/diffs/options';
 import type {DiffLineAnnotation} from '@pierre/diffs';
@@ -30,9 +32,9 @@ const CommentEditor = dynamic(
 
 export type DiffAnnotation = DiffLineAnnotation<AnnotationMetadata>;
 
-type FormDiffAnnotation = DiffLineAnnotation<{readonly type: 'form'}>;
+export type FormDiffAnnotation = DiffLineAnnotation<{readonly type: 'form'}>;
 
-function isFormAnnotation(
+export function isFormAnnotation(
   annotation: DiffAnnotation,
 ): annotation is FormDiffAnnotation {
   return annotation.metadata.type === 'form';
@@ -62,22 +64,24 @@ export function AddCommentButton({onAddAnnotation}: AddCommentButtonProps) {
 
 interface AnnotationProps {
   readonly annotation: DiffAnnotation;
+  readonly filePath: string;
   readonly onDismiss: () => void;
 }
 
-export function Annotation({annotation, onDismiss}: AnnotationProps) {
+export function Annotation({annotation, filePath, onDismiss}: AnnotationProps) {
   return (
     <AnnotationContext value={annotation}>
-      <AnnotationBody onDismiss={onDismiss} />
+      <AnnotationBody filePath={filePath} onDismiss={onDismiss} />
     </AnnotationContext>
   );
 }
 
 interface AnnotationBodyProps {
+  readonly filePath: string;
   readonly onDismiss: () => void;
 }
 
-function AnnotationBody({onDismiss}: AnnotationBodyProps) {
+function AnnotationBody({filePath, onDismiss}: AnnotationBodyProps) {
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const {focusWithinProps} = useFocusWithin({
     onFocusWithinChange: (isFocusWithin) => setIsFocusWithin(isFocusWithin),
@@ -94,7 +98,7 @@ function AnnotationBody({onDismiss}: AnnotationBodyProps) {
   let annotation: React.ReactNode;
   switch (metadata.type) {
     case 'form':
-      annotation = <CommentForm onDismiss={onDismiss} />;
+      annotation = <CommentForm filePath={filePath} onDismiss={onDismiss} />;
       break;
     case 'thread':
       annotation = <ThreadAnnotation />;
@@ -107,17 +111,62 @@ function AnnotationBody({onDismiss}: AnnotationBodyProps) {
 }
 
 interface CommentFormProps {
+  readonly filePath: string;
   readonly onDismiss: () => void;
 }
 
-function CommentForm({onDismiss}: CommentFormProps) {
-  const session = use(SessionContext);
+function CommentForm({filePath, onDismiss}: CommentFormProps) {
+  const shareId = useShareId();
 
+  const session = use(SessionContext);
   if (!isDefined(session)) {
     return <SignInPrompt onDismiss={onDismiss} />;
   }
 
-  return <CommentEditor onComment={() => {}} onDismiss={onDismiss} />;
+  const store = use(ShareStoreContext);
+  const annotation = use(AnnotationContext);
+
+  assert(isFormAnnotation(annotation), 'Annotation must be a form');
+
+  return (
+    <CommentEditor
+      onComment={(body) => {
+        const threadId = crypto.randomUUID();
+        const commentId = crypto.randomUUID();
+        const actorId = session.user.id;
+        const createdAt = new Date().toISOString();
+
+        store.optimisticAll([
+          {
+            actorId,
+            createdAt,
+            payload: {
+              $type: 'thread.opened',
+              threadId,
+              anchor: {
+                shareId,
+                filePath,
+                side: annotation.side,
+                line: annotation.lineNumber,
+              },
+            },
+          },
+          {
+            actorId,
+            createdAt,
+            payload: {
+              $type: 'comment.created',
+              threadId,
+              commentId,
+              body,
+            },
+          },
+        ]);
+        onDismiss();
+      }}
+      onDismiss={onDismiss}
+    />
+  );
 }
 
 interface SignInPromptProps {
