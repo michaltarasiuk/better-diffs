@@ -6,5 +6,5 @@ import type {AnnotationMetadata} from '@/diffs/options';
 import type {CodeViewHandle} from '@pierre/diffs/react';
 
 export const HandleContext = createContext<
-  React.RefObject<CodeViewHandle<AnnotationMetadata> | null>
+  React.RefObject<CodeViewHandle<AnnotationMetadata, null> | null>
 >({current: null});

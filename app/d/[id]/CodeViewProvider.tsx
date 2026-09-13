@@ -14,7 +14,7 @@ export function CodeViewProvider({
 }: {
   readonly children: React.ReactNode;
 }) {
-  const handleRef = useRef<CodeViewHandle<AnnotationMetadata>>(null);
+  const handleRef = useRef<CodeViewHandle<AnnotationMetadata, null>>(null);
 
   return (
     <DiffProvider>

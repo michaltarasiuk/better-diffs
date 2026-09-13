@@ -7,7 +7,7 @@ export type AnnotationMetadata =
   | {readonly type: 'form'}
   | {readonly type: 'thread'; readonly threadId: string};
 
-export const PATCH_DIFF_OPTIONS: FileDiffOptions<AnnotationMetadata> = {
+export const PATCH_DIFF_OPTIONS: FileDiffOptions<AnnotationMetadata, null> = {
   theme: DEFAULT_THEMES,
   hunkSeparators: 'line-info-basic',
   diffStyle: 'unified',
@@ -15,15 +15,16 @@ export const PATCH_DIFF_OPTIONS: FileDiffOptions<AnnotationMetadata> = {
   overflow: 'wrap',
 };
 
-export const CODE_VIEW_OPTIONS: CodeViewReactOptions<AnnotationMetadata> = {
-  theme: DEFAULT_THEMES,
-  hunkSeparators: 'line-info-basic',
-  stickyHeaders: true,
-  enableGutterUtility: true,
-  enableLineSelection: true,
-  layout: {
-    ...DEFAULT_CODE_VIEW_LAYOUT,
-    paddingTop: 0,
-    paddingBottom: 0,
-  },
-};
+export const CODE_VIEW_OPTIONS: CodeViewReactOptions<AnnotationMetadata, null> =
+  {
+    theme: DEFAULT_THEMES,
+    hunkSeparators: 'line-info-basic',
+    stickyHeaders: true,
+    enableGutterUtility: true,
+    enableLineSelection: true,
+    layout: {
+      ...DEFAULT_CODE_VIEW_LAYOUT,
+      paddingTop: 0,
+      paddingBottom: 0,
+    },
+  };
