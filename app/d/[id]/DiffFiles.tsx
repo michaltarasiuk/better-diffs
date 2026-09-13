@@ -133,10 +133,10 @@ export function DiffFiles({files}: DiffFilesProps) {
           id: file.id,
           type: 'diff' as const,
           fileDiff: file.metadata,
-          annotations: annotationsForFile(
-            isDefined(threads) ? threads : EMPTY_THREADS,
-            forms,
-          ),
+          annotations: sortAnnotations([
+            ...(threads ?? EMPTY_THREADS).map(toThreadAnnotation),
+            ...forms,
+          ]),
           collapsed,
           version: version + share.version,
         };
@@ -191,13 +191,6 @@ function useShareState() {
     setVersion((version) => version + 1);
   }
   return {state, version};
-}
-
-function annotationsForFile(
-  threads: readonly ThreadState[],
-  forms: readonly FormDiffAnnotation[],
-) {
-  return sortAnnotations([...threads.map(toThreadAnnotation), ...forms]);
 }
 
 function toThreadAnnotation(thread: ThreadState): DiffAnnotation {
