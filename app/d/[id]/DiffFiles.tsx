@@ -77,18 +77,18 @@ export function DiffFiles({files}: DiffFilesProps) {
     (thread) => thread.anchor.filePath,
   );
 
-  function getFileState(fileId: string, stateById = fileStateById) {
-    return stateById.get(fileId) ?? DEFAULT_FILE_STATE;
+  function getFileState(fileId: string) {
+    return fileStateById.get(fileId) ?? DEFAULT_FILE_STATE;
   }
 
   function updateFileState(
     fileId: string,
     update: (state: FileState) => FileState,
   ) {
-    setFileStateById((fileStateById) => {
-      const state = getFileState(fileId, fileStateById);
+    setFileStateById((fileStates) => {
+      const state = fileStates.get(fileId) ?? DEFAULT_FILE_STATE;
 
-      return new Map(fileStateById).set(fileId, {
+      return new Map(fileStates).set(fileId, {
         ...update(state),
         version: state.version + 1,
       });
