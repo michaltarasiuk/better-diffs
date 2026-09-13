@@ -2,7 +2,7 @@
 
 import {createContext, use, useState, useSyncExternalStore} from 'react';
 import {browser} from 'react-dom';
-import z from 'zod';
+import {z} from 'zod';
 
 import {ErrorBoundary} from '@/components/ErrorBoundary';
 import {getEvents, getLastSeq, putEvents} from '@/events/idb';
@@ -13,6 +13,11 @@ import {isDefined} from '@/utils/defined';
 import {useShareId} from './useShareId';
 
 import type {FoldedShareState} from '@/events/shareState';
+
+const OkResponse = z.instanceof(Response).properties({
+  ok: z.literal(true),
+  status: z.number().min(200).max(299),
+});
 
 const EventsResponse = z.discriminatedUnion('ok', [
   z.object({
@@ -29,9 +34,11 @@ async function fetchEvents(shareId: string, afterSeq: number | null) {
   const searchParams = isDefined(afterSeq)
     ? `?${new URLSearchParams({afterSeq: String(afterSeq)})}`
     : '';
-  const response = await fetch(`/api/shares/${shareId}/events${searchParams}`, {
-    cache: 'no-store',
-  });
+  const response = OkResponse.parse(
+    await fetch(`/api/shares/${shareId}/events${searchParams}`, {
+      cache: 'no-store',
+    }),
+  );
   const json = await response.json();
   const data = EventsResponse.parse(json);
 
