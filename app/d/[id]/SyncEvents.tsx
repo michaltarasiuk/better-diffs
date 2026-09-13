@@ -39,8 +39,7 @@ async function fetchEvents(shareId: string, afterSeq: number | null) {
       cache: 'no-store',
     }),
   );
-  const json = await response.json();
-  const data = EventsResponse.parse(json);
+  const data = EventsResponse.parse(await response.json());
 
   if (!data.ok) {
     throw new Error(data.error);
@@ -77,6 +76,7 @@ export const ShareStateContext =
 
 export function SyncEvents({children}: {readonly children: React.ReactNode}) {
   use(browser());
+  use(new Promise<never>(() => {}));
 
   const shareId = useShareId();
   const eventsPromise = getEventsPromise(shareId);
