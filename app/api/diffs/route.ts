@@ -115,10 +115,9 @@ async function readPatchJson(request: NextRequest): Promise<ReadResult> {
     return {ok: false, error: 'Invalid JSON body'};
   }
 
-  const body = Body.safeParse(json);
-  if (!body.success || body.data.patches.length === 0) {
+  if (!Body.validate(json) || json.patches.length === 0) {
     return {ok: false, error: 'Invalid patches'};
   }
 
-  return {ok: true, patches: body.data.patches};
+  return {ok: true, patches: json.patches};
 }
