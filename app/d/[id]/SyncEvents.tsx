@@ -76,7 +76,6 @@ export const ShareStateContext =
 
 export function SyncEvents({children}: {readonly children: React.ReactNode}) {
   use(browser());
-  use(new Promise<never>(() => {}));
 
   const shareId = useShareId();
   const eventsPromise = getEventsPromise(shareId);
