@@ -54,7 +54,7 @@ interface DiffFilesProps {
 }
 
 export function DiffFiles({files}: DiffFilesProps) {
-  const share = useShareState();
+  const share = use(ShareStateContext);
 
   const [fileStateById, setFileStateById] = useState(
     () => new Map() as ReadonlyMap<string, FileState>,
@@ -65,7 +65,7 @@ export function DiffFiles({files}: DiffFilesProps) {
   const handleRef = use(HandleContext);
 
   const threadsByFilePath = Map.groupBy(
-    share.state.threads.values(),
+    share.threads.values(),
     (thread) => thread.anchor.filePath,
   );
 
@@ -172,17 +172,6 @@ export function DiffFiles({files}: DiffFilesProps) {
       style={CODE_VIEW_STYLE}
     />
   );
-}
-
-function useShareState() {
-  const state = use(ShareStateContext);
-  const [prevState, setPrevState] = useState(state);
-  const [version, setVersion] = useState(0);
-  if (state !== prevState) {
-    setPrevState(state);
-    setVersion((version) => version + 1);
-  }
-  return {state, version};
 }
 
 function toThreadAnnotation(thread: ThreadState): DiffAnnotation {

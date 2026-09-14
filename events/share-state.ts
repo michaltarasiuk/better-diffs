@@ -26,6 +26,7 @@ export interface FoldedShareState {
   readonly threads: ReadonlyMap<string, ThreadState>;
   readonly comments: ReadonlyMap<string, CommentState>;
   readonly pendingIds: ReadonlySet<string>;
+  readonly version: number;
 }
 
 export const EMPTY_PENDING_IDS: ReadonlySet<string> = new Set();
@@ -34,6 +35,7 @@ export const EMPTY_FOLDED_STATE: FoldedShareState = {
   threads: new Map(),
   comments: new Map(),
   pendingIds: EMPTY_PENDING_IDS,
+  version: 0,
 };
 
 export interface OptimisticEvent {
@@ -54,6 +56,7 @@ export class ShareState {
   readonly comments = new Map<string, CommentState>();
   #latestSeq = 0;
   #pending = new Map<string, OptimisticEvent>();
+  #version = 0;
   #snapshot: FoldedShareState | undefined;
   #subscribers = new Set<() => void>();
 
@@ -136,6 +139,7 @@ export class ShareState {
               threads: this.threads,
               comments: this.comments,
               pendingIds: EMPTY_PENDING_IDS,
+              version: this.#version,
             }
           : this.#mergePending();
     }
@@ -143,6 +147,7 @@ export class ShareState {
   };
 
   #commit() {
+    this.#version += 1;
     this.#snapshot = undefined;
     for (const subscriber of this.#subscribers) {
       subscriber();
@@ -242,7 +247,7 @@ export class ShareState {
       payload satisfies never;
     }
 
-    return {threads, comments, pendingIds};
+    return {threads, comments, pendingIds, version: this.#version};
   }
 
   #assertOptimistic(event: OptimisticEvent) {

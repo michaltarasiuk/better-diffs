@@ -4,7 +4,7 @@ import {z} from 'zod';
 import {isDefined} from '@/utils/defined';
 import {SelectionSide} from '@/diffs/schemas';
 
-const Anchor = z.object({
+export const Anchor = z.object({
   shareId: z.uuid(),
   filePath: z.string(),
   side: SelectionSide,
@@ -12,7 +12,7 @@ const Anchor = z.object({
 });
 export type Anchor = z.infer<typeof Anchor>;
 
-const LexicalBody = z.custom<SerializedEditorState>(isDefined);
+export const LexicalBody = z.custom<SerializedEditorState>(isDefined);
 export type LexicalBody = z.infer<typeof LexicalBody>;
 
 const ThreadOpenedPayload = z.object({

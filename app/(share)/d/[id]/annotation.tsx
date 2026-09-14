@@ -15,6 +15,8 @@ import {authClient} from '@/auth/client';
 import {SessionContext} from '@/auth/context';
 import {GitHubIcon} from '@/auth/github-icon';
 import type {AnnotationMetadata} from '@/diffs/options';
+import {openThread} from '@/events/actions';
+import type {Anchor} from '@/events/schemas';
 import {CommentEditorSkeleton} from './comment-editor-skeleton';
 import {ShareStoreContext} from './sync-events';
 import {useShareId} from './use-share-id';
@@ -128,25 +130,26 @@ function CommentForm({filePath, onDismiss}: CommentFormProps) {
 
   return (
     <CommentEditor
-      onComment={(body) => {
+      onComment={async (body) => {
         const threadId = crypto.randomUUID();
         const commentId = crypto.randomUUID();
         const actorId = session.user.id;
         const createdAt = new Date().toISOString();
+        const anchor: Anchor = {
+          shareId,
+          filePath,
+          side: annotation.side,
+          line: annotation.lineNumber,
+        };
 
-        store.optimisticAll([
+        const pendingIds = store.optimisticAll([
           {
             actorId,
             createdAt,
             payload: {
               $type: 'thread.opened',
               threadId,
-              anchor: {
-                shareId,
-                filePath,
-                side: annotation.side,
-                line: annotation.lineNumber,
-              },
+              anchor,
             },
           },
           {
@@ -161,6 +164,18 @@ function CommentForm({filePath, onDismiss}: CommentFormProps) {
           },
         ]);
         onDismiss();
+
+        try {
+          await openThread({
+            shareId,
+            threadId,
+            commentId,
+            body,
+            anchor,
+          });
+        } catch {
+          store.rejectAll(pendingIds);
+        }
       }}
       onDismiss={onDismiss}
     />
