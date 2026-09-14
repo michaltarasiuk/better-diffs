@@ -1,13 +1,12 @@
 import './globals.css';
 
-import {cn} from '@heroui/styles';
+import type {Metadata} from 'next';
 import Script from 'next/script';
+import {cn} from '@heroui/styles';
 import {NuqsAdapter} from 'nuqs/adapters/next/app';
 
 import {env} from '@/env';
 import {fontMono, fontSans} from '@/fonts';
-
-import type {Metadata} from 'next';
 
 export const metadata: Metadata = {
   title: 'Better Diffs',

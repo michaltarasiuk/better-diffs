@@ -1,13 +1,12 @@
+import type {FileDiffMetadata} from '@pierre/diffs';
 import {
-  prepareFileTreeInput,
-  preparePresortedFileTreeInput,
   type FileTreeOptions,
   type GitStatus,
+  prepareFileTreeInput,
+  preparePresortedFileTreeInput,
 } from '@pierre/trees';
 
 import {TREES_FOCUS_RING_UNSAFE_CSS} from '@/trees/unsafeCss';
-
-import type {FileDiffMetadata} from '@pierre/diffs';
 
 export type TreeHandoff = ReturnType<typeof prepareTreeHandoff>;
 

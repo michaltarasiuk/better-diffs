@@ -4,15 +4,13 @@ import {createContext, use, useState, useSyncExternalStore} from 'react';
 import {browser} from 'react-dom';
 import {z} from 'zod';
 
-import {ErrorBoundary} from '@/components/ErrorBoundary';
+import {isDefined} from '@/utils/defined';
 import {getEvents, getLastSeq, putEvents} from '@/events/idb';
 import {ShareEvent} from '@/events/schemas';
-import {EMPTY_FOLDED_STATE, ShareState} from '@/events/shareState';
-import {isDefined} from '@/utils/defined';
-
-import {useShareId} from './useShareId';
-
 import type {FoldedShareState} from '@/events/shareState';
+import {EMPTY_FOLDED_STATE, ShareState} from '@/events/shareState';
+import {ErrorBoundary} from '@/components/ErrorBoundary';
+import {useShareId} from './useShareId';
 
 const OkResponse = z.instanceof(Response).properties({
   ok: z.literal(true),

@@ -1,9 +1,9 @@
 import 'server-only';
 
+import type {FileDiffMetadata} from '@pierre/diffs';
 import {asc, eq, lt, sql} from 'drizzle-orm';
 
 import {isDefined} from '@/utils/defined';
-
 import {db} from './db';
 import {newId} from './id';
 import {
@@ -11,8 +11,6 @@ import {
   patches as patchesTable,
   shares as sharesTable,
 } from './schema';
-
-import type {FileDiffMetadata} from '@pierre/diffs';
 
 export async function openShare(id: string) {
   return db.transaction(async (tx) => {

@@ -2,19 +2,18 @@
 
 import '@/trees/trees.css';
 
+import {use, useRef} from 'react';
 import {SearchField} from '@heroui/react';
 import {
   FileTree,
+  type FileTreePreloadedData,
   useFileTree,
   useFileTreeSearch,
-  type FileTreePreloadedData,
 } from '@pierre/trees/react';
-import {use, useRef} from 'react';
 
 import {useKeyDown} from '@/hooks/useKeyDown';
-import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';
 import {isDefined} from '@/utils/defined';
-
+import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';
 import {HandleContext} from './handleContext';
 import {useSearchQuery} from './useSearchQuery';
 

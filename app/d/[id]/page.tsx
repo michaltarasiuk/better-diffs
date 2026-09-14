@@ -1,8 +1,10 @@
+import {Suspense} from 'react';
+import type {Metadata} from 'next';
+import {notFound} from 'next/navigation';
 import {Spinner} from '@heroui/react';
 import {preloadFileTree} from '@pierre/trees/ssr';
-import {notFound} from 'next/navigation';
-import {Suspense} from 'react';
 
+import {isDefined} from '@/utils/defined';
 import {SessionProvider} from '@/auth/SessionProvider';
 import {openShare} from '@/db/shares';
 import {computeDiffStats} from '@/diffs/stats';
@@ -11,8 +13,6 @@ import {
   orderFilesByTree,
   prepareTreeHandoff,
 } from '@/trees/handoff';
-import {isDefined} from '@/utils/defined';
-
 import {CodeViewProvider} from './CodeViewProvider';
 import {DiffFiles} from './DiffFiles';
 import {DiffStats} from './DiffStats';
@@ -21,8 +21,6 @@ import {FilesPanel} from './FilesPanel';
 import {loadDiffSearchParams} from './searchParams';
 import {Sidebar} from './Sidebar';
 import {SyncEvents} from './SyncEvents';
-
-import type {Metadata} from 'next';
 
 export const dynamic = 'force-dynamic';
 

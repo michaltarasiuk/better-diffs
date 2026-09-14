@@ -1,15 +1,16 @@
 'use client';
 
+import {useEffect, useEffectEvent, useState, useTransition} from 'react';
 import {
   Button,
   ButtonGroup,
   Card,
+  type Key,
   ListBox,
   Select,
   Spinner,
   ToggleButton,
   ToggleButtonGroup,
-  type Key,
 } from '@heroui/react';
 import {cn, typographyVariants} from '@heroui/styles';
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
@@ -38,15 +39,15 @@ import {
   CAN_UNDO_COMMAND,
   COMMAND_PRIORITY_BEFORE_EDITOR,
   COMMAND_PRIORITY_LOW,
+  type EditorThemeClasses,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
   KEY_ESCAPE_COMMAND,
-  REDO_COMMAND,
-  UNDO_COMMAND,
-  type EditorThemeClasses,
   type LexicalEditor,
+  REDO_COMMAND,
   type SerializedEditorState,
   type TextFormatType,
+  UNDO_COMMAND,
 } from 'lexical';
 import {
   AlignCenterIcon,
@@ -59,7 +60,6 @@ import {
   UnderlineIcon,
   Undo2Icon,
 } from 'lucide-react';
-import {useEffect, useEffectEvent, useState, useTransition} from 'react';
 
 import {isDefined} from '@/utils/defined';
 

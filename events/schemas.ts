@@ -1,9 +1,8 @@
+import type {SerializedEditorState} from 'lexical';
 import {z} from 'zod';
 
-import {SelectionSide} from '@/diffs/schemas';
 import {isDefined} from '@/utils/defined';
-
-import type {SerializedEditorState} from 'lexical';
+import {SelectionSide} from '@/diffs/schemas';
 
 const Anchor = z.object({
   shareId: z.uuid(),

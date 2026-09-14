@@ -1,9 +1,8 @@
 import 'client-only';
 
-import {openDB, type DBSchema, type IDBPDatabase} from 'idb';
+import {type DBSchema, type IDBPDatabase, openDB} from 'idb';
 
 import {isDefined} from '@/utils/defined';
-
 import type {ShareEvent} from './schemas';
 
 const DB_NAME = 'better-diffs';

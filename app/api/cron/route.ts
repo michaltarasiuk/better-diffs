@@ -1,8 +1,8 @@
+import type {NextRequest} from 'next/server';
+
+import {env} from '@/env';
 import {verifyBearerSecret} from '@/auth/bearer';
 import {deleteExpiredShares} from '@/db/shares';
-import {env} from '@/env';
-
-import type {NextRequest} from 'next/server';
 
 export async function GET(request: NextRequest) {
   if (!verifyBearerSecret(request, env.CRON_SECRET)) {

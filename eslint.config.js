@@ -1,8 +1,8 @@
+import {defineConfig, globalIgnores} from 'eslint/config';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
-import perfectionist from 'eslint-plugin-perfectionist';
 import reactCompiler from 'eslint-plugin-react-compiler';
-import {defineConfig, globalIgnores} from 'eslint/config';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -11,7 +11,7 @@ const eslintConfig = defineConfig([
   globalIgnores(['.next/**', 'next-env.d.ts']),
   {
     plugins: {
-      perfectionist,
+      'simple-import-sort': simpleImportSort,
     },
     rules: {
       '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
@@ -42,24 +42,27 @@ const eslintConfig = defineConfig([
           message: 'Use the React namespace for types (e.g. React.ReactNode).',
         },
       ],
-      'perfectionist/sort-exports': 'error',
-      'perfectionist/sort-named-exports': [
-        'error',
-        {groups: ['value-export', 'type-export']},
-      ],
-      'perfectionist/sort-named-imports': [
-        'error',
-        {groups: ['value-import', 'type-import']},
-      ],
-      'perfectionist/sort-imports': [
+      'simple-import-sort/exports': 'error',
+      'simple-import-sort/imports': [
         'error',
         {
           groups: [
-            'side-effect',
-            'value-builtin',
-            'value-external',
-            'value-internal',
-            ['value-parent', 'value-sibling', 'value-index'],
+            ['^\\u0000'],
+            ['^node:'],
+            [
+              '^(react\\/(.*)$)|^(react$)|^(react-dom(.*)$)',
+              '^(next(.*)$)|^(next$)',
+              '^(?!(?:app|auth|components|db|diffs|events|headers|hooks|trees|utils)(?:$|\\/))@?\\w',
+            ],
+            [
+              '^(?:@\\/)?(?:utils|hooks|headers|env|fonts)(?:$|\\/)',
+              '^(?:@\\/)?(?:auth|db|diffs|events|trees)(?:$|\\/)',
+              '^(?:@\\/)?components(?:$|\\/)',
+              '^(?:@\\/)?app(?:$|\\/)',
+              '^@\\/',
+              '^\\.',
+            ],
+            ['^'],
           ],
         },
       ],

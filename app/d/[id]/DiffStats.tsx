@@ -2,7 +2,7 @@ import {Separator, tv, type VariantProps} from '@heroui/react';
 import {Accordion} from '@heroui/react';
 import {GitCompareIcon} from 'lucide-react';
 
-import {formatDiffStat, type DiffStats as DiffStatsData} from '@/diffs/stats';
+import {type DiffStats as DiffStatsData, formatDiffStat} from '@/diffs/stats';
 
 export function DiffStats({stats}: {readonly stats: DiffStatsData}) {
   return (

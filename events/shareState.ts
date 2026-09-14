@@ -1,8 +1,8 @@
+import type {SerializedEditorState} from 'lexical';
+
 import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
-
 import type {Anchor, ShareEvent, ShareEventPayload} from './schemas';
-import type {SerializedEditorState} from 'lexical';
 
 export interface ThreadState {
   readonly id: string;

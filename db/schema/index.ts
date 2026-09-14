@@ -1,12 +1,10 @@
+import type {FileDiffMetadata} from '@pierre/diffs';
 import {relations, sql} from 'drizzle-orm';
 import {index, integer, sqliteTable, text} from 'drizzle-orm/sqlite-core';
 
 import {EVENT_TYPES, type ShareEventPayload} from '@/events/schemas';
-
 import {newId} from '../id';
 import {user} from './auth';
-
-import type {FileDiffMetadata} from '@pierre/diffs';
 
 export * from './auth';
 

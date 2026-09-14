@@ -1,25 +1,23 @@
 'use client';
 
+import {createContext, use, useState} from 'react';
+import dynamic from 'next/dynamic';
 import {Button, Card, Spinner} from '@heroui/react';
+import type {DiffLineAnnotation} from '@pierre/diffs';
 import {getLineAnnotationName} from '@pierre/diffs';
 import {PlusIcon} from 'lucide-react';
-import dynamic from 'next/dynamic';
-import {createContext, use, useState} from 'react';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
-import {authClient} from '@/auth/client';
-import {SessionContext} from '@/auth/context';
-import {GitHubIcon} from '@/auth/GitHubIcon';
 import {useKeyDown} from '@/hooks/useKeyDown';
 import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
-
+import {authClient} from '@/auth/client';
+import {SessionContext} from '@/auth/context';
+import {GitHubIcon} from '@/auth/GitHubIcon';
+import type {AnnotationMetadata} from '@/diffs/options';
 import {CommentEditorSkeleton} from './CommentEditorSkeleton';
 import {ShareStoreContext} from './SyncEvents';
 import {useShareId} from './useShareId';
-
-import type {AnnotationMetadata} from '@/diffs/options';
-import type {DiffLineAnnotation} from '@pierre/diffs';
 
 function preloadCommentEditor() {
   void import('./CommentEditor');

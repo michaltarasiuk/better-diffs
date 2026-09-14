@@ -1,6 +1,5 @@
-import {DEFAULT_CODE_VIEW_LAYOUT, DEFAULT_THEMES} from '@pierre/diffs';
-
 import type {FileDiffOptions} from '@pierre/diffs';
+import {DEFAULT_CODE_VIEW_LAYOUT, DEFAULT_THEMES} from '@pierre/diffs';
 import type {CodeViewReactOptions} from '@pierre/diffs/react';
 
 export type AnnotationMetadata =

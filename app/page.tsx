@@ -6,9 +6,8 @@ import {PatchDiff} from '@pierre/diffs/react';
 import {preloadPatchDiff} from '@pierre/diffs/ssr';
 import dedent from 'dedent';
 
-import {PATCH_DIFF_OPTIONS} from '@/diffs/options';
 import {env} from '@/env';
-
+import {PATCH_DIFF_OPTIONS} from '@/diffs/options';
 import {CopyCommand} from './CopyCommand';
 
 export const dynamic = 'force-dynamic';

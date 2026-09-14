@@ -1,6 +1,5 @@
 import {isDefined} from '@/utils/defined';
 import {isIterable} from '@/utils/iterable';
-
 import {parseParams} from './paramValues';
 
 export type AcceptInit =

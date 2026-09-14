@@ -1,13 +1,11 @@
 'use client';
 
 import {useRef} from 'react';
+import type {CodeViewHandle} from '@pierre/diffs/react';
 
 import {DiffProvider} from '@/diffs/DiffProvider';
-
-import {HandleContext} from './handleContext';
-
 import type {AnnotationMetadata} from '@/diffs/options';
-import type {CodeViewHandle} from '@pierre/diffs/react';
+import {HandleContext} from './handleContext';
 
 export function CodeViewProvider({
   children,

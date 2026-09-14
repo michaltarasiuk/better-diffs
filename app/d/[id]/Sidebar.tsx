@@ -1,10 +1,10 @@
 'use client';
 
-import {mergeProps} from '@react-aria/utils';
 import {useState} from 'react';
-import {Separator} from 'react-aria-components/Separator';
+import {mergeProps} from '@react-aria/utils';
 import {useFocusRing} from 'react-aria/useFocusRing';
 import {useMove} from 'react-aria/useMove';
+import {Separator} from 'react-aria-components/Separator';
 
 const MIN_WIDTH = 240;
 const MAX_WIDTH = 480;

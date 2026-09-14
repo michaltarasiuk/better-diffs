@@ -1,8 +1,8 @@
 'use client';
 
+import {useRef, useState} from 'react';
 import {Button} from '@heroui/react';
 import {CheckIcon, CopyIcon} from 'lucide-react';
-import {useRef, useState} from 'react';
 
 import {isDefined} from '@/utils/defined';
 
