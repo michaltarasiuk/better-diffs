@@ -54,14 +54,14 @@ interface DiffFilesProps {
 }
 
 export function DiffFiles({files}: DiffFilesProps) {
-  const share = use(ShareStateContext);
-
   const [fileStateById, setFileStateById] = useState(
     () => new Map() as ReadonlyMap<string, FileState>,
   );
   const {selectedLines, setSelectedLines} = useSelectedLines();
 
   const isMobile = useIsMobile();
+
+  const share = use(ShareStateContext);
   const handleRef = use(HandleContext);
 
   const threadsByFilePath = Map.groupBy(
