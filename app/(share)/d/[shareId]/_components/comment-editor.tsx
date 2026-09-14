@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useEffectEvent, useState, useTransition} from 'react';
+import {useEffect, useEffectEvent, useState} from 'react';
 import {
   Button,
   ButtonGroup,
@@ -8,7 +8,6 @@ import {
   type Key,
   ListBox,
   Select,
-  Spinner,
   ToggleButton,
   ToggleButtonGroup,
 } from '@heroui/react';
@@ -176,7 +175,7 @@ export function CommentEditor({onComment, onDismiss}: CommentEditorProps) {
           <Button variant="ghost" size="sm" onPress={() => onDismiss()}>
             Cancel
           </Button>
-          <SubmitCommentButton onComment={onComment} />
+          <SubmitCommentButton onComment={onComment} onDismiss={onDismiss} />
         </Card.Footer>
       </Card>
 
@@ -187,32 +186,24 @@ export function CommentEditor({onComment, onDismiss}: CommentEditorProps) {
 
 interface SubmitCommentButtonProps {
   readonly onComment?: OnComment;
+  readonly onDismiss: () => void;
 }
 
-function SubmitCommentButton({onComment}: SubmitCommentButtonProps) {
+function SubmitCommentButton({onComment, onDismiss}: SubmitCommentButtonProps) {
   const [editor] = useLexicalComposerContext();
   const isEmpty = useLexicalIsTextContentEmpty(editor, true);
-
-  const [isPending, startTransition] = useTransition();
 
   return (
     <Button
       size="sm"
       isDisabled={isEmpty}
-      isPending={isPending}
       onPress={() => {
-        startTransition(async () => {
-          const editorState = editor.getEditorState();
-          await onComment?.(editorState.toJSON());
-        });
+        const body = editor.getEditorState().toJSON();
+        onDismiss();
+        void onComment?.(body);
       }}
     >
-      {({isPending}) => (
-        <>
-          {isPending ? <Spinner aria-hidden color="current" size="sm" /> : null}
-          {isPending ? 'Posting…' : 'Comment'}
-        </>
-      )}
+      Comment
     </Button>
   );
 }

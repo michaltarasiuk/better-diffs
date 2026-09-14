@@ -163,7 +163,6 @@ function CommentForm({filePath, onDismiss}: CommentFormProps) {
             },
           },
         ]);
-        onDismiss();
 
         try {
           await openThread({
