@@ -5,7 +5,7 @@ import type {CodeViewHandle} from '@pierre/diffs/react';
 
 import {DiffProvider} from '@/diffs/diff-provider';
 import type {AnnotationMetadata} from '@/diffs/options';
-import {HandleContext} from './handle-context';
+import {HandleContext} from '../_lib/handle-context';
 
 export function CodeViewProvider({
   children,

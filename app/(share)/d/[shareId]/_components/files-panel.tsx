@@ -14,8 +14,8 @@ import {
 import {useKeyDown} from '@/hooks/use-key-down';
 import {isDefined} from '@/utils/defined';
 import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';
-import {HandleContext} from './handle-context';
-import {useSearchQuery} from './use-search-query';
+import {useSearchQuery} from '../_hooks/use-search-query';
+import {HandleContext} from '../_lib/handle-context';
 
 interface FilesPanelProps {
   readonly handoff: TreeHandoff;

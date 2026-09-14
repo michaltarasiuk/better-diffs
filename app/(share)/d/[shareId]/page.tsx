@@ -13,34 +13,34 @@ import {
   orderFilesByTree,
   prepareTreeHandoff,
 } from '@/trees/handoff';
-import {CodeViewProvider} from './code-view-provider';
-import {DiffFiles} from './diff-files';
-import {DiffStats} from './diff-stats';
-import {FilesDrawer} from './files-drawer';
-import {FilesPanel} from './files-panel';
-import {loadDiffSearchParams} from './search-params';
-import {Sidebar} from './sidebar';
-import {SyncEvents} from './sync-events';
+import {CodeViewProvider} from './_components/code-view-provider';
+import {DiffFiles} from './_components/diff-files';
+import {DiffStats} from './_components/diff-stats';
+import {FilesDrawer} from './_components/files-drawer';
+import {FilesPanel} from './_components/files-panel';
+import {Sidebar} from './_components/sidebar';
+import {SyncEvents} from './_components/sync-events';
+import {loadDiffSearchParams} from './_lib/search-params';
 
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
-}: PageProps<'/d/[id]'>): Promise<Metadata> {
-  const {id} = await params;
-  return {title: `Diff ${id}`};
+}: PageProps<'/d/[shareId]'>): Promise<Metadata> {
+  const {shareId} = await params;
+  return {title: `Diff ${shareId}`};
 }
 
 export default async function DiffPage({
   params,
   searchParams,
-}: PageProps<'/d/[id]'>) {
-  const [{id}, {q: searchQuery}] = await Promise.all([
+}: PageProps<'/d/[shareId]'>) {
+  const [{shareId}, {q: searchQuery}] = await Promise.all([
     params,
     loadDiffSearchParams(searchParams),
   ]);
 
-  const files = await openShare(id);
+  const files = await openShare(shareId);
   if (!isDefined(files)) {
     notFound();
   }

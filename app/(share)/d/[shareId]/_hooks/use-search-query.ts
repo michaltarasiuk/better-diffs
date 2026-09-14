@@ -1,6 +1,6 @@
 import {useQueryState} from 'nuqs';
 
-import {diffSearchParsers} from './search-params';
+import {diffSearchParsers} from '../_lib/search-params';
 
 export function useSearchQuery() {
   const [searchQuery, setSearchQuery] = useQueryState(

@@ -17,9 +17,9 @@ import {GitHubIcon} from '@/auth/github-icon';
 import type {AnnotationMetadata} from '@/diffs/options';
 import {openThread} from '@/events/actions';
 import type {Anchor} from '@/events/schemas';
+import {useShareId} from '../_hooks/use-share-id';
 import {CommentEditorSkeleton} from './comment-editor-skeleton';
 import {ShareStoreContext} from './sync-events';
-import {useShareId} from './use-share-id';
 
 function preloadCommentEditor() {
   void import('./comment-editor');

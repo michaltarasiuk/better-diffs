@@ -2,7 +2,7 @@
 
 import {usePageShow} from '@/hooks/use-page-show';
 
-export default function DiffLayout({children}: LayoutProps<'/d/[id]'>) {
+export default function DiffLayout({children}: LayoutProps<'/d/[shareId]'>) {
   usePageShow(function bypassBfcache(event) {
     if (event.persisted) {
       window.location.reload();

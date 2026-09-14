@@ -10,7 +10,7 @@ import {ShareEvent} from '@/events/schemas';
 import type {FoldedShareState} from '@/events/share-state';
 import {EMPTY_FOLDED_STATE, ShareState} from '@/events/share-state';
 import {ErrorBoundary} from '@/components/error-boundary';
-import {useShareId} from './use-share-id';
+import {useShareId} from '../_hooks/use-share-id';
 
 const OkResponse = z.instanceof(Response).properties({
   ok: z.literal(true),

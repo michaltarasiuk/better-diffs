@@ -12,6 +12,8 @@ import {isDefined} from '@/utils/defined';
 import type {AnnotationMetadata} from '@/diffs/options';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
 import type {ThreadState} from '@/events/share-state';
+import {useSelectedLines} from '../_hooks/use-selected-lines';
+import {HandleContext} from '../_lib/handle-context';
 import {
   AddCommentButton,
   Annotation,
@@ -20,9 +22,7 @@ import {
   isFormAnnotation,
 } from './annotation';
 import {FileCollapseButton} from './file-collapse-button';
-import {HandleContext} from './handle-context';
 import {ShareStateContext} from './sync-events';
-import {useSelectedLines} from './use-selected-lines';
 
 type DiffLine = GetHoveredLineResult<'diff'>;
 type HoveredLine = GetHoveredLineResult<'file'> | DiffLine;
