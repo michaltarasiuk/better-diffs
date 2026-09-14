@@ -73,6 +73,10 @@ export function DiffFiles({files}: DiffFilesProps) {
     return fileStateById.get(fileId) ?? DEFAULT_FILE_STATE;
   }
 
+  function getThreads(filePath: string) {
+    return threadsByFilePath.get(filePath) ?? EMPTY_THREADS;
+  }
+
   function updateFileState(
     fileId: string,
     update: (state: FileState) => FileState,
@@ -119,14 +123,14 @@ export function DiffFiles({files}: DiffFilesProps) {
       ref={handleRef}
       items={files.map((file) => {
         const {forms, collapsed, version} = getFileState(file.id);
-        const threads = threadsByFilePath.get(file.metadata.name);
+        const threads = getThreads(file.metadata.name);
 
         return {
           id: file.id,
           type: 'diff' as const,
           fileDiff: file.metadata,
           annotations: sortAnnotations([
-            ...(threads ?? EMPTY_THREADS).map(toThreadAnnotation),
+            ...threads.map(toThreadAnnotation),
             ...forms,
           ]),
           collapsed,
