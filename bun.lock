@@ -7,6 +7,7 @@
       "dependencies": {
         "@heroui/react": "^3.2.5",
         "@heroui/styles": "^3.2.5",
+        "@lexical/history": "0.50.0",
         "@lexical/react": "^0.50.0",
         "@lexical/rich-text": "0.50.0",
         "@lexical/selection": "0.50.0",

@@ -13,32 +13,27 @@ import {
   ToggleButtonGroup,
 } from '@heroui/react';
 import {cn, typographyVariants} from '@heroui/styles';
-import {LexicalComposer} from '@lexical/react/LexicalComposer';
+import {HistoryExtension} from '@lexical/history';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
-import {LexicalErrorBoundary} from '@lexical/react/LexicalErrorBoundary';
-import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
-import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
+import {LexicalExtensionComposer} from '@lexical/react/LexicalExtensionComposer';
+import {useExtensionSignalValue} from '@lexical/react/useExtensionSignalValue';
 import {useLexicalIsTextContentEmpty} from '@lexical/react/useLexicalIsTextContentEmpty';
 import {
   $createHeadingNode,
   $createQuoteNode,
   $isHeadingNode,
-  HeadingNode,
-  QuoteNode,
+  RichTextExtension,
 } from '@lexical/rich-text';
 import {$setBlocksType} from '@lexical/selection';
-import {mergeRegister} from '@lexical/utils';
 import {
   $createParagraphNode,
   $findMatchingParent,
   $getSelection,
   $isRangeSelection,
   $isRootOrShadowRoot,
-  CAN_REDO_COMMAND,
-  CAN_UNDO_COMMAND,
   COMMAND_PRIORITY_BEFORE_EDITOR,
-  COMMAND_PRIORITY_LOW,
+  defineExtension,
   type EditorThemeClasses,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
@@ -134,17 +129,21 @@ interface CommentEditorProps {
   readonly onDismiss: () => void;
 }
 
+const commentEditorExtension = defineExtension({
+  name: '@better-diffs/comment-editor',
+  namespace: 'Comment Editor',
+  theme: EDITOR_THEME,
+  dependencies: [RichTextExtension, HistoryExtension],
+  onError(error) {
+    console.error(error);
+  },
+});
+
 export function CommentEditor({onComment, onDismiss}: CommentEditorProps) {
   return (
-    <LexicalComposer
-      initialConfig={{
-        namespace: 'Comment Editor',
-        nodes: [HeadingNode, QuoteNode],
-        theme: EDITOR_THEME,
-        onError(error) {
-          console.error(error);
-        },
-      }}
+    <LexicalExtensionComposer
+      extension={commentEditorExtension}
+      contentEditable={null}
     >
       <Card variant="secondary" className="@container m-2 mbs-1">
         <Card.Header>
@@ -153,27 +152,22 @@ export function CommentEditor({onComment, onDismiss}: CommentEditorProps) {
 
         <Card.Content>
           <div className="relative block h-24 w-full rounded-field px-3 py-2">
-            <RichTextPlugin
-              contentEditable={
-                <ContentEditable
-                  aria-label="Comment"
-                  aria-placeholder="Leave a comment…"
-                  placeholder={
-                    <div
-                      className={typographyVariants({type: 'body-sm'}).base({
-                        className:
-                          'pointer-events-none absolute inset-0 px-3 py-2 text-field-placeholder',
-                      })}
-                    >
-                      Leave a comment…
-                    </div>
-                  }
+            <ContentEditable
+              aria-label="Comment"
+              aria-placeholder="Leave a comment…"
+              placeholder={
+                <div
                   className={typographyVariants({type: 'body-sm'}).base({
-                    className: 'h-full w-full overflow-y-auto outline-none',
+                    className:
+                      'pointer-events-none absolute inset-0 px-3 py-2 text-field-placeholder',
                   })}
-                />
+                >
+                  Leave a comment…
+                </div>
               }
-              ErrorBoundary={LexicalErrorBoundary}
+              className={typographyVariants({type: 'body-sm'}).base({
+                className: 'h-full w-full overflow-y-auto outline-none',
+              })}
             />
           </div>
         </Card.Content>
@@ -186,9 +180,8 @@ export function CommentEditor({onComment, onDismiss}: CommentEditorProps) {
         </Card.Footer>
       </Card>
 
-      <HistoryPlugin />
       <PreventEscapeBlurPlugin />
-    </LexicalComposer>
+    </LexicalExtensionComposer>
   );
 }
 
@@ -243,8 +236,8 @@ function RichTextToolbarPlugin() {
 
   const [blockType, setBlockType] = useState<BlockType>('paragraph');
 
-  const [canUndo, setCanUndo] = useState(false);
-  const [canRedo, setCanRedo] = useState(false);
+  const canUndo = useExtensionSignalValue(HistoryExtension, 'canUndo');
+  const canRedo = useExtensionSignalValue(HistoryExtension, 'canRedo');
 
   const [textFormats, setTextFormats] = useState(() => new Set<Key>());
 
@@ -273,32 +266,14 @@ function RichTextToolbarPlugin() {
   });
 
   useEffect(() => {
-    return mergeRegister(
-      editor.registerUpdateListener(({editorState}) => {
-        editorState.read(
-          () => {
-            $updateToolbar();
-          },
-          {editor},
-        );
-      }),
-      editor.registerCommand(
-        CAN_UNDO_COMMAND,
-        (canUndo) => {
-          setCanUndo(canUndo);
-          return false;
+    return editor.registerUpdateListener(({editorState}) => {
+      editorState.read(
+        () => {
+          $updateToolbar();
         },
-        COMMAND_PRIORITY_LOW,
-      ),
-      editor.registerCommand(
-        CAN_REDO_COMMAND,
-        (canRedo) => {
-          setCanRedo(canRedo);
-          return false;
-        },
-        COMMAND_PRIORITY_LOW,
-      ),
-    );
+        {editor},
+      );
+    });
   }, [editor]);
 
   return (
