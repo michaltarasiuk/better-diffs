@@ -6,6 +6,7 @@
     "start": "next start",
     "build": "next build",
     "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "type:check": "next typegen && tsc --noEmit",
