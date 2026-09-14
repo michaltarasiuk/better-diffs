@@ -6,7 +6,7 @@ import {z} from 'zod';
 
 import {env} from '@/env';
 import {Accept} from '@/headers/accept';
-import {ContentType} from '@/headers/contentType';
+import {ContentType} from '@/headers/content-type';
 import {isDefined} from '@/utils/defined';
 import {createShare} from '@/db/shares';
 

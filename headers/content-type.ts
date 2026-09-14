@@ -1,5 +1,5 @@
 import {isDefined} from '@/utils/defined';
-import {parseParams, quote} from './paramValues';
+import {parseParams, quote} from './param-values';
 
 export interface ContentTypeInit {
   boundary?: string;

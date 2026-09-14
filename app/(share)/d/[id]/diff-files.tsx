@@ -7,22 +7,22 @@ import type {FileDiffMetadata, GetHoveredLineResult} from '@pierre/diffs';
 import {isDiffAnnotation} from '@pierre/diffs';
 import {CodeView} from '@pierre/diffs/react';
 
-import {useIsMobile} from '@/hooks/useMediaQuery';
+import {useIsMobile} from '@/hooks/use-media-query';
 import {isDefined} from '@/utils/defined';
 import type {AnnotationMetadata} from '@/diffs/options';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
-import type {ThreadState} from '@/events/shareState';
+import type {ThreadState} from '@/events/share-state';
 import {
   AddCommentButton,
   Annotation,
   type DiffAnnotation,
   type FormDiffAnnotation,
   isFormAnnotation,
-} from './Annotation';
-import {FileCollapseButton} from './FileCollapseButton';
-import {HandleContext} from './handleContext';
-import {ShareStateContext} from './SyncEvents';
-import {useSelectedLines} from './useSelectedLines';
+} from './annotation';
+import {FileCollapseButton} from './file-collapse-button';
+import {HandleContext} from './handle-context';
+import {ShareStateContext} from './sync-events';
+import {useSelectedLines} from './use-selected-lines';
 
 type DiffLine = GetHoveredLineResult<'diff'>;
 type HoveredLine = GetHoveredLineResult<'file'> | DiffLine;

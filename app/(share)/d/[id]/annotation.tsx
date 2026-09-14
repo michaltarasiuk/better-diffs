@@ -8,23 +8,23 @@ import {getLineAnnotationName} from '@pierre/diffs';
 import {PlusIcon} from 'lucide-react';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
-import {useKeyDown} from '@/hooks/useKeyDown';
+import {useKeyDown} from '@/hooks/use-key-down';
 import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 import {authClient} from '@/auth/client';
 import {SessionContext} from '@/auth/context';
-import {GitHubIcon} from '@/auth/GitHubIcon';
+import {GitHubIcon} from '@/auth/github-icon';
 import type {AnnotationMetadata} from '@/diffs/options';
-import {CommentEditorSkeleton} from './CommentEditorSkeleton';
-import {ShareStoreContext} from './SyncEvents';
-import {useShareId} from './useShareId';
+import {CommentEditorSkeleton} from './comment-editor-skeleton';
+import {ShareStoreContext} from './sync-events';
+import {useShareId} from './use-share-id';
 
 function preloadCommentEditor() {
-  void import('./CommentEditor');
+  void import('./comment-editor');
 }
 
 const CommentEditor = dynamic(
-  () => import('./CommentEditor').then((module) => module.CommentEditor),
+  () => import('./comment-editor').then((module) => module.CommentEditor),
   {loading: () => <CommentEditorSkeleton />},
 );
 

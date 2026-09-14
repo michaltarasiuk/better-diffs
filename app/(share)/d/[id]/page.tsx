@@ -5,7 +5,7 @@ import {Spinner} from '@heroui/react';
 import {preloadFileTree} from '@pierre/trees/ssr';
 
 import {isDefined} from '@/utils/defined';
-import {SessionProvider} from '@/auth/SessionProvider';
+import {SessionProvider} from '@/auth/session-provider';
 import {openShare} from '@/db/shares';
 import {computeDiffStats} from '@/diffs/stats';
 import {
@@ -13,14 +13,14 @@ import {
   orderFilesByTree,
   prepareTreeHandoff,
 } from '@/trees/handoff';
-import {CodeViewProvider} from './CodeViewProvider';
-import {DiffFiles} from './DiffFiles';
-import {DiffStats} from './DiffStats';
-import {FilesDrawer} from './FilesDrawer';
-import {FilesPanel} from './FilesPanel';
-import {loadDiffSearchParams} from './searchParams';
-import {Sidebar} from './Sidebar';
-import {SyncEvents} from './SyncEvents';
+import {CodeViewProvider} from './code-view-provider';
+import {DiffFiles} from './diff-files';
+import {DiffStats} from './diff-stats';
+import {FilesDrawer} from './files-drawer';
+import {FilesPanel} from './files-panel';
+import {loadDiffSearchParams} from './search-params';
+import {Sidebar} from './sidebar';
+import {SyncEvents} from './sync-events';
 
 export const dynamic = 'force-dynamic';
 

@@ -11,11 +11,11 @@ import {
   useFileTreeSearch,
 } from '@pierre/trees/react';
 
-import {useKeyDown} from '@/hooks/useKeyDown';
+import {useKeyDown} from '@/hooks/use-key-down';
 import {isDefined} from '@/utils/defined';
 import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';
-import {HandleContext} from './handleContext';
-import {useSearchQuery} from './useSearchQuery';
+import {HandleContext} from './handle-context';
+import {useSearchQuery} from './use-search-query';
 
 interface FilesPanelProps {
   readonly handoff: TreeHandoff;

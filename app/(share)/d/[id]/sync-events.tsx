@@ -7,10 +7,10 @@ import {z} from 'zod';
 import {isDefined} from '@/utils/defined';
 import {getEvents, getLastSeq, putEvents} from '@/events/idb';
 import {ShareEvent} from '@/events/schemas';
-import type {FoldedShareState} from '@/events/shareState';
-import {EMPTY_FOLDED_STATE, ShareState} from '@/events/shareState';
-import {ErrorBoundary} from '@/components/ErrorBoundary';
-import {useShareId} from './useShareId';
+import type {FoldedShareState} from '@/events/share-state';
+import {EMPTY_FOLDED_STATE, ShareState} from '@/events/share-state';
+import {ErrorBoundary} from '@/components/error-boundary';
+import {useShareId} from './use-share-id';
 
 const OkResponse = z.instanceof(Response).properties({
   ok: z.literal(true),

@@ -1,7 +1,7 @@
 import {type NextRequest, NextResponse} from 'next/server';
 
 import {getEvents} from '@/db/events';
-import {loadEventsSearchParams} from './searchParams';
+import {loadEventsSearchParams} from './search-params';
 
 export async function GET(
   request: NextRequest,
