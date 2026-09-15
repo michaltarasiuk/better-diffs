@@ -23,12 +23,28 @@ function event(seq: number, shareId = SHARE_ID): ShareEvent {
   };
 }
 
+const DELETE_TIMEOUT_MS = 10_000;
+
 function deleteEventDb() {
   return new Promise<void>((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error(`Delete timed out: ${DB_NAME}`));
+    }, DELETE_TIMEOUT_MS);
+
     const request = indexedDB.deleteDatabase(DB_NAME);
-    request.onerror = () => reject(request.error);
-    request.onblocked = () => reject(new Error(`Delete blocked: ${DB_NAME}`));
-    request.onsuccess = () => resolve();
+    request.onerror = () => {
+      clearTimeout(timeout);
+      reject(request.error ?? new Error(`Delete failed: ${DB_NAME}`));
+    };
+    /*
+     * Delete stays pending until open connections close; rejecting here
+     * races cleanup in CI where close and delete can overlap briefly.
+     */
+    request.onblocked = () => {};
+    request.onsuccess = () => {
+      clearTimeout(timeout);
+      resolve();
+    };
   });
 }
 
@@ -38,29 +54,33 @@ function deleteEventDb() {
  */
 let idb: typeof import('./idb') | null = null;
 
-function importIdb() {
+async function closeImportedEventDb() {
+  if (!idb) {
+    return;
+  }
+  await idb.closeEventDb();
   idb = null;
-  vi.resetModules();
-  return import('./idb').then((module) => {
-    idb = module;
-    return module;
-  });
 }
 
-beforeEach(async () => {
-  await deleteEventDb();
-});
-
-afterEach(async () => {
-  if (idb) {
-    await idb.closeEventDb();
-    idb = null;
-  }
+async function resetEventDb() {
+  await closeImportedEventDb();
   vi.resetModules();
   await deleteEventDb();
-});
+}
 
-describe('putEvents', () => {
+async function importIdb() {
+  await closeImportedEventDb();
+  vi.resetModules();
+  const module = await import('./idb');
+  idb = module;
+  return module;
+}
+
+beforeEach(resetEventDb);
+
+afterEach(resetEventDb);
+
+describe('putEvents', {concurrent: false}, () => {
   it('stores events so they can be read back', async () => {
     const {getEvents, putEvents} = await importIdb();
 
@@ -95,7 +115,7 @@ describe('putEvents', () => {
   });
 });
 
-describe('getEvents', () => {
+describe('getEvents', {concurrent: false}, () => {
   it('returns an empty log for a share it has never seen', async () => {
     const {getEvents} = await importIdb();
 
@@ -144,7 +164,7 @@ describe('getEvents', () => {
   });
 });
 
-describe('getLastSeq', () => {
+describe('getLastSeq', {concurrent: false}, () => {
   it('returns null while the share has no events', async () => {
     const {getLastSeq} = await importIdb();
 

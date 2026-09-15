@@ -33,6 +33,8 @@ export default defineConfig({
         test: {
           name: 'browser',
           include: ['events/idb.test.ts'],
+          fileParallelism: false,
+          sequence: {concurrent: false},
           browser: {
             enabled: true,
             headless: true,
