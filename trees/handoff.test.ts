@@ -1,14 +1,19 @@
 import {describe, expect, it} from 'vitest';
 
 import {TREES_FOCUS_RING_UNSAFE_CSS} from '@/trees/unsafe-css';
-import {getTreeOptions, orderFilesByTree, prepareTreeHandoff} from './handoff';
+import {
+  getTreeOptions,
+  orderFilesByTree,
+  prepareTreeHandoff,
+  type TreeHandoffFile,
+} from './handoff';
 
-const DIFFS = [
+const DIFFS: TreeHandoffFile[] = [
   {name: 'src/b.ts', type: 'change'},
   {name: 'src/a.ts', type: 'change'},
   {name: 'README.md', type: 'change'},
   {name: 'src/deep/nested/x.ts', type: 'change'},
-] as const;
+];
 
 const tree = prepareTreeHandoff(DIFFS);
 

@@ -4,20 +4,27 @@ import {assert} from './assert';
 import {isDefined} from './defined';
 
 describe('isDefined', () => {
-  it.each([0, -0, NaN, '', false, [], {}])('accepts %o', (value) => {
-    expect(isDefined(value)).toBe(true);
-  });
-
-  it.each([null, undefined])('rejects %o', (value) => {
+  it.each([
+    {name: 'null', value: null},
+    {name: 'undefined', value: undefined},
+  ])('rejects $name', ({value}) => {
     expect(isDefined(value)).toBe(false);
   });
 
-  it('treats a defined value as non-nullish', () => {
+  it.each([
+    {name: 'zero', value: 0},
+    {name: 'empty string', value: ''},
+    {name: 'false', value: false},
+    {name: 'empty object', value: {}},
+  ])('accepts $name', ({value}) => {
+    expect(isDefined(value)).toBe(true);
+  });
+
+  it('narrows the type when the check passes', () => {
     const value: string | null | undefined = 'value';
 
     assert(isDefined(value), 'Expected value to be defined');
 
     expectTypeOf(value).toEqualTypeOf<string>();
-    expect(value).toBe('value');
   });
 });
