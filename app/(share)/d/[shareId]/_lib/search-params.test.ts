@@ -1,49 +1,41 @@
 import {describe, expect, it} from 'vitest';
 
-import {env} from '@/env';
 import {loadDiffSearchParams} from './search-params';
 
-const SEARCH_QUERY = 'query with spaces';
-
-const SELECTED_LINES = {
+const QUERY = 'query with spaces';
+const LINES = {
   id: 'src/a.ts',
   range: {start: 3, end: 9, side: 'additions'},
 };
 
-function load(params: Record<string, string> = {}) {
-  const url = new URL(`${env.BASE_URL}/d/share-id`);
-  url.search = new URLSearchParams(params).toString();
-  return loadDiffSearchParams(url);
-}
-
 describe('loadDiffSearchParams', () => {
-  it('returns null for both params on a bare URL', () => {
-    expect(load()).toEqual({q: null, lines: null});
+  it('defaults q and lines to null', () => {
+    expect(loadDiffSearchParams({})).toEqual({q: null, lines: null});
   });
 
   describe('q', () => {
-    it('decodes the search query from the URL', () => {
-      expect(load({q: SEARCH_QUERY}).q).toBe(SEARCH_QUERY);
+    it('passes through the value', () => {
+      expect(loadDiffSearchParams({q: QUERY}).q).toBe(QUERY);
     });
 
-    it('treats an empty q param as absent', () => {
-      expect(load({q: ''}).q).toBe(null);
+    it('returns null for an empty string', () => {
+      expect(loadDiffSearchParams({q: ''}).q).toBe(null);
     });
   });
 
   describe('lines', () => {
-    it('parses a valid SelectedLines payload', () => {
-      expect(load({lines: JSON.stringify(SELECTED_LINES)}).lines).toEqual(
-        SELECTED_LINES,
-      );
+    it('returns parsed SelectedLines', () => {
+      expect(
+        loadDiffSearchParams({lines: JSON.stringify(LINES)}).lines,
+      ).toEqual(LINES);
     });
 
     it.each([
       ['malformed JSON', '{not json'],
-      ['schema validation failure', '{"id":"a"}'],
-      ['the wrong JSON shape', '[]'],
+      ['incomplete SelectedLines', '{"id":"a"}'],
+      ['a non-object payload', '[]'],
     ])('returns null for %s', (_name, value) => {
-      expect(load({lines: value}).lines).toBe(null);
+      expect(loadDiffSearchParams({lines: value}).lines).toBe(null);
     });
   });
 });
