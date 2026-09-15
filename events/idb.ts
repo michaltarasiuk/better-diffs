@@ -48,18 +48,22 @@ export async function getLastSeq(shareId: string) {
 
   const tx = db.transaction(STORE_NAME, 'readonly');
   const cursor = await tx.store.index('by-share-seq').openCursor(range, 'prev');
+  const lastSeq = isDefined(cursor) ? cursor.value.seq : null;
   await tx.done;
 
-  if (!isDefined(cursor)) {
-    return null;
-  }
-  return cursor.value.seq;
+  return lastSeq;
 }
 
 export async function putEvents(events: readonly ShareEvent[]) {
   const db = await openEventDb();
   const tx = db.transaction(STORE_NAME, 'readwrite');
   await Promise.all([...events.map((event) => tx.store.put(event)), tx.done]);
+}
+
+export async function clearEvents() {
+  const db = await openEventDb();
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  await Promise.all([tx.store.clear(), tx.done]);
 }
 
 export async function closeEventDb() {

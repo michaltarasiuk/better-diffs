@@ -1,10 +1,15 @@
 import type {SerializedEditorState} from 'lexical';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterAll, beforeEach, describe, expect, it} from 'vitest';
 
-import type * as EventIdb from './idb';
+import {
+  clearEvents,
+  closeEventDb,
+  getEvents,
+  getLastSeq,
+  putEvents,
+} from './idb';
 import type {ShareEvent} from './schemas';
 
-const DB_NAME = 'better-diffs';
 const SHARE_ID = '00000000-0000-4000-8000-000000000001';
 const OTHER_SHARE_ID = '00000000-0000-4000-8000-0000000000ff';
 const THREAD_ID = '00000000-0000-4000-8000-000000000002';
@@ -24,78 +29,23 @@ function event(seq: number, shareId = SHARE_ID): ShareEvent {
   };
 }
 
-const DELETE_TIMEOUT_MS = 10_000;
+beforeEach(() => clearEvents());
 
-function deleteEventDb() {
-  return new Promise<void>((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      reject(new Error(`Delete timed out: ${DB_NAME}`));
-    }, DELETE_TIMEOUT_MS);
+afterAll(() => closeEventDb());
 
-    const request = indexedDB.deleteDatabase(DB_NAME);
-    request.onerror = () => {
-      clearTimeout(timeout);
-      reject(request.error ?? new Error(`Delete failed: ${DB_NAME}`));
-    };
-    /*
-     * Delete stays pending until open connections close; rejecting here
-     * races cleanup in CI where close and delete can overlap briefly.
-     */
-    request.onblocked = () => {};
-    request.onsuccess = () => {
-      clearTimeout(timeout);
-      resolve();
-    };
-  });
-}
-
-let idb: typeof EventIdb | null = null;
-
-async function closeImportedEventDb() {
-  if (!idb) {
-    return;
-  }
-  await idb.closeEventDb();
-  idb = null;
-}
-
-async function resetEventDb() {
-  await closeImportedEventDb();
-  vi.resetModules();
-  await deleteEventDb();
-}
-
-async function importIdb() {
-  await closeImportedEventDb();
-  vi.resetModules();
-  const idbModule = await import('./idb');
-  idb = idbModule;
-  return idbModule;
-}
-
-beforeEach(resetEventDb);
-
-afterEach(resetEventDb);
-
-describe('putEvents', {concurrent: false}, () => {
+describe('putEvents', () => {
   it('stores events so they can be read back', async () => {
-    const {getEvents, putEvents} = await importIdb();
-
     await putEvents([event(1), event(2)]);
 
     expect((await getEvents(SHARE_ID)).map((it) => it.seq)).toEqual([1, 2]);
   });
 
   it('accepts an empty batch', async () => {
-    const {getEvents, putEvents} = await importIdb();
-
     await expect(putEvents([])).resolves.toBeUndefined();
     await expect(getEvents(SHARE_ID)).resolves.toEqual([]);
   });
 
   it('replaces an event that is stored twice', async () => {
-    const {getEvents, putEvents} = await importIdb();
-
     await putEvents([event(1)]);
     await putEvents([event(1)]);
 
@@ -103,8 +53,6 @@ describe('putEvents', {concurrent: false}, () => {
   });
 
   it('keeps events written by separate calls', async () => {
-    const {getEvents, putEvents} = await importIdb();
-
     await putEvents([event(1)]);
     await putEvents([event(2)]);
 
@@ -112,24 +60,18 @@ describe('putEvents', {concurrent: false}, () => {
   });
 });
 
-describe('getEvents', {concurrent: false}, () => {
+describe('getEvents', () => {
   it('returns an empty log for a share it has never seen', async () => {
-    const {getEvents} = await importIdb();
-
     await expect(getEvents(SHARE_ID)).resolves.toEqual([]);
   });
 
   it('orders the log by sequence regardless of write order', async () => {
-    const {getEvents, putEvents} = await importIdb();
-
     await putEvents([event(3), event(1), event(2)]);
 
     expect((await getEvents(SHARE_ID)).map((it) => it.seq)).toEqual([1, 2, 3]);
   });
 
   it('only returns the events of the share it was asked for', async () => {
-    const {getEvents, putEvents} = await importIdb();
-
     await putEvents([event(1), event(1, OTHER_SHARE_ID)]);
 
     const events = await getEvents(SHARE_ID);
@@ -139,7 +81,6 @@ describe('getEvents', {concurrent: false}, () => {
   });
 
   it('round-trips the whole event', async () => {
-    const {getEvents, putEvents} = await importIdb();
     const stored = {...event(1), payload: {...event(1).payload}} as ShareEvent;
 
     await putEvents([stored]);
@@ -148,7 +89,6 @@ describe('getEvents', {concurrent: false}, () => {
   });
 
   it('keeps a body that is not plain JSON intact', async () => {
-    const {getEvents, putEvents} = await importIdb();
     const stored: ShareEvent = {
       ...event(1),
       type: 'comment.edited',
@@ -161,32 +101,24 @@ describe('getEvents', {concurrent: false}, () => {
   });
 });
 
-describe('getLastSeq', {concurrent: false}, () => {
+describe('getLastSeq', () => {
   it('returns null while the share has no events', async () => {
-    const {getLastSeq} = await importIdb();
-
     await expect(getLastSeq(SHARE_ID)).resolves.toBe(null);
   });
 
   it('returns the highest sequence stored for the share', async () => {
-    const {getLastSeq, putEvents} = await importIdb();
-
     await putEvents([event(1), event(3), event(2)]);
 
     await expect(getLastSeq(SHARE_ID)).resolves.toBe(3);
   });
 
   it('ignores the sequences of other shares', async () => {
-    const {getLastSeq, putEvents} = await importIdb();
-
     await putEvents([event(1), event(9, OTHER_SHARE_ID)]);
 
     await expect(getLastSeq(SHARE_ID)).resolves.toBe(1);
   });
 
   it('returns null when only other shares have events', async () => {
-    const {getLastSeq, putEvents} = await importIdb();
-
     await putEvents([event(9, OTHER_SHARE_ID)]);
 
     await expect(getLastSeq(SHARE_ID)).resolves.toBe(null);
