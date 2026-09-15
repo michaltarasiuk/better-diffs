@@ -61,3 +61,12 @@ export async function putEvents(events: readonly ShareEvent[]) {
   const tx = db.transaction(STORE_NAME, 'readwrite');
   await Promise.all([...events.map((event) => tx.store.put(event)), tx.done]);
 }
+
+export async function closeEventDb() {
+  if (!isDefined(dbPromise)) {
+    return;
+  }
+  const db = await dbPromise;
+  db.close();
+  dbPromise = null;
+}

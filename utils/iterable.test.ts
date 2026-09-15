@@ -1,0 +1,36 @@
+import {describe, expect, expectTypeOf, it} from 'vitest';
+
+import {isIterable} from './iterable';
+
+describe('isIterable', () => {
+  it.each([
+    {name: 'an array', value: []},
+    {name: 'a string', value: ''},
+    {name: 'a Map', value: new Map()},
+    {name: 'a Set', value: new Set()},
+    {name: 'a generator', value: (function* () {})()},
+    {name: 'a hand-rolled iterable', value: {*[Symbol.iterator]() {}}},
+  ])('accepts $name', ({value}) => {
+    expect(isIterable(value)).toBe(true);
+  });
+
+  it.each([
+    {name: 'null', value: null},
+    {name: 'undefined', value: undefined},
+    {name: 'a number', value: 0},
+    {name: 'a plain object', value: {}},
+    {name: 'an array-like object', value: {length: 1, 0: null}},
+    {name: 'a non-callable iterator key', value: {[Symbol.iterator]: null}},
+  ])('rejects $name', ({value}) => {
+    expect(isIterable(value)).toBe(false);
+  });
+
+  it('narrows unknown to iterable', () => {
+    const value: unknown = [];
+
+    if (isIterable(value)) {
+      expectTypeOf(value).toEqualTypeOf<Iterable<unknown>>();
+      expect(value).toEqual([]);
+    }
+  });
+});

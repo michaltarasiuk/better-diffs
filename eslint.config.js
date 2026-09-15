@@ -3,6 +3,7 @@ import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
 import reactCompiler from 'eslint-plugin-react-compiler';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import testingLibrary from 'eslint-plugin-testing-library';
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -67,6 +68,10 @@ const eslintConfig = defineConfig([
         },
       ],
     },
+  },
+  {
+    files: ['**/*.{test,spec}.{ts,tsx}'],
+    ...testingLibrary.configs['flat/react'],
   },
 ]);
 

@@ -8,6 +8,7 @@ import {isDiffAnnotation} from '@pierre/diffs';
 import {CodeView} from '@pierre/diffs/react';
 
 import {useIsMobile} from '@/hooks/use-media-query';
+import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 import type {AnnotationMetadata} from '@/diffs/options';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
@@ -154,9 +155,11 @@ export function DiffFiles({files}: DiffFilesProps) {
         <AddCommentButton
           onAddAnnotation={() => {
             const line = getHoveredLine();
-            if (isDefined(line) && isDiffLine(line)) {
-              addCommentForm(item.id, line);
-            }
+            assert(
+              isDefined(line) && isDiffLine(line),
+              'Hovered diff line missing',
+            );
+            addCommentForm(item.id, line);
           }}
         />
       )}

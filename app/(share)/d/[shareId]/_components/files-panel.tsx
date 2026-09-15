@@ -12,6 +12,7 @@ import {
 } from '@pierre/trees/react';
 
 import {useKeyDown} from '@/hooks/use-key-down';
+import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';
 import {useSearchQuery} from '../_hooks/use-search-query';
@@ -38,10 +39,18 @@ export function FilesPanel({
       void setSearchQuery(value);
     },
     onSelectionChange([selectedPath]) {
-      const id = isDefined(selectedPath) ? fileIdByPath[selectedPath] : null;
-      if (isDefined(id)) {
-        handleRef.current?.scrollTo({type: 'item', id, align: 'start'});
+      if (!isDefined(selectedPath)) {
+        return;
       }
+
+      const id = fileIdByPath[selectedPath];
+      assert(isDefined(id), `File id missing: ${selectedPath}`);
+
+      /*
+       * CodeView mounts inside Suspense, so the handle can still be null
+       * while the diff is loading.
+       */
+      handleRef.current?.scrollTo({type: 'item', id, align: 'start'});
     },
   });
   const search = useFileTreeSearch(model);
@@ -58,8 +67,10 @@ export function FilesPanel({
       return;
     }
     event.preventDefault();
-    searchInputRef.current?.focus();
-    searchInputRef.current?.select();
+    const searchInput = searchInputRef.current;
+    assert(isDefined(searchInput), 'Search input missing');
+    searchInput.focus();
+    searchInput.select();
   });
 
   return (

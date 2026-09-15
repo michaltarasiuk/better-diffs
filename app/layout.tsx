@@ -5,6 +5,7 @@ import Script from 'next/script';
 import {cn} from '@heroui/styles';
 import {NuqsAdapter} from 'nuqs/adapters/next/app';
 
+import {ToastProvider} from '@/app/_components/toast-provider';
 import {env} from '@/env';
 import {fontMono, fontSans} from '@/fonts';
 
@@ -29,6 +30,7 @@ export default function RootLayout({children}: LayoutProps<'/'>) {
       </head>
       <body className="h-full bg-background font-sans text-foreground">
         <NuqsAdapter>{children}</NuqsAdapter>
+        <ToastProvider />
       </body>
     </html>
   );

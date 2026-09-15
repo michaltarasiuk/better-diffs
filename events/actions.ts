@@ -28,7 +28,10 @@ export async function openThread(input: OpenThreadInput) {
 
   const {shareId, threadId, commentId, body, anchor} = input;
 
-  assert(anchor.shareId === shareId, 'Anchor shareId mismatch');
+  assert(
+    anchor.shareId === shareId,
+    `Anchor shareId ${anchor.shareId} does not match ${shareId}`,
+  );
 
   return appendEvents(shareId, session.user.id, [
     {

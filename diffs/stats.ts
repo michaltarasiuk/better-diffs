@@ -1,6 +1,10 @@
-import type {FileDiffMetadata} from '@pierre/diffs';
+import type {Hunk} from '@pierre/diffs';
 
-export function computeDiffStats(fileDiffs: readonly FileDiffMetadata[]) {
+export interface DiffStatsFile {
+  readonly hunks: readonly Pick<Hunk, 'additionLines' | 'deletionLines'>[];
+}
+
+export function computeDiffStats(fileDiffs: readonly DiffStatsFile[]) {
   let additions = 0;
   let deletions = 0;
 

@@ -8,13 +8,33 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
+## Testing
+
+Vitest with a default `node` environment. Add `// @vitest-environment jsdom` at the top of files that render components or hooks. IndexedDB tests run in Vitest browser mode (real Chromium via Playwright), not with `fake-indexeddb`.
+
+Colocate tests as `*.test.ts` or `*.test.tsx` beside the module under test. Prefer direct invocation over spinning up a server: route handlers take a `NextRequest`, Server Action logic is tested as plain async functions with `next/*` mocked at the module boundary.
+
+Use React Testing Library for UI: query by role or accessible name, assert user-visible behavior, avoid implementation details. Mock dependencies with `vi.mock` at import paths (`@/db/...`), not deep internals. Database tests use `createTestDb()` from `db/test-db.ts`. Build request and assertion URLs from `env.BASE_URL` (validated from `.env.test` via `vitest.setup.ts`).
+
+Do not unit-test async Server Components — extract testable logic or cover the route in Playwright. Test env vars live in `.env.test`; never read production secrets in tests.
+
+Skip Vite plugins unless a test fails without them: `resolve.tsconfigPaths` covers `@/*`, esbuild handles JSX from tsconfig.
+
 ## Commit messages
 
 Use imperative mood, sentence case, no trailing period. Start with a capital verb, lowercase the rest unless a proper noun.
 
+## Error messages
+
+Sentence case, no trailing period, no `Error:` prefix; the thrower already supplies that context. State what is wrong rather than what the caller should have done: `Thread already resolved`, not `You cannot resolve this twice`.
+
+When a message names a record, append the identifier after a colon: `Comment not found: ${commentId}`. Omit it only when there is nothing useful to attach. API responses use the same casing as a noun phrase describing the rejected input (`Invalid patches`, `Unauthorized`) because the text reaches the client verbatim.
+
+Errors constructed as test fixtures are opaque values, not messages, so they need none of this.
+
 ## Comments
 
-Only comment to record a constraint the code cannot show — an upstream quirk, a browser difference, a non-obvious ordering requirement. Never narrate what the code does, and never explain a change you just made.
+Only comment to record a constraint the code cannot show: an upstream quirk, a browser difference, a non-obvious ordering requirement. Never narrate what the code does, and never explain a change you just made.
 
 Always use block form: `/** … */` on an exported symbol so the note surfaces on hover at call sites, `/* … */` everywhere else. Open and close on their own lines, align a leading asterisk under the first one on every continuation line, wrap at 80 columns, and write full sentences. Lead with the external constraint, then the workaround it forces.
 

@@ -23,6 +23,20 @@ jobs:
 
       - run: bun run check
 
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v4
+
+      - run: bun install --frozen-lockfile
+
+      - run: bunx playwright install chromium --with-deps
+
+      - run: bun run test
+
   cli:
     name: CLI
     runs-on: ubuntu-latest

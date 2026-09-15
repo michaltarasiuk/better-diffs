@@ -9,8 +9,9 @@ import {
 import {TREES_FOCUS_RING_UNSAFE_CSS} from '@/trees/unsafe-css';
 
 export type TreeHandoff = ReturnType<typeof prepareTreeHandoff>;
+export type TreeHandoffFile = Pick<FileDiffMetadata, 'name' | 'type'>;
 
-export function prepareTreeHandoff(fileDiffs: readonly FileDiffMetadata[]) {
+export function prepareTreeHandoff(fileDiffs: readonly TreeHandoffFile[]) {
   const {paths} = prepareFileTreeInput(
     fileDiffs.map(({name}) => name),
     {flattenEmptyDirectories: true},
@@ -56,7 +57,7 @@ export function getTreeOptions(
 }
 
 function changeTypeToGitStatus(
-  changeType: 'change' | 'rename-pure' | 'rename-changed' | 'new' | 'deleted',
+  changeType: FileDiffMetadata['type'],
 ): GitStatus {
   switch (changeType) {
     case 'new':

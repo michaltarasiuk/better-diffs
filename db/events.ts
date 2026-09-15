@@ -34,7 +34,7 @@ export async function appendEvents(
       .where(eq(sharesTable.id, shareId))
       .groupBy(sharesTable.id);
 
-    assert(isDefined(share), 'Share not found');
+    assert(isDefined(share), `Share not found: ${shareId}`);
 
     const lastSeq = share.lastSeq ?? 0;
     const createdAt = new Date().toISOString();

@@ -84,7 +84,9 @@ interface AnnotationBodyProps {
 function AnnotationBody({filePath, onDismiss}: AnnotationBodyProps) {
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const {focusWithinProps} = useFocusWithin({
-    onFocusWithinChange: (isFocusWithin) => setIsFocusWithin(isFocusWithin),
+    onFocusWithinChange(isFocusWithin) {
+      setIsFocusWithin(isFocusWithin);
+    },
   });
 
   const {metadata} = use(AnnotationContext);
@@ -126,7 +128,7 @@ function CommentForm({filePath, onDismiss}: CommentFormProps) {
   const store = use(ShareStoreContext);
   const annotation = use(AnnotationContext);
 
-  assert(isFormAnnotation(annotation), 'Annotation must be a form');
+  assert(isFormAnnotation(annotation), 'Annotation is not a form');
 
   return (
     <CommentEditor
@@ -189,7 +191,7 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
   const [isSigningIn, setIsSigningIn] = useState(false);
 
   const annotation = use(AnnotationContext);
-  assert(isFormAnnotation(annotation), 'Annotation must be a form');
+  assert(isFormAnnotation(annotation), 'Annotation is not a form');
 
   return (
     <Card variant="secondary" className="m-2 mbs-1">
@@ -202,7 +204,7 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
 
       <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
         <Button
-          id={`${getLineAnnotationName(annotation)}-sign-in-cancel`}
+          id={getLineAnnotationName(annotation) + '-sign-in-cancel'}
           variant="ghost"
           size="sm"
           onPress={onDismiss}
@@ -210,7 +212,7 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
           Cancel
         </Button>
         <Button
-          id={`${getLineAnnotationName(annotation)}-sign-in-github`}
+          id={getLineAnnotationName(annotation) + '-sign-in-github'}
           size="sm"
           isPending={isSigningIn}
           onPress={async () => {
