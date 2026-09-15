@@ -35,12 +35,10 @@ function renderCopyCommand() {
   render(<CopyCommand label="Copy command" command={COMMAND} />);
 }
 
-/*
- * React Aria treats detail-0 clicks as keyboard activation, which is enough
- * to reach onPress without a full pointer sequence.
- */
+const REACT_ARIA_KEYBOARD_ACTIVATION = {detail: 0} as const;
+
 async function copy() {
-  fireEvent.click(button(), {detail: 0});
+  fireEvent.click(button(), REACT_ARIA_KEYBOARD_ACTIVATION);
   await act(async () => {
     await Promise.resolve();
   });
