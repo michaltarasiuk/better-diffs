@@ -147,7 +147,7 @@ describe('appendEvents', () => {
 
     await expect(
       appendEvents('00000000-0000-4000-8000-00000000dead', ACTOR_ID, [CREATED]),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/Share not found/);
 
     await expect(getEvents(SHARE_ID)).resolves.toHaveLength(1);
   });

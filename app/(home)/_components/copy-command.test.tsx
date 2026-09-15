@@ -126,14 +126,14 @@ describe('CopyCommand', () => {
   });
 
   it('selects the command and warns when the clipboard is unavailable', async () => {
-    writeText.mockRejectedValue(new Error());
+    writeText.mockRejectedValue(new Error('Clipboard write failed'));
     renderCopyCommand();
 
     await copy();
 
     expect(button()).toHaveAccessibleName('Selected');
     const selection = window.getSelection();
-    assert(isDefined(selection), 'expected selection');
+    assert(isDefined(selection), 'Selection missing');
     expect(selection.toString()).toBe(COMMAND);
     expect(toastWarning).toHaveBeenCalledWith('Clipboard unavailable', {
       description: 'Command selected. Press ⌘C or Ctrl+C to copy',
@@ -141,7 +141,7 @@ describe('CopyCommand', () => {
   });
 
   it('returns to its idle label after selecting the command', async () => {
-    writeText.mockRejectedValue(new Error());
+    writeText.mockRejectedValue(new Error('Clipboard write failed'));
     renderCopyCommand();
     await copy();
     expect(button()).toHaveAccessibleName('Selected');
@@ -152,7 +152,7 @@ describe('CopyCommand', () => {
   });
 
   it('warns to copy manually when the clipboard and selection are unavailable', async () => {
-    writeText.mockRejectedValue(new Error());
+    writeText.mockRejectedValue(new Error('Clipboard write failed'));
     vi.spyOn(window, 'getSelection').mockReturnValue(null);
     renderCopyCommand();
 

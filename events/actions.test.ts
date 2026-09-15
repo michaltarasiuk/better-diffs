@@ -7,7 +7,7 @@ const {appendEvents, getSession, unauthorized} = vi.hoisted(() => ({
   appendEvents: vi.fn(),
   getSession: vi.fn(),
   unauthorized: vi.fn(() => {
-    throw new Error('UNAUTHORIZED');
+    throw new Error('Unauthorized');
   }),
 }));
 
@@ -80,7 +80,7 @@ describe('openThread', () => {
   it('rejects an anonymous caller before validating anything', async () => {
     getSession.mockResolvedValue(null);
 
-    await expect(openThread(input())).rejects.toThrow('UNAUTHORIZED');
+    await expect(openThread(input())).rejects.toThrow('Unauthorized');
 
     expect(unauthorized).toHaveBeenCalledOnce();
     expect(appendEvents).not.toHaveBeenCalled();

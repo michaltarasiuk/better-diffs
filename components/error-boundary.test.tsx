@@ -7,7 +7,7 @@ import {ErrorBoundary} from './error-boundary';
 
 function ThrowingChild({shouldThrow}: {readonly shouldThrow: boolean}) {
   if (shouldThrow) {
-    throw new Error();
+    throw new Error('Child render failed');
   }
   return <span>content</span>;
 }

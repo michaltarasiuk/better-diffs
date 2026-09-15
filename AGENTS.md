@@ -26,7 +26,7 @@ Use imperative mood, sentence case, no trailing period. Start with a capital ver
 
 ## Error messages
 
-Sentence case, no trailing period, no `Error:` prefix; the thrower already supplies that context. State what is wrong rather than what the caller should have done: `Thread already resolved`, not `You cannot resolve this twice`.
+Sentence case with a leading capital, no trailing period, no `Error:` prefix; the thrower already supplies that context. State what is wrong rather than what the caller should have done: `Thread already resolved`, not `You cannot resolve this twice`.
 
 When a message names a record, append the identifier after a colon: `Comment not found: ${commentId}`. Omit it only when there is nothing useful to attach. API responses use the same casing as a noun phrase describing the rejected input (`Invalid patches`, `Unauthorized`) because the text reaches the client verbatim.
 

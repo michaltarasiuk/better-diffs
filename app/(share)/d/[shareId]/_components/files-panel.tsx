@@ -44,7 +44,7 @@ export function FilesPanel({
       }
 
       const id = fileIdByPath[selectedPath];
-      assert(isDefined(id), `File id missing: ${selectedPath}`);
+      assert(isDefined(id), `File not found: ${selectedPath}`);
 
       handleRef.current?.scrollTo({type: 'item', id, align: 'start'});
     },

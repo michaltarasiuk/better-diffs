@@ -5,7 +5,7 @@ import {isDefined} from './defined';
 
 describe('assert', () => {
   it('returns when the condition is true', () => {
-    assert(true, 'unreachable');
+    assert(true, 'Unreachable');
   });
 
   it('throws with the given message when the condition is false', () => {

@@ -117,7 +117,7 @@ describe('POST', () => {
       'Content-Type': 'text/plain',
       Accept: 'text/plain',
     });
-    vi.spyOn(request, 'text').mockRejectedValue(new Error('connection reset'));
+    vi.spyOn(request, 'text').mockRejectedValue(new Error('Connection reset'));
 
     const response = await POST(request);
 
