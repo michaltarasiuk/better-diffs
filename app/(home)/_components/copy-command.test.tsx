@@ -2,6 +2,7 @@
 
 import type * as HerouiReact from '@heroui/react';
 import {act, fireEvent, render, screen} from '@testing-library/react';
+import dedent from 'dedent';
 import {
   afterEach,
   beforeAll,
@@ -11,8 +12,6 @@ import {
   it,
   vi,
 } from 'vitest';
-
-import dedent from 'dedent';
 
 import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
