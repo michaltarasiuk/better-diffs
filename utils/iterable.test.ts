@@ -4,8 +4,8 @@ import {isIterable} from './iterable';
 
 describe('isIterable', () => {
   it.each([
-    {name: 'an array', value: []},
     {name: 'a string', value: ''},
+    {name: 'an array', value: []},
     {name: 'a Map', value: new Map()},
     {name: 'a Set', value: new Set()},
     {name: 'a generator', value: (function* () {})()},
@@ -15,12 +15,12 @@ describe('isIterable', () => {
   });
 
   it.each([
-    {name: 'null', value: null},
-    {name: 'undefined', value: undefined},
-    {name: 'a number', value: 0},
     {name: 'a plain object', value: {}},
     {name: 'an array-like object', value: {length: 1, 0: null}},
     {name: 'a non-callable iterator key', value: {[Symbol.iterator]: null}},
+    {name: 'null', value: null},
+    {name: 'undefined', value: undefined},
+    {name: 'a number', value: 0},
   ])('rejects $name', ({value}) => {
     expect(isIterable(value)).toBe(false);
   });
