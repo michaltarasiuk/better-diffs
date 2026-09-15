@@ -88,13 +88,13 @@ export default function HomePage() {
         </Typography.Heading>
 
         <Suspense fallback={usageDemoFallback}>
-          <UsageDemo />
+          <Usage />
         </Suspense>
       </section>
     </main>
   );
 }
 
-async function UsageDemo() {
+async function Usage() {
   return <PatchDiff {...await preloadedDemoPatchDiff} className="w-full" />;
 }
