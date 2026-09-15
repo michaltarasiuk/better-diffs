@@ -87,11 +87,9 @@ export default function HomePage() {
           Usage
         </Typography.Heading>
 
-        <div className="overflow-hidden rounded-field border border-border">
-          <Suspense fallback={usageDemoFallback}>
-            <UsageDemo />
-          </Suspense>
-        </div>
+        <Suspense fallback={usageDemoFallback}>
+          <UsageDemo />
+        </Suspense>
       </section>
     </main>
   );
