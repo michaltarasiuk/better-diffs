@@ -49,10 +49,6 @@ function deleteEventDb() {
   });
 }
 
-/*
- * idb.ts memoises its database handle at module scope, so each test needs a
- * fresh module alongside a fresh IndexedDB to start from an empty store.
- */
 let idb: typeof EventIdb | null = null;
 
 async function closeImportedEventDb() {

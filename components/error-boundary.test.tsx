@@ -23,10 +23,6 @@ function renderBoundary(props: {shouldThrow: boolean; resetKeys?: unknown[]}) {
   return {rerender: (next: typeof props) => rerender(ui(next))};
 }
 
-/*
- * React logs every error it hands to a boundary, which would drown the
- * reporter in expected stack traces.
- */
 beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });

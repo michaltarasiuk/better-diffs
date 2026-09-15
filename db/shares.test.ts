@@ -6,10 +6,6 @@ import {patches as patchesTable, shares as sharesTable} from './schema';
 import type {TestDb} from './test-db';
 import {createTestDb} from './test-db';
 
-/*
- * db/shares.ts binds the shared connection at import time, so the mock has
- * to hand back whichever in-memory database the running test just built.
- */
 const dbRef = vi.hoisted(() => ({current: null as unknown}));
 
 vi.mock('@/db/db', () => ({

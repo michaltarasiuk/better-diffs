@@ -5,10 +5,6 @@ import type {ShareEventPayload} from '@/events/schemas';
 import type {TestDb} from './test-db';
 import {ACTOR_ID, createTestDb, seedActor, seedShare} from './test-db';
 
-/*
- * db/events.ts binds the shared connection at import time, so the mock has
- * to hand back whichever in-memory database the running test just built.
- */
 const dbRef = vi.hoisted(() => ({current: null as unknown}));
 
 vi.mock('@/db/db', () => ({

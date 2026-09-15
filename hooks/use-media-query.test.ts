@@ -23,10 +23,6 @@ function listFor(query: string) {
   return list;
 }
 
-/*
- * `useMediaQuery` caches one MediaQueryList per query at module scope, so
- * every test needs a fresh copy of the module to start from a cold cache.
- */
 async function importUseIsMobile() {
   const {useIsMobile} = await import('./use-media-query');
   return useIsMobile;
