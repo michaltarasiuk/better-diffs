@@ -46,10 +46,6 @@ export function FilesPanel({
       const id = fileIdByPath[selectedPath];
       assert(isDefined(id), `File id missing: ${selectedPath}`);
 
-      /*
-       * CodeView mounts inside Suspense, so the handle can still be null
-       * while the diff is loading.
-       */
       handleRef.current?.scrollTo({type: 'item', id, align: 'start'});
     },
   });
