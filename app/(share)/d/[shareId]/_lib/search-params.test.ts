@@ -9,7 +9,7 @@ const LINES = {
 };
 
 describe('loadDiffSearchParams', () => {
-  it('defaults q and lines to null', () => {
+  it('defaults query and line selection to null', () => {
     expect(loadDiffSearchParams({})).toEqual({q: null, lines: null});
   });
 
@@ -24,7 +24,7 @@ describe('loadDiffSearchParams', () => {
   });
 
   describe('lines', () => {
-    it('returns parsed SelectedLines', () => {
+    it('parses a valid line selection from JSON', () => {
       expect(
         loadDiffSearchParams({lines: JSON.stringify(LINES)}).lines,
       ).toEqual(LINES);

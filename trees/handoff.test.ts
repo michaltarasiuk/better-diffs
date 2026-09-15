@@ -13,7 +13,7 @@ const DIFFS = [
 const tree = prepareTreeHandoff(DIFFS);
 
 describe('prepareTreeHandoff', () => {
-  it('sorts paths for the tree while keeping git status in diff order', () => {
+  it('sorts paths for the tree without reordering git status', () => {
     expect(tree).toEqual({
       paths: ['src/deep/nested/x.ts', 'src/a.ts', 'src/b.ts', 'README.md'],
       gitStatus: [
@@ -70,7 +70,7 @@ describe('orderFilesByTree', () => {
 });
 
 describe('getTreeOptions', () => {
-  it('builds tree options from the handoff', () => {
+  it('wires handoff paths and git status into tree options', () => {
     const options = getTreeOptions(tree, {searchQuery: 'index'});
 
     expect(options).toMatchObject({

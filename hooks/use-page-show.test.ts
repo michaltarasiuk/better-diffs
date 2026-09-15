@@ -16,8 +16,9 @@ describe('usePageShow', () => {
 
     showPage();
 
-    expect(onPageShow).toHaveBeenCalledOnce();
-    expect(onPageShow).toHaveBeenCalledWith(expect.any(PageTransitionEvent));
+    expect(onPageShow).toHaveBeenCalledExactlyOnceWith(
+      expect.any(PageTransitionEvent),
+    );
   });
 
   it('tells the handler when the page came from the back/forward cache', () => {

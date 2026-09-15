@@ -63,7 +63,7 @@ describe('POST', () => {
     });
   });
 
-  it('creates a share from patch text and returns plain text', async () => {
+  it('returns a plain-text share URL for patch text input', async () => {
     const response = await POST(
       request(PATCH, {'Content-Type': 'text/plain', Accept: 'text/plain'}),
     );

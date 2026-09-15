@@ -43,7 +43,7 @@ beforeEach(() => {
 });
 
 describe('GET', () => {
-  it('returns events for the share', async () => {
+  it('returns share events as JSON with no-store caching', async () => {
     const response = await GET(request(), context());
 
     expect(response.status).toBe(200);

@@ -1,5 +1,6 @@
 import {describe, expect, expectTypeOf, it} from 'vitest';
 
+import {assert} from './assert';
 import {isDefined} from './defined';
 
 describe('isDefined', () => {
@@ -11,12 +12,12 @@ describe('isDefined', () => {
     expect(isDefined(value)).toBe(false);
   });
 
-  it('narrows away null and undefined', () => {
+  it('treats a defined value as non-nullish', () => {
     const value: string | null | undefined = 'value';
 
-    if (isDefined(value)) {
-      expectTypeOf(value).toEqualTypeOf<string>();
-      expect(value).toBe('value');
-    }
+    assert(isDefined(value), 'Expected value to be defined');
+
+    expectTypeOf(value).toEqualTypeOf<string>();
+    expect(value).toBe('value');
   });
 });

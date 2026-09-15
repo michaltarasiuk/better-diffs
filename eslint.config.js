@@ -1,9 +1,12 @@
+import vitest from '@vitest/eslint-plugin';
 import {defineConfig, globalIgnores} from 'eslint/config';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
 import reactCompiler from 'eslint-plugin-react-compiler';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import testingLibrary from 'eslint-plugin-testing-library';
+
+const testingLibraryReact = testingLibrary.configs['flat/react'];
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -71,7 +74,20 @@ const eslintConfig = defineConfig([
   },
   {
     files: ['**/*.{test,spec}.{ts,tsx}'],
-    ...testingLibrary.configs['flat/react'],
+    plugins: {
+      vitest,
+      ...testingLibraryReact.plugins,
+    },
+    languageOptions: {
+      globals: {...vitest.environments.env.globals},
+    },
+    rules: {
+      ...vitest.configs.recommended.rules,
+      ...testingLibraryReact.rules,
+      'vitest/consistent-test-filename': 'error',
+      'vitest/consistent-test-it': ['error', {fn: 'it', withinDescribe: 'it'}],
+      'vitest/max-nested-describe': ['error', {max: 2}],
+    },
   },
 ]);
 

@@ -1,6 +1,7 @@
 import type {SerializedEditorState} from 'lexical';
 import {describe, expect, expectTypeOf, it, vi} from 'vitest';
 
+import {assert} from '@/utils/assert';
 import type {
   Anchor,
   CommentCreatedPayload,
@@ -213,7 +214,7 @@ describe('getSnapshot', () => {
 });
 
 describe('optimistic', () => {
-  it('surfaces an unconfirmed thread and marks its id pending', () => {
+  it('marks an optimistic thread as pending', () => {
     const state = new ShareState();
 
     const pendingId = state.optimistic(optimisticEvent(opened('thread-1')));
@@ -285,14 +286,21 @@ describe('optimistic', () => {
     );
   });
 
-  it('drops a pending event on reject and reports whether it existed', () => {
+  it('returns true when rejecting a pending event', () => {
     const state = new ShareState();
     const pendingId = state.optimistic(optimisticEvent(opened('thread-1')));
 
     expect(state.reject(pendingId)).toBe(true);
     expect(state.getSnapshot().threads.has('thread-1')).toBe(false);
+  });
 
+  it('returns false when rejecting an unknown pending id', () => {
+    const state = new ShareState();
+    const pendingId = state.optimistic(optimisticEvent(opened('thread-1')));
+
+    state.reject(pendingId);
     const snapshot = state.getSnapshot();
+
     expect(state.reject(pendingId)).toBe(false);
     expect(state.getSnapshot()).toBe(snapshot);
   });
@@ -544,20 +552,27 @@ describe('reconciliation', () => {
 });
 
 describe('subscribe', () => {
-  it('notifies subscribers on commit and stops once unsubscribed', () => {
+  it('notifies subscribers on commit', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    const subscriber = vi.fn();
+
+    state.subscribe(subscriber);
+    state.ingest(log(opened('thread-1')));
+
+    expect(subscriber).toHaveBeenCalledOnce();
+  });
+
+  it('stops notifying after unsubscribe', () => {
     const log = eventLog();
     const state = new ShareState();
     const subscriber = vi.fn();
 
     const unsubscribe = state.subscribe(subscriber);
+    unsubscribe();
     state.ingest(log(opened('thread-1')));
 
-    expect(subscriber).toHaveBeenCalledOnce();
-
-    unsubscribe();
-    state.ingest(log(opened('thread-2')));
-
-    expect(subscriber).toHaveBeenCalledOnce();
+    expect(subscriber).not.toHaveBeenCalled();
   });
 });
 
@@ -574,13 +589,16 @@ describe('isType', () => {
     expect(isType('thread.opened', payload)).toBe(false);
   });
 
-  it('narrows the payload to the requested variant', () => {
+  it('treats a matching payload as the requested variant', () => {
     const payload: ShareEventPayload = created('thread-1', 'comment-1');
 
-    if (isType('comment.created', payload)) {
-      expectTypeOf(payload).toEqualTypeOf<CommentCreatedPayload>();
-      expect(payload.commentId).toBe('comment-1');
-    }
+    assert(
+      isType('comment.created', payload),
+      'Expected comment.created payload',
+    );
+
+    expectTypeOf(payload).toEqualTypeOf<CommentCreatedPayload>();
+    expect(payload.commentId).toBe('comment-1');
   });
 });
 

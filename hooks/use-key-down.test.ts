@@ -16,8 +16,9 @@ describe('useKeyDown', () => {
 
     pressKey('k');
 
-    expect(onKeyDown).toHaveBeenCalledOnce();
-    expect(onKeyDown).toHaveBeenCalledWith(expect.any(KeyboardEvent));
+    expect(onKeyDown).toHaveBeenCalledExactlyOnceWith(
+      expect.any(KeyboardEvent),
+    );
   });
 
   it('calls the newest handler without resubscribing', () => {

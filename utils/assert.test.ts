@@ -12,7 +12,7 @@ describe('assert', () => {
     expect(() => assert(false, 'Share not found')).toThrow('Share not found');
   });
 
-  it('narrows the asserted value', () => {
+  it('treats a passing assertion as the narrowed type', () => {
     const value: string | null = 'value';
 
     assert(isDefined(value), 'Value missing');

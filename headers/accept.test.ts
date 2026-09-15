@@ -147,11 +147,16 @@ describe('Accept mutation', () => {
     expect(accept.mediaTypes).toEqual(['application/json', 'text/html']);
   });
 
-  it('looks up, deletes and tests media types case-insensitively', () => {
-    const accept = Accept.from('text/html');
+  it('returns weights case-insensitively from get', () => {
+    expect(Accept.from('text/html').get('TEXT/HTML')).toBe(1);
+  });
 
-    expect(accept.get('TEXT/HTML')).toBe(1);
-    expect(accept.has('TEXT/HTML')).toBe(true);
+  it('reports membership case-insensitively from has', () => {
+    expect(Accept.from('text/html').has('TEXT/HTML')).toBe(true);
+  });
+
+  it('removes entries case-insensitively from delete', () => {
+    const accept = Accept.from('text/html');
 
     accept.delete('TEXT/HTML');
 

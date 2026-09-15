@@ -82,7 +82,7 @@ afterEach(() => {
 });
 
 describe('CopyCommand', () => {
-  it('shows the command next to a labelled button', () => {
+  it('renders the command with an accessible copy button', () => {
     renderCopyCommand();
 
     expect(command().textContent).toBe(COMMAND);
@@ -125,7 +125,7 @@ describe('CopyCommand', () => {
     expect(button()).toHaveAccessibleName('Copied');
   });
 
-  it('selects the command and warns when the clipboard is unavailable', async () => {
+  it('falls back to selecting the command when the clipboard is unavailable', async () => {
     writeText.mockRejectedValue(new Error('Clipboard write failed'));
     renderCopyCommand();
 

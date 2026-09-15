@@ -47,7 +47,7 @@ beforeEach(() => {
 });
 
 describe('openThread', () => {
-  it('appends the thread and its first comment as one batch', async () => {
+  it('appends thread.opened and comment.created in one batch', async () => {
     await openThread(input());
 
     expect(appendEvents).toHaveBeenCalledWith(SHARE_ID, ACTOR_ID, [

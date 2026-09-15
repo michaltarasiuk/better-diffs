@@ -55,7 +55,7 @@ beforeEach(async () => {
 });
 
 describe('createShare', () => {
-  it('stores the share and hands back its id', async () => {
+  it('returns the id of the stored share', async () => {
     const shareId = await createShare([[file('src/a.ts')]]);
 
     await expect(

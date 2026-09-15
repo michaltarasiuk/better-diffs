@@ -81,7 +81,7 @@ describe('appendEvents', () => {
     expect(inserted.map((event) => event.seq)).toEqual([1]);
   });
 
-  it('records the actor, type and payload as given', async () => {
+  it('persists the actor, type, and payload unchanged', async () => {
     const [event] = await appendEvents(SHARE_ID, ACTOR_ID, [OPENED]);
 
     expect(event).toMatchObject({
