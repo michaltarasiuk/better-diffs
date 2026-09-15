@@ -3,7 +3,6 @@ import dedent from 'dedent';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
-
 import {OPTIONS, POST} from './route';
 
 const {createShare} = vi.hoisted(() => ({createShare: vi.fn<() => string>()}));

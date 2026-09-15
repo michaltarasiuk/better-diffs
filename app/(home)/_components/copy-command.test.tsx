@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 
+import type * as HerouiReact from '@heroui/react';
 import {act, fireEvent, render, screen} from '@testing-library/react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
-
 import {COPIED_FEEDBACK_MS, CopyCommand} from './copy-command';
 
 const COMMAND = 'better-diffs --base main -- src/';
@@ -17,7 +17,7 @@ const {toastWarning} = vi.hoisted(() => ({
 }));
 
 vi.mock('@heroui/react', async (importOriginal) => {
-  const original = await importOriginal<typeof import('@heroui/react')>();
+  const original = (await importOriginal()) as typeof HerouiReact;
   return {
     ...original,
     toast: {

@@ -1,6 +1,7 @@
 import type {SerializedEditorState} from 'lexical';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
+import type * as EventIdb from './idb';
 import type {ShareEvent} from './schemas';
 
 const DB_NAME = 'better-diffs';
@@ -52,7 +53,7 @@ function deleteEventDb() {
  * idb.ts memoises its database handle at module scope, so each test needs a
  * fresh module alongside a fresh IndexedDB to start from an empty store.
  */
-let idb: typeof import('./idb') | null = null;
+let idb: typeof EventIdb | null = null;
 
 async function closeImportedEventDb() {
   if (!idb) {
@@ -71,9 +72,9 @@ async function resetEventDb() {
 async function importIdb() {
   await closeImportedEventDb();
   vi.resetModules();
-  const module = await import('./idb');
-  idb = module;
-  return module;
+  const idbModule = await import('./idb');
+  idb = idbModule;
+  return idbModule;
 }
 
 beforeEach(resetEventDb);

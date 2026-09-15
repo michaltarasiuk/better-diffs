@@ -1,7 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
 import {env} from '@/env';
-
 import {loadDiffSearchParams} from './search-params';
 
 const SEARCH_QUERY = 'query with spaces';

@@ -1,6 +1,6 @@
 'use client';
 
-import {type ComponentRef, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {Button, toast} from '@heroui/react';
 import {CheckIcon, CopyIcon} from 'lucide-react';
 
@@ -30,7 +30,7 @@ function selectNodeContents(node: HTMLElement): boolean {
 
 export function CopyCommand({label, command}: CopyCommandProps) {
   const [feedback, setFeedback] = useState<CopyFeedback>('idle');
-  const commandRef = useRef<ComponentRef<'code'>>(null);
+  const commandRef = useRef<React.ComponentRef<'code'>>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   const buttonLabel =

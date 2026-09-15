@@ -5,9 +5,9 @@ import Script from 'next/script';
 import {cn} from '@heroui/styles';
 import {NuqsAdapter} from 'nuqs/adapters/next/app';
 
-import {ToastProvider} from '@/app/_components/toast-provider';
 import {env} from '@/env';
 import {fontMono, fontSans} from '@/fonts';
+import {ToastProvider} from '@/app/_components/toast-provider';
 
 export const metadata: Metadata = {
   title: 'Better Diffs',

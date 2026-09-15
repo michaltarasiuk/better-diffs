@@ -3,7 +3,6 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
 import {isDefined} from '@/utils/defined';
-
 import {GET} from './route';
 
 const {deleteExpiredShares} = vi.hoisted(() => ({

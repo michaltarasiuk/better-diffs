@@ -1,8 +1,8 @@
 import {NextRequest} from 'next/server';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-import type {ShareEvent} from '@/events/schemas';
 import {env} from '@/env';
+import type {ShareEvent} from '@/events/schemas';
 import {GET} from './route';
 
 const {getEvents} = vi.hoisted(() => ({

@@ -1,7 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
 import {TREES_FOCUS_RING_UNSAFE_CSS} from '@/trees/unsafe-css';
-
 import {getTreeOptions, orderFilesByTree, prepareTreeHandoff} from './handoff';
 
 const DIFFS = [

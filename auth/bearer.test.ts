@@ -2,7 +2,6 @@ import {describe, expect, it} from 'vitest';
 
 import {env} from '@/env';
 import {isDefined} from '@/utils/defined';
-
 import {verifyBearerSecret} from './bearer';
 
 const SECRET = 'cron-secret';
