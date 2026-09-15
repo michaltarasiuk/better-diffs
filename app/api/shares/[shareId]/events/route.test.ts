@@ -13,16 +13,6 @@ vi.mock('@/db/events', () => ({getEvents}));
 
 const SHARE_ID = '00000000-0000-4000-8000-000000000001';
 
-function get(search = '') {
-  return new NextRequest(
-    `${env.BASE_URL}/api/shares/${SHARE_ID}/events${search}`,
-  );
-}
-
-function context() {
-  return {params: Promise.resolve({shareId: SHARE_ID})};
-}
-
 const EVENT = {
   id: '00000000-0000-4000-8000-000000000002',
   shareId: SHARE_ID,
@@ -37,51 +27,56 @@ const EVENT = {
   createdAt: '2026-01-01T00:00:00.000Z',
 } as const satisfies ShareEvent;
 
+function request(search = '') {
+  return new NextRequest(
+    `${env.BASE_URL}/api/shares/${SHARE_ID}/events${search}`,
+  );
+}
+
+function context() {
+  return {params: Promise.resolve({shareId: SHARE_ID})};
+}
+
 beforeEach(() => {
   getEvents.mockReset();
   getEvents.mockResolvedValue([EVENT]);
 });
 
 describe('GET', () => {
-  it('returns the events for the share', async () => {
-    const response = await GET(get(), context());
+  it('returns events for the share', async () => {
+    const response = await GET(request(), context());
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ok: true, events: [EVENT]});
-  });
-
-  it('never lets a response be cached', async () => {
-    const response = await GET(get(), context());
-
+    expect(await response.json()).toEqual({ok: true, events: [EVENT]});
     expect(response.headers.get('Cache-Control')).toBe('no-store');
   });
 
   it('starts from the beginning when no cursor is given', async () => {
-    await GET(get(), context());
+    await GET(request(), context());
 
     expect(getEvents).toHaveBeenCalledWith(SHARE_ID, 0);
   });
 
   it('forwards the afterSeq cursor', async () => {
-    await GET(get('?afterSeq=7'), context());
+    await GET(request('?afterSeq=7'), context());
 
     expect(getEvents).toHaveBeenCalledWith(SHARE_ID, 7);
   });
 
   it.each([
-    {name: 'a non-numeric cursor', search: '?afterSeq=abc'},
-    {name: 'an empty cursor', search: '?afterSeq='},
+    {name: 'non-numeric cursor', search: '?afterSeq=abc'},
+    {name: 'empty cursor', search: '?afterSeq='},
   ])('falls back to the beginning for $name', async ({search}) => {
-    await GET(get(search), context());
+    await GET(request(search), context());
 
     expect(getEvents).toHaveBeenCalledWith(SHARE_ID, 0);
   });
 
-  it('returns an empty log without failing', async () => {
+  it('returns an empty event list', async () => {
     getEvents.mockResolvedValue([]);
 
-    const response = await GET(get(), context());
+    const response = await GET(request(), context());
 
-    await expect(response.json()).resolves.toEqual({ok: true, events: []});
+    expect(await response.json()).toEqual({ok: true, events: []});
   });
 });
