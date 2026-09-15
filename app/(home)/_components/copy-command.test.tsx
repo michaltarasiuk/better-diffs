@@ -2,13 +2,26 @@
 
 import type * as HerouiReact from '@heroui/react';
 import {act, fireEvent, render, screen} from '@testing-library/react';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
+
+import dedent from 'dedent';
 
 import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 import {COPIED_FEEDBACK_MS, CopyCommand} from './copy-command';
 
-const COMMAND = 'better-diffs --base main -- src/';
+const COMMAND = dedent`
+  BASE_URL='${process.env.BASE_URL}'
+  curl -fsSL "$BASE_URL/install.sh" | sh
+`;
 
 const writeText = vi.fn<(text: string) => Promise<void>>();
 
@@ -31,6 +44,10 @@ function button() {
   return screen.getByRole('button');
 }
 
+function command() {
+  return button().previousElementSibling as HTMLElement;
+}
+
 function renderCopyCommand() {
   render(<CopyCommand label="Copy command" command={COMMAND} />);
 }
@@ -44,19 +61,20 @@ async function copy() {
   });
 }
 
-beforeEach(() => {
-  vi.useFakeTimers();
-  writeText.mockReset();
-  toastWarning.mockReset();
-  writeText.mockResolvedValue();
-  /*
-   * jsdom ships no Clipboard implementation, so navigator.clipboard has to
-   * be installed before the component can reach for it.
-   */
+beforeAll(() => {
   Object.defineProperty(navigator, 'clipboard', {
     value: {writeText},
     configurable: true,
   });
+});
+
+beforeEach(() => {
+  vi.useFakeTimers();
+
+  writeText.mockReset();
+  writeText.mockResolvedValue();
+
+  toastWarning.mockReset();
 });
 
 afterEach(() => {
@@ -68,7 +86,7 @@ describe('CopyCommand', () => {
   it('shows the command next to a labelled button', () => {
     renderCopyCommand();
 
-    expect(screen.getByText(COMMAND)).toBeInTheDocument();
+    expect(command().textContent).toBe(COMMAND);
     expect(button()).toHaveAccessibleName('Copy command');
   });
 
@@ -109,7 +127,7 @@ describe('CopyCommand', () => {
   });
 
   it('selects the command and warns when the clipboard is unavailable', async () => {
-    writeText.mockRejectedValue(new Error('error'));
+    writeText.mockRejectedValue(new Error());
     renderCopyCommand();
 
     await copy();
@@ -124,7 +142,7 @@ describe('CopyCommand', () => {
   });
 
   it('returns to its idle label after selecting the command', async () => {
-    writeText.mockRejectedValue(new Error('error'));
+    writeText.mockRejectedValue(new Error());
     renderCopyCommand();
     await copy();
     expect(button()).toHaveAccessibleName('Selected');
@@ -135,7 +153,7 @@ describe('CopyCommand', () => {
   });
 
   it('warns to copy manually when the clipboard and selection are unavailable', async () => {
-    writeText.mockRejectedValue(new Error('error'));
+    writeText.mockRejectedValue(new Error());
     vi.spyOn(window, 'getSelection').mockReturnValue(null);
     renderCopyCommand();
 

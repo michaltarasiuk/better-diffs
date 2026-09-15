@@ -40,7 +40,7 @@ const preloadedDemoPatchDiff = preloadPatchDiff({
   options: PATCH_DIFF_OPTIONS,
 });
 
-const usageDemoFallback = (
+const demoFallback = (
   <Skeleton
     aria-busy="true"
     aria-label="Loading diff preview"
@@ -87,7 +87,7 @@ export default function HomePage() {
           Usage
         </Typography.Heading>
 
-        <Suspense fallback={usageDemoFallback}>
+        <Suspense fallback={demoFallback}>
           <Usage />
         </Suspense>
       </section>
