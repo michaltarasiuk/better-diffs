@@ -9,7 +9,7 @@ const {createShare} = vi.hoisted(() => ({createShare: vi.fn<() => string>()}));
 
 vi.mock('@/db/shares', () => ({createShare}));
 
-const ENDPOINT = `${env.BASE_URL}/api/diffs`;
+const SHARE_ID = 'share-id';
 
 const PATCH = dedent`
   diff --git a/src/a.ts b/src/a.ts
@@ -22,17 +22,21 @@ const PATCH = dedent`
    context
 `;
 
-function post(body: string, headers: Record<string, string>) {
-  return new NextRequest(ENDPOINT, {method: 'POST', headers, body});
+function request(body: string, headers: Record<string, string>) {
+  return new NextRequest(`${env.BASE_URL}/api/diffs`, {
+    method: 'POST',
+    headers,
+    body,
+  });
 }
 
 beforeEach(() => {
   createShare.mockReset();
-  createShare.mockResolvedValue('share-id');
+  createShare.mockResolvedValue(SHARE_ID);
 });
 
 describe('OPTIONS', () => {
-  it('answers the preflight with the CORS allowances', async () => {
+  it('returns CORS preflight headers', async () => {
     const response = OPTIONS();
 
     expect(response.status).toBe(204);
@@ -44,85 +48,91 @@ describe('OPTIONS', () => {
 });
 
 describe('POST', () => {
-  it('creates a share from a JSON body', async () => {
+  it('creates a share from JSON', async () => {
     const response = await POST(
-      post(JSON.stringify({patches: [[{name: 'src/a.ts', hunks: []}]]}), {
+      request(JSON.stringify({patches: [[{name: 'src/a.ts', hunks: []}]]}), {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       }),
     );
 
     expect(response.status).toBe(201);
-    await expect(response.json()).resolves.toEqual({
+    expect(await response.json()).toEqual({
       ok: true,
-      url: `${env.BASE_URL}/d/share-id`,
+      url: `${env.BASE_URL}/d/${SHARE_ID}`,
     });
   });
 
-  it('parses a raw patch body and answers in plain text', async () => {
+  it('creates a share from patch text and returns plain text', async () => {
     const response = await POST(
-      post(PATCH, {'Content-Type': 'text/plain', Accept: 'text/plain'}),
+      request(PATCH, {'Content-Type': 'text/plain', Accept: 'text/plain'}),
     );
 
     expect(response.status).toBe(201);
-    await expect(response.text()).resolves.toBe(`${env.BASE_URL}/d/share-id`);
+    expect(await response.text()).toBe(`${env.BASE_URL}/d/${SHARE_ID}`);
     expect(createShare).toHaveBeenCalledWith([
       [expect.objectContaining({name: 'src/a.ts'})],
     ]);
   });
 
-  it('rejects an empty patch list without touching the database', async () => {
+  it('returns 400 for empty patches', async () => {
     const response = await POST(
-      post(JSON.stringify({patches: []}), {
+      request(JSON.stringify({patches: []}), {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       }),
     );
 
     expect(response.status).toBe(400);
-    await expect(response.json()).resolves.toEqual({
+    expect(await response.json()).toEqual({
       ok: false,
       error: 'Invalid patches',
     });
+
     expect(createShare).not.toHaveBeenCalled();
   });
 
-  it('reports unparseable patch text in the requested format', async () => {
+  it('returns 400 for invalid patch text', async () => {
     const response = await POST(
-      post('not a patch', {'Content-Type': 'text/plain', Accept: 'text/plain'}),
+      request('not a patch', {
+        'Content-Type': 'text/plain',
+        Accept: 'text/plain',
+      }),
     );
 
     expect(response.status).toBe(400);
-    await expect(response.text()).resolves.toBe('Invalid patches');
+    expect(await response.text()).toBe('Invalid patches');
   });
 
-  it('rejects a malformed JSON body', async () => {
+  it('returns 400 for malformed JSON', async () => {
     const response = await POST(
-      post('{not json', {
+      request('{not json', {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       }),
     );
 
     expect(response.status).toBe(400);
-    await expect(response.json()).resolves.toEqual({
+    expect(await response.json()).toEqual({
       ok: false,
       error: 'Invalid JSON body',
     });
+
     expect(createShare).not.toHaveBeenCalled();
   });
 
-  it('rejects a body that fails mid-stream', async () => {
-    const request = post('', {
+  it('returns 400 when the body cannot be read', async () => {
+    const req = request('', {
       'Content-Type': 'text/plain',
       Accept: 'text/plain',
     });
-    vi.spyOn(request, 'text').mockRejectedValue(new Error('Connection reset'));
+    vi.spyOn(req, 'text').mockRejectedValue(new Error('Connection reset'));
 
-    const response = await POST(request);
+    const response = await POST(req);
 
     expect(response.status).toBe(400);
-    await expect(response.text()).resolves.toBe('Invalid text body');
+    expect(await response.text()).toBe('Invalid text body');
+
     expect(createShare).not.toHaveBeenCalled();
   });
 });
