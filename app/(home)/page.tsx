@@ -44,7 +44,7 @@ const usageDemoFallback = (
   <Skeleton
     aria-busy="true"
     aria-label="Loading diff preview"
-    className="h-38 w-full rounded-field"
+    className="h-36 w-full rounded-none"
   />
 );
 
