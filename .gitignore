@@ -21,3 +21,4 @@ dist
 # generated
 *.tsbuildinfo
 next-env.d.ts
+.vitest/
