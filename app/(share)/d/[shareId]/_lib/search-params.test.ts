@@ -3,6 +3,7 @@ import {describe, expect, it} from 'vitest';
 import {loadDiffSearchParams} from './search-params';
 
 const QUERY = 'query with spaces';
+
 const LINES = {
   id: 'src/a.ts',
   range: {start: 3, end: 9, side: 'additions'},
