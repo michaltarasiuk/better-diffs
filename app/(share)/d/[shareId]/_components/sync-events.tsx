@@ -1,131 +1,16 @@
 'use client';
 
-import {createContext, use, useState, useSyncExternalStore} from 'react';
-import {browser} from 'react-dom';
-import {z} from 'zod';
+export {
+  ShareStateContext,
+  ShareStoreContext,
+} from '@/events/share-events-provider';
 
-import {isDefined} from '@/utils/defined';
-import {getEvents, getLastSeq, putEvents} from '@/events/idb';
-import {ShareEvent} from '@/events/schemas';
-import type {FoldedShareState} from '@/events/share-state';
-import {EMPTY_FOLDED_STATE, ShareState} from '@/events/share-state';
-import {ErrorBoundary} from '@/components/error-boundary';
+import {ShareEventsProvider} from '@/events/share-events-provider';
 import {useShareId} from '../_hooks/use-share-id';
 
-const OkResponse = z.instanceof(Response).properties({
-  ok: z.literal(true),
-  status: z.number().min(200).max(299),
-});
-
-const EventsResponse = z.discriminatedUnion('ok', [
-  z.object({
-    ok: z.literal(true),
-    events: z.array(ShareEvent),
-  }),
-  z.object({
-    ok: z.literal(false),
-    error: z.string(),
-  }),
-]);
-
-async function fetchEvents(shareId: string, afterSeq: number | null) {
-  const searchParams = isDefined(afterSeq)
-    ? `?${new URLSearchParams({afterSeq: String(afterSeq)})}`
-    : '';
-  const response = OkResponse.parse(
-    await fetch(`/api/shares/${shareId}/events${searchParams}`, {
-      cache: 'no-store',
-    }),
-  );
-  const data = EventsResponse.parse(await response.json());
-
-  if (!data.ok) {
-    throw new Error(data.error);
-  }
-  return data.events;
-}
-
-async function syncEvents(shareId: string) {
-  const lastSeq = await getLastSeq(shareId);
-  const events = await fetchEvents(shareId, lastSeq);
-
-  if (events.length > 0) {
-    await putEvents(events);
-  }
-  return await getEvents(shareId);
-}
-
-const eventsPromises = new Map<string, Promise<ShareEvent[]>>();
-
-function getEventsPromise(shareId: string) {
-  let eventsPromise = eventsPromises.get(shareId);
-  if (!isDefined(eventsPromise)) {
-    eventsPromise = syncEvents(shareId).catch((error) => {
-      eventsPromises.delete(shareId);
-      throw error;
-    });
-    eventsPromises.set(shareId, eventsPromise);
-  }
-  return eventsPromise;
-}
-
-export const ShareStateContext =
-  createContext<FoldedShareState>(EMPTY_FOLDED_STATE);
-
-export const ShareStoreContext = createContext<ShareState>(null as never);
-
 export function SyncEvents({children}: {readonly children: React.ReactNode}) {
-  use(browser());
-
   const shareId = useShareId();
-  const eventsPromise = getEventsPromise(shareId);
-
   return (
-    <ErrorBoundary resetKeys={[shareId, eventsPromise]} fallback={null}>
-      <SyncedShareState eventsPromise={eventsPromise}>
-        {children}
-      </SyncedShareState>
-    </ErrorBoundary>
+    <ShareEventsProvider shareId={shareId}>{children}</ShareEventsProvider>
   );
-}
-
-function SyncedShareState({
-  eventsPromise,
-  children,
-}: {
-  readonly eventsPromise: Promise<ShareEvent[]>;
-  readonly children: React.ReactNode;
-}) {
-  const events = use(eventsPromise);
-  return <ShareStateProvider events={events}>{children}</ShareStateProvider>;
-}
-
-function ShareStateProvider({
-  events,
-  children,
-}: {
-  readonly events: readonly ShareEvent[];
-  readonly children: React.ReactNode;
-}) {
-  const [store] = useState(() => {
-    const state = new ShareState();
-    state.ingest(events);
-    return state;
-  });
-
-  const snapshot = useSyncExternalStore(
-    store.subscribe,
-    store.getSnapshot,
-    getServerSnapshot,
-  );
-
-  return (
-    <ShareStoreContext value={store}>
-      <ShareStateContext value={snapshot}>{children}</ShareStateContext>
-    </ShareStoreContext>
-  );
-}
-
-function getServerSnapshot() {
-  return EMPTY_FOLDED_STATE;
 }
