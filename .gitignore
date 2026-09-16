@@ -1,24 +1,24 @@
+# os
+.DS_Store
+
 # deps
 node_modules
 
 # build
 .next
-out
-dist
 /cli/target
+dist
+out
+
+# local
+.local/
 
 # env
 .env*
 !.env.example
 !.env.test
 
-# local sqlite database
-.local/
-
-# os
-.DS_Store
-
 # generated
+.vitest/
 *.tsbuildinfo
 next-env.d.ts
-.vitest/
