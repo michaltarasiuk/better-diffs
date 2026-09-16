@@ -15,9 +15,7 @@ const DELETED_SHARES = 3;
 
 function request(authorization?: string) {
   return new NextRequest(`${env.BASE_URL}/api/cron`, {
-    headers: {
-      ...(isDefined(authorization) && {authorization}),
-    },
+    headers: isDefined(authorization) ? {authorization} : {},
   });
 }
 
