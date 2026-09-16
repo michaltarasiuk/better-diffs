@@ -44,16 +44,24 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 
 describe('useIsMobile', () => {
+  it('listens at the mobile breakpoint', async () => {
+    const useIsMobile = await importUseIsMobile();
+
+    renderHook(() => useIsMobile());
+
+    expect(matchMedia).toHaveBeenCalledExactlyOnceWith(BREAKPOINT);
+  });
+
   it('reports mobile while the viewport is under the breakpoint', async () => {
     const useIsMobile = await importUseIsMobile();
 
     const {result} = renderHook(() => useIsMobile());
 
-    expect(matchMedia).toHaveBeenCalledWith(BREAKPOINT);
     expect(result.current).toBe(true);
   });
 
@@ -66,14 +74,22 @@ describe('useIsMobile', () => {
     expect(result.current).toBe(false);
   });
 
-  it('re-renders when the viewport crosses the breakpoint', async () => {
+  it('reports desktop when the viewport crosses above the breakpoint', async () => {
     const useIsMobile = await importUseIsMobile();
     const {result} = renderHook(() => useIsMobile());
 
     setMatches(true);
-    expect(result.current).toBe(false);
 
+    expect(result.current).toBe(false);
+  });
+
+  it('reports mobile when the viewport crosses back below the breakpoint', async () => {
+    const useIsMobile = await importUseIsMobile();
+    const {result} = renderHook(() => useIsMobile());
+
+    setMatches(true);
     setMatches(false);
+
     expect(result.current).toBe(true);
   });
 
@@ -96,7 +112,7 @@ describe('useIsMobile', () => {
 
     unmount();
 
-    expect(removeEventListener).toHaveBeenCalledWith(
+    expect(removeEventListener).toHaveBeenCalledExactlyOnceWith(
       'change',
       expect.any(Function),
     );

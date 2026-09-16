@@ -1,13 +1,17 @@
 // @vitest-environment jsdom
 
 import {renderHook} from '@testing-library/react';
-import {describe, expect, it, vi} from 'vitest';
+import {afterEach, describe, expect, it, vi} from 'vitest';
 
 import {useKeyDown} from './use-key-down';
 
 function pressKey(key: string) {
   document.dispatchEvent(new KeyboardEvent('keydown', {key}));
 }
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('useKeyDown', () => {
   it('forwards key presses to the handler', () => {
@@ -21,35 +25,45 @@ describe('useKeyDown', () => {
     );
   });
 
-  it('calls the newest handler without resubscribing', () => {
-    const addEventListener = vi.spyOn(document, 'addEventListener');
-    const countSubscriptions = () =>
-      addEventListener.mock.calls.filter(([type]) => type === 'keydown').length;
+  it('forwards key presses to the newest handler after a rerender', () => {
     const first = vi.fn();
     const second = vi.fn();
 
     const {rerender} = renderHook(({handler}) => useKeyDown(handler), {
       initialProps: {handler: first},
     });
-    const subscriptions = countSubscriptions();
     rerender({handler: second});
 
     pressKey('k');
 
     expect(first).not.toHaveBeenCalled();
-    expect(second).toHaveBeenCalledOnce();
-    expect(countSubscriptions()).toBe(subscriptions);
+    expect(second).toHaveBeenCalledExactlyOnceWith(expect.any(KeyboardEvent));
+  });
 
-    addEventListener.mockRestore();
+  it('keeps a single listener when the handler changes', () => {
+    const addEventListener = vi.spyOn(document, 'addEventListener');
+    const countSubscriptions = () =>
+      addEventListener.mock.calls.filter(([type]) => type === 'keydown').length;
+
+    const {rerender} = renderHook(({handler}) => useKeyDown(handler), {
+      initialProps: {handler: vi.fn()},
+    });
+    const subscriptions = countSubscriptions();
+
+    rerender({handler: vi.fn()});
+
+    expect(countSubscriptions()).toBe(subscriptions);
   });
 
   it('stops listening once unmounted', () => {
-    const onKeyDown = vi.fn();
-    const {unmount} = renderHook(() => useKeyDown(onKeyDown));
+    const removeEventListener = vi.spyOn(document, 'removeEventListener');
+    const {unmount} = renderHook(() => useKeyDown(vi.fn()));
 
     unmount();
-    pressKey('k');
 
-    expect(onKeyDown).not.toHaveBeenCalled();
+    expect(removeEventListener).toHaveBeenCalledExactlyOnceWith(
+      'keydown',
+      expect.any(Function),
+    );
   });
 });
