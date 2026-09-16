@@ -1,17 +1,13 @@
 // @vitest-environment jsdom
 
 import {renderHook} from '@testing-library/react';
-import {afterEach, describe, expect, it, vi} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 
 import {useKeyDown} from './use-key-down';
 
 function pressKey(key: string) {
   document.dispatchEvent(new KeyboardEvent('keydown', {key}));
 }
-
-afterEach(() => {
-  vi.restoreAllMocks();
-});
 
 describe('useKeyDown', () => {
   it('forwards key presses to the handler', () => {

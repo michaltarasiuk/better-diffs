@@ -1,5 +1,5 @@
 import {NextRequest} from 'next/server';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
 import type {ShareEvent} from '@/events/schemas';
@@ -40,10 +40,6 @@ function context() {
 beforeEach(() => {
   getEvents.mockReset();
   getEvents.mockResolvedValue([EVENT]);
-});
-
-afterEach(() => {
-  vi.restoreAllMocks();
 });
 
 describe('GET', () => {

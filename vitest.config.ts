@@ -16,6 +16,8 @@ export default defineConfig({
     },
   },
   test: {
+    clearMocks: true,
+    restoreMocks: true,
     env: loadEnv('test', dirname, ''),
     exclude: sharedExclude,
     projects: [

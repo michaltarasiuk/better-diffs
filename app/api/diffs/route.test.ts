@@ -1,6 +1,6 @@
 import {NextRequest} from 'next/server';
 import dedent from 'dedent';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
 import {OPTIONS, POST} from './route';
@@ -33,10 +33,6 @@ function request(body: string, headers: Record<string, string>) {
 beforeEach(() => {
   createShare.mockReset();
   createShare.mockResolvedValue(SHARE_ID);
-});
-
-afterEach(() => {
-  vi.restoreAllMocks();
 });
 
 describe('OPTIONS', () => {

@@ -1,17 +1,13 @@
 // @vitest-environment jsdom
 
 import {renderHook} from '@testing-library/react';
-import {afterEach, describe, expect, it, vi} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 
 import {usePageShow} from './use-page-show';
 
 function showPage(persisted = false) {
   window.dispatchEvent(new PageTransitionEvent('pageshow', {persisted}));
 }
-
-afterEach(() => {
-  vi.restoreAllMocks();
-});
 
 describe('usePageShow', () => {
   it('forwards the event to the handler', () => {

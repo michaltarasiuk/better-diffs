@@ -1,5 +1,5 @@
 import {NextRequest} from 'next/server';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
 import {isDefined} from '@/utils/defined';
@@ -24,10 +24,6 @@ function request(authorization?: string) {
 beforeEach(() => {
   deleteExpiredShares.mockReset();
   deleteExpiredShares.mockResolvedValue(DELETED_SHARES);
-});
-
-afterEach(() => {
-  vi.restoreAllMocks();
 });
 
 describe('GET', () => {

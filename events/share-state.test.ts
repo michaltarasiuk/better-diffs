@@ -1,5 +1,5 @@
 import type {SerializedEditorState} from 'lexical';
-import {afterEach, describe, expect, expectTypeOf, it, vi} from 'vitest';
+import {describe, expect, expectTypeOf, it, vi} from 'vitest';
 
 import {assert} from '@/utils/assert';
 import type {
@@ -68,10 +68,6 @@ function eventLog() {
       };
     });
 }
-
-afterEach(() => {
-  vi.restoreAllMocks();
-});
 
 describe('ingest', () => {
   it('folds a thread from its events', () => {
