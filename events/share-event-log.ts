@@ -53,10 +53,6 @@ export class ShareEventLogSync {
     return getEvents(this.#shareId);
   }
 
-  async syncSince() {
-    return this.#pull();
-  }
-
   startPolling(onBatch: (events: readonly ShareEvent[]) => void) {
     let intervalRef: ReturnType<typeof setInterval> | null = null;
 
@@ -73,7 +69,7 @@ export class ShareEventLogSync {
       this.#isPolling = true;
 
       try {
-        const events = await this.syncSince();
+        const events = await this.#pull();
         if (events.length > 0) {
           onBatch(events);
         }
