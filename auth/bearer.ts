@@ -12,14 +12,17 @@ export function verifyBearerSecret(
     return false;
   }
 
-  const expected = `Bearer ${secret}`;
   const provided = request.headers.get('authorization');
   if (!isDefined(provided)) {
     return false;
   }
 
+  const expected = `Bearer ${secret}`;
+  const expectedBuffer = Buffer.from(expected);
+  const providedBuffer = Buffer.from(provided);
+
   return (
-    provided.length === expected.length &&
-    timingSafeEqual(Buffer.from(provided), Buffer.from(expected))
+    providedBuffer.length === expectedBuffer.length &&
+    timingSafeEqual(providedBuffer, expectedBuffer)
   );
 }
