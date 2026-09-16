@@ -1,10 +1,8 @@
 import {describe, expect, it} from 'vitest';
 
-import {computeDiffStats, formatDiffStat} from './stats';
+import {computeDiffStats, type DiffStatsFile, formatDiffStat} from './stats';
 
-function fileDiff(
-  ...hunks: readonly {additionLines: number; deletionLines: number}[]
-) {
+function fileDiff(...hunks: DiffStatsFile['hunks'][number][]): DiffStatsFile {
   return {hunks};
 }
 
@@ -19,32 +17,32 @@ describe('computeDiffStats', () => {
   });
 
   it('sums every hunk across every file', () => {
-    const stats = computeDiffStats([
-      fileDiff(
-        {additionLines: 3, deletionLines: 1},
-        {additionLines: 2, deletionLines: 0},
-      ),
-      fileDiff({additionLines: 0, deletionLines: 4}),
-    ]);
-
-    expect(stats).toEqual({files: 2, additions: 5, deletions: 5, lines: 10});
+    expect(
+      computeDiffStats([
+        fileDiff(
+          {additionLines: 3, deletionLines: 1},
+          {additionLines: 2, deletionLines: 0},
+        ),
+        fileDiff({additionLines: 0, deletionLines: 4}),
+      ]),
+    ).toEqual({files: 2, additions: 5, deletions: 5, lines: 10});
   });
 
-  it('counts a file that has no hunks', () => {
-    expect(computeDiffStats([fileDiff()]).files).toBe(1);
-  });
-
-  it('reports zero lines for a file that has no hunks', () => {
-    expect(computeDiffStats([fileDiff()]).lines).toBe(0);
+  it('counts a file with no hunks and reports zero line changes', () => {
+    expect(computeDiffStats([fileDiff()])).toEqual({
+      files: 1,
+      additions: 0,
+      deletions: 0,
+      lines: 0,
+    });
   });
 });
 
 describe('formatDiffStat', () => {
-  it('groups thousands', () => {
-    expect(formatDiffStat(1234567)).toBe('1,234,567');
-  });
-
-  it('leaves small numbers alone', () => {
-    expect(formatDiffStat(0)).toBe('0');
+  it.each([
+    {value: 0, expected: '0'},
+    {value: 1234567, expected: '1,234,567'},
+  ])('formats $value as $expected', ({value, expected}) => {
+    expect(formatDiffStat(value)).toBe(expected);
   });
 });
