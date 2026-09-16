@@ -12,6 +12,8 @@
     "type:check": "next typegen && tsc --noEmit",
     "lint": "eslint",
     "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:browser": "vitest run --project browser",
     "test:watch": "vitest",
     "check": "bun run format:check && bun run type:check && bun run lint"
   },
