@@ -16,6 +16,8 @@ Vitest uses a `node` environment by default. Add `// @vitest-environment jsdom` 
 
 Colocate tests as `*.test.ts` or `*.test.tsx` beside the module under test. Prefer calling handlers and plain functions directly over starting a server. Mock dependencies at the import boundary with `vi.mock`. Test env vars live in `.env.test`.
 
+Import stable ids and timestamps from `@/fixtures/fixture` instead of inventing literals like `'share-id'` or `'thread-1'`. Add new entries to `FIXTURE` when a test needs another stable value.
+
 ## Commit messages
 
 Use imperative mood, sentence case, no trailing period. Start with a capital verb, lowercase the rest unless a proper noun.

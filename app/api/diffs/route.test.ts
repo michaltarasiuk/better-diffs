@@ -3,13 +3,12 @@ import dedent from 'dedent';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
+import {FIXTURE} from '@/fixtures/fixture';
 import {OPTIONS, POST} from './route';
 
 const {createShare} = vi.hoisted(() => ({createShare: vi.fn<() => string>()}));
 
 vi.mock('@/db/shares', () => ({createShare}));
-
-const SHARE_ID = 'share-id';
 
 const PATCH = dedent`
   diff --git a/src/a.ts b/src/a.ts
@@ -32,7 +31,7 @@ function request(body: string, headers: Record<string, string>) {
 
 beforeEach(() => {
   createShare.mockReset();
-  createShare.mockResolvedValue(SHARE_ID);
+  createShare.mockResolvedValue(FIXTURE.share.id);
 });
 
 describe('OPTIONS', () => {
@@ -73,7 +72,7 @@ describe('POST', () => {
 
     expect(await response.json()).toEqual({
       ok: true,
-      url: `${env.BASE_URL}/d/${SHARE_ID}`,
+      url: `${env.BASE_URL}/d/${FIXTURE.share.id}`,
     });
   });
 
@@ -90,7 +89,7 @@ describe('POST', () => {
       request(PATCH, {'Content-Type': 'text/plain', Accept: 'text/plain'}),
     );
 
-    expect(await response.text()).toBe(`${env.BASE_URL}/d/${SHARE_ID}`);
+    expect(await response.text()).toBe(`${env.BASE_URL}/d/${FIXTURE.share.id}`);
   });
 
   it('passes parsed patches to createShare for patch text input', async () => {
