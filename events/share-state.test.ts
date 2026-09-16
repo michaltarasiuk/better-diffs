@@ -1,5 +1,5 @@
 import type {SerializedEditorState} from 'lexical';
-import {describe, expect, expectTypeOf, it, vi} from 'vitest';
+import {afterEach, describe, expect, expectTypeOf, it, vi} from 'vitest';
 
 import {assert} from '@/utils/assert';
 import type {
@@ -69,8 +69,12 @@ function eventLog() {
     });
 }
 
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe('ingest', () => {
-  it('folds a thread together with its comments', () => {
+  it('folds a thread from its events', () => {
     const log = eventLog();
     const state = new ShareState();
 
@@ -88,6 +92,20 @@ describe('ingest', () => {
       resolved: false,
       commentIds: ['comment-1', 'comment-2'],
     });
+  });
+
+  it('folds comments from their events', () => {
+    const log = eventLog();
+    const state = new ShareState();
+
+    state.ingest(
+      log(
+        opened('thread-1'),
+        created('thread-1', 'comment-1', 'value'),
+        created('thread-1', 'comment-2'),
+      ),
+    );
+
     expect(state.comments.get('comment-1')).toMatchObject({
       threadId: 'thread-1',
       body: body('value'),
@@ -95,7 +113,7 @@ describe('ingest', () => {
     });
   });
 
-  it('applies edits, deletions and resolutions in order', () => {
+  it('applies comment edits before deletions', () => {
     const log = eventLog();
     const state = new ShareState();
 
@@ -112,14 +130,34 @@ describe('ingest', () => {
       body: body('value-2'),
       deleted: true,
     });
-    expect(state.threads.get('thread-1')?.resolved).toBe(true);
   });
 
-  it('reports whether anything was applied', () => {
+  it('applies thread resolutions after comment changes', () => {
     const log = eventLog();
     const state = new ShareState();
 
+    state.ingest(log(opened('thread-1'), created('thread-1', 'comment-1')));
+    state.ingest(
+      log(
+        edited('comment-1', 'value-2'),
+        removed('comment-1'),
+        resolved('thread-1'),
+      ),
+    );
+
+    expect(state.threads.get('thread-1')?.resolved).toBe(true);
+  });
+
+  it('reports false when nothing was applied', () => {
+    const state = new ShareState();
+
     expect(state.ingest([])).toBe(false);
+  });
+
+  it('reports true when events were applied', () => {
+    const log = eventLog();
+    const state = new ShareState();
+
     expect(state.ingest(log(opened('thread-1')))).toBe(true);
   });
 
@@ -181,76 +219,149 @@ describe('getSnapshot', () => {
     const snapshot = state.getSnapshot();
 
     expect(state.getSnapshot()).toBe(snapshot);
-    expect(state.ingest([])).toBe(false);
+  });
+
+  it('keeps the same reference after a no-op ingest', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(log(opened('thread-1')));
+
+    const snapshot = state.getSnapshot();
+    state.ingest([]);
+
     expect(state.getSnapshot()).toBe(snapshot);
   });
 
-  it('returns a new reference after every commit', () => {
+  it('returns a new reference after ingest', () => {
     const log = eventLog();
     const state = new ShareState();
 
     const before = state.getSnapshot();
     state.ingest(log(opened('thread-1')));
-    const afterIngest = state.getSnapshot();
-    state.optimistic(optimisticEvent(opened('thread-2')));
-    const afterOptimistic = state.getSnapshot();
 
-    expect(afterIngest).not.toBe(before);
-    expect(afterOptimistic).not.toBe(afterIngest);
-    expect(afterOptimistic.version).toBeGreaterThan(afterIngest.version);
+    expect(state.getSnapshot()).not.toBe(before);
   });
 
-  it('exposes the live maps while nothing is pending', () => {
+  it('returns a new reference after an optimistic update', () => {
     const log = eventLog();
     const state = new ShareState();
     state.ingest(log(opened('thread-1')));
 
-    const snapshot = state.getSnapshot();
+    const afterIngest = state.getSnapshot();
+    state.optimistic(optimisticEvent(opened('thread-2')));
 
-    expect(snapshot.threads).toBe(state.threads);
-    expect(snapshot.comments).toBe(state.comments);
-    expect(snapshot.pendingIds.size).toBe(0);
+    expect(state.getSnapshot()).not.toBe(afterIngest);
+  });
+
+  it('bumps the snapshot version after an optimistic update', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(log(opened('thread-1')));
+
+    const afterIngest = state.getSnapshot();
+    state.optimistic(optimisticEvent(opened('thread-2')));
+
+    expect(state.getSnapshot().version).toBeGreaterThan(afterIngest.version);
+  });
+
+  it('exposes the live thread map while nothing is pending', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(log(opened('thread-1')));
+
+    expect(state.getSnapshot().threads).toBe(state.threads);
+  });
+
+  it('exposes the live comment map while nothing is pending', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(log(opened('thread-1')));
+
+    expect(state.getSnapshot().comments).toBe(state.comments);
+  });
+
+  it('reports no pending ids while nothing is pending', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(log(opened('thread-1')));
+
+    expect(state.getSnapshot().pendingIds.size).toBe(0);
   });
 });
 
 describe('optimistic', () => {
+  it('returns a pending id for an optimistic thread', () => {
+    const state = new ShareState();
+
+    expect(state.optimistic(optimisticEvent(opened('thread-1')))).toEqual(
+      expect.any(String),
+    );
+  });
+
+  it('surfaces an optimistic thread in the snapshot', () => {
+    const state = new ShareState();
+
+    state.optimistic(optimisticEvent(opened('thread-1')));
+
+    expect(state.getSnapshot().threads.get('thread-1')).toMatchObject({
+      id: 'thread-1',
+    });
+  });
+
   it('marks an optimistic thread as pending', () => {
     const state = new ShareState();
 
-    const pendingId = state.optimistic(optimisticEvent(opened('thread-1')));
-    const snapshot = state.getSnapshot();
+    state.optimistic(optimisticEvent(opened('thread-1')));
 
-    expect(pendingId).toEqual(expect.any(String));
-    expect(snapshot.threads.get('thread-1')).toMatchObject({id: 'thread-1'});
-    expect(snapshot.pendingIds.has('thread-1')).toBe(true);
+    expect(state.getSnapshot().pendingIds.has('thread-1')).toBe(true);
+  });
+
+  it('leaves confirmed threads untouched by optimistic updates', () => {
+    const state = new ShareState();
+
+    state.optimistic(optimisticEvent(opened('thread-1')));
+
     expect(state.threads.has('thread-1')).toBe(false);
   });
 
-  it('validates a pending event against earlier pending events', () => {
+  it('accepts a follow-up pending event on an optimistic thread', () => {
     const state = new ShareState();
     state.optimistic(optimisticEvent(opened('thread-1')));
 
     expect(() =>
       state.optimistic(optimisticEvent(created('thread-1', 'comment-1'))),
     ).not.toThrow();
+  });
+
+  it('surfaces a follow-up pending comment in the snapshot', () => {
+    const state = new ShareState();
+    state.optimistic(optimisticEvent(opened('thread-1')));
+    state.optimistic(optimisticEvent(created('thread-1', 'comment-1')));
+
     expect(state.getSnapshot().comments.get('comment-1')).toMatchObject({
       threadId: 'thread-1',
     });
   });
 
-  it('rejects a pending event that breaks an invariant', () => {
+  it('rejects reopening an optimistic thread', () => {
     const state = new ShareState();
     state.optimistic(optimisticEvent(opened('thread-1')));
 
     expect(() => state.optimistic(optimisticEvent(opened('thread-1')))).toThrow(
       /Thread already opened/,
     );
+  });
+
+  it('rejects a comment on an unknown optimistic thread', () => {
+    const state = new ShareState();
+    state.optimistic(optimisticEvent(opened('thread-1')));
+
     expect(() =>
       state.optimistic(optimisticEvent(created('unknown-id', 'comment-1'))),
     ).toThrow(/Comment on unknown thread/);
   });
 
-  it('never mutates the confirmed state', () => {
+  it('leaves confirmed thread ids untouched by optimistic updates', () => {
     const log = eventLog();
     const state = new ShareState();
     state.ingest(
@@ -259,15 +370,52 @@ describe('optimistic', () => {
 
     state.optimistic(optimisticEvent(created('thread-1', 'comment-2')));
     state.optimistic(optimisticEvent(edited('comment-1', 'value-2')));
-    const snapshot = state.getSnapshot();
 
     expect(state.threads.get('thread-1')?.commentIds).toEqual(['comment-1']);
+  });
+
+  it('leaves confirmed comment bodies untouched by optimistic updates', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(
+      log(opened('thread-1'), created('thread-1', 'comment-1', 'value-1')),
+    );
+
+    state.optimistic(optimisticEvent(created('thread-1', 'comment-2')));
+    state.optimistic(optimisticEvent(edited('comment-1', 'value-2')));
+
     expect(state.comments.get('comment-1')?.body).toEqual(body('value-1'));
-    expect(snapshot.threads.get('thread-1')?.commentIds).toEqual([
+  });
+
+  it('surfaces optimistic thread changes only in the snapshot', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(
+      log(opened('thread-1'), created('thread-1', 'comment-1', 'value-1')),
+    );
+
+    state.optimistic(optimisticEvent(created('thread-1', 'comment-2')));
+    state.optimistic(optimisticEvent(edited('comment-1', 'value-2')));
+
+    expect(state.getSnapshot().threads.get('thread-1')?.commentIds).toEqual([
       'comment-1',
       'comment-2',
     ]);
-    expect(snapshot.comments.get('comment-1')?.body).toEqual(body('value-2'));
+  });
+
+  it('surfaces optimistic comment edits only in the snapshot', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(
+      log(opened('thread-1'), created('thread-1', 'comment-1', 'value-1')),
+    );
+
+    state.optimistic(optimisticEvent(created('thread-1', 'comment-2')));
+    state.optimistic(optimisticEvent(edited('comment-1', 'value-2')));
+
+    expect(state.getSnapshot().comments.get('comment-1')?.body).toEqual(
+      body('value-2'),
+    );
   });
 
   it('reuses untouched threads instead of copying them', () => {
@@ -276,12 +424,20 @@ describe('optimistic', () => {
     state.ingest(log(opened('thread-1'), opened('thread-2')));
 
     state.optimistic(optimisticEvent(resolved('thread-1')));
-    const snapshot = state.getSnapshot();
 
-    expect(snapshot.threads.get('thread-2')).toBe(
+    expect(state.getSnapshot().threads.get('thread-2')).toBe(
       state.threads.get('thread-2'),
     );
-    expect(snapshot.threads.get('thread-1')).not.toBe(
+  });
+
+  it('copies threads that change during optimistic updates', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(log(opened('thread-1'), opened('thread-2')));
+
+    state.optimistic(optimisticEvent(resolved('thread-1')));
+
+    expect(state.getSnapshot().threads.get('thread-1')).not.toBe(
       state.threads.get('thread-1'),
     );
   });
@@ -291,6 +447,14 @@ describe('optimistic', () => {
     const pendingId = state.optimistic(optimisticEvent(opened('thread-1')));
 
     expect(state.reject(pendingId)).toBe(true);
+  });
+
+  it('removes a rejected pending thread from the snapshot', () => {
+    const state = new ShareState();
+    const pendingId = state.optimistic(optimisticEvent(opened('thread-1')));
+
+    state.reject(pendingId);
+
     expect(state.getSnapshot().threads.has('thread-1')).toBe(false);
   });
 
@@ -299,49 +463,92 @@ describe('optimistic', () => {
     const pendingId = state.optimistic(optimisticEvent(opened('thread-1')));
 
     state.reject(pendingId);
-    const snapshot = state.getSnapshot();
 
     expect(state.reject(pendingId)).toBe(false);
+  });
+
+  it('leaves the snapshot unchanged when rejecting an unknown pending id', () => {
+    const state = new ShareState();
+    const pendingId = state.optimistic(optimisticEvent(opened('thread-1')));
+
+    state.reject(pendingId);
+    const snapshot = state.getSnapshot();
+    state.reject(pendingId);
+
     expect(state.getSnapshot()).toBe(snapshot);
   });
 
-  it('drops a whole batch with rejectAll', () => {
+  it('returns every pending id from rejectAll', () => {
+    const state = new ShareState();
+
+    expect(
+      state.optimisticAll([
+        optimisticEvent(opened('thread-1')),
+        optimisticEvent(created('thread-1', 'comment-1')),
+      ]),
+    ).toHaveLength(2);
+  });
+
+  it('clears every pending id with rejectAll', () => {
     const state = new ShareState();
     const pendingIds = state.optimisticAll([
       optimisticEvent(opened('thread-1')),
       optimisticEvent(created('thread-1', 'comment-1')),
     ]);
 
-    expect(pendingIds).toHaveLength(2);
     state.rejectAll(pendingIds);
 
     expect(state.getSnapshot().pendingIds.size).toBe(0);
   });
 
-  it('does not commit an empty batch', () => {
+  it('returns an empty list for an empty optimistic batch', () => {
+    const state = new ShareState();
+
+    expect(state.optimisticAll([])).toEqual([]);
+  });
+
+  it('leaves the snapshot unchanged for an empty optimistic batch', () => {
     const state = new ShareState();
     const snapshot = state.getSnapshot();
 
-    expect(state.optimisticAll([])).toEqual([]);
+    state.optimisticAll([]);
+
     expect(state.getSnapshot()).toBe(snapshot);
   });
 });
 
 describe('optimistic deletions', () => {
-  it('surfaces an unconfirmed deletion without touching the confirmed state', () => {
+  it('marks an unconfirmed deletion in the snapshot', () => {
     const log = eventLog();
     const state = new ShareState();
     state.ingest(log(opened('thread-1'), created('thread-1', 'comment-1')));
 
     state.optimistic(optimisticEvent(removed('comment-1')));
-    const snapshot = state.getSnapshot();
 
-    expect(snapshot.comments.get('comment-1')?.deleted).toBe(true);
-    expect(snapshot.pendingIds.has('comment-1')).toBe(true);
+    expect(state.getSnapshot().comments.get('comment-1')?.deleted).toBe(true);
+  });
+
+  it('marks an unconfirmed deletion as pending', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(log(opened('thread-1'), created('thread-1', 'comment-1')));
+
+    state.optimistic(optimisticEvent(removed('comment-1')));
+
+    expect(state.getSnapshot().pendingIds.has('comment-1')).toBe(true);
+  });
+
+  it('leaves confirmed comments undeleted in the snapshot', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(log(opened('thread-1'), created('thread-1', 'comment-1')));
+
+    state.optimistic(optimisticEvent(removed('comment-1')));
+
     expect(state.comments.get('comment-1')?.deleted).toBe(false);
   });
 
-  it('stacks a pending edit and deletion on the same comment', () => {
+  it('stacks a pending edit and deletion in the snapshot', () => {
     const log = eventLog();
     const state = new ShareState();
     state.ingest(
@@ -350,12 +557,23 @@ describe('optimistic deletions', () => {
 
     state.optimistic(optimisticEvent(edited('comment-1', 'v2')));
     state.optimistic(optimisticEvent(removed('comment-1')));
-    const snapshot = state.getSnapshot();
 
-    expect(snapshot.comments.get('comment-1')).toMatchObject({
+    expect(state.getSnapshot().comments.get('comment-1')).toMatchObject({
       body: body('v2'),
       deleted: true,
     });
+  });
+
+  it('leaves confirmed comments unchanged while edits and deletions stack', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(
+      log(opened('thread-1'), created('thread-1', 'comment-1', 'v1')),
+    );
+
+    state.optimistic(optimisticEvent(edited('comment-1', 'v2')));
+    state.optimistic(optimisticEvent(removed('comment-1')));
+
     expect(state.comments.get('comment-1')).toMatchObject({
       body: body('v1'),
       deleted: false,
@@ -458,7 +676,7 @@ describe('optimistic events building on pending ones', () => {
 });
 
 describe('reconciliation', () => {
-  it('retires a pending event when its confirmed twin arrives', () => {
+  it('keeps a pending edit before its confirmed twin arrives', () => {
     const log = eventLog();
     const state = new ShareState();
     state.ingest(
@@ -467,15 +685,37 @@ describe('reconciliation', () => {
     state.optimistic(optimisticEvent(edited('comment-1', 'v2')));
 
     expect(state.getSnapshot().pendingIds.has('comment-1')).toBe(true);
-
-    state.ingest(log(edited('comment-1', 'v3')));
-    const snapshot = state.getSnapshot();
-
-    expect(snapshot.pendingIds.size).toBe(0);
-    expect(snapshot.comments.get('comment-1')?.body).toEqual(body('v3'));
   });
 
-  it('retires a pending thread.opened once it is confirmed', () => {
+  it('clears pending ids when a confirmed twin arrives', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(
+      log(opened('thread-1'), created('thread-1', 'comment-1', 'v1')),
+    );
+    state.optimistic(optimisticEvent(edited('comment-1', 'v2')));
+
+    state.ingest(log(edited('comment-1', 'v3')));
+
+    expect(state.getSnapshot().pendingIds.size).toBe(0);
+  });
+
+  it('applies the confirmed edit when its twin arrives', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(
+      log(opened('thread-1'), created('thread-1', 'comment-1', 'v1')),
+    );
+    state.optimistic(optimisticEvent(edited('comment-1', 'v2')));
+
+    state.ingest(log(edited('comment-1', 'v3')));
+
+    expect(state.getSnapshot().comments.get('comment-1')?.body).toEqual(
+      body('v3'),
+    );
+  });
+
+  it('clears pending ids when thread.opened is confirmed', () => {
     const log = eventLog();
     const state = new ShareState();
     state.optimistic(optimisticEvent(opened('thread-1')));
@@ -483,10 +723,19 @@ describe('reconciliation', () => {
     state.ingest(log(opened('thread-1')));
 
     expect(state.getSnapshot().pendingIds.size).toBe(0);
+  });
+
+  it('moves a confirmed thread.opened into confirmed state', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.optimistic(optimisticEvent(opened('thread-1')));
+
+    state.ingest(log(opened('thread-1')));
+
     expect(state.threads.has('thread-1')).toBe(true);
   });
 
-  it('retires a pending thread.resolved once it is confirmed', () => {
+  it('clears pending ids when thread.resolved is confirmed', () => {
     const log = eventLog();
     const state = new ShareState();
     state.ingest(log(opened('thread-1')));
@@ -495,10 +744,20 @@ describe('reconciliation', () => {
     state.ingest(log(resolved('thread-1')));
 
     expect(state.getSnapshot().pendingIds.size).toBe(0);
+  });
+
+  it('marks a thread resolved when thread.resolved is confirmed', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(log(opened('thread-1')));
+    state.optimistic(optimisticEvent(resolved('thread-1')));
+
+    state.ingest(log(resolved('thread-1')));
+
     expect(state.threads.get('thread-1')?.resolved).toBe(true);
   });
 
-  it('retires a pending comment.created once it is confirmed', () => {
+  it('clears pending ids when comment.created is confirmed', () => {
     const log = eventLog();
     const state = new ShareState();
     state.ingest(log(opened('thread-1')));
@@ -507,10 +766,20 @@ describe('reconciliation', () => {
     state.ingest(log(created('thread-1', 'comment-1')));
 
     expect(state.getSnapshot().pendingIds.size).toBe(0);
+  });
+
+  it('moves a confirmed comment.created into confirmed state', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(log(opened('thread-1')));
+    state.optimistic(optimisticEvent(created('thread-1', 'comment-1')));
+
+    state.ingest(log(created('thread-1', 'comment-1')));
+
     expect(state.comments.has('comment-1')).toBe(true);
   });
 
-  it('retires a pending comment.deleted once it is confirmed', () => {
+  it('clears pending ids when comment.deleted is confirmed', () => {
     const log = eventLog();
     const state = new ShareState();
     state.ingest(log(opened('thread-1'), created('thread-1', 'comment-1')));
@@ -519,35 +788,85 @@ describe('reconciliation', () => {
     state.ingest(log(removed('comment-1')));
 
     expect(state.getSnapshot().pendingIds.size).toBe(0);
+  });
+
+  it('marks a comment deleted when comment.deleted is confirmed', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(log(opened('thread-1'), created('thread-1', 'comment-1')));
+    state.optimistic(optimisticEvent(removed('comment-1')));
+
+    state.ingest(log(removed('comment-1')));
+
     expect(state.comments.get('comment-1')?.deleted).toBe(true);
   });
 
-  it('keeps a pending event when the same type lands on another subject', () => {
+  it('keeps a pending resolve when another thread is resolved', () => {
     const log = eventLog();
     const state = new ShareState();
     state.ingest(log(opened('thread-1'), opened('thread-2')));
     state.optimistic(optimisticEvent(resolved('thread-1')));
 
     state.ingest(log(resolved('thread-2')));
-    const snapshot = state.getSnapshot();
 
-    expect(snapshot.pendingIds.has('thread-1')).toBe(true);
-    expect(snapshot.threads.get('thread-1')?.resolved).toBe(true);
+    expect(state.getSnapshot().pendingIds.has('thread-1')).toBe(true);
+  });
+
+  it('applies an optimistic resolve to the snapshot when another thread is resolved', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(log(opened('thread-1'), opened('thread-2')));
+    state.optimistic(optimisticEvent(resolved('thread-1')));
+
+    state.ingest(log(resolved('thread-2')));
+
+    expect(state.getSnapshot().threads.get('thread-1')?.resolved).toBe(true);
+  });
+
+  it('leaves confirmed threads unresolved when another thread is resolved', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(log(opened('thread-1'), opened('thread-2')));
+    state.optimistic(optimisticEvent(resolved('thread-1')));
+
+    state.ingest(log(resolved('thread-2')));
+
     expect(state.threads.get('thread-1')?.resolved).toBe(false);
   });
 
-  it('keeps a pending event when an unrelated one is confirmed', () => {
+  it('keeps a pending edit when an unrelated event is confirmed', () => {
     const log = eventLog();
     const state = new ShareState();
     state.ingest(log(opened('thread-1'), created('thread-1', 'comment-1')));
     state.optimistic(optimisticEvent(edited('comment-1', 'v2')));
 
     state.ingest(log(resolved('thread-1')));
-    const snapshot = state.getSnapshot();
 
-    expect(snapshot.pendingIds.has('comment-1')).toBe(true);
-    expect(snapshot.comments.get('comment-1')?.body).toEqual(body('v2'));
-    expect(snapshot.threads.get('thread-1')?.resolved).toBe(true);
+    expect(state.getSnapshot().pendingIds.has('comment-1')).toBe(true);
+  });
+
+  it('keeps an optimistic edit in the snapshot when an unrelated event is confirmed', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(log(opened('thread-1'), created('thread-1', 'comment-1')));
+    state.optimistic(optimisticEvent(edited('comment-1', 'v2')));
+
+    state.ingest(log(resolved('thread-1')));
+
+    expect(state.getSnapshot().comments.get('comment-1')?.body).toEqual(
+      body('v2'),
+    );
+  });
+
+  it('resolves the thread in the snapshot when an unrelated event is confirmed', () => {
+    const log = eventLog();
+    const state = new ShareState();
+    state.ingest(log(opened('thread-1'), created('thread-1', 'comment-1')));
+    state.optimistic(optimisticEvent(edited('comment-1', 'v2')));
+
+    state.ingest(log(resolved('thread-1')));
+
+    expect(state.getSnapshot().threads.get('thread-1')?.resolved).toBe(true);
   });
 });
 
@@ -560,7 +879,7 @@ describe('subscribe', () => {
     state.subscribe(subscriber);
     state.ingest(log(opened('thread-1')));
 
-    expect(subscriber).toHaveBeenCalledOnce();
+    expect(subscriber).toHaveBeenCalledExactlyOnceWith();
   });
 
   it('stops notifying after unsubscribe', () => {
@@ -589,7 +908,7 @@ describe('isType', () => {
     expect(isType('thread.opened', payload)).toBe(false);
   });
 
-  it('treats a matching payload as the requested variant', () => {
+  it('narrows a matching payload to the requested variant', () => {
     const payload: ShareEventPayload = created('thread-1', 'comment-1');
 
     assert(
@@ -598,12 +917,22 @@ describe('isType', () => {
     );
 
     expectTypeOf(payload).toEqualTypeOf<CommentCreatedPayload>();
+  });
+
+  it('preserves payload fields after narrowing', () => {
+    const payload: ShareEventPayload = created('thread-1', 'comment-1');
+
+    assert(
+      isType('comment.created', payload),
+      'Expected comment.created payload',
+    );
+
     expect(payload.commentId).toBe('comment-1');
   });
 });
 
 describe('foldEvents', () => {
-  it('folds a log into a snapshot in one call', () => {
+  it('folds thread state from a log in one call', () => {
     const snapshot = foldEvents(
       eventLog()(
         opened('thread-1'),
@@ -616,6 +945,17 @@ describe('foldEvents', () => {
       resolved: true,
       commentIds: ['comment-1'],
     });
+  });
+
+  it('returns no pending ids from a folded log', () => {
+    const snapshot = foldEvents(
+      eventLog()(
+        opened('thread-1'),
+        created('thread-1', 'comment-1'),
+        resolved('thread-1'),
+      ),
+    );
+
     expect(snapshot.pendingIds.size).toBe(0);
   });
 });

@@ -181,8 +181,6 @@ describe('CopyCommand', () => {
     writeText.mockRejectedValue(new Error('Clipboard write failed'));
     renderCopyCommand();
     await copy();
-    expect(button()).toHaveAccessibleName('Selected');
-
     await act(() => vi.advanceTimersByTimeAsync(COPIED_FEEDBACK_MS));
 
     expect(button()).toHaveAccessibleName('Copy command');

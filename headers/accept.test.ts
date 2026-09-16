@@ -3,10 +3,15 @@ import {describe, expect, it} from 'vitest';
 import {Accept} from './accept';
 
 describe('Accept.from', () => {
-  it('parses media types and their weights, heaviest first', () => {
+  it('sorts media types by weight, heaviest first', () => {
     const accept = Accept.from('text/html;q=0.8,application/json,*/*;q=0.1');
 
     expect(accept.mediaTypes).toEqual(['application/json', 'text/html', '*/*']);
+  });
+
+  it('preserves weights when parsing a header', () => {
+    const accept = Accept.from('text/html;q=0.8,application/json,*/*;q=0.1');
+
     expect(accept.weights).toEqual([1, 0.8, 0.1]);
   });
 
@@ -14,11 +19,12 @@ describe('Accept.from', () => {
     expect(Accept.from('TEXT/Plain').has('text/plain')).toBe(true);
   });
 
-  it('treats a missing header as accepting nothing', () => {
-    const accept = Accept.from(null);
+  it('treats a missing header as empty', () => {
+    expect(Accept.from(null).size).toBe(0);
+  });
 
-    expect(accept.size).toBe(0);
-    expect(accept.accepts('text/plain')).toBe(false);
+  it('accepts nothing when the header is missing', () => {
+    expect(Accept.from(null).accepts('text/plain')).toBe(false);
   });
 });
 
@@ -73,17 +79,25 @@ describe('new Accept', () => {
     expect(new Accept('text/html;q=0.5').getWeight('text/html')).toBe(0.5);
   });
 
-  it('accepts the same shapes as Accept.from', () => {
+  it('accepts an iterable of media types', () => {
     expect(new Accept(['text/html']).has('text/html')).toBe(true);
+  });
+
+  it('accepts a record of media type weights', () => {
     expect(new Accept({'text/html': 0.2}).getWeight('text/html')).toBe(0.2);
   });
 });
 
 describe('Accept.from non-string input', () => {
-  it('reads plain media types from an iterable, defaulting the weight', () => {
+  it('reads plain media types from an iterable', () => {
     const accept = Accept.from(['application/json', 'TEXT/html']);
 
     expect(accept.mediaTypes).toEqual(['application/json', 'text/html']);
+  });
+
+  it('defaults iterable media types to full weight', () => {
+    const accept = Accept.from(['application/json', 'TEXT/html']);
+
     expect(accept.weights).toEqual([1, 1]);
   });
 
@@ -94,6 +108,14 @@ describe('Accept.from non-string input', () => {
     ]);
 
     expect(accept.mediaTypes).toEqual(['application/json', 'text/html']);
+  });
+
+  it('preserves iterable weights', () => {
+    const accept = Accept.from([
+      ['text/html', 0.3],
+      ['application/json', 0.9],
+    ]);
+
     expect(accept.weights).toEqual([0.9, 0.3]);
   });
 
@@ -108,10 +130,15 @@ describe('Accept.from non-string input', () => {
     expect(accept.mediaTypes).toEqual(['application/json', 'text/html']);
   });
 
-  it('reads weights from a record', () => {
+  it('reads media types from a record', () => {
     const accept = Accept.from({'text/html': 0.4, 'application/json': 0.8});
 
     expect(accept.mediaTypes).toEqual(['application/json', 'text/html']);
+  });
+
+  it('reads weights from a record', () => {
+    const accept = Accept.from({'text/html': 0.4, 'application/json': 0.8});
+
     expect(accept.weights).toEqual([0.8, 0.4]);
   });
 
@@ -124,8 +151,11 @@ describe('Accept.from non-string input', () => {
     expect(accept.mediaTypes).toEqual(['text/html']);
   });
 
-  it('treats an empty iterable and an empty record as accepting nothing', () => {
+  it('treats an empty iterable as accepting nothing', () => {
     expect(Accept.from([]).size).toBe(0);
+  });
+
+  it('treats an empty record as accepting nothing', () => {
     expect(Accept.from({}).size).toBe(0);
   });
 });
@@ -184,21 +214,37 @@ describe('Accept iteration', () => {
       ['application/json', 1],
       ['text/html', 0.8],
     ]);
+  });
+
+  it('exposes the same pairs through entries', () => {
+    const accept = Accept.from('application/json,text/html;q=0.8');
+
     expect([...accept.entries()]).toEqual([...accept]);
   });
 
-  it('visits every entry with forEach, passing the header along', () => {
+  it('visits every entry with forEach', () => {
     const accept = Accept.from('application/json,text/html;q=0.8');
-    const seen: [string, number, boolean][] = [];
+    const seen: [string, number][] = [];
 
-    accept.forEach((mediaType, weight, header) => {
-      seen.push([mediaType, weight, header === accept]);
+    accept.forEach((mediaType, weight) => {
+      seen.push([mediaType, weight]);
     });
 
     expect(seen).toEqual([
-      ['application/json', 1, true],
-      ['text/html', 0.8, true],
+      ['application/json', 1],
+      ['text/html', 0.8],
     ]);
+  });
+
+  it('passes the header to forEach callbacks', () => {
+    const accept = Accept.from('application/json,text/html;q=0.8');
+    const headers: Accept[] = [];
+
+    accept.forEach((_mediaType, _weight, header) => {
+      headers.push(header);
+    });
+
+    expect(headers).toEqual([accept, accept]);
   });
 
   it('binds thisArg inside forEach', () => {

@@ -116,6 +116,16 @@ describe('POST', () => {
     );
 
     expect(response.status).toBe(400);
+  });
+
+  it('returns an invalid patches error for empty patches', async () => {
+    const response = await POST(
+      request(JSON.stringify({patches: []}), {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      }),
+    );
+
     expect(await response.json()).toEqual({
       ok: false,
       error: 'Invalid patches',
@@ -142,6 +152,16 @@ describe('POST', () => {
     );
 
     expect(response.status).toBe(400);
+  });
+
+  it('returns an invalid patches error for patch text input', async () => {
+    const response = await POST(
+      request('not a patch', {
+        'Content-Type': 'text/plain',
+        Accept: 'text/plain',
+      }),
+    );
+
     expect(await response.text()).toBe('Invalid patches');
   });
 
@@ -154,6 +174,16 @@ describe('POST', () => {
     );
 
     expect(response.status).toBe(400);
+  });
+
+  it('returns an invalid JSON body error for malformed JSON', async () => {
+    const response = await POST(
+      request('{not json', {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      }),
+    );
+
     expect(await response.json()).toEqual({
       ok: false,
       error: 'Invalid JSON body',
@@ -181,6 +211,17 @@ describe('POST', () => {
     const response = await POST(req);
 
     expect(response.status).toBe(400);
+  });
+
+  it('returns an invalid text body error when the body cannot be read', async () => {
+    const req = request('', {
+      'Content-Type': 'text/plain',
+      Accept: 'text/plain',
+    });
+    vi.spyOn(req, 'text').mockRejectedValue(new Error('Connection reset'));
+
+    const response = await POST(req);
+
     expect(await response.text()).toBe('Invalid text body');
   });
 

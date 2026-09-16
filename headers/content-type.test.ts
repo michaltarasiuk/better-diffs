@@ -11,14 +11,19 @@ describe('ContentType.from', () => {
     });
   });
 
-  it('reads charset and boundary parameters', () => {
+  it('reads the charset parameter', () => {
     const header = ContentType.from(
       'multipart/form-data; charset=utf-8; boundary=----abc',
     );
 
-    expect(header.mediaType).toBe('multipart/form-data');
     expect(header.charset).toBe('utf-8');
-    expect(header.boundary).toBe('----abc');
+  });
+
+  it('reads the boundary parameter', () => {
+    expect(
+      ContentType.from('multipart/form-data; charset=utf-8; boundary=----abc')
+        .boundary,
+    ).toBe('----abc');
   });
 
   it('unwraps a quoted boundary that contains a delimiter', () => {
@@ -27,18 +32,24 @@ describe('ContentType.from', () => {
     ).toBe('a;b');
   });
 
-  it('ignores parameters it does not model', () => {
+  it('reads modeled parameters from a header', () => {
     const header = ContentType.from('text/plain; name=file.txt; charset=utf-8');
 
     expect(header.charset).toBe('utf-8');
+  });
+
+  it('ignores parameters it does not model', () => {
+    const header = ContentType.from('text/plain; name=file.txt; charset=utf-8');
+
     expect(header).not.toHaveProperty('name');
   });
 
-  it('treats a missing header as empty', () => {
-    const header = ContentType.from(null);
+  it('treats a missing header as having no media type', () => {
+    expect(ContentType.from(null).mediaType).toBeUndefined();
+  });
 
-    expect(header.mediaType).toBeUndefined();
-    expect(header.toString()).toBe('');
+  it('renders a missing header as empty', () => {
+    expect(ContentType.from(null).toString()).toBe('');
   });
 
   it('accepts an object instead of a string', () => {

@@ -31,10 +31,15 @@ afterEach(() => {
 });
 
 describe('GET', () => {
-  it('returns the delete count when authorized', async () => {
+  it('returns 200 when authorized', async () => {
     const response = await GET(request(`Bearer ${env.CRON_SECRET}`));
 
     expect(response.status).toBe(200);
+  });
+
+  it('returns the delete count when authorized', async () => {
+    const response = await GET(request(`Bearer ${env.CRON_SECRET}`));
+
     expect(await response.json()).toEqual({
       ok: true,
       changes: DELETED_SHARES,
@@ -44,7 +49,9 @@ describe('GET', () => {
   it('runs deleteExpiredShares when authorized', async () => {
     await GET(request(`Bearer ${env.CRON_SECRET}`));
 
-    expect(deleteExpiredShares).toHaveBeenCalledOnce();
+    expect(deleteExpiredShares).toHaveBeenCalledExactlyOnceWith({
+      maxAgeHours: 24,
+    });
   });
 
   it.each([
@@ -54,6 +61,14 @@ describe('GET', () => {
     const response = await GET(request(authorization));
 
     expect(response.status).toBe(401);
+  });
+
+  it.each([
+    {name: 'missing authorization', authorization: undefined},
+    {name: 'invalid secret', authorization: 'Bearer invalid'},
+  ])('returns an unauthorized error for $name', async ({authorization}) => {
+    const response = await GET(request(authorization));
+
     expect(await response.json()).toEqual({
       ok: false,
       error: 'Unauthorized',

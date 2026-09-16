@@ -42,6 +42,11 @@ describe('putEvents', () => {
 
   it('accepts an empty batch', async () => {
     await expect(putEvents([])).resolves.toBeUndefined();
+  });
+
+  it('leaves the store empty after an empty batch', async () => {
+    await putEvents([]);
+
     await expect(getEvents(SHARE_ID)).resolves.toEqual([]);
   });
 
@@ -71,13 +76,16 @@ describe('getEvents', () => {
     expect((await getEvents(SHARE_ID)).map((it) => it.seq)).toEqual([1, 2, 3]);
   });
 
-  it('only returns the events of the share it was asked for', async () => {
+  it('returns only one event for the requested share', async () => {
     await putEvents([event(1), event(1, OTHER_SHARE_ID)]);
 
-    const events = await getEvents(SHARE_ID);
+    expect(await getEvents(SHARE_ID)).toHaveLength(1);
+  });
 
-    expect(events).toHaveLength(1);
-    expect(events[0]?.shareId).toBe(SHARE_ID);
+  it('scopes results to the requested share', async () => {
+    await putEvents([event(1), event(1, OTHER_SHARE_ID)]);
+
+    expect((await getEvents(SHARE_ID))[0]?.shareId).toBe(SHARE_ID);
   });
 
   it('round-trips the whole event', async () => {

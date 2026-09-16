@@ -31,7 +31,11 @@ describe('computeDiffStats', () => {
   });
 
   it('counts a file that has no hunks', () => {
-    expect(computeDiffStats([fileDiff()])).toMatchObject({files: 1, lines: 0});
+    expect(computeDiffStats([fileDiff()]).files).toBe(1);
+  });
+
+  it('reports zero lines for a file that has no hunks', () => {
+    expect(computeDiffStats([fileDiff()]).lines).toBe(0);
   });
 });
 

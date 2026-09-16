@@ -99,7 +99,7 @@ describe('useIsMobile', () => {
     renderHook(() => useIsMobile());
     renderHook(() => useIsMobile());
 
-    expect(matchMedia).toHaveBeenCalledOnce();
+    expect(matchMedia).toHaveBeenCalledExactlyOnceWith(BREAKPOINT);
   });
 
   it('stops listening once the last caller unmounts', async () => {

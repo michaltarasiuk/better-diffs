@@ -47,10 +47,15 @@ afterEach(() => {
 });
 
 describe('GET', () => {
-  it('returns share events as JSON', async () => {
+  it('returns 200 for a share event query', async () => {
     const response = await GET(request(), context());
 
     expect(response.status).toBe(200);
+  });
+
+  it('returns share events as JSON', async () => {
+    const response = await GET(request(), context());
+
     expect(await response.json()).toEqual({ok: true, events: [EVENT]});
   });
 
