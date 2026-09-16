@@ -10,15 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Testing
 
-Vitest with a default `node` environment. Add `// @vitest-environment jsdom` at the top of files that render components or hooks. IndexedDB tests run in Vitest browser mode (real Chromium via Playwright), not with `fake-indexeddb`.
-
-Colocate tests as `*.test.ts` or `*.test.tsx` beside the module under test. Prefer direct invocation over spinning up a server: route handlers take a `NextRequest`, Server Action logic is tested as plain async functions with `next/*` mocked at the module boundary.
-
-Use React Testing Library for UI: query by role or accessible name, assert user-visible behavior, avoid implementation details. Mock dependencies with `vi.mock` at import paths (`@/db/...`), not deep internals. Database tests use `createTestDb()` from `db/test-db.ts`. Build request and assertion URLs from `env.BASE_URL` (validated from `.env.test` via `vitest.setup.ts`).
-
-Do not unit-test async Server Components — extract testable logic or cover the route in Playwright. Test env vars live in `.env.test`; never read production secrets in tests.
-
-Skip Vite plugins unless a test fails without them: `resolve.tsconfigPaths` covers `@/*`, esbuild handles JSX from tsconfig.
+Follow `.agents/skills/vitest/SKILL.md` for Vitest setup, conventions, and best practices in this repo.
 
 ## Commit messages
 
