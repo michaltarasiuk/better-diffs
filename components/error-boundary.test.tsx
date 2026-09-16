@@ -27,7 +27,7 @@ function boundary(resetKeys?: unknown[]) {
 }
 
 function renderBoundary(resetKeys?: unknown[]) {
-  render(boundary(resetKeys));
+  return render(boundary(resetKeys));
 }
 
 beforeEach(() => {
@@ -56,7 +56,7 @@ describe('ErrorBoundary', () => {
 
   it('resets when resetKeys change after an error', () => {
     throws = true;
-    const view = render(boundary([1]));
+    const view = renderBoundary([1]);
 
     expect(screen.getByText(FALLBACK)).toBeInTheDocument();
 
