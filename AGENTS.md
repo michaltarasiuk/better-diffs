@@ -10,7 +10,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Testing
 
-Follow `.agents/skills/vitest/SKILL.md` for Vitest setup, conventions, and best practices in this repo.
+Follow `.agents/skills/vitest/SKILL.md` for Vitest API and config. Follow
+`.agents/vitest.md` for repo-specific testing conventions.
 
 ## Commit messages
 
