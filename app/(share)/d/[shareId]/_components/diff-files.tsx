@@ -12,6 +12,7 @@ import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 import type {AnnotationMetadata} from '@/diffs/options';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
+import {ShareStateContext} from '@/events/share-events-provider';
 import type {ThreadState} from '@/events/share-state';
 import {useSelectedLines} from '../_hooks/use-selected-lines';
 import {HandleContext} from '../_lib/handle-context';
@@ -23,7 +24,6 @@ import {
   isFormAnnotation,
 } from './annotation';
 import {FileCollapseButton} from './file-collapse-button';
-import {ShareStateContext} from '@/events/share-events-provider';
 
 type DiffLine = GetHoveredLineResult<'diff'>;
 type HoveredLine = GetHoveredLineResult<'file'> | DiffLine;
