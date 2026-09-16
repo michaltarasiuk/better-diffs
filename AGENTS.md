@@ -10,8 +10,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Testing
 
-Follow `.agents/skills/vitest/SKILL.md` for Vitest API and config. Follow
-`.agents/vitest.md` for repo-specific testing conventions.
+Use `.agents/skills/vitest/SKILL.md` for Vitest API and config.
+
+Vitest uses a `node` environment by default. Add `// @vitest-environment jsdom` when a test renders components or hooks. Tests that need real browser APIs belong in the browser project, not a polyfill.
+
+Colocate tests as `*.test.ts` or `*.test.tsx` beside the module under test. Prefer calling handlers and plain functions directly over starting a server. Mock dependencies at the import boundary with `vi.mock`. Test env vars live in `.env.test`.
 
 ## Commit messages
 
