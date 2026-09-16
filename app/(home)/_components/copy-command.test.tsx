@@ -82,10 +82,15 @@ afterEach(() => {
 });
 
 describe('CopyCommand', () => {
-  it('renders the command with an accessible copy button', () => {
+  it('renders the install command', () => {
     renderCopyCommand();
 
     expect(command().textContent).toBe(COMMAND);
+  });
+
+  it('labels the copy button for assistive tech', () => {
+    renderCopyCommand();
+
     expect(button()).toHaveAccessibleName('Copy command');
   });
 
@@ -93,14 +98,19 @@ describe('CopyCommand', () => {
     renderCopyCommand();
     await copy();
 
-    expect(writeText).toHaveBeenCalledWith(COMMAND);
+    expect(writeText).toHaveBeenCalledExactlyOnceWith(COMMAND);
   });
 
-  it('confirms the copy, then returns to its idle label', async () => {
+  it('confirms the copy', async () => {
     renderCopyCommand();
     await copy();
-    expect(button()).toHaveAccessibleName('Copied');
 
+    expect(button()).toHaveAccessibleName('Copied');
+  });
+
+  it('returns to its idle label after copying', async () => {
+    renderCopyCommand();
+    await copy();
     await act(() => vi.advanceTimersByTimeAsync(COPIED_FEEDBACK_MS));
 
     expect(button()).toHaveAccessibleName('Copy command');
@@ -114,30 +124,57 @@ describe('CopyCommand', () => {
     expect(button()).toHaveAccessibleName('Copied');
   });
 
-  it('restarts the feedback window on a second copy', async () => {
+  it('writes to the clipboard again during the feedback window', async () => {
+    renderCopyCommand();
+    await copy();
+    await act(() => vi.advanceTimersByTimeAsync(COPIED_FEEDBACK_MS - 1));
+    await copy();
+
+    expect(writeText).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps the confirmation up after a second copy', async () => {
     renderCopyCommand();
     await copy();
     await act(() => vi.advanceTimersByTimeAsync(COPIED_FEEDBACK_MS - 1));
     await copy();
     await act(() => vi.advanceTimersByTimeAsync(COPIED_FEEDBACK_MS - 1));
 
-    expect(writeText).toHaveBeenCalledTimes(2);
     expect(button()).toHaveAccessibleName('Copied');
   });
 
-  it('falls back to selecting the command when the clipboard is unavailable', async () => {
+  it('selects the command when the clipboard is unavailable', async () => {
+    writeText.mockRejectedValue(new Error('Clipboard write failed'));
+    renderCopyCommand();
+
+    await copy();
+
+    const selection = window.getSelection();
+    assert(isDefined(selection), 'Selection missing');
+    expect(selection.toString()).toBe(COMMAND);
+  });
+
+  it('labels the button Selected when the clipboard is unavailable', async () => {
     writeText.mockRejectedValue(new Error('Clipboard write failed'));
     renderCopyCommand();
 
     await copy();
 
     expect(button()).toHaveAccessibleName('Selected');
-    const selection = window.getSelection();
-    assert(isDefined(selection), 'Selection missing');
-    expect(selection.toString()).toBe(COMMAND);
-    expect(toastWarning).toHaveBeenCalledWith('Clipboard unavailable', {
-      description: 'Command selected. Press ⌘C or Ctrl+C to copy',
-    });
+  });
+
+  it('warns that the command was selected when the clipboard is unavailable', async () => {
+    writeText.mockRejectedValue(new Error('Clipboard write failed'));
+    renderCopyCommand();
+
+    await copy();
+
+    expect(toastWarning).toHaveBeenCalledExactlyOnceWith(
+      'Clipboard unavailable',
+      {
+        description: 'Command selected. Press ⌘C or Ctrl+C to copy',
+      },
+    );
   });
 
   it('returns to its idle label after selecting the command', async () => {
@@ -151,7 +188,7 @@ describe('CopyCommand', () => {
     expect(button()).toHaveAccessibleName('Copy command');
   });
 
-  it('warns to copy manually when the clipboard and selection are unavailable', async () => {
+  it('keeps the idle label when selection is unavailable', async () => {
     writeText.mockRejectedValue(new Error('Clipboard write failed'));
     vi.spyOn(window, 'getSelection').mockReturnValue(null);
     renderCopyCommand();
@@ -159,8 +196,20 @@ describe('CopyCommand', () => {
     await copy();
 
     expect(button()).toHaveAccessibleName('Copy command');
-    expect(toastWarning).toHaveBeenCalledWith('Clipboard unavailable', {
-      description: 'Copy the command manually',
-    });
+  });
+
+  it('warns to copy manually when selection is unavailable', async () => {
+    writeText.mockRejectedValue(new Error('Clipboard write failed'));
+    vi.spyOn(window, 'getSelection').mockReturnValue(null);
+    renderCopyCommand();
+
+    await copy();
+
+    expect(toastWarning).toHaveBeenCalledExactlyOnceWith(
+      'Clipboard unavailable',
+      {
+        description: 'Copy the command manually',
+      },
+    );
   });
 });

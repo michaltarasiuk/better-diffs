@@ -1,5 +1,5 @@
 import {NextRequest} from 'next/server';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
 import {isDefined} from '@/utils/defined';
@@ -26,8 +26,12 @@ beforeEach(() => {
   deleteExpiredShares.mockResolvedValue(DELETED_SHARES);
 });
 
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe('GET', () => {
-  it('deletes expired shares when authorized', async () => {
+  it('returns the delete count when authorized', async () => {
     const response = await GET(request(`Bearer ${env.CRON_SECRET}`));
 
     expect(response.status).toBe(200);
@@ -35,8 +39,12 @@ describe('GET', () => {
       ok: true,
       changes: DELETED_SHARES,
     });
+  });
 
-    expect(deleteExpiredShares).toHaveBeenCalled();
+  it('runs deleteExpiredShares when authorized', async () => {
+    await GET(request(`Bearer ${env.CRON_SECRET}`));
+
+    expect(deleteExpiredShares).toHaveBeenCalledOnce();
   });
 
   it.each([
@@ -50,6 +58,13 @@ describe('GET', () => {
       ok: false,
       error: 'Unauthorized',
     });
+  });
+
+  it.each([
+    {name: 'missing authorization', authorization: undefined},
+    {name: 'invalid secret', authorization: 'Bearer invalid'},
+  ])('skips deletion for $name', async ({authorization}) => {
+    await GET(request(authorization));
 
     expect(deleteExpiredShares).not.toHaveBeenCalled();
   });

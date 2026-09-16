@@ -10,8 +10,12 @@ const LINES = {
 };
 
 describe('loadDiffSearchParams', () => {
-  it('defaults query and line selection to null', () => {
-    expect(loadDiffSearchParams({})).toEqual({q: null, lines: null});
+  it('defaults the query to null', () => {
+    expect(loadDiffSearchParams({}).q).toBe(null);
+  });
+
+  it('defaults line selection to null', () => {
+    expect(loadDiffSearchParams({}).lines).toBe(null);
   });
 
   describe('q', () => {

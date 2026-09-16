@@ -1,5 +1,5 @@
 import {NextRequest} from 'next/server';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
 import type {ShareEvent} from '@/events/schemas';
@@ -42,25 +42,34 @@ beforeEach(() => {
   getEvents.mockResolvedValue([EVENT]);
 });
 
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe('GET', () => {
-  it('returns share events as JSON with no-store caching', async () => {
+  it('returns share events as JSON', async () => {
     const response = await GET(request(), context());
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ok: true, events: [EVENT]});
+  });
+
+  it('disables caching on the response', async () => {
+    const response = await GET(request(), context());
+
     expect(response.headers.get('Cache-Control')).toBe('no-store');
   });
 
   it('starts from the beginning when no cursor is given', async () => {
     await GET(request(), context());
 
-    expect(getEvents).toHaveBeenCalledWith(SHARE_ID, 0);
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(SHARE_ID, 0);
   });
 
   it('forwards the afterSeq cursor', async () => {
     await GET(request('?afterSeq=7'), context());
 
-    expect(getEvents).toHaveBeenCalledWith(SHARE_ID, 7);
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(SHARE_ID, 7);
   });
 
   it.each([
@@ -69,7 +78,7 @@ describe('GET', () => {
   ])('falls back to the beginning for $name', async ({search}) => {
     await GET(request(search), context());
 
-    expect(getEvents).toHaveBeenCalledWith(SHARE_ID, 0);
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(SHARE_ID, 0);
   });
 
   it('returns an empty event list', async () => {
