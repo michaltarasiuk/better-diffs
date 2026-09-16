@@ -39,7 +39,7 @@ export function FilesPanel({
       void setSearchQuery(value);
     },
     onSelectionChange([selectedPath]) {
-      if (!isDefined(selectedPath)) {
+      if (!isDefined(selectedPath) || selectedPath.endsWith('/')) {
         return;
       }
 
