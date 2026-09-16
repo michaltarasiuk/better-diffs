@@ -23,7 +23,7 @@ import {
   isFormAnnotation,
 } from './annotation';
 import {FileCollapseButton} from './file-collapse-button';
-import {ShareStateContext} from './sync-events';
+import {ShareStateContext} from '@/events/share-events-provider';
 
 type DiffLine = GetHoveredLineResult<'diff'>;
 type HoveredLine = GetHoveredLineResult<'file'> | DiffLine;
