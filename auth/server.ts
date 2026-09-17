@@ -2,9 +2,11 @@ import 'server-only';
 
 import {headers} from 'next/headers';
 
-import {auth} from '@/auth/auth';
+import {auth, type Session} from '@/auth/auth';
 
-export async function getSession() {
+export type {Session};
+
+export async function getSession(): Promise<Session | null> {
   return auth.api.getSession({
     headers: await headers(),
   });

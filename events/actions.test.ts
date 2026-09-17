@@ -1,16 +1,15 @@
 import type {SerializedEditorState} from 'lexical';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-import type {getSession as getSessionFn} from '@/auth/server';
-import type {appendEvents as appendEventsFn} from '@/db/events';
+import type {Session} from '@/auth/server';
 import {FIXTURE} from '@/fixtures/fixture';
 import {openThread} from './actions';
 import type {Anchor, ShareEventPayload} from './schemas';
 
 const {appendEvents, getSession, unauthorized} = vi.hoisted(() => ({
-  appendEvents: vi.fn<typeof appendEventsFn>(),
-  getSession: vi.fn<typeof getSessionFn>(),
-  unauthorized: vi.fn<() => never>(() => {
+  appendEvents: vi.fn(),
+  getSession: vi.fn(),
+  unauthorized: vi.fn(() => {
     throw new Error('Unauthorized');
   }),
 }));
@@ -64,7 +63,7 @@ function openThreadPayloads(input: OpenThreadInput) {
 function session() {
   return {
     user: {id: FIXTURE.actor.id},
-  } as NonNullable<Awaited<ReturnType<typeof getSessionFn>>>;
+  } as Session;
 }
 
 beforeEach(() => {
@@ -95,7 +94,11 @@ describe('openThread', () => {
 
   it('rejects anchors that belong to another share', async () => {
     await expect(
-      openThread(openThreadInput({anchor: anchor(3, FIXTURE.share.alt)})),
+      openThread(
+        openThreadInput({
+          anchor: anchor(3, FIXTURE.share.alt),
+        }),
+      ),
     ).rejects.toThrow(
       `Anchor shareId ${FIXTURE.share.alt} does not match ${FIXTURE.share.id}`,
     );
