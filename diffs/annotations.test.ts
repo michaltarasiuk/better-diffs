@@ -56,7 +56,10 @@ describe('isFormAnnotation', () => {
     expect(
       isFormAnnotation(
         annotation({
-          metadata: {type: 'thread', threadId: FIXTURE.thread.id},
+          metadata: {
+            type: 'thread',
+            threadId: FIXTURE.thread.id,
+          },
         }),
       ),
     ).toBe(false);
@@ -88,7 +91,10 @@ describe('toThreadAnnotation', () => {
     ).toEqual({
       side: 'deletions',
       lineNumber: 12,
-      metadata: {type: 'thread', threadId: FIXTURE.thread.second},
+      metadata: {
+        type: 'thread',
+        threadId: FIXTURE.thread.second,
+      },
     });
   });
 });
@@ -105,7 +111,10 @@ describe('sortAnnotations', () => {
       side: 'additions',
     });
     const second = annotation({
-      metadata: {type: 'thread', threadId: FIXTURE.thread.id},
+      metadata: {
+        type: 'thread',
+        threadId: FIXTURE.thread.id,
+      },
       lineNumber: 3,
       side: 'deletions',
     });
@@ -129,7 +138,10 @@ describe('sortAnnotations', () => {
       side: 'additions',
     });
     const deletions = annotation({
-      metadata: {type: 'thread', threadId: FIXTURE.thread.id},
+      metadata: {
+        type: 'thread',
+        threadId: FIXTURE.thread.id,
+      },
       lineNumber: 4,
       side: 'deletions',
     });
@@ -188,7 +200,10 @@ describe('isDiffLine', () => {
   });
 
   it('narrows the type when the check passes', () => {
-    const line: HoveredLine = diffLine({side: 'deletions', lineNumber: 3});
+    const line: HoveredLine = diffLine({
+      side: 'deletions',
+      lineNumber: 3,
+    });
 
     assert(isDiffLine(line), 'Expected diff line');
 

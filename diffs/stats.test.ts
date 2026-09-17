@@ -20,12 +20,26 @@ describe('computeDiffStats', () => {
     expect(
       computeDiffStats([
         fileDiff(
-          {additionLines: 3, deletionLines: 1},
-          {additionLines: 2, deletionLines: 0},
+          {
+            additionLines: 3,
+            deletionLines: 1,
+          },
+          {
+            additionLines: 2,
+            deletionLines: 0,
+          },
         ),
-        fileDiff({additionLines: 0, deletionLines: 4}),
+        fileDiff({
+          additionLines: 0,
+          deletionLines: 4,
+        }),
       ]),
-    ).toEqual({files: 2, additions: 5, deletions: 5, lines: 10});
+    ).toEqual({
+      files: 2,
+      additions: 5,
+      deletions: 5,
+      lines: 10,
+    });
   });
 
   it('counts a file with no hunks and reports zero line changes', () => {

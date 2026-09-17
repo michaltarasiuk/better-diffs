@@ -21,7 +21,10 @@ function event(seq: number, shareId: string = FIXTURE.share.id) {
     type: 'thread.resolved',
     subjectId: FIXTURE.thread.id,
     actorId: FIXTURE.actor.id,
-    payload: {$type: 'thread.resolved', threadId: FIXTURE.thread.id},
+    payload: {
+      $type: 'thread.resolved',
+      threadId: FIXTURE.thread.id,
+    },
     createdAt: FIXTURE.time.created,
   } satisfies ShareEvent;
 }

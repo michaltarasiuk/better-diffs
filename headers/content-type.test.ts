@@ -53,7 +53,10 @@ describe('ContentType.from', () => {
   });
 
   it('accepts an object instead of a string', () => {
-    const header = ContentType.from({mediaType: 'text/html', charset: 'utf-8'});
+    const header = ContentType.from({
+      mediaType: 'text/html',
+      charset: 'utf-8',
+    });
 
     expect(header.toString()).toBe('text/html; charset=utf-8');
   });

@@ -7,7 +7,11 @@ const QUERY = 'query with spaces';
 
 const LINES = {
   id: 'src/a.ts',
-  range: {start: 3, end: 9, side: 'additions'},
+  range: {
+    start: 3,
+    end: 9,
+    side: 'additions',
+  },
 } satisfies SelectedLines;
 
 describe('loadDiffSearchParams', () => {

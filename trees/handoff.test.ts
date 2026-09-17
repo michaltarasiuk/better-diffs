@@ -42,7 +42,10 @@ describe('prepareTreeHandoff', () => {
   });
 
   it('returns empty handoff data for no files', () => {
-    expect(prepareTreeHandoff([])).toEqual({paths: [], gitStatus: []});
+    expect(prepareTreeHandoff([])).toEqual({
+      paths: [],
+      gitStatus: [],
+    });
   });
 });
 

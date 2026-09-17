@@ -50,7 +50,10 @@ describe('GET', () => {
   it('returns share events as JSON', async () => {
     const response = await GET(request(), context());
 
-    expect(await response.json()).toEqual({ok: true, events: [EVENT]});
+    expect(await response.json()).toEqual({
+      ok: true,
+      events: [EVENT],
+    });
   });
 
   it('disables caching on the response', async () => {
@@ -85,6 +88,9 @@ describe('GET', () => {
 
     const response = await GET(request(), context());
 
-    expect(await response.json()).toEqual({ok: true, events: []});
+    expect(await response.json()).toEqual({
+      ok: true,
+      events: [],
+    });
   });
 });

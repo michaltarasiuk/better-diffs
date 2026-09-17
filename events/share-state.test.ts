@@ -26,9 +26,7 @@ function anchor(line = 1) {
 }
 
 function body(text: string) {
-  return {
-    text,
-  } as unknown as SerializedEditorState;
+  return {text} as unknown as SerializedEditorState;
 }
 
 function opened(threadId: string, line = 1) {

@@ -166,9 +166,7 @@ describe('CopyCommand', () => {
 
     expect(toastWarning).toHaveBeenCalledExactlyOnceWith(
       'Clipboard unavailable',
-      {
-        description: 'Command selected. Press ⌘C or Ctrl+C to copy',
-      },
+      {description: 'Command selected. Press ⌘C or Ctrl+C to copy'},
     );
   });
 
@@ -200,9 +198,7 @@ describe('CopyCommand', () => {
 
     expect(toastWarning).toHaveBeenCalledExactlyOnceWith(
       'Clipboard unavailable',
-      {
-        description: 'Copy the command manually',
-      },
+      {description: 'Copy the command manually'},
     );
   });
 });
