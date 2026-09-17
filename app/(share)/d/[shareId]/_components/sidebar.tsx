@@ -19,7 +19,7 @@ export function Sidebar({children}: {readonly children: React.ReactNode}) {
       setIsResizing(true);
     },
     onMove(event) {
-      setWidth((width) => clampWidth(width + event.deltaX));
+      setWidth((w) => clampWidth(w + event.deltaX));
     },
     onMoveEnd() {
       setIsResizing(false);

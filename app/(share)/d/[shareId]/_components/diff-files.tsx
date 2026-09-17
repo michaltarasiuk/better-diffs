@@ -2,18 +2,21 @@
 
 import '@/diffs/diffs.css';
 
-import {use, useState} from 'react';
+import {use} from 'react';
 import type {FileDiffMetadata, GetHoveredLineResult} from '@pierre/diffs';
 import {isDiffAnnotation} from '@pierre/diffs';
 import {CodeView} from '@pierre/diffs/react';
 
+import {useLocalStorage} from '@/hooks/use-local-storage';
 import {useIsMobile} from '@/hooks/use-media-query';
 import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
+import {deserializeMap, serializeMap} from '@/utils/serialize-map';
 import type {AnnotationMetadata} from '@/diffs/options';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
 import {ShareStateContext} from '@/events/share-events-provider';
 import type {ThreadState} from '@/events/share-state';
+import {useShareId} from '@/app/(share)/d/[shareId]/_hooks/use-share-id';
 import {useSelectedLines} from '../_hooks/use-selected-lines';
 import {HandleContext} from '../_lib/handle-context';
 import {
@@ -60,8 +63,15 @@ interface DiffFilesProps {
 }
 
 export function DiffFiles({files}: DiffFilesProps) {
-  const [fileStateById, setFileStateById] = useState(
+  const shareId = useShareId();
+
+  const [fileStateById, setFileStateById] = useLocalStorage(
+    `diff-files:v1:${shareId}`,
     () => new Map() as ReadonlyMap<string, FileState>,
+    {
+      serialize: serializeMap<string, FileState>,
+      deserialize: deserializeMap<string, FileState>,
+    },
   );
   const {selectedLines, setSelectedLines} = useSelectedLines();
 

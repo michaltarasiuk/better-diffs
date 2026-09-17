@@ -30,6 +30,13 @@ When a message names a record, append the identifier after a colon: `Comment not
 
 Errors constructed as test fixtures are opaque values, not messages, so they need none of this.
 
+## React state
+
+Name functional `setState` updater parameters from the state variable:
+first letter for a single word (`setNumber(n => …)`), first letters of
+each camelCase segment otherwise (`setLastName(ln => …)`). See
+https://react.dev/learn/queueing-a-series-of-state-updates#naming-conventions
+
 ## Comments
 
 Only comment to record a constraint the code cannot show: an upstream quirk, a browser difference, a non-obvious ordering requirement. Never narrate what the code does, and never explain a change you just made.
