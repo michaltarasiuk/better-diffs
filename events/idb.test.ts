@@ -13,7 +13,7 @@ import type {ShareEvent} from './schemas';
 
 const BODY = {text: 'value'} as unknown as SerializedEditorState;
 
-function event(seq: number, shareId: string = FIXTURE.share.id): ShareEvent {
+function event(seq: number, shareId: string = FIXTURE.share.id) {
   return {
     id: `event-${shareId}-${seq}`,
     shareId,
@@ -23,7 +23,7 @@ function event(seq: number, shareId: string = FIXTURE.share.id): ShareEvent {
     actorId: FIXTURE.actor.id,
     payload: {$type: 'thread.resolved', threadId: FIXTURE.thread.id},
     createdAt: FIXTURE.time.created,
-  };
+  } satisfies ShareEvent;
 }
 
 beforeEach(() => clearEvents());

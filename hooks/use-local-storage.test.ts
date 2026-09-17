@@ -12,7 +12,9 @@ interface Preference {
   theme: 'light' | 'dark';
 }
 
-const initialPreference = (): Preference => ({theme: 'light'});
+function initialPreference() {
+  return {theme: 'light' as Preference['theme']} satisfies Preference;
+}
 
 function dispatchStorage(key: string | null, newValue: string | null) {
   window.dispatchEvent(new StorageEvent('storage', {key, newValue}));

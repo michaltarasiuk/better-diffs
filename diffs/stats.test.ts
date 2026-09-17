@@ -2,8 +2,8 @@ import {describe, expect, it} from 'vitest';
 
 import {computeDiffStats, type DiffStatsFile, formatDiffStat} from './stats';
 
-function fileDiff(...hunks: DiffStatsFile['hunks'][number][]): DiffStatsFile {
-  return {hunks};
+function fileDiff(...hunks: DiffStatsFile['hunks'][number][]) {
+  return {hunks} satisfies DiffStatsFile;
 }
 
 describe('computeDiffStats', () => {

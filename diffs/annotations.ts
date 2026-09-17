@@ -21,7 +21,10 @@ export function toThreadAnnotation(thread: ThreadState): DiffAnnotation {
   return {
     side: thread.anchor.side,
     lineNumber: thread.anchor.line,
-    metadata: {type: 'thread', threadId: thread.id},
+    metadata: {
+      type: 'thread',
+      threadId: thread.id,
+    },
   };
 }
 

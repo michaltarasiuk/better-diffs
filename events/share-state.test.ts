@@ -9,47 +9,73 @@ import type {
   ShareEvent,
   ShareEventPayload,
 } from './schemas';
-import {foldEvents, isType, ShareState} from './share-state';
+import {
+  foldEvents,
+  isType,
+  type OptimisticEvent,
+  ShareState,
+} from './share-state';
 
-function anchor(line = 1): Anchor {
+function anchor(line = 1) {
   return {
     shareId: FIXTURE.share.id,
     filePath: 'src/a.ts',
     side: 'additions',
     line,
-  };
+  } satisfies Anchor;
 }
 
 function body(text: string) {
-  return {text} as unknown as SerializedEditorState;
+  return {
+    text,
+  } as unknown as SerializedEditorState;
 }
 
-function opened(threadId: string, line = 1): ShareEventPayload {
-  return {$type: 'thread.opened', threadId, anchor: anchor(line)};
+function opened(threadId: string, line = 1) {
+  return {
+    $type: 'thread.opened',
+    threadId,
+    anchor: anchor(line),
+  } satisfies ShareEventPayload;
 }
 
-function resolved(threadId: string): ShareEventPayload {
-  return {$type: 'thread.resolved', threadId};
+function resolved(threadId: string) {
+  return {
+    $type: 'thread.resolved',
+    threadId,
+  } satisfies ShareEventPayload;
 }
 
-function created(
-  threadId: string,
-  commentId: string,
-  text = 'value',
-): ShareEventPayload {
-  return {$type: 'comment.created', threadId, commentId, body: body(text)};
+function created(threadId: string, commentId: string, text = 'value') {
+  return {
+    $type: 'comment.created',
+    threadId,
+    commentId,
+    body: body(text),
+  } satisfies ShareEventPayload;
 }
 
-function edited(commentId: string, text: string): ShareEventPayload {
-  return {$type: 'comment.edited', commentId, body: body(text)};
+function edited(commentId: string, text: string) {
+  return {
+    $type: 'comment.edited',
+    commentId,
+    body: body(text),
+  } satisfies ShareEventPayload;
 }
 
-function removed(commentId: string): ShareEventPayload {
-  return {$type: 'comment.deleted', commentId};
+function removed(commentId: string) {
+  return {
+    $type: 'comment.deleted',
+    commentId,
+  } satisfies ShareEventPayload;
 }
 
 function optimisticEvent(payload: ShareEventPayload) {
-  return {actorId: FIXTURE.actor.id, createdAt: FIXTURE.time.created, payload};
+  return {
+    actorId: FIXTURE.actor.id,
+    createdAt: FIXTURE.time.created,
+    payload,
+  } satisfies OptimisticEvent;
 }
 
 function eventLog() {
@@ -67,7 +93,7 @@ function eventLog() {
         actorId: FIXTURE.actor.id,
         payload,
         createdAt: FIXTURE.time.created,
-      };
+      } satisfies ShareEvent;
     });
 }
 
