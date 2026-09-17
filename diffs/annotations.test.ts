@@ -44,9 +44,9 @@ describe('isFormAnnotation', () => {
     expect(
       isFormAnnotation(
         annotation({
-          metadata: {type: 'form'},
-          lineNumber: 2,
           side: 'deletions',
+          lineNumber: 2,
+          metadata: {type: 'form'},
         }),
       ),
     ).toBe(true);
@@ -106,22 +106,22 @@ describe('sortAnnotations', () => {
 
   it('sorts by line number ascending', () => {
     const first = annotation({
-      metadata: {type: 'form'},
-      lineNumber: 1,
       side: 'additions',
+      lineNumber: 1,
+      metadata: {type: 'form'},
     });
     const second = annotation({
+      side: 'deletions',
+      lineNumber: 3,
       metadata: {
         type: 'thread',
         threadId: FIXTURE.thread.id,
       },
-      lineNumber: 3,
-      side: 'deletions',
     });
     const third = annotation({
-      metadata: {type: 'form'},
-      lineNumber: 2,
       side: 'additions',
+      lineNumber: 2,
+      metadata: {type: 'form'},
     });
 
     expect(sortAnnotations([second, third, first])).toEqual([
@@ -133,17 +133,17 @@ describe('sortAnnotations', () => {
 
   it('orders deletions before additions on the same line', () => {
     const additions = annotation({
-      metadata: {type: 'form'},
-      lineNumber: 4,
       side: 'additions',
+      lineNumber: 4,
+      metadata: {type: 'form'},
     });
     const deletions = annotation({
+      side: 'deletions',
+      lineNumber: 4,
       metadata: {
         type: 'thread',
         threadId: FIXTURE.thread.id,
       },
-      lineNumber: 4,
-      side: 'deletions',
     });
 
     expect(sortAnnotations([additions, deletions])).toEqual([
@@ -155,14 +155,14 @@ describe('sortAnnotations', () => {
   it('does not mutate the input array', () => {
     const annotations = [
       annotation({
-        metadata: {type: 'form'},
-        lineNumber: 2,
         side: 'additions',
+        lineNumber: 2,
+        metadata: {type: 'form'},
       }),
       annotation({
-        metadata: {type: 'form'},
-        lineNumber: 1,
         side: 'additions',
+        lineNumber: 1,
+        metadata: {type: 'form'},
       }),
     ];
 

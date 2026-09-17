@@ -5,9 +5,9 @@ import {ContentType} from './content-type';
 describe('ContentType.from', () => {
   it('reads the media type on its own', () => {
     expect(ContentType.from('text/plain')).toMatchObject({
-      mediaType: 'text/plain',
-      charset: undefined,
       boundary: undefined,
+      charset: undefined,
+      mediaType: 'text/plain',
     });
   });
 
@@ -54,8 +54,8 @@ describe('ContentType.from', () => {
 
   it('accepts an object instead of a string', () => {
     const header = ContentType.from({
-      mediaType: 'text/html',
       charset: 'utf-8',
+      mediaType: 'text/html',
     });
 
     expect(header.toString()).toBe('text/html; charset=utf-8');
@@ -70,8 +70,8 @@ describe('ContentType#toString', () => {
   it('quotes a parameter that needs it', () => {
     expect(
       ContentType.from({
-        mediaType: 'multipart/form-data',
         boundary: 'a;b',
+        mediaType: 'multipart/form-data',
       }).toString(),
     ).toBe('multipart/form-data; boundary="a;b"');
   });
