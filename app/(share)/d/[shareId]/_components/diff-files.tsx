@@ -61,7 +61,7 @@ export function DiffFiles({files}: DiffFilesProps) {
   const shareId = useShareId();
 
   const [fileStateById, setFileStateById] = useLocalStorage(
-    `diff-files:v1:${shareId}`,
+    `diff:v1:${shareId}`,
     () => new Map() as ReadonlyMap<string, FileState>,
     {
       serialize: serializeMap<string, FileState>,
