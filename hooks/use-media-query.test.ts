@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import {act, renderHook} from '@testing-library/react';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {isDefined} from '@/utils/defined';
 
@@ -41,10 +41,6 @@ beforeEach(() => {
   matchMedia = vi.fn(listFor);
   vi.stubGlobal('matchMedia', matchMedia);
   vi.resetModules();
-});
-
-afterEach(() => {
-  vi.unstubAllGlobals();
 });
 
 describe('useIsMobile', () => {

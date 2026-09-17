@@ -18,6 +18,8 @@ Colocate tests as `*.test.ts` or `*.test.tsx` beside the module under test. Pref
 
 Import stable ids and timestamps from `@/fixtures/fixture` instead of inventing literals like `'share-id'` or `'thread-1'`. Add new entries to `FIXTURE` when a test needs another stable value.
 
+Vitest clears mock call history (`clearMocks`), restores `vi.spyOn` spies (`restoreMocks`), and unstubs globals (`unstubGlobals`) automatically. Do not call `mockClear`, `mockReset`, or `restoreAllMocks` for that. Hoist bare `vi.fn()` mocks, put default return values in `beforeEach` when a test may override them, and keep permanent mock behavior (such as throwing) in the hoisted factory.
+
 ## Commit messages
 
 Use imperative mood, sentence case, no trailing period. Start with a capital verb, lowercase the rest unless a proper noun.
