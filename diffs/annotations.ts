@@ -1,11 +1,9 @@
 import type {DiffLineAnnotation, GetHoveredLineResult} from '@pierre/diffs';
 
 import type {ThreadState} from '@/events/share-state';
-
 import type {AnnotationMetadata} from './options';
 
 export type DiffAnnotation = DiffLineAnnotation<AnnotationMetadata>;
-
 export type FormDiffAnnotation = DiffLineAnnotation<{readonly type: 'form'}>;
 
 const ANNOTATION_SIDE_ORDER = {
@@ -19,6 +17,14 @@ export function isFormAnnotation(
   return annotation.metadata.type === 'form';
 }
 
+export function toThreadAnnotation(thread: ThreadState): DiffAnnotation {
+  return {
+    side: thread.anchor.side,
+    lineNumber: thread.anchor.line,
+    metadata: {type: 'thread', threadId: thread.id},
+  };
+}
+
 export function sortAnnotations<T extends DiffAnnotation>(
   annotations: readonly T[],
 ) {
@@ -27,14 +33,6 @@ export function sortAnnotations<T extends DiffAnnotation>(
       a.lineNumber - b.lineNumber ||
       ANNOTATION_SIDE_ORDER[a.side] - ANNOTATION_SIDE_ORDER[b.side],
   );
-}
-
-export function toThreadAnnotation(thread: ThreadState): DiffAnnotation {
-  return {
-    side: thread.anchor.side,
-    lineNumber: thread.anchor.line,
-    metadata: {type: 'thread', threadId: thread.id},
-  };
 }
 
 type DiffLine = GetHoveredLineResult<'diff'>;
