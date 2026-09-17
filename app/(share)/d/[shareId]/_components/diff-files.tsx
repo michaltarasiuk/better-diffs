@@ -12,6 +12,13 @@ import {useIsMobile} from '@/hooks/use-media-query';
 import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 import {deserializeMap, serializeMap} from '@/utils/serialize-map';
+import {
+  type FormDiffAnnotation,
+  isDiffLine,
+  isFormAnnotation,
+  sortAnnotations,
+  toThreadAnnotation,
+} from '@/diffs/annotations';
 import type {AnnotationMetadata} from '@/diffs/options';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
 import {ShareStateContext} from '@/events/share-events-provider';
@@ -19,17 +26,10 @@ import type {ThreadState} from '@/events/share-state';
 import {useShareId} from '@/app/(share)/d/[shareId]/_hooks/use-share-id';
 import {useSelectedLines} from '../_hooks/use-selected-lines';
 import {HandleContext} from '../_lib/handle-context';
-import {
-  AddCommentButton,
-  Annotation,
-  type DiffAnnotation,
-  type FormDiffAnnotation,
-  isFormAnnotation,
-} from './annotation';
+import {AddCommentButton, Annotation} from './annotation';
 import {FileCollapseButton} from './file-collapse-button';
 
 type DiffLine = GetHoveredLineResult<'diff'>;
-type HoveredLine = GetHoveredLineResult<'file'> | DiffLine;
 
 interface FileState {
   readonly forms: readonly FormDiffAnnotation[];
@@ -49,11 +49,6 @@ const CODE_VIEW_STYLE = {
   height: '100%',
   overflow: 'auto',
 } satisfies React.CSSProperties;
-
-const ANNOTATION_SIDE_ORDER = {
-  deletions: 0,
-  additions: 1,
-} as const;
 
 interface DiffFilesProps {
   readonly files: readonly {
@@ -194,24 +189,4 @@ export function DiffFiles({files}: DiffFilesProps) {
       style={CODE_VIEW_STYLE}
     />
   );
-}
-
-function toThreadAnnotation(thread: ThreadState): DiffAnnotation {
-  return {
-    side: thread.anchor.side,
-    lineNumber: thread.anchor.line,
-    metadata: {type: 'thread', threadId: thread.id},
-  };
-}
-
-function sortAnnotations<T extends DiffAnnotation>(annotations: readonly T[]) {
-  return annotations.toSorted(
-    (a, b) =>
-      a.lineNumber - b.lineNumber ||
-      ANNOTATION_SIDE_ORDER[a.side] - ANNOTATION_SIDE_ORDER[b.side],
-  );
-}
-
-function isDiffLine(line: HoveredLine): line is DiffLine {
-  return 'side' in line;
 }

@@ -3,7 +3,6 @@
 import {createContext, use, useState} from 'react';
 import dynamic from 'next/dynamic';
 import {Button, Card, Spinner} from '@heroui/react';
-import type {DiffLineAnnotation} from '@pierre/diffs';
 import {getLineAnnotationName} from '@pierre/diffs';
 import {PlusIcon} from 'lucide-react';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
@@ -14,7 +13,7 @@ import {isDefined} from '@/utils/defined';
 import {authClient} from '@/auth/client';
 import {SessionContext} from '@/auth/context';
 import {GitHubIcon} from '@/auth/github-icon';
-import type {AnnotationMetadata} from '@/diffs/options';
+import {type DiffAnnotation, isFormAnnotation} from '@/diffs/annotations';
 import {openThread} from '@/events/actions';
 import type {Anchor} from '@/events/schemas';
 import {ShareStoreContext} from '@/events/share-events-provider';
@@ -29,16 +28,6 @@ const CommentEditor = dynamic(
   () => import('./comment-editor').then((module) => module.CommentEditor),
   {loading: () => <CommentEditorSkeleton />},
 );
-
-export type DiffAnnotation = DiffLineAnnotation<AnnotationMetadata>;
-
-export type FormDiffAnnotation = DiffLineAnnotation<{readonly type: 'form'}>;
-
-export function isFormAnnotation(
-  annotation: DiffAnnotation,
-): annotation is FormDiffAnnotation {
-  return annotation.metadata.type === 'form';
-}
 
 const AnnotationContext = createContext<DiffAnnotation>(null as never);
 
