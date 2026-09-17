@@ -1,7 +1,7 @@
 import type {SerializedEditorState} from 'lexical';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-import type {Session} from '@/auth/server';
+import type {Session} from '@/auth/auth';
 import {FIXTURE} from '@/fixtures/fixture';
 import {openThread} from './actions';
 import type {Anchor, ShareEventPayload} from './schemas';
@@ -67,9 +67,6 @@ function session() {
 }
 
 beforeEach(() => {
-  getSession.mockReset();
-  appendEvents.mockReset();
-  unauthorized.mockClear();
   getSession.mockResolvedValue(session());
   appendEvents.mockResolvedValue([]);
 });
@@ -94,11 +91,7 @@ describe('openThread', () => {
 
   it('rejects anchors that belong to another share', async () => {
     await expect(
-      openThread(
-        openThreadInput({
-          anchor: anchor(3, FIXTURE.share.alt),
-        }),
-      ),
+      openThread(openThreadInput({anchor: anchor(3, FIXTURE.share.alt)})),
     ).rejects.toThrow(
       `Anchor shareId ${FIXTURE.share.alt} does not match ${FIXTURE.share.id}`,
     );

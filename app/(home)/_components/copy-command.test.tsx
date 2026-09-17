@@ -69,11 +69,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   vi.useFakeTimers();
-
-  writeText.mockReset();
   writeText.mockResolvedValue();
-
-  toastWarning.mockReset();
 });
 
 afterEach(() => {

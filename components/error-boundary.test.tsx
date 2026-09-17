@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import {render, screen} from '@testing-library/react';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {ErrorBoundary} from './error-boundary';
 
@@ -33,10 +33,6 @@ function renderBoundary(resetKeys?: unknown[]) {
 beforeEach(() => {
   throws = false;
   vi.spyOn(console, 'error').mockImplementation(() => {});
-});
-
-afterEach(() => {
-  vi.restoreAllMocks();
 });
 
 describe('ErrorBoundary', () => {

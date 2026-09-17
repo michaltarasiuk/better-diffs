@@ -30,7 +30,6 @@ function request(body: string, headers: Record<string, string>) {
 }
 
 beforeEach(() => {
-  createShare.mockReset();
   createShare.mockResolvedValue(FIXTURE.share.id);
 });
 

@@ -1,14 +1,6 @@
 // @vitest-environment jsdom
 
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  type MockInstance,
-  vi,
-} from 'vitest';
+import {beforeEach, describe, expect, it, type MockInstance, vi} from 'vitest';
 
 import type {StorageType} from './storage-available';
 
@@ -30,10 +22,6 @@ beforeEach(() => {
   localStorage.clear();
   sessionStorage.clear();
   vi.resetModules();
-});
-
-afterEach(() => {
-  vi.restoreAllMocks();
 });
 
 describe('storageAvailable', () => {

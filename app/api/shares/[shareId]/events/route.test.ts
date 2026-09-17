@@ -37,7 +37,6 @@ function context() {
 }
 
 beforeEach(() => {
-  getEvents.mockReset();
   getEvents.mockResolvedValue([EVENT]);
 });
 

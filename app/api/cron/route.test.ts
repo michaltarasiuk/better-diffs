@@ -5,24 +5,23 @@ import {env} from '@/env';
 import {isDefined} from '@/utils/defined';
 import {GET} from './route';
 
+const DELETED_SHARES = 3;
+
 const {deleteExpiredShares} = vi.hoisted(() => ({
   deleteExpiredShares: vi.fn<() => number>(),
 }));
 
 vi.mock('@/db/shares', () => ({deleteExpiredShares}));
 
-const DELETED_SHARES = 3;
+beforeEach(() => {
+  deleteExpiredShares.mockResolvedValue(DELETED_SHARES);
+});
 
 function request(authorization?: string) {
   return new NextRequest(`${env.BASE_URL}/api/cron`, {
     headers: isDefined(authorization) ? {authorization} : {},
   });
 }
-
-beforeEach(() => {
-  deleteExpiredShares.mockReset();
-  deleteExpiredShares.mockResolvedValue(DELETED_SHARES);
-});
 
 describe('GET', () => {
   it('returns 200 when authorized', async () => {
