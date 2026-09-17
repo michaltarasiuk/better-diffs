@@ -25,7 +25,7 @@ function anchor(line = 3, shareId: string = FIXTURE.share.id) {
   return {
     shareId,
     filePath: 'src/a.ts',
-    side: 'additions' as Anchor['side'],
+    side: 'additions',
     line,
   } satisfies Anchor;
 }

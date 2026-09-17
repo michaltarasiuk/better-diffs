@@ -13,7 +13,11 @@ interface Preference {
 }
 
 function initialPreference() {
-  return {theme: 'light' as Preference['theme']} satisfies Preference;
+  return {theme: 'light'} satisfies Preference;
+}
+
+function renderPreferenceHook() {
+  return renderHook(() => useLocalStorage<Preference>(KEY, initialPreference));
 }
 
 function dispatchStorage(key: string | null, newValue: string | null) {
@@ -26,7 +30,7 @@ beforeEach(() => {
 
 describe('useLocalStorage', () => {
   it('returns the initial value when nothing is stored', () => {
-    const {result} = renderHook(() => useLocalStorage(KEY, initialPreference));
+    const {result} = renderPreferenceHook();
 
     expect(result.current[0]).toEqual({theme: 'light'});
   });
@@ -34,13 +38,13 @@ describe('useLocalStorage', () => {
   it('reads the stored value on mount', () => {
     localStorage.setItem(KEY, JSON.stringify({theme: 'dark'}));
 
-    const {result} = renderHook(() => useLocalStorage(KEY, initialPreference));
+    const {result} = renderPreferenceHook();
 
     expect(result.current[0]).toEqual({theme: 'dark'});
   });
 
   it('persists value updates to localStorage', () => {
-    const {result} = renderHook(() => useLocalStorage(KEY, initialPreference));
+    const {result} = renderPreferenceHook();
 
     act(() => {
       result.current[1]({theme: 'dark'});
@@ -65,13 +69,13 @@ describe('useLocalStorage', () => {
   it('falls back to the initial value when stored JSON is invalid', () => {
     localStorage.setItem(KEY, 'not-json');
 
-    const {result} = renderHook(() => useLocalStorage(KEY, initialPreference));
+    const {result} = renderPreferenceHook();
 
     expect(result.current[0]).toEqual({theme: 'light'});
   });
 
   it('updates when another tab changes the same key', () => {
-    const {result} = renderHook(() => useLocalStorage(KEY, initialPreference));
+    const {result} = renderPreferenceHook();
 
     act(() => {
       dispatchStorage(KEY, JSON.stringify({theme: 'dark'}));
@@ -81,7 +85,7 @@ describe('useLocalStorage', () => {
   });
 
   it('ignores storage events for other keys', () => {
-    const {result} = renderHook(() => useLocalStorage(KEY, initialPreference));
+    const {result} = renderPreferenceHook();
 
     act(() => {
       dispatchStorage('other-key', JSON.stringify({theme: 'dark'}));
@@ -92,7 +96,7 @@ describe('useLocalStorage', () => {
 
   it('resets to the initial value when the key is cleared elsewhere', () => {
     localStorage.setItem(KEY, JSON.stringify({theme: 'dark'}));
-    const {result} = renderHook(() => useLocalStorage(KEY, initialPreference));
+    const {result} = renderPreferenceHook();
 
     act(() => {
       dispatchStorage(KEY, null);
@@ -127,7 +131,7 @@ describe('useLocalStorage', () => {
     localStorage.setItem(KEY, JSON.stringify({theme: 'dark'}));
     vi.spyOn(storageAvailableModule, 'storageAvailable').mockReturnValue(false);
 
-    const {result} = renderHook(() => useLocalStorage(KEY, initialPreference));
+    const {result} = renderPreferenceHook();
 
     expect(result.current[0]).toEqual({theme: 'light'});
   });
@@ -136,7 +140,7 @@ describe('useLocalStorage', () => {
     vi.spyOn(storageAvailableModule, 'storageAvailable').mockReturnValue(false);
     const setItem = vi.spyOn(Storage.prototype, 'setItem');
 
-    const {result} = renderHook(() => useLocalStorage(KEY, initialPreference));
+    const {result} = renderPreferenceHook();
 
     act(() => {
       result.current[1]({theme: 'dark'});
@@ -148,7 +152,7 @@ describe('useLocalStorage', () => {
 
   it('stops listening once unmounted', () => {
     const removeEventListener = vi.spyOn(window, 'removeEventListener');
-    const {unmount} = renderHook(() => useLocalStorage(KEY, initialPreference));
+    const {unmount} = renderPreferenceHook();
 
     unmount();
 

@@ -165,7 +165,7 @@ type HoveredLine = FileLine | DiffLine;
 
 function diffLine(overrides: Partial<DiffLine> = {}) {
   return {
-    side: 'additions' as DiffLine['side'],
+    side: 'additions',
     lineNumber: 1,
     ...overrides,
   } satisfies DiffLine;
