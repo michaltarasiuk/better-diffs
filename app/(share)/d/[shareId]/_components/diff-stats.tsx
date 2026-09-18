@@ -1,6 +1,4 @@
-import {Separator, tv, type VariantProps} from '@heroui/react';
-import {Accordion} from '@heroui/react';
-import {GitCompareIcon} from 'lucide-react';
+import {Accordion, Separator, tv, type VariantProps} from '@heroui/react';
 
 import {type DiffStats as DiffStatsData, formatDiffStat} from '@/diffs/stats';
 
@@ -10,7 +8,6 @@ export function DiffStats({stats}: {readonly stats: DiffStatsData}) {
       <Accordion.Item id="stats">
         <Accordion.Heading>
           <Accordion.Trigger className="hover:bg-inherit">
-            <GitCompareIcon className="me-3 size-4 shrink-0 text-muted" />
             Stats
             <Accordion.Indicator />
           </Accordion.Trigger>
