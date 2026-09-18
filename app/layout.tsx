@@ -1,6 +1,6 @@
 import './globals.css';
 
-import type {Metadata} from 'next';
+import type {Metadata, Viewport} from 'next';
 import Script from 'next/script';
 import {cn} from '@heroui/styles';
 import {NuqsAdapter} from 'nuqs/adapters/next/app';
@@ -11,6 +11,13 @@ import {ToastProvider} from '@/app/_components/toast-provider';
 
 export const metadata: Metadata = {
   title: 'Better Diffs',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({children}: LayoutProps<'/'>) {
