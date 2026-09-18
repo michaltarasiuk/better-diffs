@@ -1,0 +1,108 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.archive }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cli
+    strategy:
+      fail-fast: false
+      matrix:
+        # The installer derives archive names from `uname -sm`, so the two
+        # must agree.
+        include:
+          - goos: darwin
+            goarch: arm64
+            archive: better-diffs_darwin_arm64.tar.gz
+            format: tar
+          - goos: darwin
+            goarch: amd64
+            archive: better-diffs_darwin_amd64.tar.gz
+            format: tar
+          - goos: linux
+            goarch: amd64
+            archive: better-diffs_linux_amd64.tar.gz
+            format: tar
+          - goos: linux
+            goarch: arm64
+            archive: better-diffs_linux_arm64.tar.gz
+            format: tar
+          - goos: windows
+            goarch: amd64
+            archive: better-diffs_windows_amd64.zip
+            format: zip
+          - goos: windows
+            goarch: arm64
+            archive: better-diffs_windows_arm64.zip
+            format: zip
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v4
+
+      - name: Resolve the version
+        shell: bash
+        run: echo "BETTER_DIFFS_VERSION=${GITHUB_REF_NAME#v}" >>"$GITHUB_ENV"
+
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          ext=
+          if [ "$GOOS" = windows ]; then ext=.exe; fi
+          go build \
+            -ldflags "-s -w -X main.Version=$BETTER_DIFFS_VERSION" \
+            -o "better-diffs$ext" \
+            .
+
+      - name: Archive as tar.gz
+        if: matrix.format == 'tar'
+        run: tar -czf ${{ matrix.archive }} better-diffs
+
+      - name: Archive as zip
+        if: matrix.format == 'zip'
+        run: zip ${{ matrix.archive }} better-diffs.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.archive }}
+          path: cli/${{ matrix.archive }}
+          if-no-files-found: error
+
+  publish:
+    name: Publish
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      # The installer reads this file to verify a download, looking the
+      # archive up by the name in the second column.
+      - name: Write checksums
+        working-directory: dist
+        run: sha256sum *.tar.gz *.zip > checksums.txt
+
+      - name: Create the release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          gh release create "$GITHUB_REF_NAME"
+          --repo "$GITHUB_REPOSITORY"
+          --title "$GITHUB_REF_NAME"
+          --generate-notes
+          dist/*

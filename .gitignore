@@ -6,6 +6,7 @@ node_modules
 
 # build
 .next
+/cli/better-diffs
 /cli/target
 dist
 out

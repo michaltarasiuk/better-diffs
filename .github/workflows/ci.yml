@@ -48,12 +48,10 @@ jobs:
 
       - uses: jdx/mise-action@v4
 
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: cli
+      - run: test -z "$(gofmt -l .)"
 
-      - run: cargo fmt --check
+      - run: go vet ./...
 
-      - run: cargo clippy --all-targets --locked -- -D warnings
+      - run: go test ./...
 
-      - run: cargo test --locked
+      - run: go build -o better-diffs .
