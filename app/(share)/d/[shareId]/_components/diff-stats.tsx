@@ -53,7 +53,7 @@ function DiffStat({label, value, tone}: DiffStatProps) {
 }
 
 const diffStatValue = tv({
-  base: 'tabular-nums',
+  base: 'tabular-nums text-foreground',
   variants: {
     tone: {
       default: null,
