@@ -58,6 +58,18 @@ export const ShareEventPayload = z.discriminatedUnion('$type', [
 ]);
 export type ShareEventPayload = z.infer<typeof ShareEventPayload>;
 
+export function subjectIdFromPayload(payload: ShareEventPayload) {
+  switch (payload.$type) {
+    case 'thread.opened':
+    case 'thread.resolved':
+      return payload.threadId;
+    case 'comment.created':
+    case 'comment.edited':
+    case 'comment.deleted':
+      return payload.commentId;
+  }
+}
+
 export const EVENT_TYPES = [
   'thread.opened',
   'thread.resolved',

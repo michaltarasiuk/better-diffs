@@ -3,11 +3,12 @@ import {describe, expect, expectTypeOf, it, vi} from 'vitest';
 
 import {assert} from '@/utils/assert';
 import {FIXTURE} from '@/fixtures/fixture';
-import type {
-  Anchor,
-  CommentCreatedPayload,
-  ShareEvent,
-  ShareEventPayload,
+import {
+  type Anchor,
+  type CommentCreatedPayload,
+  type ShareEvent,
+  type ShareEventPayload,
+  subjectIdFromPayload,
 } from './schemas';
 import {
   foldEvents,
@@ -87,7 +88,7 @@ function eventLog() {
         shareId: FIXTURE.share.id,
         seq,
         type: payload.$type,
-        subjectId: 'threadId' in payload ? payload.threadId : payload.commentId,
+        subjectId: subjectIdFromPayload(payload),
         actorId: FIXTURE.actor.id,
         payload,
         createdAt: FIXTURE.time.created,

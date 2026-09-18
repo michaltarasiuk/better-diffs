@@ -6,7 +6,7 @@ import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 import {db} from '@/db/db';
 import {events as eventsTable, shares as sharesTable} from '@/db/schema';
-import type {ShareEventPayload} from '@/events/schemas';
+import {type ShareEventPayload, subjectIdFromPayload} from '@/events/schemas';
 
 export function getEvents(shareId: string, afterSeq = 0) {
   const where = and(
@@ -54,16 +54,4 @@ export async function appendEvents(
       )
       .returning();
   });
-}
-
-function subjectIdFromPayload(payload: ShareEventPayload) {
-  switch (payload.$type) {
-    case 'thread.opened':
-    case 'thread.resolved':
-      return payload.threadId;
-    case 'comment.created':
-    case 'comment.edited':
-    case 'comment.deleted':
-      return payload.commentId;
-  }
 }
