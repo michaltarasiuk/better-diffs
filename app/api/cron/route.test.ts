@@ -8,7 +8,8 @@ import {GET} from './route';
 const DELETED_SHARES = 3;
 
 const {deleteExpiredShares} = vi.hoisted(() => ({
-  deleteExpiredShares: vi.fn<() => number>(),
+  deleteExpiredShares:
+    vi.fn<typeof import('@/db/shares').deleteExpiredShares>(),
 }));
 
 vi.mock('@/db/shares', () => ({deleteExpiredShares}));

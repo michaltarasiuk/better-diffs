@@ -6,7 +6,9 @@ import {env} from '@/env';
 import {FIXTURE} from '@/fixtures/fixture';
 import {OPTIONS, POST} from './route';
 
-const {createShare} = vi.hoisted(() => ({createShare: vi.fn<() => string>()}));
+const {createShare} = vi.hoisted(() => ({
+  createShare: vi.fn<typeof import('@/db/shares').createShare>(),
+}));
 
 vi.mock('@/db/shares', () => ({createShare}));
 

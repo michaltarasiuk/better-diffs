@@ -7,9 +7,9 @@ import {openThread} from './actions';
 import type {Anchor, ShareEventPayload} from './schemas';
 
 const {appendEvents, getSession, unauthorized} = vi.hoisted(() => ({
-  appendEvents: vi.fn(),
-  getSession: vi.fn(),
-  unauthorized: vi.fn(() => {
+  appendEvents: vi.fn<typeof import('@/db/events').appendEvents>(),
+  getSession: vi.fn<typeof import('@/auth/server').getSession>(),
+  unauthorized: vi.fn<typeof import('next/navigation').unauthorized>(() => {
     throw new Error('Unauthorized');
   }),
 }));

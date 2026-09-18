@@ -7,7 +7,7 @@ import {FIXTURE} from '@/fixtures/fixture';
 import {GET} from './route';
 
 const {getEvents} = vi.hoisted(() => ({
-  getEvents: vi.fn<() => readonly ShareEvent[]>(),
+  getEvents: vi.fn<typeof import('@/db/events').getEvents>(),
 }));
 
 vi.mock('@/db/events', () => ({getEvents}));

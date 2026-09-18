@@ -20,6 +20,8 @@ Import stable ids and timestamps from `@/fixtures/fixture` instead of inventing 
 
 Vitest clears mock call history (`clearMocks`), restores `vi.spyOn` spies (`restoreMocks`), and unstubs globals (`unstubGlobals`) automatically. Do not call `mockClear`, `mockReset`, or `restoreAllMocks` for that. Hoist bare `vi.fn()` mocks, put default return values in `beforeEach` when a test may override them, and keep permanent mock behavior (such as throwing) in the hoisted factory.
 
+Type hoisted mocks for module exports with `typeof import('…').name` so signatures stay in sync with production code; do not hand-write parameter or return types. Leave inline `vi.fn()` untyped for local callbacks and browser APIs that have no module export.
+
 ## Commit messages
 
 Use imperative mood, sentence case, no trailing period. Start with a capital verb, lowercase the rest unless a proper noun.
