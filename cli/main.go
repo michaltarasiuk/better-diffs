@@ -1,19 +1,27 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
+	"runtime"
 )
 
+// Version is set at link time with -ldflags "-X main.Version=...".
 var Version = "0.1.0"
 
+// DefaultURL is the fallback instance when no flag, env, or config is set.
+// Set at link time with -ldflags "-X main.DefaultURL=...".
 var DefaultURL = ""
+
+const usageLine = "better-diffs [options] [--] [<path>...]"
 
 const usage = `Create shareable links for code diffs
 
 USAGE
-  better-diffs [options] [--] [<path>...]
+  ` + usageLine + `
 
 OPTIONS
   --staged       Diff staged changes
@@ -25,6 +33,7 @@ OPTIONS
 
 ENVIRONMENT
   BETTER_DIFFS_URL   Instance to upload to, unless --url is given
+  BROWSER            Command used to open URLs with --open
 
 CONFIG
   Read from ${XDG_CONFIG_HOME:-~/.config}/better-diffs/config as key=value
@@ -37,9 +46,13 @@ EXAMPLES
 `
 
 func main() {
+	log.SetFlags(0)
 	if err := run(os.Args[1:], os.Stdout); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		var u usageError
+		if errors.As(err, &u) {
+			dieUsage(err)
+		}
+		die(err)
 	}
 }
 
@@ -49,11 +62,10 @@ func run(args []string, stdout io.Writer) error {
 		return err
 	}
 	if cmd.help {
-		_, err = io.WriteString(stdout, usage)
-		return err
+		return writeUsage(stdout)
 	}
 	if cmd.version {
-		_, err = fmt.Fprintln(stdout, Version)
+		_, err := fmt.Fprint(stdout, versionLine())
 		return err
 	}
 
@@ -72,11 +84,20 @@ func run(args []string, stdout io.Writer) error {
 		return err
 	}
 
-	if _, err = fmt.Fprintln(stdout, shareURL); err != nil {
+	if _, err := fmt.Fprintln(stdout, shareURL); err != nil {
 		return err
 	}
 	if cmd.options.open {
 		return openBrowser(shareURL)
 	}
 	return nil
+}
+
+func versionLine() string {
+	return fmt.Sprintf("better-diffs version %s %s/%s\n", Version, runtime.GOOS, runtime.GOARCH)
+}
+
+func writeUsage(w io.Writer) error {
+	_, err := io.WriteString(w, usage)
+	return err
 }

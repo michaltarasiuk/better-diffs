@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -15,31 +16,35 @@ const (
 	responseLimit = 64 * 1024
 )
 
+var uploadClient = &http.Client{}
+
 func upload(baseURL, version string, patch []byte) (string, error) {
 	endpoint, err := url.JoinPath(baseURL, "api", "diffs")
 	if err != nil {
-		return "", fmt.Errorf("invalid instance URL %q: %v", baseURL, err)
+		return "", fmt.Errorf("invalid instance URL %q: %w", baseURL, err)
 	}
 
-	client := &http.Client{Timeout: uploadTimeout}
-	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(patch))
+	ctx, cancel := context.WithTimeout(context.Background(), uploadTimeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(patch))
 	if err != nil {
-		return "", fmt.Errorf("failed to create upload request: %v", err)
+		return "", fmt.Errorf("create upload request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "text/x-patch")
 	req.Header.Set("Accept", "text/plain")
 	req.Header.Set("User-Agent", "better-diffs/"+version)
 
-	resp, err := client.Do(req)
+	resp, err := uploadClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("failed to reach %s: %v", baseURL, err)
+		return "", fmt.Errorf("reach %s: %w", baseURL, err)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(io.LimitReader(resp.Body, responseLimit))
 	if err != nil {
-		return "", fmt.Errorf("failed to read response from %s: %v", baseURL, err)
+		return "", fmt.Errorf("read response from %s: %w", baseURL, err)
 	}
 
 	message := strings.TrimSpace(string(body))

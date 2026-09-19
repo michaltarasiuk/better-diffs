@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -26,10 +25,8 @@ func parseArgs(args []string) (command, error) {
 		arg := args[i]
 		i++
 
-		/*
-		 * Parsing stops at the first path so that a file named like an
-		 * option still reaches git.
-		 */
+		// Parsing stops at the first path so that a file named like an
+		// option still reaches git.
 		if !isFlag(arg) {
 			opts.paths = append(opts.paths, arg)
 			opts.paths = append(opts.paths, args[i:]...)
@@ -69,7 +66,7 @@ func parseArgs(args []string) (command, error) {
 		case "version":
 			return command{version: true}, nil
 		default:
-			return command{}, fmt.Errorf("unknown option: %s", arg)
+			return command{}, usagef("unknown option: %s", arg)
 		}
 	}
 
@@ -93,7 +90,7 @@ func splitFlag(arg string) (name, value string, inline bool) {
 
 func takesNoValue(inline bool, value, arg string) error {
 	if inline || value != "" {
-		return fmt.Errorf("option takes no value: %s", arg)
+		return usagef("option takes no value: %s", arg)
 	}
 	return nil
 }
@@ -102,11 +99,8 @@ func takeValue(inline bool, value string, args []string, i *int, arg string) (st
 	if inline {
 		return value, nil
 	}
-	if value != "" {
-		return value, nil
-	}
 	if *i >= len(args) {
-		return "", fmt.Errorf("missing value for %s", arg)
+		return "", usagef("missing value for %s", arg)
 	}
 	v := args[*i]
 	*i++
