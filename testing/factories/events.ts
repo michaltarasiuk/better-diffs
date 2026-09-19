@@ -12,6 +12,7 @@ import type {
 } from '@/events/schemas';
 import {subjectIdFromPayload} from '@/events/schemas';
 import type {OptimisticEvent} from '@/events/share-state';
+import {createLexicalBody} from '@/testing/factories/lexical';
 import {
   COMMENT_ID,
   CREATED_AT,
@@ -20,9 +21,8 @@ import {
   THREAD_ID,
   USER_ID,
 } from '@/testing/ids';
-import {createLexicalBody} from '@/testing/lexical';
 
-export {createLexicalBody} from '@/testing/lexical';
+export {createLexicalBody} from '@/testing/factories/lexical';
 
 const DEFAULT_ANCHOR = {
   shareId: SHARE_ID,
