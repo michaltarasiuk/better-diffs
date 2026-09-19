@@ -17,7 +17,11 @@ import type {ShareEvent} from './schemas';
 
 const body = createLexicalBody();
 
-function createShareEventAt(seq: number, shareId: string = SHARE_ID) {
+function createShareEventAt(
+  seq: number,
+  overrides: Partial<Pick<ShareEvent, 'shareId'>> = {},
+) {
+  const {shareId = SHARE_ID} = overrides;
   return createShareEvent(createThreadResolved(), {
     id: `event-${shareId}-${seq}`,
     shareId,
@@ -79,7 +83,7 @@ describe('getEvents', () => {
   it('returns only one event for the requested share', async () => {
     await putEvents([
       createShareEventAt(1),
-      createShareEventAt(1, SHARE_ID_SECONDARY),
+      createShareEventAt(1, {shareId: SHARE_ID_SECONDARY}),
     ]);
 
     expect(await getEvents(SHARE_ID)).toHaveLength(1);
@@ -88,7 +92,7 @@ describe('getEvents', () => {
   it('scopes results to the requested share', async () => {
     await putEvents([
       createShareEventAt(1),
-      createShareEventAt(1, SHARE_ID_SECONDARY),
+      createShareEventAt(1, {shareId: SHARE_ID_SECONDARY}),
     ]);
 
     expect((await getEvents(SHARE_ID))[0]?.shareId).toBe(SHARE_ID);
@@ -140,14 +144,14 @@ describe('getLastSeq', () => {
   it('ignores the sequences of other shares', async () => {
     await putEvents([
       createShareEventAt(1),
-      createShareEventAt(9, SHARE_ID_SECONDARY),
+      createShareEventAt(9, {shareId: SHARE_ID_SECONDARY}),
     ]);
 
     await expect(getLastSeq(SHARE_ID)).resolves.toBe(1);
   });
 
   it('returns null when only other shares have events', async () => {
-    await putEvents([createShareEventAt(9, SHARE_ID_SECONDARY)]);
+    await putEvents([createShareEventAt(9, {shareId: SHARE_ID_SECONDARY})]);
 
     await expect(getLastSeq(SHARE_ID)).resolves.toBe(null);
   });
