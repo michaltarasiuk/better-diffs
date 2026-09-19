@@ -5,11 +5,15 @@ import {z} from 'zod';
 loadEnvConfig(process.cwd());
 
 export const env = createEnv({
+  clientPrefix: 'NEXT_PUBLIC_',
+  client: {},
+  shared: {
+    BASE_URL: z.url(),
+  },
   server: {
     NODE_ENV: z
       .enum(['development', 'production', 'test'])
       .default('development'),
-    BASE_URL: z.url(),
     DATABASE_URL: z.string(),
     DATABASE_AUTH_TOKEN: z.string().optional(),
     BETTER_AUTH_SECRET: z.string(),

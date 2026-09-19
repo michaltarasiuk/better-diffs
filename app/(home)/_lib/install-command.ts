@@ -1,6 +1,8 @@
 import dedent from 'dedent';
 
+import {env} from '@/env';
+
 export const INSTALL_COMMAND = dedent`
-  BASE_URL='${process.env.BASE_URL}'
+  BASE_URL='${env.BASE_URL}'
   curl -fsSL "$BASE_URL/install.sh" | sh
 `;
