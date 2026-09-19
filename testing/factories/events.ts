@@ -31,18 +31,18 @@ const DEFAULT_ANCHOR = {
   line: 1,
 } as const satisfies Anchor;
 
-export function createAnchor(partial: Partial<Anchor> = {}): Anchor {
+export function createAnchor(overrides: Partial<Anchor> = {}): Anchor {
   return {
     ...DEFAULT_ANCHOR,
-    ...partial,
+    ...overrides,
   };
 }
 
 export function createThreadOpened(
-  partial: Partial<ThreadOpenedPayload> &
+  overrides: Partial<ThreadOpenedPayload> &
     Pick<ThreadOpenedPayload, 'threadId'> = {threadId: THREAD_ID},
 ) {
-  const {threadId, anchor, ...rest} = partial;
+  const {threadId, anchor, ...rest} = overrides;
   return {
     $type: 'thread.opened',
     threadId,
@@ -52,23 +52,23 @@ export function createThreadOpened(
 }
 
 export function createThreadResolved(
-  partial: Partial<ThreadResolvedPayload> &
+  overrides: Partial<ThreadResolvedPayload> &
     Pick<ThreadResolvedPayload, 'threadId'> = {threadId: THREAD_ID},
 ) {
   return {
     $type: 'thread.resolved',
-    ...partial,
+    ...overrides,
   } satisfies ThreadResolvedPayload;
 }
 
 export function createCommentCreated(
-  partial: Partial<CommentCreatedPayload> &
+  overrides: Partial<CommentCreatedPayload> &
     Pick<CommentCreatedPayload, 'threadId' | 'commentId'> = {
     threadId: THREAD_ID,
     commentId: COMMENT_ID,
   },
 ) {
-  const {body, ...rest} = partial;
+  const {body, ...rest} = overrides;
   return {
     $type: 'comment.created',
     body: body ?? createLexicalBody(),
@@ -77,10 +77,10 @@ export function createCommentCreated(
 }
 
 export function createCommentEdited(
-  partial: Partial<CommentEditedPayload> &
+  overrides: Partial<CommentEditedPayload> &
     Pick<CommentEditedPayload, 'commentId'> = {commentId: COMMENT_ID},
 ) {
-  const {body, ...rest} = partial;
+  const {body, ...rest} = overrides;
   return {
     $type: 'comment.edited',
     body: body ?? createLexicalBody(),
@@ -89,30 +89,30 @@ export function createCommentEdited(
 }
 
 export function createCommentDeleted(
-  partial: Partial<CommentDeletedPayload> &
+  overrides: Partial<CommentDeletedPayload> &
     Pick<CommentDeletedPayload, 'commentId'> = {commentId: COMMENT_ID},
 ) {
   return {
     $type: 'comment.deleted',
-    ...partial,
+    ...overrides,
   } satisfies CommentDeletedPayload;
 }
 
 export function createOptimisticEvent(
   payload: ShareEventPayload,
-  partial: Partial<OptimisticEvent> = {},
+  overrides: Partial<OptimisticEvent> = {},
 ) {
   return {
     actorId: USER_ID,
     createdAt: CREATED_AT,
     payload,
-    ...partial,
+    ...overrides,
   } satisfies OptimisticEvent;
 }
 
-export function createShareEvent(partial: Partial<ShareEvent> = {}) {
+export function createShareEvent(overrides: Partial<ShareEvent> = {}) {
   const payload =
-    partial.payload ?? createThreadResolved({threadId: THREAD_ID});
+    overrides.payload ?? createThreadResolved({threadId: THREAD_ID});
 
   return {
     id: EVENT_ID,
@@ -123,7 +123,7 @@ export function createShareEvent(partial: Partial<ShareEvent> = {}) {
     actorId: USER_ID,
     payload,
     createdAt: CREATED_AT,
-    ...partial,
+    ...overrides,
   } satisfies ShareEvent;
 }
 
@@ -167,14 +167,16 @@ export function createEventLog(
     });
 }
 
-export function createOpenThreadInput(partial: Partial<OpenThreadInput> = {}) {
+export function createOpenThreadInput(
+  overrides: Partial<OpenThreadInput> = {},
+) {
   return {
     shareId: SHARE_ID,
     threadId: THREAD_ID,
     commentId: COMMENT_ID,
     body: createLexicalBody(),
     anchor: createAnchor({line: 3}),
-    ...partial,
+    ...overrides,
   } satisfies OpenThreadInput;
 }
 
@@ -192,9 +194,9 @@ export function createOpenThreadPayloads(input: OpenThreadInput) {
   ] satisfies ShareEventPayload[];
 }
 
-export function createSession(partial: Partial<Session> = {}) {
+export function createSession(overrides: Partial<Session> = {}) {
   return {
     user: {id: USER_ID},
-    ...partial,
+    ...overrides,
   } as Session;
 }
