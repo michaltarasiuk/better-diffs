@@ -140,16 +140,16 @@ export function createResolvedShareEvent(
 }
 
 export function createEventLog(
-  options: {
+  defaults: {
     shareId?: string;
     actorId?: string;
     createdAt?: string;
   } = {},
 ) {
   let seq = 0;
-  const shareId = options.shareId ?? SHARE_ID;
-  const actorId = options.actorId ?? USER_ID;
-  const createdAt = options.createdAt ?? CREATED_AT;
+  const shareId = defaults.shareId ?? SHARE_ID;
+  const actorId = defaults.actorId ?? USER_ID;
+  const createdAt = defaults.createdAt ?? CREATED_AT;
 
   return (...payloads: readonly ShareEventPayload[]): ShareEvent[] =>
     payloads.map((payload) => {
