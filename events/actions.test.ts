@@ -51,8 +51,8 @@ describe('openThread', () => {
       openThread(
         createOpenThreadInput({
           anchor: createAnchor({
-            line: 3,
             shareId: SHARE_ID_SECONDARY,
+            line: 3,
           }),
         }),
       ),

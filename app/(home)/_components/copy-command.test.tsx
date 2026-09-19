@@ -19,9 +19,7 @@ import {COPIED_FEEDBACK_MS, CopyCommand} from './copy-command';
 
 const writeText = vi.fn<(text: string) => Promise<void>>();
 
-const {toastWarning} = vi.hoisted(() => ({
-  toastWarning: vi.fn(),
-}));
+const {toastWarning} = vi.hoisted(() => ({toastWarning: vi.fn()}));
 
 vi.mock('@heroui/react', async (importOriginal) => {
   const original = (await importOriginal()) as typeof HerouiReact;

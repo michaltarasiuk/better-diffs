@@ -29,7 +29,9 @@ describe('ingest', () => {
 
     state.ingest(
       log(
-        createThreadOpened({threadId: THREAD_ID}),
+        createThreadOpened({
+          threadId: THREAD_ID,
+        }),
         createCommentCreated({
           threadId: THREAD_ID,
           commentId: COMMENT_ID,
@@ -56,7 +58,9 @@ describe('ingest', () => {
 
     state.ingest(
       log(
-        createThreadOpened({threadId: THREAD_ID}),
+        createThreadOpened({
+          threadId: THREAD_ID,
+        }),
         createCommentCreated({
           threadId: THREAD_ID,
           commentId: COMMENT_ID,
@@ -92,8 +96,12 @@ describe('ingest', () => {
           commentId: COMMENT_ID,
           body: createLexicalBody('value-2'),
         }),
-        createCommentDeleted({commentId: COMMENT_ID}),
-        createThreadResolved({threadId: THREAD_ID}),
+        createCommentDeleted({
+          commentId: COMMENT_ID,
+        }),
+        createThreadResolved({
+          threadId: THREAD_ID,
+        }),
       ),
     );
 
@@ -119,8 +127,12 @@ describe('ingest', () => {
           commentId: COMMENT_ID,
           body: createLexicalBody('value-2'),
         }),
-        createCommentDeleted({commentId: COMMENT_ID}),
-        createThreadResolved({threadId: THREAD_ID}),
+        createCommentDeleted({
+          commentId: COMMENT_ID,
+        }),
+        createThreadResolved({
+          threadId: THREAD_ID,
+        }),
       ),
     );
 
@@ -174,9 +186,16 @@ describe('ingest invariants', () => {
     {
       name: 'editing a deleted comment',
       payloads: [
-        createThreadOpened({threadId: THREAD_ID}),
-        createCommentCreated({threadId: THREAD_ID, commentId: COMMENT_ID}),
-        createCommentDeleted({commentId: COMMENT_ID}),
+        createThreadOpened({
+          threadId: THREAD_ID,
+        }),
+        createCommentCreated({
+          threadId: THREAD_ID,
+          commentId: COMMENT_ID,
+        }),
+        createCommentDeleted({
+          commentId: COMMENT_ID,
+        }),
         createCommentEdited({
           commentId: COMMENT_ID,
           body: createLexicalBody('value'),
@@ -395,7 +414,9 @@ describe('optimistic', () => {
     const state = new ShareState();
     state.ingest(
       log(
-        createThreadOpened({threadId: THREAD_ID}),
+        createThreadOpened({
+          threadId: THREAD_ID,
+        }),
         createCommentCreated({
           threadId: THREAD_ID,
           commentId: COMMENT_ID,
@@ -429,7 +450,9 @@ describe('optimistic', () => {
     const state = new ShareState();
     state.ingest(
       log(
-        createThreadOpened({threadId: THREAD_ID}),
+        createThreadOpened({
+          threadId: THREAD_ID,
+        }),
         createCommentCreated({
           threadId: THREAD_ID,
           commentId: COMMENT_ID,
@@ -465,7 +488,9 @@ describe('optimistic', () => {
     const state = new ShareState();
     state.ingest(
       log(
-        createThreadOpened({threadId: THREAD_ID}),
+        createThreadOpened({
+          threadId: THREAD_ID,
+        }),
         createCommentCreated({
           threadId: THREAD_ID,
           commentId: COMMENT_ID,
@@ -502,7 +527,9 @@ describe('optimistic', () => {
     const state = new ShareState();
     state.ingest(
       log(
-        createThreadOpened({threadId: THREAD_ID}),
+        createThreadOpened({
+          threadId: THREAD_ID,
+        }),
         createCommentCreated({
           threadId: THREAD_ID,
           commentId: COMMENT_ID,
@@ -715,7 +742,9 @@ describe('optimistic deletions', () => {
     const state = new ShareState();
     state.ingest(
       log(
-        createThreadOpened({threadId: THREAD_ID}),
+        createThreadOpened({
+          threadId: THREAD_ID,
+        }),
         createCommentCreated({
           threadId: THREAD_ID,
           commentId: COMMENT_ID,
@@ -747,7 +776,9 @@ describe('optimistic deletions', () => {
     const state = new ShareState();
     state.ingest(
       log(
-        createThreadOpened({threadId: THREAD_ID}),
+        createThreadOpened({
+          threadId: THREAD_ID,
+        }),
         createCommentCreated({
           threadId: THREAD_ID,
           commentId: COMMENT_ID,
@@ -924,7 +955,9 @@ describe('reconciliation', () => {
     const state = new ShareState();
     state.ingest(
       log(
-        createThreadOpened({threadId: THREAD_ID}),
+        createThreadOpened({
+          threadId: THREAD_ID,
+        }),
         createCommentCreated({
           threadId: THREAD_ID,
           commentId: COMMENT_ID,
@@ -949,7 +982,9 @@ describe('reconciliation', () => {
     const state = new ShareState();
     state.ingest(
       log(
-        createThreadOpened({threadId: THREAD_ID}),
+        createThreadOpened({
+          threadId: THREAD_ID,
+        }),
         createCommentCreated({
           threadId: THREAD_ID,
           commentId: COMMENT_ID,
@@ -983,7 +1018,9 @@ describe('reconciliation', () => {
     const state = new ShareState();
     state.ingest(
       log(
-        createThreadOpened({threadId: THREAD_ID}),
+        createThreadOpened({
+          threadId: THREAD_ID,
+        }),
         createCommentCreated({
           threadId: THREAD_ID,
           commentId: COMMENT_ID,
