@@ -2,8 +2,15 @@ import {NextRequest} from 'next/server';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
-import type {ShareEvent} from '@/events/schemas';
-import {FIXTURE} from '@/fixtures/fixture';
+import {createShareEvent} from '@/testing/factories/events';
+import {
+  CREATED_AT,
+  EVENT_CURSOR_SEQ,
+  EVENT_ID,
+  SHARE_ID,
+  THREAD_ID,
+  USER_ID,
+} from '@/testing/ids';
 import {GET} from './route';
 
 const {getEvents} = vi.hoisted(() => ({
@@ -12,28 +19,23 @@ const {getEvents} = vi.hoisted(() => ({
 
 vi.mock('@/db/events', () => ({getEvents}));
 
-const EVENT = {
-  id: FIXTURE.event.id,
-  shareId: FIXTURE.share.id,
-  seq: 4,
-  type: 'thread.resolved',
-  subjectId: FIXTURE.thread.id,
-  actorId: FIXTURE.actor.id,
-  payload: {
-    $type: 'thread.resolved',
-    threadId: FIXTURE.thread.id,
-  },
-  createdAt: FIXTURE.time.created,
-} as const satisfies ShareEvent;
+const EVENT = createShareEvent({
+  id: EVENT_ID,
+  shareId: SHARE_ID,
+  seq: EVENT_CURSOR_SEQ,
+  subjectId: THREAD_ID,
+  actorId: USER_ID,
+  createdAt: CREATED_AT,
+});
 
 function request(search = '') {
   return new NextRequest(
-    `${env.BASE_URL}/api/shares/${FIXTURE.share.id}/events${search}`,
+    `${env.BASE_URL}/api/shares/${SHARE_ID}/events${search}`,
   );
 }
 
 function context() {
-  return {params: Promise.resolve({shareId: FIXTURE.share.id})};
+  return {params: Promise.resolve({shareId: SHARE_ID})};
 }
 
 beforeEach(() => {
@@ -65,13 +67,13 @@ describe('GET', () => {
   it('starts from the beginning when no cursor is given', async () => {
     await GET(request(), context());
 
-    expect(getEvents).toHaveBeenCalledExactlyOnceWith(FIXTURE.share.id, 0);
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(SHARE_ID, 0);
   });
 
   it('forwards the afterSeq cursor', async () => {
     await GET(request('?afterSeq=7'), context());
 
-    expect(getEvents).toHaveBeenCalledExactlyOnceWith(FIXTURE.share.id, 7);
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(SHARE_ID, 7);
   });
 
   it.each([
@@ -80,7 +82,7 @@ describe('GET', () => {
   ])('falls back to the beginning for $name', async ({search}) => {
     await GET(request(search), context());
 
-    expect(getEvents).toHaveBeenCalledExactlyOnceWith(FIXTURE.share.id, 0);
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(SHARE_ID, 0);
   });
 
   it('returns an empty event list', async () => {

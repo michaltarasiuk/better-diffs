@@ -1,22 +1,12 @@
 'use server';
 
 import {unauthorized} from 'next/navigation';
-import {z} from 'zod';
 
 import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 import {getSession} from '@/auth/server';
 import {appendEvents} from '@/db/events';
-import {Anchor, LexicalBody} from '@/events/schemas';
-
-const OpenThreadInput = z.object({
-  shareId: z.uuid(),
-  threadId: z.uuid(),
-  commentId: z.uuid(),
-  body: LexicalBody,
-  anchor: Anchor,
-});
-type OpenThreadInput = z.infer<typeof OpenThreadInput>;
+import {OpenThreadInput} from '@/events/schemas';
 
 export async function openThread(input: OpenThreadInput) {
   const session = await getSession();

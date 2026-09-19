@@ -2,7 +2,8 @@ import {NextRequest} from 'next/server';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
-import {FIXTURE} from '@/fixtures/fixture';
+import {SAMPLE_UNIFIED_DIFF} from '@/testing/factories/diffs';
+import {SHARE_ID} from '@/testing/ids';
 import {OPTIONS, POST} from './route';
 
 const {createShare} = vi.hoisted(() => ({
@@ -20,7 +21,7 @@ function request(body: string, headers: Record<string, string>) {
 }
 
 beforeEach(() => {
-  createShare.mockResolvedValue(FIXTURE.share.id);
+  createShare.mockResolvedValue(SHARE_ID);
 });
 
 describe('OPTIONS', () => {
@@ -61,13 +62,13 @@ describe('POST', () => {
 
     expect(await response.json()).toEqual({
       ok: true,
-      url: `${env.BASE_URL}/d/${FIXTURE.share.id}`,
+      url: `${env.BASE_URL}/d/${SHARE_ID}`,
     });
   });
 
   it('returns 201 for patch text input', async () => {
     const response = await POST(
-      request(FIXTURE.patch.sample, {
+      request(SAMPLE_UNIFIED_DIFF, {
         'Content-Type': 'text/plain',
         Accept: 'text/plain',
       }),
@@ -78,18 +79,18 @@ describe('POST', () => {
 
   it('returns a plain-text share URL for patch text input', async () => {
     const response = await POST(
-      request(FIXTURE.patch.sample, {
+      request(SAMPLE_UNIFIED_DIFF, {
         'Content-Type': 'text/plain',
         Accept: 'text/plain',
       }),
     );
 
-    expect(await response.text()).toBe(`${env.BASE_URL}/d/${FIXTURE.share.id}`);
+    expect(await response.text()).toBe(`${env.BASE_URL}/d/${SHARE_ID}`);
   });
 
   it('passes parsed patches to createShare for patch text input', async () => {
     await POST(
-      request(FIXTURE.patch.sample, {
+      request(SAMPLE_UNIFIED_DIFF, {
         'Content-Type': 'text/plain',
         Accept: 'text/plain',
       }),

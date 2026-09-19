@@ -78,6 +78,15 @@ export const EVENT_TYPES = [
   'comment.deleted',
 ] as const satisfies ShareEventPayload['$type'][];
 
+export const OpenThreadInput = z.object({
+  shareId: z.uuid(),
+  threadId: z.uuid(),
+  commentId: z.uuid(),
+  body: LexicalBody,
+  anchor: Anchor,
+});
+export type OpenThreadInput = z.infer<typeof OpenThreadInput>;
+
 export const ShareEvent = z.object({
   id: z.uuid(),
   shareId: z.uuid(),

@@ -2,8 +2,8 @@ import type {GetHoveredLineResult} from '@pierre/diffs';
 import {describe, expect, expectTypeOf, it} from 'vitest';
 
 import {assert} from '@/utils/assert';
-import type {ThreadState} from '@/events/share-state';
-import {FIXTURE} from '@/fixtures/fixture';
+import {createThreadState} from '@/testing/factories/diffs';
+import {SHARE_ID, THREAD_ID, THREAD_ID_SECONDARY} from '@/testing/ids';
 import {
   type DiffAnnotation,
   isDiffLine,
@@ -11,23 +11,6 @@ import {
   sortAnnotations,
   toThreadAnnotation,
 } from './annotations';
-
-function thread(overrides: Partial<ThreadState> = {}) {
-  return {
-    id: FIXTURE.thread.id,
-    anchor: {
-      shareId: FIXTURE.share.id,
-      filePath: 'src/a.ts',
-      side: 'additions',
-      line: 5,
-    },
-    actorId: FIXTURE.actor.id,
-    resolved: false,
-    commentIds: [],
-    createdAt: FIXTURE.time.created,
-    ...overrides,
-  } satisfies ThreadState;
-}
 
 function annotation(
   overrides: Partial<DiffAnnotation> & Pick<DiffAnnotation, 'metadata'>,
@@ -58,7 +41,7 @@ describe('isFormAnnotation', () => {
         annotation({
           metadata: {
             type: 'thread',
-            threadId: FIXTURE.thread.id,
+            threadId: THREAD_ID,
           },
         }),
       ),
@@ -78,10 +61,10 @@ describe('toThreadAnnotation', () => {
   it('maps thread anchor and id to a diff annotation', () => {
     expect(
       toThreadAnnotation(
-        thread({
-          id: FIXTURE.thread.second,
+        createThreadState({
+          id: THREAD_ID_SECONDARY,
           anchor: {
-            shareId: FIXTURE.share.id,
+            shareId: SHARE_ID,
             filePath: 'src/b.ts',
             side: 'deletions',
             line: 12,
@@ -93,7 +76,7 @@ describe('toThreadAnnotation', () => {
       lineNumber: 12,
       metadata: {
         type: 'thread',
-        threadId: FIXTURE.thread.second,
+        threadId: THREAD_ID_SECONDARY,
       },
     });
   });
@@ -115,7 +98,7 @@ describe('sortAnnotations', () => {
       lineNumber: 3,
       metadata: {
         type: 'thread',
-        threadId: FIXTURE.thread.id,
+        threadId: THREAD_ID,
       },
     });
     const third = annotation({
@@ -142,7 +125,7 @@ describe('sortAnnotations', () => {
       lineNumber: 4,
       metadata: {
         type: 'thread',
-        threadId: FIXTURE.thread.id,
+        threadId: THREAD_ID,
       },
     });
 
