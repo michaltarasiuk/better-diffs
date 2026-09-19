@@ -22,22 +22,29 @@ import {
   USER_ID,
 } from '@/testing/ids';
 
-const DEFAULT_ANCHOR = {
-  shareId: SHARE_ID,
-  filePath: 'file.txt',
-  side: 'additions',
-  line: 1,
-} as const satisfies Anchor;
-
-export function createAnchor(overrides: Partial<Anchor> = {}) {
+export function createOpenThreadInput(
+  overrides: Partial<OpenThreadInput> = {},
+) {
   return {
-    ...DEFAULT_ANCHOR,
+    shareId: SHARE_ID,
+    threadId: THREAD_ID,
+    commentId: COMMENT_ID,
+    body: createLexicalBody(),
+    anchor: createAnchor({line: 1}),
     ...overrides,
-  } satisfies Anchor;
+  } satisfies OpenThreadInput;
 }
 
-export function createLexicalBody(text = 'value') {
-  return {text} as unknown as SerializedEditorState;
+export function createThreadState(overrides: Partial<ThreadState> = {}) {
+  return {
+    id: THREAD_ID,
+    anchor: createAnchor({line: 1}),
+    actorId: USER_ID,
+    resolved: false,
+    commentIds: [],
+    createdAt: CREATED_AT,
+    ...overrides,
+  } satisfies ThreadState;
 }
 
 export function createThreadOpened(
@@ -50,17 +57,6 @@ export function createThreadOpened(
     anchor: createAnchor(anchor),
     ...rest,
   } satisfies ThreadOpenedPayload;
-}
-
-export function createThreadResolved(
-  overrides: Partial<ThreadResolvedPayload> = {},
-) {
-  const {threadId = THREAD_ID, ...rest} = overrides;
-  return {
-    $type: 'thread.resolved',
-    threadId,
-    ...rest,
-  } satisfies ThreadResolvedPayload;
 }
 
 export function createCommentCreated(
@@ -97,17 +93,6 @@ export function createCommentEdited(
   } satisfies CommentEditedPayload;
 }
 
-export function createCommentDeleted(
-  overrides: Partial<CommentDeletedPayload> = {},
-) {
-  const {commentId = COMMENT_ID, ...rest} = overrides;
-  return {
-    $type: 'comment.deleted',
-    commentId,
-    ...rest,
-  } satisfies CommentDeletedPayload;
-}
-
 export function createShareEvent(
   payload: ShareEventPayload,
   overrides: Partial<Omit<ShareEvent, 'type' | 'subjectId' | 'payload'>> = {},
@@ -137,27 +122,42 @@ export function createOptimisticEvent(
   } satisfies OptimisticEvent;
 }
 
-export function createOpenThreadInput(
-  overrides: Partial<OpenThreadInput> = {},
+export function createThreadResolved(
+  overrides: Partial<ThreadResolvedPayload> = {},
 ) {
+  const {threadId = THREAD_ID, ...rest} = overrides;
   return {
-    shareId: SHARE_ID,
-    threadId: THREAD_ID,
-    commentId: COMMENT_ID,
-    body: createLexicalBody(),
-    anchor: createAnchor({line: 1}),
-    ...overrides,
-  } satisfies OpenThreadInput;
+    $type: 'thread.resolved',
+    threadId,
+    ...rest,
+  } satisfies ThreadResolvedPayload;
 }
 
-export function createThreadState(overrides: Partial<ThreadState> = {}) {
+export function createCommentDeleted(
+  overrides: Partial<CommentDeletedPayload> = {},
+) {
+  const {commentId = COMMENT_ID, ...rest} = overrides;
   return {
-    id: THREAD_ID,
-    anchor: createAnchor({line: 1}),
-    actorId: USER_ID,
-    resolved: false,
-    commentIds: [],
-    createdAt: CREATED_AT,
-    ...overrides,
-  } satisfies ThreadState;
+    $type: 'comment.deleted',
+    commentId,
+    ...rest,
+  } satisfies CommentDeletedPayload;
 }
+
+export function createLexicalBody(text = 'value') {
+  return {text} as unknown as SerializedEditorState;
+}
+
+export function createAnchor(overrides: Partial<Anchor> = {}) {
+  return {
+    ...DEFAULT_ANCHOR,
+    ...overrides,
+  } satisfies Anchor;
+}
+
+const DEFAULT_ANCHOR = {
+  shareId: SHARE_ID,
+  filePath: 'file.txt',
+  side: 'additions',
+  line: 1,
+} as const satisfies Anchor;
