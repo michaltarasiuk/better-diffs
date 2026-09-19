@@ -28,28 +28,28 @@ import type {
 } from './schemas';
 import {foldEvents, isType, ShareState} from './share-state';
 
-function createShareEventLog({
-  shareId = SHARE_ID,
-  actorId = USER_ID,
-  createdAt = CREATED_AT,
-}: {
-  shareId?: string;
-  actorId?: string;
-  createdAt?: string;
-} = {}) {
+function createShareEventLog(
+  overrides: Partial<
+    Pick<ShareEvent, 'shareId' | 'actorId' | 'createdAt'>
+  > = {},
+) {
+  const {
+    shareId = SHARE_ID,
+    actorId = USER_ID,
+    createdAt = CREATED_AT,
+  } = overrides;
   let seq = 0;
 
   return (...payloads: readonly ShareEventPayload[]) =>
-    payloads.map((payload) => {
-      seq += 1;
-      return createShareEvent(payload, {
-        id: `event-${seq}`,
+    payloads.map((payload) =>
+      createShareEvent(payload, {
+        id: `event-${++seq}`,
         shareId,
         seq,
         actorId,
         createdAt,
-      });
-    }) satisfies ShareEvent[];
+      }),
+    );
 }
 
 describe('ingest', () => {
