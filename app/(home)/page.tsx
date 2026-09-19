@@ -13,17 +13,17 @@ import {INSTALL_COMMAND} from './_lib/install-command';
 
 export const dynamic = 'force-dynamic';
 
-const pageHeading = typographyVariants({type: 'h2'}).base({
+const heroTitleClass = typographyVariants({type: 'h2'}).base({
   className: 'font-mono tracking-tight',
 });
-const sectionHeading = typographyVariants({type: 'h6'}).base();
+const sectionTitleClass = typographyVariants({type: 'h6'}).base();
 
-const preloadedDemoPatchDiff = preloadPatchDiff({
+const demoPatchPreload = preloadPatchDiff({
   patch: DEMO_PATCH,
   options: PATCH_DIFF_OPTIONS,
 });
 
-const demoFallback = (
+const usageDiffSkeleton = (
   <Skeleton
     aria-busy="true"
     aria-label="Loading diff preview"
@@ -35,7 +35,7 @@ export default function HomePage() {
   return (
     <main className="mx-auto h-full max-w-2xl space-y-10 px-6 py-12 sm:px-8 sm:py-16">
       <header className="space-y-3">
-        <Typography.Heading level={1} className={pageHeading}>
+        <Typography.Heading level={1} className={heroTitleClass}>
           Better Diffs
         </Typography.Heading>
 
@@ -46,7 +46,11 @@ export default function HomePage() {
       </header>
 
       <section aria-labelledby="install" className="space-y-3">
-        <Typography.Heading id="install" level={2} className={sectionHeading}>
+        <Typography.Heading
+          id="install"
+          level={2}
+          className={sectionTitleClass}
+        >
           Install
         </Typography.Heading>
 
@@ -66,18 +70,18 @@ export default function HomePage() {
       </section>
 
       <section aria-labelledby="usage" className="space-y-3">
-        <Typography.Heading id="usage" level={2} className={sectionHeading}>
+        <Typography.Heading id="usage" level={2} className={sectionTitleClass}>
           Usage
         </Typography.Heading>
 
-        <Suspense fallback={demoFallback}>
-          <Usage />
+        <Suspense fallback={usageDiffSkeleton}>
+          <UsageDiff />
         </Suspense>
       </section>
     </main>
   );
 }
 
-async function Usage() {
-  return <PatchDiff {...await preloadedDemoPatchDiff} className="w-full" />;
+async function UsageDiff() {
+  return <PatchDiff {...await demoPatchPreload} className="w-full" />;
 }
