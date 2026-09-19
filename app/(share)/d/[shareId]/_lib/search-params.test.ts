@@ -6,7 +6,7 @@ import {loadDiffSearchParams} from './search-params';
 const QUERY = 'query with spaces';
 
 const LINES = {
-  id: 'src/a.ts',
+  id: 'file.txt',
   range: {
     start: 3,
     end: 9,

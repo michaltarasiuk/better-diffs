@@ -5,7 +5,6 @@ import {env} from '@/env';
 import {createShareEvent} from '@/testing/factories/events';
 import {
   CREATED_AT,
-  EVENT_CURSOR_SEQ,
   EVENT_ID,
   SHARE_ID,
   THREAD_ID,
@@ -22,7 +21,7 @@ vi.mock('@/db/events', () => ({getEvents}));
 const EVENT = createShareEvent({
   id: EVENT_ID,
   shareId: SHARE_ID,
-  seq: EVENT_CURSOR_SEQ,
+  seq: 4,
   subjectId: THREAD_ID,
   actorId: USER_ID,
   createdAt: CREATED_AT,

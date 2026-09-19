@@ -43,7 +43,7 @@ describe('OPTIONS', () => {
 describe('POST', () => {
   it('returns 201 when creating a share from JSON', async () => {
     const response = await POST(
-      request(JSON.stringify({patches: [[{name: 'src/a.ts', hunks: []}]]}), {
+      request(JSON.stringify({patches: [[{name: 'file.txt', hunks: []}]]}), {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       }),
@@ -54,7 +54,7 @@ describe('POST', () => {
 
   it('returns the share URL in JSON', async () => {
     const response = await POST(
-      request(JSON.stringify({patches: [[{name: 'src/a.ts', hunks: []}]]}), {
+      request(JSON.stringify({patches: [[{name: 'file.txt', hunks: []}]]}), {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       }),
@@ -97,7 +97,7 @@ describe('POST', () => {
     );
 
     expect(createShare).toHaveBeenCalledExactlyOnceWith([
-      [expect.objectContaining({name: 'src/a.ts'})],
+      [expect.objectContaining({name: 'file.txt'})],
     ]);
   });
 

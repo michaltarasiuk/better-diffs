@@ -15,7 +15,6 @@ import type {OptimisticEvent} from '@/events/share-state';
 import {
   COMMENT_ID,
   CREATED_AT,
-  FILE_PATH,
   SHARE_ID,
   THREAD_ID,
   USER_ID,
@@ -26,7 +25,7 @@ export {createLexicalBody} from '@/testing/lexical';
 
 const DEFAULT_ANCHOR = {
   shareId: SHARE_ID,
-  filePath: FILE_PATH,
+  filePath: 'file.txt',
   side: 'additions',
   line: 1,
 } as const satisfies Anchor;

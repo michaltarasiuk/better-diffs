@@ -65,7 +65,7 @@ describe('toThreadAnnotation', () => {
           id: THREAD_ID_SECONDARY,
           anchor: {
             shareId: SHARE_ID,
-            filePath: 'src/b.ts',
+            filePath: 'b.txt',
             side: 'deletions',
             line: 12,
           },

@@ -5,10 +5,10 @@ import {createAnchor} from '@/testing/factories/events';
 import {CREATED_AT, THREAD_ID, USER_ID} from '@/testing/ids';
 
 export const SAMPLE_UNIFIED_DIFF = dedent`
-  diff --git a/src/a.ts b/src/a.ts
+  diff --git a/file.txt b/file.txt
   index 0000001..0000002 100644
-  --- a/src/a.ts
-  +++ b/src/a.ts
+  --- a/file.txt
+  +++ b/file.txt
   @@ -1,2 +1,2 @@
   -old line
   +new line
