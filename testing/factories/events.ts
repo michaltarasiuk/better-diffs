@@ -22,6 +22,24 @@ import {
   USER_ID,
 } from '@/testing/ids';
 
+const DEFAULT_ANCHOR = {
+  shareId: SHARE_ID,
+  filePath: 'file.txt',
+  side: 'additions',
+  line: 1,
+} as const satisfies Anchor;
+
+export function createLexicalBody(text = 'value') {
+  return {text} as unknown as SerializedEditorState;
+}
+
+export function createAnchor(overrides: Partial<Anchor> = {}) {
+  return {
+    ...DEFAULT_ANCHOR,
+    ...overrides,
+  } satisfies Anchor;
+}
+
 export function createOpenThreadInput(
   overrides: Partial<OpenThreadInput> = {},
 ) {
@@ -30,7 +48,7 @@ export function createOpenThreadInput(
     threadId: THREAD_ID,
     commentId: COMMENT_ID,
     body: createLexicalBody(),
-    anchor: createAnchor({line: 1}),
+    anchor: createAnchor(),
     ...overrides,
   } satisfies OpenThreadInput;
 }
@@ -38,7 +56,7 @@ export function createOpenThreadInput(
 export function createThreadState(overrides: Partial<ThreadState> = {}) {
   return {
     id: THREAD_ID,
-    anchor: createAnchor({line: 1}),
+    anchor: createAnchor(),
     actorId: USER_ID,
     resolved: false,
     commentIds: [],
@@ -93,6 +111,28 @@ export function createCommentEdited(
   } satisfies CommentEditedPayload;
 }
 
+export function createThreadResolved(
+  overrides: Partial<ThreadResolvedPayload> = {},
+) {
+  const {threadId = THREAD_ID, ...rest} = overrides;
+  return {
+    $type: 'thread.resolved',
+    threadId,
+    ...rest,
+  } satisfies ThreadResolvedPayload;
+}
+
+export function createCommentDeleted(
+  overrides: Partial<CommentDeletedPayload> = {},
+) {
+  const {commentId = COMMENT_ID, ...rest} = overrides;
+  return {
+    $type: 'comment.deleted',
+    commentId,
+    ...rest,
+  } satisfies CommentDeletedPayload;
+}
+
 export function createShareEvent(
   payload: ShareEventPayload,
   overrides: Partial<Omit<ShareEvent, 'type' | 'subjectId' | 'payload'>> = {},
@@ -121,43 +161,3 @@ export function createOptimisticEvent(
     ...overrides,
   } satisfies OptimisticEvent;
 }
-
-export function createThreadResolved(
-  overrides: Partial<ThreadResolvedPayload> = {},
-) {
-  const {threadId = THREAD_ID, ...rest} = overrides;
-  return {
-    $type: 'thread.resolved',
-    threadId,
-    ...rest,
-  } satisfies ThreadResolvedPayload;
-}
-
-export function createCommentDeleted(
-  overrides: Partial<CommentDeletedPayload> = {},
-) {
-  const {commentId = COMMENT_ID, ...rest} = overrides;
-  return {
-    $type: 'comment.deleted',
-    commentId,
-    ...rest,
-  } satisfies CommentDeletedPayload;
-}
-
-export function createLexicalBody(text = 'value') {
-  return {text} as unknown as SerializedEditorState;
-}
-
-export function createAnchor(overrides: Partial<Anchor> = {}) {
-  return {
-    ...DEFAULT_ANCHOR,
-    ...overrides,
-  } satisfies Anchor;
-}
-
-const DEFAULT_ANCHOR = {
-  shareId: SHARE_ID,
-  filePath: 'file.txt',
-  side: 'additions',
-  line: 1,
-} as const satisfies Anchor;
