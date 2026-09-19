@@ -15,7 +15,7 @@ export const SAMPLE_UNIFIED_DIFF = dedent`
    context
 `;
 
-export function createThreadState(overrides: Partial<ThreadState> = {}) {
+export function createThreadState(partial: Partial<ThreadState> = {}) {
   return {
     id: THREAD_ID,
     anchor: createAnchor({line: 5}),
@@ -23,6 +23,6 @@ export function createThreadState(overrides: Partial<ThreadState> = {}) {
     resolved: false,
     commentIds: [],
     createdAt: CREATED_AT,
-    ...overrides,
+    ...partial,
   } satisfies ThreadState;
 }

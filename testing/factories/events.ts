@@ -15,6 +15,7 @@ import type {OptimisticEvent} from '@/events/share-state';
 import {
   COMMENT_ID,
   CREATED_AT,
+  EVENT_ID,
   SHARE_ID,
   THREAD_ID,
   USER_ID,
@@ -30,44 +31,44 @@ const DEFAULT_ANCHOR = {
   line: 1,
 } as const satisfies Anchor;
 
-export function createAnchor(overrides: Partial<Anchor> = {}): Anchor {
+export function createAnchor(partial: Partial<Anchor> = {}): Anchor {
   return {
     ...DEFAULT_ANCHOR,
-    ...overrides,
+    ...partial,
   };
 }
 
 export function createThreadOpened(
-  overrides: Partial<ThreadOpenedPayload> &
+  partial: Partial<ThreadOpenedPayload> &
     Pick<ThreadOpenedPayload, 'threadId'> = {threadId: THREAD_ID},
 ) {
-  const {threadId, anchor: anchorOverride, ...rest} = overrides;
+  const {threadId, anchor, ...rest} = partial;
   return {
     $type: 'thread.opened',
     threadId,
-    anchor: createAnchor(anchorOverride),
+    anchor: createAnchor(anchor),
     ...rest,
   } satisfies ThreadOpenedPayload;
 }
 
 export function createThreadResolved(
-  overrides: Partial<ThreadResolvedPayload> &
+  partial: Partial<ThreadResolvedPayload> &
     Pick<ThreadResolvedPayload, 'threadId'> = {threadId: THREAD_ID},
 ) {
   return {
     $type: 'thread.resolved',
-    ...overrides,
+    ...partial,
   } satisfies ThreadResolvedPayload;
 }
 
 export function createCommentCreated(
-  overrides: Partial<CommentCreatedPayload> &
+  partial: Partial<CommentCreatedPayload> &
     Pick<CommentCreatedPayload, 'threadId' | 'commentId'> = {
     threadId: THREAD_ID,
     commentId: COMMENT_ID,
   },
 ) {
-  const {body, ...rest} = overrides;
+  const {body, ...rest} = partial;
   return {
     $type: 'comment.created',
     body: body ?? createLexicalBody(),
@@ -76,10 +77,10 @@ export function createCommentCreated(
 }
 
 export function createCommentEdited(
-  overrides: Partial<CommentEditedPayload> &
+  partial: Partial<CommentEditedPayload> &
     Pick<CommentEditedPayload, 'commentId'> = {commentId: COMMENT_ID},
 ) {
-  const {body, ...rest} = overrides;
+  const {body, ...rest} = partial;
   return {
     $type: 'comment.edited',
     body: body ?? createLexicalBody(),
@@ -88,33 +89,33 @@ export function createCommentEdited(
 }
 
 export function createCommentDeleted(
-  overrides: Partial<CommentDeletedPayload> &
+  partial: Partial<CommentDeletedPayload> &
     Pick<CommentDeletedPayload, 'commentId'> = {commentId: COMMENT_ID},
 ) {
   return {
     $type: 'comment.deleted',
-    ...overrides,
+    ...partial,
   } satisfies CommentDeletedPayload;
 }
 
 export function createOptimisticEvent(
   payload: ShareEventPayload,
-  overrides: Partial<OptimisticEvent> = {},
+  partial: Partial<OptimisticEvent> = {},
 ) {
   return {
     actorId: USER_ID,
     createdAt: CREATED_AT,
     payload,
-    ...overrides,
+    ...partial,
   } satisfies OptimisticEvent;
 }
 
-export function createShareEvent(overrides: Partial<ShareEvent> = {}) {
+export function createShareEvent(partial: Partial<ShareEvent> = {}) {
   const payload =
-    overrides.payload ?? createThreadResolved({threadId: THREAD_ID});
+    partial.payload ?? createThreadResolved({threadId: THREAD_ID});
 
   return {
-    id: 'event-1',
+    id: EVENT_ID,
     shareId: SHARE_ID,
     seq: 1,
     type: payload.$type,
@@ -122,7 +123,7 @@ export function createShareEvent(overrides: Partial<ShareEvent> = {}) {
     actorId: USER_ID,
     payload,
     createdAt: CREATED_AT,
-    ...overrides,
+    ...partial,
   } satisfies ShareEvent;
 }
 
@@ -139,16 +140,16 @@ export function createResolvedShareEvent(
 }
 
 export function createEventLog(
-  defaults: {
+  options: {
     shareId?: string;
     actorId?: string;
     createdAt?: string;
   } = {},
 ) {
   let seq = 0;
-  const shareId = defaults.shareId ?? SHARE_ID;
-  const actorId = defaults.actorId ?? USER_ID;
-  const createdAt = defaults.createdAt ?? CREATED_AT;
+  const shareId = options.shareId ?? SHARE_ID;
+  const actorId = options.actorId ?? USER_ID;
+  const createdAt = options.createdAt ?? CREATED_AT;
 
   return (...payloads: readonly ShareEventPayload[]): ShareEvent[] =>
     payloads.map((payload) => {
@@ -166,16 +167,14 @@ export function createEventLog(
     });
 }
 
-export function createOpenThreadInput(
-  overrides: Partial<OpenThreadInput> = {},
-) {
+export function createOpenThreadInput(partial: Partial<OpenThreadInput> = {}) {
   return {
     shareId: SHARE_ID,
     threadId: THREAD_ID,
     commentId: COMMENT_ID,
     body: createLexicalBody(),
     anchor: createAnchor({line: 3}),
-    ...overrides,
+    ...partial,
   } satisfies OpenThreadInput;
 }
 
@@ -193,9 +192,9 @@ export function createOpenThreadPayloads(input: OpenThreadInput) {
   ] satisfies ShareEventPayload[];
 }
 
-export function createSession(overrides: Partial<Session> = {}) {
+export function createSession(partial: Partial<Session> = {}) {
   return {
     user: {id: USER_ID},
-    ...overrides,
+    ...partial,
   } as Session;
 }
