@@ -63,7 +63,9 @@ describe('ingest', () => {
         createCommentCreated({
           body: createLexicalBody('value'),
         }),
-        createCommentCreated({commentId: COMMENT_ID_SECONDARY}),
+        createCommentCreated({
+          commentId: COMMENT_ID_SECONDARY,
+        }),
       ),
     );
 
@@ -85,7 +87,9 @@ describe('ingest', () => {
         createCommentCreated({
           body: createLexicalBody('value'),
         }),
-        createCommentCreated({commentId: COMMENT_ID_SECONDARY}),
+        createCommentCreated({
+          commentId: COMMENT_ID_SECONDARY,
+        }),
       ),
     );
 
@@ -752,12 +756,16 @@ describe('optimistic events building on pending ones', () => {
     },
     {
       name: 'deleting an unknown comment',
-      payload: createCommentDeleted({commentId: MISSING_ID}),
+      payload: createCommentDeleted({
+        commentId: MISSING_ID,
+      }),
       error: /Comment not found/,
     },
     {
       name: 'resolving an unknown thread',
-      payload: createThreadResolved({threadId: MISSING_ID}),
+      payload: createThreadResolved({
+        threadId: MISSING_ID,
+      }),
       error: /Thread not found/,
     },
   ])('rejects $name', ({payload, error}) => {
