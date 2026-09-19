@@ -13,7 +13,7 @@ import {INSTALL_COMMAND} from './_lib/install-command';
 
 export const dynamic = 'force-dynamic';
 
-const pageTitle = typographyVariants({type: 'h2'}).base({
+const pageHeading = typographyVariants({type: 'h2'}).base({
   className: 'font-mono tracking-tight',
 });
 const sectionHeading = typographyVariants({type: 'h6'}).base();
@@ -35,7 +35,7 @@ export default function HomePage() {
   return (
     <main className="mx-auto h-full max-w-2xl space-y-10 px-6 py-12 sm:px-8 sm:py-16">
       <header className="space-y-3">
-        <Typography.Heading level={1} className={pageTitle}>
+        <Typography.Heading level={1} className={pageHeading}>
           Better Diffs
         </Typography.Heading>
 
