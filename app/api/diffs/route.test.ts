@@ -1,5 +1,4 @@
 import {NextRequest} from 'next/server';
-import dedent from 'dedent';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
@@ -11,17 +10,6 @@ const {createShare} = vi.hoisted(() => ({
 }));
 
 vi.mock('@/db/shares', () => ({createShare}));
-
-const PATCH = dedent`
-  diff --git a/src/a.ts b/src/a.ts
-  index 0000001..0000002 100644
-  --- a/src/a.ts
-  +++ b/src/a.ts
-  @@ -1,2 +1,2 @@
-  -old line
-  +new line
-   context
-`;
 
 function request(body: string, headers: Record<string, string>) {
   return new NextRequest(`${env.BASE_URL}/api/diffs`, {
@@ -79,7 +67,10 @@ describe('POST', () => {
 
   it('returns 201 for patch text input', async () => {
     const response = await POST(
-      request(PATCH, {'Content-Type': 'text/plain', Accept: 'text/plain'}),
+      request(FIXTURE.patch.sample, {
+        'Content-Type': 'text/plain',
+        Accept: 'text/plain',
+      }),
     );
 
     expect(response.status).toBe(201);
@@ -87,7 +78,10 @@ describe('POST', () => {
 
   it('returns a plain-text share URL for patch text input', async () => {
     const response = await POST(
-      request(PATCH, {'Content-Type': 'text/plain', Accept: 'text/plain'}),
+      request(FIXTURE.patch.sample, {
+        'Content-Type': 'text/plain',
+        Accept: 'text/plain',
+      }),
     );
 
     expect(await response.text()).toBe(`${env.BASE_URL}/d/${FIXTURE.share.id}`);
@@ -95,7 +89,10 @@ describe('POST', () => {
 
   it('passes parsed patches to createShare for patch text input', async () => {
     await POST(
-      request(PATCH, {'Content-Type': 'text/plain', Accept: 'text/plain'}),
+      request(FIXTURE.patch.sample, {
+        'Content-Type': 'text/plain',
+        Accept: 'text/plain',
+      }),
     );
 
     expect(createShare).toHaveBeenCalledExactlyOnceWith([

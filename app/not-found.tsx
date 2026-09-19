@@ -1,20 +1,9 @@
 import '@/diffs/diffs.css';
 
 import {PatchDiff} from '@pierre/diffs/react';
-import dedent from 'dedent';
 
 import {PATCH_DIFF_OPTIONS} from '@/diffs/options';
-
-const NOT_FOUND_PATCH = dedent`
-  diff --git a/share/link b/share/link
-  deleted file mode 100644
-  --- a/share/link
-  +++ /dev/null
-  @@ -1,3 +0,0 @@
-  -404 Not Found
-  -diff share not found or expired
-  -better-diffs --open
-`;
+import {NOT_FOUND_PATCH} from '@/app/_lib/patches';
 
 export default function NotFoundPage() {
   return (

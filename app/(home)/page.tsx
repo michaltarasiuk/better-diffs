@@ -5,11 +5,11 @@ import {Skeleton, Typography} from '@heroui/react';
 import {typographyVariants} from '@heroui/styles';
 import {PatchDiff} from '@pierre/diffs/react';
 import {preloadPatchDiff} from '@pierre/diffs/ssr';
-import dedent from 'dedent';
 
-import {env} from '@/env';
 import {PATCH_DIFF_OPTIONS} from '@/diffs/options';
+import {DEMO_PATCH} from '@/app/_lib/patches';
 import {CopyCommand} from './_components/copy-command';
+import {INSTALL_COMMAND} from './_lib/install-command';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,25 +18,8 @@ const pageTitle = typographyVariants({type: 'h2'}).base({
 });
 const sectionHeading = typographyVariants({type: 'h6'}).base();
 
-const demoPatch = dedent`
-  diff --git a/share.sh b/share.sh
-  --- a/share.sh
-  +++ b/share.sh
-  @@ -1 +1,4 @@
-  -git diff
-  +better-diffs
-  +better-diffs --staged
-  +better-diffs --base main -- src/
-  +better-diffs --open
-`;
-
-const installCommand = dedent`
-  BASE_URL='${env.BASE_URL}'
-  curl -fsSL "$BASE_URL/install.sh" | sh
-`;
-
 const preloadedDemoPatchDiff = preloadPatchDiff({
-  patch: demoPatch,
+  patch: DEMO_PATCH,
   options: PATCH_DIFF_OPTIONS,
 });
 
@@ -68,7 +51,7 @@ export default function HomePage() {
         </Typography.Heading>
 
         <div className="space-y-2">
-          <CopyCommand label="Copy install command" command={installCommand} />
+          <CopyCommand label="Copy install command" command={INSTALL_COMMAND} />
 
           <Typography.Paragraph size="xs" color="muted">
             Downloads a prebuilt binary for macOS or Linux into{' '}

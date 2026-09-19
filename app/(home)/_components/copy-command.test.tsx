@@ -2,7 +2,6 @@
 
 import type * as HerouiReact from '@heroui/react';
 import {act, fireEvent, render, screen} from '@testing-library/react';
-import dedent from 'dedent';
 import {
   afterEach,
   beforeAll,
@@ -15,12 +14,8 @@ import {
 
 import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
+import {INSTALL_COMMAND} from '../_lib/install-command';
 import {COPIED_FEEDBACK_MS, CopyCommand} from './copy-command';
-
-const COMMAND = dedent`
-  BASE_URL='${process.env.BASE_URL}'
-  curl -fsSL "$BASE_URL/install.sh" | sh
-`;
 
 const writeText = vi.fn<(text: string) => Promise<void>>();
 
@@ -48,7 +43,7 @@ function command() {
 }
 
 function renderCopyCommand() {
-  render(<CopyCommand label="Copy command" command={COMMAND} />);
+  render(<CopyCommand label="Copy command" command={INSTALL_COMMAND} />);
 }
 
 const REACT_ARIA_KEYBOARD_ACTIVATION = {detail: 0} as const;
@@ -80,7 +75,7 @@ describe('CopyCommand', () => {
   it('renders the install command', () => {
     renderCopyCommand();
 
-    expect(command().textContent).toBe(COMMAND);
+    expect(command().textContent).toBe(INSTALL_COMMAND);
   });
 
   it('labels the copy button for assistive tech', () => {
@@ -93,7 +88,7 @@ describe('CopyCommand', () => {
     renderCopyCommand();
     await copy();
 
-    expect(writeText).toHaveBeenCalledExactlyOnceWith(COMMAND);
+    expect(writeText).toHaveBeenCalledExactlyOnceWith(INSTALL_COMMAND);
   });
 
   it('confirms the copy', async () => {
@@ -146,7 +141,7 @@ describe('CopyCommand', () => {
 
     const selection = window.getSelection();
     assert(isDefined(selection), 'Selection missing');
-    expect(selection.toString()).toBe(COMMAND);
+    expect(selection.toString()).toBe(INSTALL_COMMAND);
   });
 
   it('labels the button Selected when the clipboard is unavailable', async () => {

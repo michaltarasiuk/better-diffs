@@ -1,3 +1,5 @@
+import dedent from 'dedent';
+
 function uuid<T extends string>(suffix: T) {
   return `00000000-0000-4000-8000-0000000000${suffix}` as const;
 }
@@ -26,5 +28,17 @@ export const FIXTURE = {
   },
   time: {
     created: '2026-01-01T00:00:00.000Z',
+  },
+  patch: {
+    sample: dedent`
+      diff --git a/src/a.ts b/src/a.ts
+      index 0000001..0000002 100644
+      --- a/src/a.ts
+      +++ b/src/a.ts
+      @@ -1,2 +1,2 @@
+      -old line
+      +new line
+       context
+    `,
   },
 } as const;
