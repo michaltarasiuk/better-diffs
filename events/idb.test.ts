@@ -2,7 +2,8 @@ import {afterAll, beforeEach, describe, expect, it} from 'vitest';
 
 import {
   createLexicalBody,
-  createShareEventAt,
+  createShareEvent,
+  createThreadResolved,
 } from '@/testing/factories/events';
 import {COMMENT_ID, SHARE_ID, SHARE_ID_SECONDARY} from '@/testing/ids';
 import {
@@ -14,7 +15,15 @@ import {
 } from './idb';
 import type {ShareEvent} from './schemas';
 
-const BODY = createLexicalBody();
+const body = createLexicalBody();
+
+function createShareEventAt(seq: number, shareId: string = SHARE_ID) {
+  return createShareEvent(createThreadResolved(), {
+    id: `event-${shareId}-${seq}`,
+    shareId,
+    seq,
+  });
+}
 
 beforeEach(() => clearEvents());
 
@@ -103,7 +112,7 @@ describe('getEvents', () => {
       payload: {
         $type: 'comment.edited',
         commentId: COMMENT_ID,
-        body: BODY,
+        body,
       },
     };
 

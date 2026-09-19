@@ -2,14 +2,11 @@ import {NextRequest} from 'next/server';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
-import {createShareEvent} from '@/testing/factories/events';
 import {
-  CREATED_AT,
-  EVENT_ID,
-  SHARE_ID,
-  THREAD_ID,
-  USER_ID,
-} from '@/testing/ids';
+  createShareEvent,
+  createThreadResolved,
+} from '@/testing/factories/events';
+import {SHARE_ID} from '@/testing/ids';
 import {GET} from './route';
 
 const {getEvents} = vi.hoisted(() => ({
@@ -18,14 +15,7 @@ const {getEvents} = vi.hoisted(() => ({
 
 vi.mock('@/db/events', () => ({getEvents}));
 
-const EVENT = createShareEvent({
-  id: EVENT_ID,
-  shareId: SHARE_ID,
-  seq: 4,
-  subjectId: THREAD_ID,
-  actorId: USER_ID,
-  createdAt: CREATED_AT,
-});
+const event = createShareEvent(createThreadResolved(), {seq: 4});
 
 function request(search = '') {
   return new NextRequest(
@@ -38,7 +28,7 @@ function context() {
 }
 
 beforeEach(() => {
-  getEvents.mockResolvedValue([EVENT]);
+  getEvents.mockResolvedValue([event]);
 });
 
 describe('GET', () => {
@@ -53,7 +43,7 @@ describe('GET', () => {
 
     expect(await response.json()).toEqual({
       ok: true,
-      events: [EVENT],
+      events: [event],
     });
   });
 

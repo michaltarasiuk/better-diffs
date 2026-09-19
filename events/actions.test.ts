@@ -3,11 +3,13 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {createSession} from '@/testing/factories/auth';
 import {
   createAnchor,
+  createCommentCreated,
   createOpenThreadInput,
-  createOpenThreadPayloads,
+  createThreadOpened,
 } from '@/testing/factories/events';
 import {SHARE_ID, SHARE_ID_SECONDARY, USER_ID} from '@/testing/ids';
 import {openThread} from './actions';
+import type {OpenThreadInput, ShareEventPayload} from './schemas';
 
 const {appendEvents, getSession, unauthorized} = vi.hoisted(() => ({
   appendEvents: vi.fn<typeof import('@/db/events').appendEvents>(),
@@ -20,6 +22,20 @@ const {appendEvents, getSession, unauthorized} = vi.hoisted(() => ({
 vi.mock('@/auth/server', () => ({getSession}));
 vi.mock('@/db/events', () => ({appendEvents}));
 vi.mock('next/navigation', () => ({unauthorized}));
+
+function createOpenThreadPayloads(input: OpenThreadInput) {
+  return [
+    createThreadOpened({
+      threadId: input.threadId,
+      anchor: input.anchor,
+    }),
+    createCommentCreated({
+      threadId: input.threadId,
+      commentId: input.commentId,
+      body: input.body,
+    }),
+  ] satisfies ShareEventPayload[];
+}
 
 beforeEach(() => {
   getSession.mockResolvedValue(createSession());

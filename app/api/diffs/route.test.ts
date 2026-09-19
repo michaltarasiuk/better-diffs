@@ -2,7 +2,7 @@ import {NextRequest} from 'next/server';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
-import {SAMPLE_UNIFIED_DIFF} from '@/testing/factories/diffs';
+import {UNIFIED_DIFF} from '@/testing/diffs';
 import {SHARE_ID} from '@/testing/ids';
 import {OPTIONS, POST} from './route';
 
@@ -68,7 +68,7 @@ describe('POST', () => {
 
   it('returns 201 for patch text input', async () => {
     const response = await POST(
-      request(SAMPLE_UNIFIED_DIFF, {
+      request(UNIFIED_DIFF, {
         'Content-Type': 'text/plain',
         Accept: 'text/plain',
       }),
@@ -79,7 +79,7 @@ describe('POST', () => {
 
   it('returns a plain-text share URL for patch text input', async () => {
     const response = await POST(
-      request(SAMPLE_UNIFIED_DIFF, {
+      request(UNIFIED_DIFF, {
         'Content-Type': 'text/plain',
         Accept: 'text/plain',
       }),
@@ -90,7 +90,7 @@ describe('POST', () => {
 
   it('passes parsed patches to createShare for patch text input', async () => {
     await POST(
-      request(SAMPLE_UNIFIED_DIFF, {
+      request(UNIFIED_DIFF, {
         'Content-Type': 'text/plain',
         Accept: 'text/plain',
       }),
