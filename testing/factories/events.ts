@@ -1,4 +1,3 @@
-import type {Session} from '@/auth/auth';
 import type {
   Anchor,
   CommentCreatedPayload,
@@ -98,18 +97,6 @@ export function createCommentDeleted(
   } satisfies CommentDeletedPayload;
 }
 
-export function createOptimisticEvent(
-  payload: ShareEventPayload,
-  overrides: Partial<OptimisticEvent> = {},
-) {
-  return {
-    actorId: USER_ID,
-    createdAt: CREATED_AT,
-    payload,
-    ...overrides,
-  } satisfies OptimisticEvent;
-}
-
 export function createShareEvent(overrides: Partial<ShareEvent> = {}) {
   const payload =
     overrides.payload ?? createThreadResolved({threadId: THREAD_ID});
@@ -127,10 +114,7 @@ export function createShareEvent(overrides: Partial<ShareEvent> = {}) {
   } satisfies ShareEvent;
 }
 
-export function createResolvedShareEvent(
-  seq: number,
-  shareId: string = SHARE_ID,
-) {
+export function createShareEventAt(seq: number, shareId: string = SHARE_ID) {
   return createShareEvent({
     id: `event-${shareId}-${seq}`,
     shareId,
@@ -139,7 +123,7 @@ export function createResolvedShareEvent(
   });
 }
 
-export function createEventLog(
+export function createShareEventLog(
   defaults: {
     shareId?: string;
     actorId?: string;
@@ -167,6 +151,18 @@ export function createEventLog(
     });
 }
 
+export function createOptimisticEvent(
+  payload: ShareEventPayload,
+  overrides: Partial<OptimisticEvent> = {},
+) {
+  return {
+    actorId: USER_ID,
+    createdAt: CREATED_AT,
+    payload,
+    ...overrides,
+  } satisfies OptimisticEvent;
+}
+
 export function createOpenThreadInput(
   overrides: Partial<OpenThreadInput> = {},
 ) {
@@ -192,11 +188,4 @@ export function createOpenThreadPayloads(input: OpenThreadInput) {
       body: input.body,
     }),
   ] satisfies ShareEventPayload[];
-}
-
-export function createSession(overrides: Partial<Session> = {}) {
-  return {
-    user: {id: USER_ID},
-    ...overrides,
-  } as Session;
 }

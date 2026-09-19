@@ -2,7 +2,7 @@ import {afterAll, beforeEach, describe, expect, it} from 'vitest';
 
 import {
   createLexicalBody,
-  createResolvedShareEvent,
+  createShareEventAt,
 } from '@/testing/factories/events';
 import {COMMENT_ID, SHARE_ID, SHARE_ID_SECONDARY} from '@/testing/ids';
 import {
@@ -22,7 +22,7 @@ afterAll(() => closeEventDb());
 
 describe('putEvents', () => {
   it('stores events so they can be read back', async () => {
-    await putEvents([createResolvedShareEvent(1), createResolvedShareEvent(2)]);
+    await putEvents([createShareEventAt(1), createShareEventAt(2)]);
 
     expect((await getEvents(SHARE_ID)).map((it) => it.seq)).toEqual([1, 2]);
   });
@@ -38,15 +38,15 @@ describe('putEvents', () => {
   });
 
   it('replaces an event that is stored twice', async () => {
-    await putEvents([createResolvedShareEvent(1)]);
-    await putEvents([createResolvedShareEvent(1)]);
+    await putEvents([createShareEventAt(1)]);
+    await putEvents([createShareEventAt(1)]);
 
     await expect(getEvents(SHARE_ID)).resolves.toHaveLength(1);
   });
 
   it('keeps events written by separate calls', async () => {
-    await putEvents([createResolvedShareEvent(1)]);
-    await putEvents([createResolvedShareEvent(2)]);
+    await putEvents([createShareEventAt(1)]);
+    await putEvents([createShareEventAt(2)]);
 
     expect((await getEvents(SHARE_ID)).map((it) => it.seq)).toEqual([1, 2]);
   });
@@ -59,9 +59,9 @@ describe('getEvents', () => {
 
   it('orders the log by sequence regardless of write order', async () => {
     await putEvents([
-      createResolvedShareEvent(3),
-      createResolvedShareEvent(1),
-      createResolvedShareEvent(2),
+      createShareEventAt(3),
+      createShareEventAt(1),
+      createShareEventAt(2),
     ]);
 
     expect((await getEvents(SHARE_ID)).map((it) => it.seq)).toEqual([1, 2, 3]);
@@ -69,8 +69,8 @@ describe('getEvents', () => {
 
   it('returns only one event for the requested share', async () => {
     await putEvents([
-      createResolvedShareEvent(1),
-      createResolvedShareEvent(1, SHARE_ID_SECONDARY),
+      createShareEventAt(1),
+      createShareEventAt(1, SHARE_ID_SECONDARY),
     ]);
 
     expect(await getEvents(SHARE_ID)).toHaveLength(1);
@@ -78,8 +78,8 @@ describe('getEvents', () => {
 
   it('scopes results to the requested share', async () => {
     await putEvents([
-      createResolvedShareEvent(1),
-      createResolvedShareEvent(1, SHARE_ID_SECONDARY),
+      createShareEventAt(1),
+      createShareEventAt(1, SHARE_ID_SECONDARY),
     ]);
 
     expect((await getEvents(SHARE_ID))[0]?.shareId).toBe(SHARE_ID);
@@ -87,8 +87,8 @@ describe('getEvents', () => {
 
   it('round-trips the whole event', async () => {
     const stored = {
-      ...createResolvedShareEvent(1),
-      payload: {...createResolvedShareEvent(1).payload},
+      ...createShareEventAt(1),
+      payload: {...createShareEventAt(1).payload},
     } as ShareEvent;
 
     await putEvents([stored]);
@@ -98,7 +98,7 @@ describe('getEvents', () => {
 
   it('keeps a body that is not plain JSON intact', async () => {
     const stored: ShareEvent = {
-      ...createResolvedShareEvent(1),
+      ...createShareEventAt(1),
       type: 'comment.edited',
       payload: {
         $type: 'comment.edited',
@@ -120,9 +120,9 @@ describe('getLastSeq', () => {
 
   it('returns the highest sequence stored for the share', async () => {
     await putEvents([
-      createResolvedShareEvent(1),
-      createResolvedShareEvent(3),
-      createResolvedShareEvent(2),
+      createShareEventAt(1),
+      createShareEventAt(3),
+      createShareEventAt(2),
     ]);
 
     await expect(getLastSeq(SHARE_ID)).resolves.toBe(3);
@@ -130,15 +130,15 @@ describe('getLastSeq', () => {
 
   it('ignores the sequences of other shares', async () => {
     await putEvents([
-      createResolvedShareEvent(1),
-      createResolvedShareEvent(9, SHARE_ID_SECONDARY),
+      createShareEventAt(1),
+      createShareEventAt(9, SHARE_ID_SECONDARY),
     ]);
 
     await expect(getLastSeq(SHARE_ID)).resolves.toBe(1);
   });
 
   it('returns null when only other shares have events', async () => {
-    await putEvents([createResolvedShareEvent(9, SHARE_ID_SECONDARY)]);
+    await putEvents([createShareEventAt(9, SHARE_ID_SECONDARY)]);
 
     await expect(getLastSeq(SHARE_ID)).resolves.toBe(null);
   });

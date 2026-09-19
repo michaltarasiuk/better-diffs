@@ -1,10 +1,10 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
+import {createSession} from '@/testing/factories/auth';
 import {
   createAnchor,
   createOpenThreadInput,
   createOpenThreadPayloads,
-  createSession,
 } from '@/testing/factories/events';
 import {SHARE_ID, SHARE_ID_SECONDARY, USER_ID} from '@/testing/ids';
 import {openThread} from './actions';
