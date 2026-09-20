@@ -11,8 +11,6 @@ import {DEMO_PATCH} from '@/app/_lib/patches';
 import {CopyCommand} from './_components/copy-command';
 import {INSTALL_COMMAND} from './_lib/install-command';
 
-export const dynamic = 'force-dynamic';
-
 const heroTitleClass = typographyVariants({type: 'h2'}).base({
   className: 'font-mono tracking-tight',
 });
