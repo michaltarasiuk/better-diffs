@@ -22,24 +22,6 @@ import {
   USER_ID,
 } from '@/testing/ids';
 
-const DEFAULT_ANCHOR = {
-  shareId: SHARE_ID,
-  filePath: 'file.txt',
-  side: 'additions',
-  line: 1,
-} as const satisfies Anchor;
-
-export function createLexicalBody(text = 'value') {
-  return {text} as unknown as SerializedEditorState;
-}
-
-export function createAnchor(overrides: Partial<Anchor> = {}) {
-  return {
-    ...DEFAULT_ANCHOR,
-    ...overrides,
-  } satisfies Anchor;
-}
-
 export function createOpenThreadInput(
   overrides: Partial<OpenThreadInput> = {},
 ) {
@@ -161,3 +143,21 @@ export function createOptimisticEvent(
     ...overrides,
   } satisfies OptimisticEvent;
 }
+
+export function createLexicalBody(text = 'value') {
+  return {text} as unknown as SerializedEditorState;
+}
+
+export function createAnchor(overrides: Partial<Anchor> = {}) {
+  return {
+    ...DEFAULT_ANCHOR,
+    ...overrides,
+  } satisfies Anchor;
+}
+
+const DEFAULT_ANCHOR = {
+  shareId: SHARE_ID,
+  filePath: 'file.txt',
+  side: 'additions',
+  line: 1,
+} as const satisfies Anchor;

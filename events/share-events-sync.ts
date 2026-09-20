@@ -40,7 +40,7 @@ async function fetchEvents(shareId: string, afterSeq: number | null) {
   return data.events;
 }
 
-export class ShareEventLogSync {
+export class ShareEventsSync {
   readonly #shareId: string;
   #isPolling = false;
 
@@ -121,14 +121,14 @@ export class ShareEventLogSync {
 
 const hydratePromises = new Map<
   string,
-  Promise<{events: ShareEvent[]; sync: ShareEventLogSync}>
+  Promise<{events: ShareEvent[]; sync: ShareEventsSync}>
 >();
 
-export function hydrateShareEventLog(shareId: string) {
+export function hydrateShareEvents(shareId: string) {
   let hydratePromise = hydratePromises.get(shareId);
   if (!isDefined(hydratePromise)) {
     hydratePromise = (async () => {
-      const sync = new ShareEventLogSync(shareId);
+      const sync = new ShareEventsSync(shareId);
       const events = await sync.hydrate();
       return {events, sync};
     })().catch((error) => {

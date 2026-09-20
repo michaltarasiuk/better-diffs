@@ -27,7 +27,7 @@ import type {
 } from './schemas';
 import {foldEvents, isType, ShareState} from './share-state';
 
-function createShareEventLog(
+function createSequencedShareEvents(
   overrides: Partial<
     Pick<ShareEvent, 'shareId' | 'actorId' | 'createdAt'>
   > = {},
@@ -53,7 +53,7 @@ function createShareEventLog(
 
 describe('ingest', () => {
   it('folds a thread from its events', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
 
     state.ingest(
@@ -77,7 +77,7 @@ describe('ingest', () => {
   });
 
   it('folds comments from their events', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
 
     state.ingest(
@@ -100,7 +100,7 @@ describe('ingest', () => {
   });
 
   it('applies comment edits before deletions', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
 
     state.ingest(log(createThreadOpened(), createCommentCreated()));
@@ -119,7 +119,7 @@ describe('ingest', () => {
   });
 
   it('applies thread resolutions after comment changes', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
 
     state.ingest(log(createThreadOpened(), createCommentCreated()));
@@ -141,7 +141,7 @@ describe('ingest', () => {
   });
 
   it('reports true when events were applied', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
 
     expect(state.ingest(log(createThreadOpened()))).toBe(true);
@@ -149,7 +149,7 @@ describe('ingest', () => {
 
   it('refuses events that do not advance the sequence', () => {
     const state = new ShareState();
-    const [first] = createShareEventLog()(createThreadOpened());
+    const [first] = createSequencedShareEvents()(createThreadOpened());
 
     state.ingest([first!]);
 
@@ -192,7 +192,7 @@ describe('ingest invariants', () => {
       error: /Thread already resolved/,
     },
   ])('rejects $name', ({payloads, error}) => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
 
     expect(() => state.ingest(log(...payloads))).toThrow(error);
@@ -201,7 +201,7 @@ describe('ingest invariants', () => {
 
 describe('getSnapshot', () => {
   it('keeps returning the same reference until something changes', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened()));
 
@@ -211,7 +211,7 @@ describe('getSnapshot', () => {
   });
 
   it('keeps the same reference after a no-op ingest', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened()));
 
@@ -222,7 +222,7 @@ describe('getSnapshot', () => {
   });
 
   it('returns a new reference after ingest', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
 
     const before = state.getSnapshot();
@@ -232,7 +232,7 @@ describe('getSnapshot', () => {
   });
 
   it('returns a new reference after an optimistic update', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened()));
 
@@ -247,7 +247,7 @@ describe('getSnapshot', () => {
   });
 
   it('bumps the snapshot version after an optimistic update', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened()));
 
@@ -262,7 +262,7 @@ describe('getSnapshot', () => {
   });
 
   it('exposes the live thread map while nothing is pending', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened()));
 
@@ -270,7 +270,7 @@ describe('getSnapshot', () => {
   });
 
   it('exposes the live comment map while nothing is pending', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened()));
 
@@ -278,7 +278,7 @@ describe('getSnapshot', () => {
   });
 
   it('reports no pending ids while nothing is pending', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened()));
 
@@ -361,7 +361,7 @@ describe('optimistic', () => {
   });
 
   it('leaves confirmed thread ids untouched by optimistic updates', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(
       log(
@@ -387,7 +387,7 @@ describe('optimistic', () => {
   });
 
   it('leaves confirmed comment bodies untouched by optimistic updates', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(
       log(
@@ -415,7 +415,7 @@ describe('optimistic', () => {
   });
 
   it('surfaces optimistic thread changes only in the snapshot', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(
       log(
@@ -444,7 +444,7 @@ describe('optimistic', () => {
   });
 
   it('surfaces optimistic comment edits only in the snapshot', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(
       log(
@@ -472,7 +472,7 @@ describe('optimistic', () => {
   });
 
   it('reuses untouched threads instead of copying them', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(
       log(
@@ -489,7 +489,7 @@ describe('optimistic', () => {
   });
 
   it('copies threads that change during optimistic updates', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(
       log(
@@ -590,7 +590,7 @@ describe('optimistic', () => {
 
 describe('optimistic deletions', () => {
   it('marks an unconfirmed deletion in the snapshot', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened(), createCommentCreated()));
 
@@ -600,7 +600,7 @@ describe('optimistic deletions', () => {
   });
 
   it('marks an unconfirmed deletion as pending', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened(), createCommentCreated()));
 
@@ -610,7 +610,7 @@ describe('optimistic deletions', () => {
   });
 
   it('leaves confirmed comments undeleted in the snapshot', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened(), createCommentCreated()));
 
@@ -620,7 +620,7 @@ describe('optimistic deletions', () => {
   });
 
   it('stacks a pending edit and deletion in the snapshot', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(
       log(
@@ -645,7 +645,7 @@ describe('optimistic deletions', () => {
   });
 
   it('leaves confirmed comments unchanged while edits and deletions stack', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(
       log(
@@ -670,7 +670,7 @@ describe('optimistic deletions', () => {
   });
 
   it('refuses to delete a comment twice across pending events', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened(), createCommentCreated()));
     state.optimistic(createOptimisticEvent(createCommentDeleted()));
@@ -681,7 +681,7 @@ describe('optimistic deletions', () => {
   });
 
   it('refuses to delete a comment the log already deleted', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(
       log(createThreadOpened(), createCommentCreated(), createCommentDeleted()),
@@ -714,7 +714,7 @@ describe('optimistic events building on pending ones', () => {
   });
 
   it('edits a comment that only exists optimistically', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened()));
     state.optimistic(
@@ -737,7 +737,7 @@ describe('optimistic events building on pending ones', () => {
   });
 
   it('refuses to create the same comment twice', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened()));
     state.optimistic(createOptimisticEvent(createCommentCreated()));
@@ -781,7 +781,7 @@ describe('optimistic events building on pending ones', () => {
 
 describe('reconciliation', () => {
   it('keeps a pending edit before its confirmed twin arrives', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(
       log(
@@ -801,7 +801,7 @@ describe('reconciliation', () => {
   });
 
   it('clears pending ids when a confirmed twin arrives', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(
       log(
@@ -823,7 +823,7 @@ describe('reconciliation', () => {
   });
 
   it('applies the confirmed edit when its twin arrives', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(
       log(
@@ -847,7 +847,7 @@ describe('reconciliation', () => {
   });
 
   it('clears pending ids when thread.opened is confirmed', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.optimistic(createOptimisticEvent(createThreadOpened()));
 
@@ -857,7 +857,7 @@ describe('reconciliation', () => {
   });
 
   it('moves a confirmed thread.opened into confirmed state', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.optimistic(createOptimisticEvent(createThreadOpened()));
 
@@ -867,7 +867,7 @@ describe('reconciliation', () => {
   });
 
   it('clears pending ids when thread.resolved is confirmed', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened()));
     state.optimistic(createOptimisticEvent(createThreadResolved()));
@@ -878,7 +878,7 @@ describe('reconciliation', () => {
   });
 
   it('marks a thread resolved when thread.resolved is confirmed', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened()));
     state.optimistic(createOptimisticEvent(createThreadResolved()));
@@ -889,7 +889,7 @@ describe('reconciliation', () => {
   });
 
   it('clears pending ids when comment.created is confirmed', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened()));
     state.optimistic(createOptimisticEvent(createCommentCreated()));
@@ -900,7 +900,7 @@ describe('reconciliation', () => {
   });
 
   it('moves a confirmed comment.created into confirmed state', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened()));
     state.optimistic(createOptimisticEvent(createCommentCreated()));
@@ -911,7 +911,7 @@ describe('reconciliation', () => {
   });
 
   it('clears pending ids when comment.deleted is confirmed', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened(), createCommentCreated()));
     state.optimistic(createOptimisticEvent(createCommentDeleted()));
@@ -922,7 +922,7 @@ describe('reconciliation', () => {
   });
 
   it('marks a comment deleted when comment.deleted is confirmed', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened(), createCommentCreated()));
     state.optimistic(createOptimisticEvent(createCommentDeleted()));
@@ -933,7 +933,7 @@ describe('reconciliation', () => {
   });
 
   it('keeps a pending resolve when another thread is resolved', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(
       log(
@@ -949,7 +949,7 @@ describe('reconciliation', () => {
   });
 
   it('applies an optimistic resolve to the snapshot when another thread is resolved', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(
       log(
@@ -965,7 +965,7 @@ describe('reconciliation', () => {
   });
 
   it('leaves confirmed threads unresolved when another thread is resolved', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(
       log(
@@ -981,7 +981,7 @@ describe('reconciliation', () => {
   });
 
   it('keeps a pending edit when an unrelated event is confirmed', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened(), createCommentCreated()));
     state.optimistic(
@@ -996,7 +996,7 @@ describe('reconciliation', () => {
   });
 
   it('keeps an optimistic edit in the snapshot when an unrelated event is confirmed', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened(), createCommentCreated()));
     state.optimistic(
@@ -1013,7 +1013,7 @@ describe('reconciliation', () => {
   });
 
   it('resolves the thread in the snapshot when an unrelated event is confirmed', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     state.ingest(log(createThreadOpened(), createCommentCreated()));
     state.optimistic(
@@ -1030,7 +1030,7 @@ describe('reconciliation', () => {
 
 describe('subscribe', () => {
   it('notifies subscribers on commit', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     const subscriber = vi.fn();
 
@@ -1041,7 +1041,7 @@ describe('subscribe', () => {
   });
 
   it('stops notifying after unsubscribe', () => {
-    const log = createShareEventLog();
+    const log = createSequencedShareEvents();
     const state = new ShareState();
     const subscriber = vi.fn();
 
@@ -1091,7 +1091,7 @@ describe('isType', () => {
 describe('foldEvents', () => {
   it('folds thread state from a log in one call', () => {
     const snapshot = foldEvents(
-      createShareEventLog()(
+      createSequencedShareEvents()(
         createThreadOpened(),
         createCommentCreated(),
         createThreadResolved(),
@@ -1106,7 +1106,7 @@ describe('foldEvents', () => {
 
   it('returns no pending ids from a folded log', () => {
     const snapshot = foldEvents(
-      createShareEventLog()(
+      createSequencedShareEvents()(
         createThreadOpened(),
         createCommentCreated(),
         createThreadResolved(),

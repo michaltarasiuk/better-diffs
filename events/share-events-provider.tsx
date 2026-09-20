@@ -11,9 +11,9 @@ import {browser} from 'react-dom';
 
 import type {ShareEvent} from '@/events/schemas';
 import {
-  hydrateShareEventLog,
-  type ShareEventLogSync,
-} from '@/events/share-event-log';
+  hydrateShareEvents,
+  type ShareEventsSync,
+} from '@/events/share-events-sync';
 import type {FoldedShareState} from '@/events/share-state';
 import {EMPTY_FOLDED_STATE, ShareState} from '@/events/share-state';
 import {ErrorBoundary} from '@/components/error-boundary';
@@ -32,7 +32,7 @@ export function ShareEventsProvider({
 }) {
   use(browser());
 
-  const hydratePromise = hydrateShareEventLog(shareId);
+  const hydratePromise = hydrateShareEvents(shareId);
 
   return (
     <ErrorBoundary resetKeys={[shareId, hydratePromise]} fallback={null}>
@@ -47,7 +47,7 @@ function SyncedShareState({
   hydratePromise,
   children,
 }: {
-  readonly hydratePromise: ReturnType<typeof hydrateShareEventLog>;
+  readonly hydratePromise: ReturnType<typeof hydrateShareEvents>;
   readonly children: React.ReactNode;
 }) {
   const {events, sync} = use(hydratePromise);
@@ -64,7 +64,7 @@ function ShareStateProvider({
   children,
 }: {
   readonly events: readonly ShareEvent[];
-  readonly sync: ShareEventLogSync;
+  readonly sync: ShareEventsSync;
   readonly children: React.ReactNode;
 }) {
   const [store] = useState(() => {
