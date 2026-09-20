@@ -9,6 +9,7 @@ export const THREAD_ID = uuid('03');
 export const THREAD_ID_SECONDARY = uuid('04');
 export const COMMENT_ID = uuid('05');
 export const COMMENT_ID_SECONDARY = uuid('06');
+export const FORM_ID = uuid('08');
 export const USER_ID = uuid('07');
 export const MISSING_ID = uuid('fe');
 

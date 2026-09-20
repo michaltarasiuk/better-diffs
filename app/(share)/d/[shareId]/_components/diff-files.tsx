@@ -4,19 +4,16 @@ import '@/diffs/diffs.css';
 
 import {use} from 'react';
 import {Button, Checkbox, cn, Focusable, Kbd, Tooltip} from '@heroui/react';
-import type {FileDiffMetadata, GetHoveredLineResult} from '@pierre/diffs';
+import type {FileDiffMetadata} from '@pierre/diffs';
 import {isDiffAnnotation} from '@pierre/diffs';
 import {CodeView} from '@pierre/diffs/react';
 import {ChevronDownIcon} from 'lucide-react';
 
 import {useKeyDown} from '@/hooks/use-key-down';
-import {useLocalStorage} from '@/hooks/use-local-storage';
 import {useIsMobile} from '@/hooks/use-media-query';
 import {isDefined} from '@/utils/defined';
 import {isEditableTarget} from '@/utils/is-editable-target';
-import {deserializeMap, serializeMap} from '@/utils/serialize-map';
 import {
-  type FormDiffAnnotation,
   isDiffLine,
   isFormAnnotation,
   sortAnnotations,
@@ -27,26 +24,11 @@ import {CODE_VIEW_OPTIONS} from '@/diffs/options';
 import {ShareStateContext} from '@/events/share-events-provider';
 import type {ThreadState} from '@/events/share-state';
 import {useShareId} from '@/app/(share)/d/[shareId]/_hooks/use-share-id';
+import {useDiffFileUi} from '../_hooks/use-diff-file-ui';
 import {useSelectedLines} from '../_hooks/use-selected-lines';
 import {getActiveFileId} from '../_lib/get-active-file-id';
 import {HandleContext} from '../_lib/handle-context';
 import {AddCommentButton, Annotation} from './annotation';
-
-type HoveredDiffLine = GetHoveredLineResult<'diff'>;
-
-interface DiffFileUiState {
-  readonly commentForms: readonly FormDiffAnnotation[];
-  readonly collapsed: boolean;
-  readonly viewed: boolean;
-  readonly localVersion: number;
-}
-
-const DEFAULT_FILE_UI = {
-  commentForms: [],
-  collapsed: false,
-  viewed: false,
-  localVersion: 0,
-} satisfies DiffFileUiState;
 
 const DEFAULT_THREADS: readonly ThreadState[] = [];
 
@@ -65,14 +47,13 @@ interface DiffFilesProps {
 export function DiffFiles({files}: DiffFilesProps) {
   const shareId = useShareId();
 
-  const [fileUiById, setFileUiById] = useLocalStorage(
-    `diff:v1:${shareId}`,
-    () => new Map() as ReadonlyMap<string, DiffFileUiState>,
-    {
-      serialize: serializeMap<string, DiffFileUiState>,
-      deserialize: deserializeMap<string, DiffFileUiState>,
-    },
-  );
+  const {
+    getFileUi,
+    toggleFileCollapsed,
+    setFileViewed,
+    addCommentForm,
+    removeCommentForm,
+  } = useDiffFileUi(shareId);
   const {selectedLines, setSelectedLines} = useSelectedLines();
 
   const isMobile = useIsMobile();
@@ -115,70 +96,8 @@ export function DiffFiles({files}: DiffFilesProps) {
     codeView.scrollTo({type: 'item', id: fileId, align: 'start'});
   });
 
-  function getFileUi(fileId: string) {
-    return {
-      ...DEFAULT_FILE_UI,
-      ...fileUiById.get(fileId),
-    };
-  }
-
   function getThreadsForPath(filePath: string) {
     return threadsByFilePath.get(filePath) ?? DEFAULT_THREADS;
-  }
-
-  function updateFileUi(
-    fileId: string,
-    update: (state: DiffFileUiState) => DiffFileUiState,
-  ) {
-    setFileUiById((fileUis) => {
-      const state = {
-        ...DEFAULT_FILE_UI,
-        ...fileUis.get(fileId),
-      };
-
-      return new Map(fileUis).set(fileId, {
-        ...update(state),
-        localVersion: state.localVersion + 1,
-      });
-    });
-  }
-
-  function toggleFileCollapsed(fileId: string) {
-    updateFileUi(fileId, (state) => ({
-      ...state,
-      collapsed: !state.collapsed,
-    }));
-  }
-
-  function setFileViewed(fileId: string, viewed: boolean) {
-    updateFileUi(fileId, (state) => ({
-      ...state,
-      viewed,
-      collapsed: viewed,
-    }));
-  }
-
-  function addCommentForm(fileId: string, line: HoveredDiffLine) {
-    updateFileUi(fileId, (state) => ({
-      ...state,
-      commentForms: sortAnnotations([
-        ...state.commentForms,
-        {
-          ...line,
-          metadata: {type: 'form'},
-        },
-      ]),
-    }));
-  }
-
-  function removeCommentForm(fileId: string, form: FormDiffAnnotation) {
-    updateFileUi(fileId, (state) => ({
-      ...state,
-      commentForms: state.commentForms.toSpliced(
-        state.commentForms.indexOf(form),
-        1,
-      ),
-    }));
   }
 
   return (
@@ -219,7 +138,7 @@ export function DiffFiles({files}: DiffFilesProps) {
           onAddAnnotation={() => {
             const line = getHoveredLine();
             if (!isDefined(line) || !isDiffLine(line)) {
-              throw new TypeError('Hovered diff line missing');
+              return;
             }
             addCommentForm(item.id, line);
           }}
@@ -233,7 +152,7 @@ export function DiffFiles({files}: DiffFilesProps) {
             filePath={item.fileDiff.name}
             onDismiss={() => {
               if (isFormAnnotation(lineAnnotation)) {
-                removeCommentForm(item.id, lineAnnotation);
+                removeCommentForm(item.id, lineAnnotation.metadata.formId);
               }
             }}
           />

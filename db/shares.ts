@@ -4,8 +4,8 @@ import type {FileDiffMetadata} from '@pierre/diffs';
 import {asc, eq, lt, sql} from 'drizzle-orm';
 
 import {isDefined} from '@/utils/defined';
+import {newId} from '@/utils/id';
 import {db} from './db';
-import {newId} from './id';
 import {
   files as filesTable,
   patches as patchesTable,

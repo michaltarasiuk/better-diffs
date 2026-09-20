@@ -2,7 +2,7 @@ import type {GetHoveredLineResult} from '@pierre/diffs';
 import {describe, expect, expectTypeOf, it} from 'vitest';
 
 import {createThreadState} from '@/testing/factories/events';
-import {SHARE_ID, THREAD_ID, THREAD_ID_SECONDARY} from '@/testing/ids';
+import {FORM_ID, SHARE_ID, THREAD_ID, THREAD_ID_SECONDARY} from '@/testing/ids';
 import {
   type DiffAnnotation,
   isDiffLine,
@@ -28,7 +28,7 @@ describe('isFormAnnotation', () => {
         annotation({
           side: 'deletions',
           lineNumber: 2,
-          metadata: {type: 'form'},
+          metadata: {type: 'form', formId: FORM_ID},
         }),
       ),
     ).toBe(true);
@@ -48,14 +48,17 @@ describe('isFormAnnotation', () => {
   });
 
   it('narrows the type when the check passes', () => {
-    const value = annotation({metadata: {type: 'form'}});
+    const value = annotation({metadata: {type: 'form', formId: FORM_ID}});
 
     if (!isFormAnnotation(value)) {
       throw new Error('Expected form annotation');
     }
 
     expect(value.metadata.type).toBe('form');
-    expectTypeOf(value.metadata).toEqualTypeOf<{readonly type: 'form'}>();
+    expectTypeOf(value.metadata).toEqualTypeOf<{
+      readonly type: 'form';
+      readonly formId: string;
+    }>();
   });
 });
 
@@ -93,7 +96,7 @@ describe('sortAnnotations', () => {
     const first = annotation({
       side: 'additions',
       lineNumber: 1,
-      metadata: {type: 'form'},
+      metadata: {type: 'form', formId: FORM_ID},
     });
     const second = annotation({
       side: 'deletions',
@@ -106,7 +109,7 @@ describe('sortAnnotations', () => {
     const third = annotation({
       side: 'additions',
       lineNumber: 2,
-      metadata: {type: 'form'},
+      metadata: {type: 'form', formId: FORM_ID},
     });
 
     expect(sortAnnotations([second, third, first])).toEqual([
@@ -120,7 +123,7 @@ describe('sortAnnotations', () => {
     const additions = annotation({
       side: 'additions',
       lineNumber: 4,
-      metadata: {type: 'form'},
+      metadata: {type: 'form', formId: FORM_ID},
     });
     const deletions = annotation({
       side: 'deletions',
@@ -142,12 +145,12 @@ describe('sortAnnotations', () => {
       annotation({
         side: 'additions',
         lineNumber: 2,
-        metadata: {type: 'form'},
+        metadata: {type: 'form', formId: FORM_ID},
       }),
       annotation({
         side: 'additions',
         lineNumber: 1,
-        metadata: {type: 'form'},
+        metadata: {type: 'form', formId: FORM_ID},
       }),
     ];
 

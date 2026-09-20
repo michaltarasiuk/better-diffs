@@ -1,6 +1,7 @@
 import type {SerializedEditorState} from 'lexical';
 
 import {isDefined} from '@/utils/defined';
+import {newId} from '@/utils/id';
 import type {Anchor, ShareEvent, ShareEventPayload} from './schemas';
 
 export interface ThreadState {
@@ -84,7 +85,7 @@ export class ShareState {
 
   optimistic(event: OptimisticEvent) {
     this.#assertOptimistic(event);
-    const pendingId = crypto.randomUUID();
+    const pendingId = newId();
     this.#pending.set(pendingId, event);
     this.#commit();
     return pendingId;
@@ -94,7 +95,7 @@ export class ShareState {
     const pendingIds: string[] = [];
     for (const event of events) {
       this.#assertOptimistic(event);
-      const pendingId = crypto.randomUUID();
+      const pendingId = newId();
       this.#pending.set(pendingId, event);
       pendingIds.push(pendingId);
     }

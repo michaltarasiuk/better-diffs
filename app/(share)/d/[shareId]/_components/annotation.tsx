@@ -9,6 +9,7 @@ import {useFocusWithin} from 'react-aria/useFocusWithin';
 
 import {useKeyDown} from '@/hooks/use-key-down';
 import {isDefined} from '@/utils/defined';
+import {newId} from '@/utils/id';
 import {authClient} from '@/auth/client';
 import {SessionContext} from '@/auth/context';
 import {GitHubIcon} from '@/auth/github-icon';
@@ -123,8 +124,8 @@ function CommentForm({filePath, onDismiss}: CommentFormProps) {
   return (
     <CommentEditor
       onComment={async (body) => {
-        const threadId = crypto.randomUUID();
-        const commentId = crypto.randomUUID();
+        const threadId = newId();
+        const commentId = newId();
         const actorId = session.user.id;
         const createdAt = new Date().toISOString();
         const anchor: Anchor = {

@@ -1,10 +1,10 @@
 import type {DiffLineAnnotation, GetHoveredLineResult} from '@pierre/diffs';
 
 import type {ThreadState} from '@/events/share-state';
-import type {AnnotationMetadata} from './options';
+import type {AnnotationMetadata, FormAnnotationMetadata} from './options';
 
 export type DiffAnnotation = DiffLineAnnotation<AnnotationMetadata>;
-export type FormDiffAnnotation = DiffLineAnnotation<{readonly type: 'form'}>;
+export type FormDiffAnnotation = DiffLineAnnotation<FormAnnotationMetadata>;
 
 const ANNOTATION_SIDE_ORDER = {
   deletions: 0,
