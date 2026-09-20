@@ -16,7 +16,7 @@ import {
 } from '@/events/share-events-sync';
 import type {FoldedShareState} from '@/events/share-state';
 import {EMPTY_FOLDED_STATE, ShareState} from '@/events/share-state';
-import {ErrorBoundary} from '@/components/error-boundary';
+import {ErrorBoundary} from '@/error-boundary';
 
 export const ShareStateContext =
   createContext<FoldedShareState>(EMPTY_FOLDED_STATE);

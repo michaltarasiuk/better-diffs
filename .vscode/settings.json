@@ -7,7 +7,6 @@
       "app/**",
       "auth/**",
       "db/**",
-      "components/**",
       "diffs/**",
       "events/**",
       "trees/**"
