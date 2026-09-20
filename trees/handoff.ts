@@ -6,7 +6,7 @@ import {
   preparePresortedFileTreeInput,
 } from '@pierre/trees';
 
-import {TREES_FOCUS_RING_UNSAFE_CSS} from '@/trees/unsafe-css';
+import {TREES_FOCUS_RING_UNSAFE_CSS} from './unsafe-css';
 
 export type TreeHandoff = ReturnType<typeof prepareTreeHandoff>;
 export type TreeHandoffFile = Pick<FileDiffMetadata, 'name' | 'type'>;

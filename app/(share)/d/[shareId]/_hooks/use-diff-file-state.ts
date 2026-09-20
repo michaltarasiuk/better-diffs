@@ -7,40 +7,40 @@ import {type FormDiffAnnotation, sortAnnotations} from '@/diffs/annotations';
 
 type DiffLine = GetHoveredLineResult<'diff'>;
 
-interface DiffFileUiState {
+interface DiffFileState {
   readonly commentForms: readonly FormDiffAnnotation[];
   readonly collapsed: boolean;
   readonly viewed: boolean;
   readonly localVersion: number;
 }
 
-const DEFAULT_FILE_UI_STATE = {
+const DEFAULT_FILE_STATE = {
   commentForms: [],
   collapsed: false,
   viewed: false,
   localVersion: 0,
-} satisfies DiffFileUiState;
+} satisfies DiffFileState;
 
-export function useDiffFileUi(shareId: string) {
-  const [fileUiById, setFileUiById] = useLocalStorage(
+export function useDiffFileState(shareId: string) {
+  const [fileStateById, setFileStateById] = useLocalStorage(
     `diff:v1:${shareId}`,
-    () => new Map<string, DiffFileUiState>(),
+    () => new Map<string, DiffFileState>(),
     {
-      serialize: serializeMap<string, DiffFileUiState>,
-      deserialize: deserializeMap<string, DiffFileUiState>,
+      serialize: serializeMap<string, DiffFileState>,
+      deserialize: deserializeMap<string, DiffFileState>,
     },
   );
 
-  function getFileUi(fileId: string) {
-    return {...DEFAULT_FILE_UI_STATE, ...fileUiById.get(fileId)};
+  function getFileState(fileId: string) {
+    return {...DEFAULT_FILE_STATE, ...fileStateById.get(fileId)};
   }
 
-  function updateFileUi(
+  function updateFileState(
     fileId: string,
-    update: (state: DiffFileUiState) => DiffFileUiState,
+    update: (state: DiffFileState) => DiffFileState,
   ) {
-    setFileUiById((byId) => {
-      const state = {...DEFAULT_FILE_UI_STATE, ...byId.get(fileId)};
+    setFileStateById((byId) => {
+      const state = {...DEFAULT_FILE_STATE, ...byId.get(fileId)};
 
       return new Map(byId).set(fileId, {
         ...update(state),
@@ -50,35 +50,46 @@ export function useDiffFileUi(shareId: string) {
   }
 
   function toggleFileCollapsed(fileId: string) {
-    updateFileUi(fileId, (state) => ({
+    updateFileState(fileId, (state) => ({
       ...state,
       collapsed: !state.collapsed,
     }));
   }
 
   function setFileViewed(fileId: string, viewed: boolean) {
-    updateFileUi(fileId, (state) => ({
+    updateFileState(fileId, (state) => ({
       ...state,
       viewed,
       collapsed: viewed,
     }));
   }
 
+  function toggleFileViewed(fileId: string) {
+    updateFileState(fileId, (state) => ({
+      ...state,
+      viewed: !state.viewed,
+      collapsed: !state.viewed,
+    }));
+  }
+
   function addCommentForm(fileId: string, line: DiffLine) {
-    updateFileUi(fileId, (state) => ({
+    updateFileState(fileId, (state) => ({
       ...state,
       commentForms: sortAnnotations([
         ...state.commentForms,
         {
           ...line,
-          metadata: {type: 'form', formId: newId()},
+          metadata: {
+            type: 'form',
+            formId: newId(),
+          },
         },
       ]),
     }));
   }
 
   function removeCommentForm(fileId: string, formId: string) {
-    updateFileUi(fileId, (state) => ({
+    updateFileState(fileId, (state) => ({
       ...state,
       commentForms: state.commentForms.filter(
         (commentForm) => commentForm.metadata.formId !== formId,
@@ -87,9 +98,10 @@ export function useDiffFileUi(shareId: string) {
   }
 
   return {
-    getFileUi,
+    getFileState,
     toggleFileCollapsed,
     setFileViewed,
+    toggleFileViewed,
     addCommentForm,
     removeCommentForm,
   };

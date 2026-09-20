@@ -5,7 +5,7 @@ import {unauthorized} from 'next/navigation';
 import {isDefined} from '@/utils/defined';
 import {getSession} from '@/auth/server';
 import {appendEvents} from '@/db/events';
-import {OpenThreadInput} from '@/events/schemas';
+import {OpenThreadInput} from './schemas';
 
 export async function openThread(input: OpenThreadInput) {
   const session = await getSession();

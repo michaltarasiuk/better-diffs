@@ -1,8 +1,8 @@
 import {z} from 'zod';
 
 import {isDefined} from '@/utils/defined';
-import {getEvents, getLastSeq, putEvents} from '@/events/idb';
-import {ShareEvent} from '@/events/schemas';
+import {getEvents, getLastSeq, putEvents} from './idb';
+import {ShareEvent} from './schemas';
 
 const ACTIVE_POLL_INTERVAL = 3_000;
 const BACKGROUND_POLL_INTERVAL = 30_000;

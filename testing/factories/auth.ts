@@ -1,5 +1,5 @@
 import type {Session} from '@/auth/auth';
-import {USER_ID} from '@/testing/ids';
+import {USER_ID} from '../ids';
 
 export function createSession(overrides: Partial<Session> = {}) {
   return {

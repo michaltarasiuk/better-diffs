@@ -20,7 +20,7 @@ import {
   SHARE_ID,
   THREAD_ID,
   USER_ID,
-} from '@/testing/ids';
+} from '../ids';
 
 export function createOpenThreadInput(
   overrides: Partial<OpenThreadInput> = {},

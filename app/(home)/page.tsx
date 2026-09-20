@@ -7,7 +7,7 @@ import {PatchDiff} from '@pierre/diffs/react';
 import {preloadPatchDiff} from '@pierre/diffs/ssr';
 
 import {PATCH_DIFF_OPTIONS} from '@/diffs/options';
-import {DEMO_PATCH} from '@/app/_lib/patches';
+import {DEMO_PATCH} from '../_lib/patches';
 import {CopyCommand} from './_components/copy-command';
 import {INSTALL_COMMAND} from './_lib/install-command';
 

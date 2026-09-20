@@ -3,7 +3,7 @@ import '@/diffs/diffs.css';
 import {PatchDiff} from '@pierre/diffs/react';
 
 import {PATCH_DIFF_OPTIONS} from '@/diffs/options';
-import {NOT_FOUND_PATCH} from '@/app/_lib/patches';
+import {NOT_FOUND_PATCH} from './_lib/patches';
 
 export default function NotFoundPage() {
   return (

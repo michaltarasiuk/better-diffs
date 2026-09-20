@@ -9,14 +9,11 @@ import {
 } from 'react';
 import {browser} from 'react-dom';
 
-import type {ShareEvent} from '@/events/schemas';
-import {
-  hydrateShareEvents,
-  type ShareEventsSync,
-} from '@/events/share-events-sync';
-import type {FoldedShareState} from '@/events/share-state';
-import {EMPTY_FOLDED_STATE, ShareState} from '@/events/share-state';
 import {ErrorBoundary} from '@/react/error-boundary';
+import type {ShareEvent} from './schemas';
+import {hydrateShareEvents, type ShareEventsSync} from './share-events-sync';
+import type {FoldedShareState} from './share-state';
+import {EMPTY_FOLDED_STATE, ShareState} from './share-state';
 
 export const ShareStateContext =
   createContext<FoldedShareState>(EMPTY_FOLDED_STATE);

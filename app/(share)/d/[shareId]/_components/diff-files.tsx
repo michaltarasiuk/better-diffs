@@ -23,9 +23,9 @@ import type {AnnotationMetadata} from '@/diffs/options';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
 import {ShareStateContext} from '@/events/share-events-provider';
 import type {ThreadState} from '@/events/share-state';
-import {useShareId} from '@/app/(share)/d/[shareId]/_hooks/use-share-id';
-import {useDiffFileUi} from '../_hooks/use-diff-file-ui';
+import {useDiffFileState} from '../_hooks/use-diff-file-state';
 import {useSelectedLines} from '../_hooks/use-selected-lines';
+import {useShareId} from '../_hooks/use-share-id';
 import {getActiveFileId} from '../_lib/get-active-file-id';
 import {HandleContext} from '../_lib/handle-context';
 import {AddCommentButton, Annotation} from './annotation';
@@ -48,12 +48,13 @@ export function DiffFiles({files}: DiffFilesProps) {
   const shareId = useShareId();
 
   const {
-    getFileUi,
+    getFileState,
     toggleFileCollapsed,
     setFileViewed,
+    toggleFileViewed,
     addCommentForm,
     removeCommentForm,
-  } = useDiffFileUi(shareId);
+  } = useDiffFileState(shareId);
   const {selectedLines, setSelectedLines} = useSelectedLines();
 
   const isMobile = useIsMobile();
@@ -92,7 +93,7 @@ export function DiffFiles({files}: DiffFilesProps) {
     }
 
     event.preventDefault();
-    setFileViewed(fileId, !getFileUi(fileId).viewed);
+    toggleFileViewed(fileId);
     codeView.scrollTo({type: 'item', id: fileId, align: 'start'});
   });
 
@@ -104,7 +105,7 @@ export function DiffFiles({files}: DiffFilesProps) {
     <CodeView
       ref={codeViewRef}
       items={files.map((file) => {
-        const {commentForms, collapsed, localVersion} = getFileUi(file.id);
+        const {commentForms, collapsed, localVersion} = getFileState(file.id);
         const threads = getThreadsForPath(file.metadata.name);
 
         return {
@@ -123,13 +124,13 @@ export function DiffFiles({files}: DiffFilesProps) {
       onSelectedLinesChange={setSelectedLines}
       renderHeaderPrefix={(item) => (
         <FileCollapseButton
-          collapsed={getFileUi(item.id).collapsed}
+          collapsed={getFileState(item.id).collapsed}
           onToggleCollapsed={() => toggleFileCollapsed(item.id)}
         />
       )}
       renderHeaderMetadata={(item) => (
         <FileViewedCheckbox
-          viewed={getFileUi(item.id).viewed}
+          viewed={getFileState(item.id).viewed}
           onViewedChange={(viewed) => setFileViewed(item.id, viewed)}
         />
       )}

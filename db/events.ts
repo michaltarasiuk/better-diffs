@@ -3,9 +3,9 @@ import 'server-only';
 import {and, asc, eq, gt, max} from 'drizzle-orm';
 
 import {isDefined} from '@/utils/defined';
-import {db} from '@/db/db';
-import {events as eventsTable, shares as sharesTable} from '@/db/schema';
 import {type ShareEventPayload, subjectIdFromPayload} from '@/events/schemas';
+import {db} from './db';
+import {events as eventsTable, shares as sharesTable} from './schema';
 
 export function getEvents(shareId: string, afterSeq = 0) {
   const where = and(
