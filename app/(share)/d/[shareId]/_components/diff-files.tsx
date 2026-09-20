@@ -3,9 +3,11 @@
 import '@/diffs/diffs.css';
 
 import {use} from 'react';
+import {Button, Checkbox, cn} from '@heroui/react';
 import type {FileDiffMetadata, GetHoveredLineResult} from '@pierre/diffs';
 import {isDiffAnnotation} from '@pierre/diffs';
 import {CodeView} from '@pierre/diffs/react';
+import {ChevronDownIcon} from 'lucide-react';
 
 import {useLocalStorage} from '@/hooks/use-local-storage';
 import {useIsMobile} from '@/hooks/use-media-query';
@@ -26,21 +28,22 @@ import {useShareId} from '@/app/(share)/d/[shareId]/_hooks/use-share-id';
 import {useSelectedLines} from '../_hooks/use-selected-lines';
 import {HandleContext} from '../_lib/handle-context';
 import {AddCommentButton, Annotation} from './annotation';
-import {FileCollapseButton} from './file-collapse-button';
 
-type DiffLine = GetHoveredLineResult<'diff'>;
+type HoveredDiffLine = GetHoveredLineResult<'diff'>;
 
-interface FileState {
-  readonly forms: readonly FormDiffAnnotation[];
+interface DiffFileUiState {
+  readonly commentForms: readonly FormDiffAnnotation[];
   readonly collapsed: boolean;
-  readonly version: number;
+  readonly viewed: boolean;
+  readonly localVersion: number;
 }
 
-const DEFAULT_FILE_STATE = {
-  forms: [],
+const DEFAULT_FILE_UI = {
+  commentForms: [],
   collapsed: false,
-  version: 0,
-} satisfies FileState;
+  viewed: false,
+  localVersion: 0,
+} satisfies DiffFileUiState;
 
 const DEFAULT_THREADS: readonly ThreadState[] = [];
 
@@ -59,60 +62,74 @@ interface DiffFilesProps {
 export function DiffFiles({files}: DiffFilesProps) {
   const shareId = useShareId();
 
-  const [fileStateById, setFileStateById] = useLocalStorage(
-    `diff:v1:${shareId}`,
-    () => new Map() as ReadonlyMap<string, FileState>,
+  const [fileUiById, setFileUiById] = useLocalStorage(
+    `diff:v2:${shareId}`,
+    () => new Map() as ReadonlyMap<string, DiffFileUiState>,
     {
-      serialize: serializeMap<string, FileState>,
-      deserialize: deserializeMap<string, FileState>,
+      serialize: serializeMap<string, DiffFileUiState>,
+      deserialize: deserializeMap<string, DiffFileUiState>,
     },
   );
   const {selectedLines, setSelectedLines} = useSelectedLines();
 
   const isMobile = useIsMobile();
 
-  const share = use(ShareStateContext);
-  const handleRef = use(HandleContext);
+  const shareState = use(ShareStateContext);
+  const codeViewRef = use(HandleContext);
 
   const threadsByFilePath = Map.groupBy(
-    share.threads.values(),
+    shareState.threads.values(),
     (thread) => thread.anchor.filePath,
   );
 
-  function getFileState(fileId: string) {
-    return fileStateById.get(fileId) ?? DEFAULT_FILE_STATE;
+  function getFileUi(fileId: string) {
+    return {
+      ...DEFAULT_FILE_UI,
+      ...fileUiById.get(fileId),
+    };
   }
 
-  function getThreads(filePath: string) {
+  function getThreadsForPath(filePath: string) {
     return threadsByFilePath.get(filePath) ?? DEFAULT_THREADS;
   }
 
-  function updateFileState(
+  function updateFileUi(
     fileId: string,
-    update: (state: FileState) => FileState,
+    update: (state: DiffFileUiState) => DiffFileUiState,
   ) {
-    setFileStateById((fileStates) => {
-      const state = fileStates.get(fileId) ?? DEFAULT_FILE_STATE;
+    setFileUiById((fileUis) => {
+      const state = {
+        ...DEFAULT_FILE_UI,
+        ...fileUis.get(fileId),
+      };
 
-      return new Map(fileStates).set(fileId, {
+      return new Map(fileUis).set(fileId, {
         ...update(state),
-        version: state.version + 1,
+        localVersion: state.localVersion + 1,
       });
     });
   }
 
   function toggleFileCollapsed(fileId: string) {
-    updateFileState(fileId, (state) => ({
+    updateFileUi(fileId, (state) => ({
       ...state,
       collapsed: !state.collapsed,
     }));
   }
 
-  function addCommentForm(fileId: string, line: DiffLine) {
-    updateFileState(fileId, (state) => ({
+  function setFileViewed(fileId: string, viewed: boolean) {
+    updateFileUi(fileId, (state) => ({
       ...state,
-      forms: sortAnnotations([
-        ...state.forms,
+      viewed,
+      collapsed: viewed,
+    }));
+  }
+
+  function addCommentForm(fileId: string, line: HoveredDiffLine) {
+    updateFileUi(fileId, (state) => ({
+      ...state,
+      commentForms: sortAnnotations([
+        ...state.commentForms,
         {
           ...line,
           metadata: {type: 'form'},
@@ -121,40 +138,49 @@ export function DiffFiles({files}: DiffFilesProps) {
     }));
   }
 
-  function removeForm(fileId: string, form: FormDiffAnnotation) {
-    updateFileState(fileId, (state) => ({
+  function removeCommentForm(fileId: string, form: FormDiffAnnotation) {
+    updateFileUi(fileId, (state) => ({
       ...state,
-      forms: state.forms.toSpliced(state.forms.indexOf(form), 1),
+      commentForms: state.commentForms.toSpliced(
+        state.commentForms.indexOf(form),
+        1,
+      ),
     }));
   }
 
   return (
     <CodeView
-      ref={handleRef}
+      ref={codeViewRef}
       items={files.map((file) => {
-        const {forms, collapsed, version} = getFileState(file.id);
-        const threads = getThreads(file.metadata.name);
+        const {commentForms, collapsed, localVersion} = getFileUi(file.id);
+        const threads = getThreadsForPath(file.metadata.name);
 
         return {
           id: file.id,
           type: 'diff' as const,
           fileDiff: file.metadata,
-          annotations: sortAnnotations([
+          annotationss: sortAnnotations([
             ...threads.map(toThreadAnnotation),
-            ...forms,
+            ...commentForms,
           ]),
           collapsed,
-          version: version + share.version,
+          version: localVersion + shareState.version,
         };
       })}
-      renderHeaderPrefix={(item) => (
-        <FileCollapseButton
-          collapsed={getFileState(item.id).collapsed}
-          onToggle={() => toggleFileCollapsed(item.id)}
-        />
-      )}
       selectedLines={selectedLines}
       onSelectedLinesChange={setSelectedLines}
+      renderHeaderPrefix={(item) => (
+        <FileCollapseButton
+          collapsed={getFileUi(item.id).collapsed}
+          onToggleCollapsed={() => toggleFileCollapsed(item.id)}
+        />
+      )}
+      renderHeaderMetadata={(item) => (
+        <FileViewedCheckbox
+          viewed={getFileUi(item.id).viewed}
+          onViewedChange={(viewed) => setFileViewed(item.id, viewed)}
+        />
+      )}
       renderGutterUtility={(getHoveredLine, item) => (
         <AddCommentButton
           onAddAnnotation={() => {
@@ -174,7 +200,7 @@ export function DiffFiles({files}: DiffFilesProps) {
             filePath={item.fileDiff.name}
             onDismiss={() => {
               if (isFormAnnotation(lineAnnotation)) {
-                removeForm(item.id, lineAnnotation);
+                removeCommentForm(item.id, lineAnnotation);
               }
             }}
           />
@@ -186,5 +212,57 @@ export function DiffFiles({files}: DiffFilesProps) {
       }}
       style={CODE_VIEW_STYLE}
     />
+  );
+}
+
+function FileCollapseButton({
+  collapsed,
+  onToggleCollapsed,
+}: {
+  readonly collapsed: boolean;
+  readonly onToggleCollapsed: () => void;
+}) {
+  return (
+    <Button
+      aria-expanded={!collapsed}
+      aria-label={collapsed ? 'Expand file' : 'Collapse file'}
+      variant="ghost"
+      size="sm"
+      isIconOnly
+      onPress={onToggleCollapsed}
+      className="size-7 min-w-7 shrink-0"
+    >
+      <ChevronDownIcon
+        aria-hidden
+        className={cn(
+          'size-4 shrink-0 transition-transform',
+          collapsed && '-rotate-90',
+        )}
+      />
+    </Button>
+  );
+}
+
+function FileViewedCheckbox({
+  viewed,
+  onViewedChange,
+}: {
+  readonly viewed: boolean;
+  readonly onViewedChange: (viewed: boolean) => void;
+}) {
+  return (
+    <Checkbox
+      variant="secondary"
+      isSelected={viewed}
+      onChange={onViewedChange}
+      className="text-xs"
+    >
+      <Checkbox.Content>
+        <Checkbox.Control>
+          <Checkbox.Indicator />
+        </Checkbox.Control>
+        Viewed
+      </Checkbox.Content>
+    </Checkbox>
   );
 }
