@@ -1,7 +1,6 @@
 import type {GetHoveredLineResult} from '@pierre/diffs';
 import {describe, expect, expectTypeOf, it} from 'vitest';
 
-import {assert} from '@/utils/assert';
 import {createThreadState} from '@/testing/factories/events';
 import {SHARE_ID, THREAD_ID, THREAD_ID_SECONDARY} from '@/testing/ids';
 import {
@@ -51,8 +50,11 @@ describe('isFormAnnotation', () => {
   it('narrows the type when the check passes', () => {
     const value = annotation({metadata: {type: 'form'}});
 
-    assert(isFormAnnotation(value), 'Expected form annotation');
+    if (!isFormAnnotation(value)) {
+      throw new Error('Expected form annotation');
+    }
 
+    expect(value.metadata.type).toBe('form');
     expectTypeOf(value.metadata).toEqualTypeOf<{readonly type: 'form'}>();
   });
 });
@@ -188,8 +190,11 @@ describe('isDiffLine', () => {
       lineNumber: 3,
     });
 
-    assert(isDiffLine(line), 'Expected diff line');
+    if (!isDiffLine(line)) {
+      throw new Error('Expected diff line');
+    }
 
+    expect(line.side).toBe('deletions');
     expectTypeOf(line).toEqualTypeOf<DiffLine>();
   });
 });

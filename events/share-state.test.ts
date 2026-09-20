@@ -1,6 +1,5 @@
 import {describe, expect, expectTypeOf, it, vi} from 'vitest';
 
-import {assert} from '@/utils/assert';
 import {
   createCommentCreated,
   createCommentDeleted,
@@ -154,7 +153,10 @@ describe('ingest', () => {
 
     state.ingest([first!]);
 
-    expect(() => state.ingest([first!])).toThrow(/is not after latest/);
+    expect(() => state.ingest([first!])).toThrow(RangeError);
+    expect(() => state.ingest([first!])).toThrow(
+      /Event seq \d+ is not after latest \d+/,
+    );
   });
 });
 
@@ -1067,21 +1069,20 @@ describe('isType', () => {
   it('narrows a matching payload to the requested variant', () => {
     const payload: ShareEventPayload = createCommentCreated();
 
-    assert(
-      isType('comment.created', payload),
-      'Expected comment.created payload',
-    );
+    if (!isType('comment.created', payload)) {
+      throw new Error('Expected comment.created payload');
+    }
 
+    expect(payload.$type).toBe('comment.created');
     expectTypeOf(payload).toEqualTypeOf<CommentCreatedPayload>();
   });
 
   it('preserves payload fields after narrowing', () => {
     const payload: ShareEventPayload = createCommentCreated();
 
-    assert(
-      isType('comment.created', payload),
-      'Expected comment.created payload',
-    );
+    if (!isType('comment.created', payload)) {
+      throw new Error('Expected comment.created payload');
+    }
 
     expect(payload.commentId).toBe(COMMENT_ID);
   });

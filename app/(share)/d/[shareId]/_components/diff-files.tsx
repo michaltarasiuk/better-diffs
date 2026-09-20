@@ -9,7 +9,6 @@ import {CodeView} from '@pierre/diffs/react';
 
 import {useLocalStorage} from '@/hooks/use-local-storage';
 import {useIsMobile} from '@/hooks/use-media-query';
-import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 import {deserializeMap, serializeMap} from '@/utils/serialize-map';
 import {
@@ -160,10 +159,9 @@ export function DiffFiles({files}: DiffFilesProps) {
         <AddCommentButton
           onAddAnnotation={() => {
             const line = getHoveredLine();
-            assert(
-              isDefined(line) && isDiffLine(line),
-              'Hovered diff line missing',
-            );
+            if (!isDefined(line) || !isDiffLine(line)) {
+              throw new TypeError('Hovered diff line missing');
+            }
             addCommentForm(item.id, line);
           }}
         />

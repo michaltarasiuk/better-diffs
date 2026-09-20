@@ -12,7 +12,6 @@ import {
   vi,
 } from 'vitest';
 
-import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 import {INSTALL_COMMAND} from '../_lib/install-command';
 import {COPIED_FEEDBACK_MS, CopyCommand} from './copy-command';
@@ -138,7 +137,9 @@ describe('CopyCommand', () => {
     await copy();
 
     const selection = window.getSelection();
-    assert(isDefined(selection), 'Selection missing');
+    if (!isDefined(selection)) {
+      throw new Error('Selection missing');
+    }
     expect(selection.toString()).toBe(INSTALL_COMMAND);
   });
 

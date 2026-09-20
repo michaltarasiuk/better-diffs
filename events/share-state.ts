@@ -1,6 +1,5 @@
 import type {SerializedEditorState} from 'lexical';
 
-import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 import type {Anchor, ShareEvent, ShareEventPayload} from './schemas';
 
@@ -64,10 +63,11 @@ export class ShareState {
     let changed = false;
 
     for (const event of events) {
-      assert(
-        event.seq > this.#latestSeq,
-        `Event seq ${event.seq} is not after latest ${this.#latestSeq}`,
-      );
+      if (event.seq <= this.#latestSeq) {
+        throw new RangeError(
+          `Event seq ${event.seq} is not after latest ${this.#latestSeq}`,
+        );
+      }
 
       this.#latestSeq = event.seq;
       this.#apply(event);
@@ -169,7 +169,9 @@ export class ShareState {
 
     const cloneThread = (threadId: string) => {
       const thread = threads.get(threadId);
-      assert(isDefined(thread), `Thread not found: ${threadId}`);
+      if (!isDefined(thread)) {
+        throw new Error(`Thread not found: ${threadId}`);
+      }
       if (this.threads.get(threadId) === thread) {
         const cloned: ThreadState = {
           ...thread,
@@ -183,7 +185,9 @@ export class ShareState {
 
     const cloneComment = (commentId: string) => {
       const comment = comments.get(commentId);
-      assert(isDefined(comment), `Comment not found: ${commentId}`);
+      if (!isDefined(comment)) {
+        throw new Error(`Comment not found: ${commentId}`);
+      }
       if (this.comments.get(commentId) === comment) {
         const cloned: CommentState = {...comment};
         comments.set(commentId, cloned);
@@ -254,43 +258,52 @@ export class ShareState {
     const {payload} = event;
 
     if (isType('thread.opened', payload)) {
-      assert(
-        !this.#hasThread(payload.threadId),
-        `Thread already opened: ${payload.threadId}`,
-      );
+      if (this.#hasThread(payload.threadId)) {
+        throw new Error(`Thread already opened: ${payload.threadId}`);
+      }
       return;
     }
 
     if (isType('comment.created', payload)) {
-      assert(
-        this.#hasThread(payload.threadId),
-        `Comment on unknown thread: ${payload.threadId}`,
-      );
-      assert(
-        !this.#hasComment(payload.commentId),
-        `Comment already created: ${payload.commentId}`,
-      );
+      if (!this.#hasThread(payload.threadId)) {
+        throw new Error(`Comment on unknown thread: ${payload.threadId}`);
+      }
+      if (this.#hasComment(payload.commentId)) {
+        throw new Error(`Comment already created: ${payload.commentId}`);
+      }
       return;
     }
 
     if (isType('comment.edited', payload)) {
       const comment = this.#getComment(payload.commentId);
-      assert(isDefined(comment), `Comment not found: ${payload.commentId}`);
-      assert(!comment.deleted, `Comment already deleted: ${payload.commentId}`);
+      if (!isDefined(comment)) {
+        throw new Error(`Comment not found: ${payload.commentId}`);
+      }
+      if (comment.deleted) {
+        throw new Error(`Comment already deleted: ${payload.commentId}`);
+      }
       return;
     }
 
     if (isType('comment.deleted', payload)) {
       const comment = this.#getComment(payload.commentId);
-      assert(isDefined(comment), `Comment not found: ${payload.commentId}`);
-      assert(!comment.deleted, `Comment already deleted: ${payload.commentId}`);
+      if (!isDefined(comment)) {
+        throw new Error(`Comment not found: ${payload.commentId}`);
+      }
+      if (comment.deleted) {
+        throw new Error(`Comment already deleted: ${payload.commentId}`);
+      }
       return;
     }
 
     if (isType('thread.resolved', payload)) {
       const thread = this.#getThread(payload.threadId);
-      assert(isDefined(thread), `Thread not found: ${payload.threadId}`);
-      assert(!thread.resolved, `Thread already resolved: ${payload.threadId}`);
+      if (!isDefined(thread)) {
+        throw new Error(`Thread not found: ${payload.threadId}`);
+      }
+      if (thread.resolved) {
+        throw new Error(`Thread already resolved: ${payload.threadId}`);
+      }
       return;
     }
 
@@ -376,10 +389,9 @@ export class ShareState {
     const {actorId, payload, createdAt} = event;
 
     if (isType('thread.opened', payload)) {
-      assert(
-        !this.threads.has(payload.threadId),
-        `Thread already opened: ${payload.threadId}`,
-      );
+      if (this.threads.has(payload.threadId)) {
+        throw new Error(`Thread already opened: ${payload.threadId}`);
+      }
 
       this.threads.set(payload.threadId, {
         id: payload.threadId,
@@ -394,18 +406,15 @@ export class ShareState {
 
     if (isType('comment.created', payload)) {
       const thread = this.threads.get(payload.threadId);
-      assert(
-        isDefined(thread),
-        `Comment on unknown thread: ${payload.threadId}`,
-      );
-      assert(
-        !this.comments.has(payload.commentId),
-        `Comment already created: ${payload.commentId}`,
-      );
-      assert(
-        !thread.commentIds.includes(payload.commentId),
-        `Comment already on thread: ${payload.commentId}`,
-      );
+      if (!isDefined(thread)) {
+        throw new Error(`Comment on unknown thread: ${payload.threadId}`);
+      }
+      if (this.comments.has(payload.commentId)) {
+        throw new Error(`Comment already created: ${payload.commentId}`);
+      }
+      if (thread.commentIds.includes(payload.commentId)) {
+        throw new Error(`Comment already on thread: ${payload.commentId}`);
+      }
 
       thread.commentIds.push(payload.commentId);
       this.comments.set(payload.commentId, {
@@ -421,8 +430,12 @@ export class ShareState {
 
     if (isType('comment.edited', payload)) {
       const comment = this.comments.get(payload.commentId);
-      assert(isDefined(comment), `Comment not found: ${payload.commentId}`);
-      assert(!comment.deleted, `Comment already deleted: ${payload.commentId}`);
+      if (!isDefined(comment)) {
+        throw new Error(`Comment not found: ${payload.commentId}`);
+      }
+      if (comment.deleted) {
+        throw new Error(`Comment already deleted: ${payload.commentId}`);
+      }
 
       comment.body = payload.body;
       return;
@@ -430,8 +443,12 @@ export class ShareState {
 
     if (isType('comment.deleted', payload)) {
       const comment = this.comments.get(payload.commentId);
-      assert(isDefined(comment), `Comment not found: ${payload.commentId}`);
-      assert(!comment.deleted, `Comment already deleted: ${payload.commentId}`);
+      if (!isDefined(comment)) {
+        throw new Error(`Comment not found: ${payload.commentId}`);
+      }
+      if (comment.deleted) {
+        throw new Error(`Comment already deleted: ${payload.commentId}`);
+      }
 
       comment.deleted = true;
       return;
@@ -439,8 +456,12 @@ export class ShareState {
 
     if (isType('thread.resolved', payload)) {
       const thread = this.threads.get(payload.threadId);
-      assert(isDefined(thread), `Thread not found: ${payload.threadId}`);
-      assert(!thread.resolved, `Thread already resolved: ${payload.threadId}`);
+      if (!isDefined(thread)) {
+        throw new Error(`Thread not found: ${payload.threadId}`);
+      }
+      if (thread.resolved) {
+        throw new Error(`Thread already resolved: ${payload.threadId}`);
+      }
 
       thread.resolved = true;
       return;

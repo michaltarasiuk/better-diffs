@@ -2,7 +2,6 @@
 
 import {unauthorized} from 'next/navigation';
 
-import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 import {getSession} from '@/auth/server';
 import {appendEvents} from '@/db/events';
@@ -14,14 +13,17 @@ export async function openThread(input: OpenThreadInput) {
     unauthorized();
   }
 
-  assert(OpenThreadInput.validate(input), 'Invalid open thread input');
+  if (!OpenThreadInput.validate(input)) {
+    throw new TypeError('Invalid open thread input');
+  }
 
   const {shareId, threadId, commentId, body, anchor} = input;
 
-  assert(
-    anchor.shareId === shareId,
-    `Anchor shareId ${anchor.shareId} does not match ${shareId}`,
-  );
+  if (anchor.shareId !== shareId) {
+    throw new TypeError(
+      `Anchor shareId ${anchor.shareId} does not match ${shareId}`,
+    );
+  }
 
   return appendEvents(shareId, session.user.id, [
     {

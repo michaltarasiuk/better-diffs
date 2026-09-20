@@ -8,7 +8,6 @@ import {PlusIcon} from 'lucide-react';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
 import {useKeyDown} from '@/hooks/use-key-down';
-import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 import {authClient} from '@/auth/client';
 import {SessionContext} from '@/auth/context';
@@ -117,7 +116,9 @@ function CommentForm({filePath, onDismiss}: CommentFormProps) {
   const store = use(ShareStoreContext);
   const annotation = use(AnnotationContext);
 
-  assert(isFormAnnotation(annotation), 'Annotation is not a form');
+  if (!isFormAnnotation(annotation)) {
+    throw new TypeError('Annotation is not a form');
+  }
 
   return (
     <CommentEditor
@@ -180,7 +181,9 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
   const [isSigningIn, setIsSigningIn] = useState(false);
 
   const annotation = use(AnnotationContext);
-  assert(isFormAnnotation(annotation), 'Annotation is not a form');
+  if (!isFormAnnotation(annotation)) {
+    throw new TypeError('Annotation is not a form');
+  }
 
   return (
     <Card variant="secondary" className="m-2 mbs-1">

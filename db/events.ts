@@ -2,7 +2,6 @@ import 'server-only';
 
 import {and, asc, eq, gt, max} from 'drizzle-orm';
 
-import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 import {db} from '@/db/db';
 import {events as eventsTable, shares as sharesTable} from '@/db/schema';
@@ -34,7 +33,9 @@ export async function appendEvents(
       .where(eq(sharesTable.id, shareId))
       .groupBy(sharesTable.id);
 
-    assert(isDefined(share), `Share not found: ${shareId}`);
+    if (!isDefined(share)) {
+      throw new Error(`Share not found: ${shareId}`);
+    }
 
     const lastSeq = share.lastSeq ?? 0;
     const createdAt = new Date().toISOString();

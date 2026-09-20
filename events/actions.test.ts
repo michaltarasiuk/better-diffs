@@ -57,7 +57,10 @@ describe('openThread', () => {
   it('rejects invalid input', async () => {
     await expect(
       openThread(createOpenThreadInput({shareId: 'not-a-uuid'})),
-    ).rejects.toThrow('Invalid open thread input');
+    ).rejects.toMatchObject({
+      name: 'TypeError',
+      message: 'Invalid open thread input',
+    });
 
     expect(appendEvents).not.toHaveBeenCalled();
   });

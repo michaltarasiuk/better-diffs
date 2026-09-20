@@ -12,7 +12,6 @@ import {
 } from '@pierre/trees/react';
 
 import {useKeyDown} from '@/hooks/use-key-down';
-import {assert} from '@/utils/assert';
 import {isDefined} from '@/utils/defined';
 import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';
 import {useSearchQuery} from '../_hooks/use-search-query';
@@ -44,7 +43,9 @@ export function FilesPanel({
       }
 
       const id = fileIdByPath[selectedPath];
-      assert(isDefined(id), `File not found: ${selectedPath}`);
+      if (!isDefined(id)) {
+        throw new Error(`File not found: ${selectedPath}`);
+      }
 
       handleRef.current?.scrollTo({type: 'item', id, align: 'start'});
     },
@@ -64,7 +65,9 @@ export function FilesPanel({
     }
     event.preventDefault();
     const searchInput = searchInputRef.current;
-    assert(isDefined(searchInput), 'Search input missing');
+    if (!isDefined(searchInput)) {
+      throw new Error('Search input missing');
+    }
     searchInput.focus();
     searchInput.select();
   });

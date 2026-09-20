@@ -1,6 +1,5 @@
 import {describe, expect, expectTypeOf, it} from 'vitest';
 
-import {assert} from './assert';
 import {isIterable} from './iterable';
 
 describe('isIterable', () => {
@@ -25,8 +24,11 @@ describe('isIterable', () => {
   it('narrows the type when the check passes', () => {
     const value: unknown = [];
 
-    assert(isIterable(value), 'Expected value to be iterable');
+    if (!isIterable(value)) {
+      throw new Error('Expected value to be iterable');
+    }
 
+    expect([...value]).toEqual([]);
     expectTypeOf(value).toEqualTypeOf<Iterable<unknown>>();
   });
 });
