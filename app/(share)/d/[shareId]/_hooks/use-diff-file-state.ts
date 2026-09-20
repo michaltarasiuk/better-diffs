@@ -32,7 +32,10 @@ export function useDiffFileState(shareId: string) {
   );
 
   function getFileState(fileId: string) {
-    return {...DEFAULT_FILE_STATE, ...fileStateById.get(fileId)};
+    return {
+      ...DEFAULT_FILE_STATE,
+      ...fileStateById.get(fileId),
+    };
   }
 
   function updateFileState(

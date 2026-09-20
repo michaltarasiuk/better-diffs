@@ -67,7 +67,7 @@ export function DiffFiles({files}: DiffFilesProps) {
     (thread) => thread.anchor.filePath,
   );
 
-  useKeyDown(function toggleActiveFileViewed(event) {
+  useKeyDown(function toggleViewed(event) {
     if (
       event.key !== 'v' ||
       event.metaKey ||
