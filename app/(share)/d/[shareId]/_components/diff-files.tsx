@@ -3,7 +3,6 @@
 import '@/diffs/diffs.css';
 
 import {use} from 'react';
-import {flushSync} from 'react-dom';
 import {Button, Checkbox, cn, Focusable, Kbd, Tooltip} from '@heroui/react';
 import type {FileDiffMetadata, GetHoveredLineResult} from '@pierre/diffs';
 import {isDiffAnnotation} from '@pierre/diffs';
@@ -113,6 +112,7 @@ export function DiffFiles({files}: DiffFilesProps) {
 
     event.preventDefault();
     setFileViewed(fileId, !getFileUi(fileId).viewed);
+    codeView.scrollTo({type: 'item', id: fileId, align: 'start'});
   });
 
   function getFileUi(fileId: string) {
