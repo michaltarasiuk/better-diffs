@@ -3,15 +3,18 @@
 import '@/diffs/diffs.css';
 
 import {use} from 'react';
-import {Button, Checkbox, cn} from '@heroui/react';
+import {flushSync} from 'react-dom';
+import {Button, Checkbox, cn, Focusable, Kbd, Tooltip} from '@heroui/react';
 import type {FileDiffMetadata, GetHoveredLineResult} from '@pierre/diffs';
 import {isDiffAnnotation} from '@pierre/diffs';
 import {CodeView} from '@pierre/diffs/react';
 import {ChevronDownIcon} from 'lucide-react';
 
+import {useKeyDown} from '@/hooks/use-key-down';
 import {useLocalStorage} from '@/hooks/use-local-storage';
 import {useIsMobile} from '@/hooks/use-media-query';
 import {isDefined} from '@/utils/defined';
+import {isEditableTarget} from '@/utils/is-editable-target';
 import {deserializeMap, serializeMap} from '@/utils/serialize-map';
 import {
   type FormDiffAnnotation,
@@ -26,6 +29,7 @@ import {ShareStateContext} from '@/events/share-events-provider';
 import type {ThreadState} from '@/events/share-state';
 import {useShareId} from '@/app/(share)/d/[shareId]/_hooks/use-share-id';
 import {useSelectedLines} from '../_hooks/use-selected-lines';
+import {getActiveFileId} from '../_lib/get-active-file-id';
 import {HandleContext} from '../_lib/handle-context';
 import {AddCommentButton, Annotation} from './annotation';
 
@@ -63,7 +67,7 @@ export function DiffFiles({files}: DiffFilesProps) {
   const shareId = useShareId();
 
   const [fileUiById, setFileUiById] = useLocalStorage(
-    `diff:v2:${shareId}`,
+    `diff:v1:${shareId}`,
     () => new Map() as ReadonlyMap<string, DiffFileUiState>,
     {
       serialize: serializeMap<string, DiffFileUiState>,
@@ -81,6 +85,35 @@ export function DiffFiles({files}: DiffFilesProps) {
     shareState.threads.values(),
     (thread) => thread.anchor.filePath,
   );
+
+  useKeyDown(function toggleActiveFileViewed(event) {
+    if (
+      event.key !== 'v' ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.altKey ||
+      event.shiftKey ||
+      isEditableTarget(event.target)
+    ) {
+      return;
+    }
+
+    const codeView = codeViewRef.current?.getInstance();
+    if (!isDefined(codeView)) {
+      return;
+    }
+
+    const fileId = getActiveFileId(
+      codeView,
+      files.map((file) => file.id),
+    );
+    if (!isDefined(fileId)) {
+      return;
+    }
+
+    event.preventDefault();
+    setFileViewed(fileId, !getFileUi(fileId).viewed);
+  });
 
   function getFileUi(fileId: string) {
     return {
@@ -251,18 +284,36 @@ function FileViewedCheckbox({
   readonly onViewedChange: (viewed: boolean) => void;
 }) {
   return (
-    <Checkbox
-      variant="secondary"
-      isSelected={viewed}
-      onChange={onViewedChange}
-      className="text-xs"
-    >
-      <Checkbox.Content>
-        <Checkbox.Control>
-          <Checkbox.Indicator />
-        </Checkbox.Control>
-        Viewed
-      </Checkbox.Content>
-    </Checkbox>
+    <Tooltip>
+      <Focusable>
+        <span className="inline-flex">
+          <Checkbox
+            aria-keyshortcuts="v"
+            variant="secondary"
+            isSelected={viewed}
+            onChange={onViewedChange}
+            className="text-xs"
+          >
+            <Checkbox.Content>
+              <Checkbox.Control>
+                <Checkbox.Indicator />
+              </Checkbox.Control>
+              Viewed
+            </Checkbox.Content>
+          </Checkbox>
+        </span>
+      </Focusable>
+      <Tooltip.Content
+        showArrow
+        placement="top"
+        className="flex items-center gap-2"
+      >
+        <Tooltip.Arrow />
+        Viewed by me
+        <Kbd>
+          <Kbd.Content>v</Kbd.Content>
+        </Kbd>
+      </Tooltip.Content>
+    </Tooltip>
   );
 }

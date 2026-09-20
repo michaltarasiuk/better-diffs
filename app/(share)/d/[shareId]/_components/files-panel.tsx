@@ -13,6 +13,7 @@ import {
 
 import {useKeyDown} from '@/hooks/use-key-down';
 import {isDefined} from '@/utils/defined';
+import {isEditableTarget} from '@/utils/is-editable-target';
 import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';
 import {useSearchQuery} from '../_hooks/use-search-query';
 import {HandleContext} from '../_lib/handle-context';
@@ -122,17 +123,5 @@ export function FilesPanel({
 
       {children}
     </div>
-  );
-}
-
-function isEditableTarget(target: EventTarget | null) {
-  if (!(target instanceof HTMLElement)) {
-    return false;
-  }
-  return (
-    target.isContentEditable ||
-    target.tagName === 'INPUT' ||
-    target.tagName === 'TEXTAREA' ||
-    target.tagName === 'SELECT'
   );
 }
