@@ -6,7 +6,7 @@ export function deserializeMap<K, V>(text: string) {
   const parsed: unknown = JSON.parse(text);
 
   if (!Array.isArray(parsed)) {
-    throw new TypeError('Expected map entries to be an array');
+    throw new TypeError('Map entries are not an array');
   }
 
   return new Map(parsed as [K, V][]);

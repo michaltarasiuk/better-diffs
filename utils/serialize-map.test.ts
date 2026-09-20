@@ -59,7 +59,7 @@ describe('deserializeMap', () => {
   it('throws when stored text is not an array', () => {
     expect(() => deserializeMap('{"a":1}')).toThrow(TypeError);
     expect(() => deserializeMap('{"a":1}')).toThrow(
-      'Expected map entries to be an array',
+      'Map entries are not an array',
     );
   });
 });
