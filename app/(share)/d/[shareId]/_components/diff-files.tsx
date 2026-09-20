@@ -263,7 +263,6 @@ function FileCollapseButton({
       size="sm"
       isIconOnly
       onPress={onToggleCollapsed}
-      className="size-7 min-w-7 shrink-0"
     >
       <ChevronDownIcon
         aria-hidden
