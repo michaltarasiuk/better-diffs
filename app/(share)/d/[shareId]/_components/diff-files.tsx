@@ -159,7 +159,7 @@ export function DiffFiles({files}: DiffFilesProps) {
           id: file.id,
           type: 'diff' as const,
           fileDiff: file.metadata,
-          annotationss: sortAnnotations([
+          annotations: sortAnnotations([
             ...threads.map(toThreadAnnotation),
             ...commentForms,
           ]),
