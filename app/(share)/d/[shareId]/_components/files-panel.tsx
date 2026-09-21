@@ -13,7 +13,8 @@ import {
 
 import {useKeyDown} from '@/hooks/use-key-down';
 import {isDefined} from '@/utils/defined';
-import {isGlobalShortcut} from '@/utils/is-global-shortcut';
+import {isEditableTarget} from '@/utils/is-editable-target';
+import {isUnmodifiedKeyDown} from '@/utils/is-unmodified-key-down';
 import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';
 import {useSearchQuery} from '../_hooks/use-search-query';
 import {HandleContext} from '../_lib/handle-context';
@@ -55,7 +56,7 @@ export function FilesPanel({
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useKeyDown(function focusSearch(event) {
-    if (!isGlobalShortcut(event, '/')) {
+    if (!isUnmodifiedKeyDown(event, '/') || isEditableTarget(event.target)) {
       return;
     }
     event.preventDefault();
