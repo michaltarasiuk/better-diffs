@@ -1,4 +1,4 @@
-import {isDefined} from '@/utils/defined';
+import {isDefined} from '@/utils/is-defined';
 
 export function parseParams(input: string, delimiter: ';' | ',' = ';') {
   const parser =

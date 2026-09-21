@@ -1,7 +1,7 @@
 import type {GetHoveredLineResult} from '@pierre/diffs';
 
 import {useLocalStorage} from '@/hooks/use-local-storage';
-import {newId} from '@/utils/id';
+import {newId} from '@/utils/new-id';
 import {deserializeMap, serializeMap} from '@/utils/serialize-map';
 import {type FormDiffAnnotation, sortAnnotations} from '@/diffs/annotations';
 

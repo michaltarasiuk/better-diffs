@@ -1,6 +1,6 @@
 import {useSyncExternalStore} from 'react';
 
-import {isDefined} from '@/utils/defined';
+import {isDefined} from '@/utils/is-defined';
 
 export function useIsMobile() {
   return !useMediaQuery('(min-width: 48rem)');

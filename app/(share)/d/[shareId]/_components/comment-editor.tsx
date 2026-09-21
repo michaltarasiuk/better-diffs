@@ -55,7 +55,7 @@ import {
   Undo2Icon,
 } from 'lucide-react';
 
-import {isDefined} from '@/utils/defined';
+import {isDefined} from '@/utils/is-defined';
 
 const EDITOR_THEME = {
   heading: {

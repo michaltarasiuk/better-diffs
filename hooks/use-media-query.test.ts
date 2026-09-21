@@ -3,7 +3,7 @@
 import {act, renderHook} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-import {isDefined} from '@/utils/defined';
+import {isDefined} from '@/utils/is-defined';
 
 const BREAKPOINT = '(min-width: 48rem)';
 

@@ -6,7 +6,7 @@ import {z} from 'zod';
 import {env} from '@/env';
 import {Accept} from '@/headers/accept';
 import {ContentType} from '@/headers/content-type';
-import {isDefined} from '@/utils/defined';
+import {isDefined} from '@/utils/is-defined';
 import {createShare} from '@/db/shares';
 
 const CORS_HEADERS = {

@@ -12,7 +12,7 @@ import {
   vi,
 } from 'vitest';
 
-import {isDefined} from '@/utils/defined';
+import {isDefined} from '@/utils/is-defined';
 import {INSTALL_COMMAND} from '../_lib/install-command';
 import {COPIED_FEEDBACK_MS, CopyCommand} from './copy-command';
 

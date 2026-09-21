@@ -1,4 +1,4 @@
-import {isDefined} from './defined';
+import {isDefined} from './is-defined';
 
 export type StorageType = 'localStorage' | 'sessionStorage';
 

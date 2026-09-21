@@ -12,7 +12,7 @@ import {
 } from '@pierre/trees/react';
 
 import {useKeyDown} from '@/hooks/use-key-down';
-import {isDefined} from '@/utils/defined';
+import {isDefined} from '@/utils/is-defined';
 import {isEditableTarget} from '@/utils/is-editable-target';
 import {isUnmodifiedKeyDown} from '@/utils/is-unmodified-key-down';
 import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';

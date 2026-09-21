@@ -1,6 +1,6 @@
 import {describe, expect, expectTypeOf, it} from 'vitest';
 
-import {isIterable} from './iterable';
+import {isIterable} from './is-iterable';
 
 describe('isIterable', () => {
   it.each([

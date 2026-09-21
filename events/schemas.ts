@@ -1,7 +1,7 @@
 import type {SerializedEditorState} from 'lexical';
 import {z} from 'zod';
 
-import {isDefined} from '@/utils/defined';
+import {isDefined} from '@/utils/is-defined';
 import {SelectionSide} from '@/diffs/schemas';
 
 export const Anchor = z.object({

@@ -1,5 +1,5 @@
 import {env} from './env';
-import {isDefined} from './utils/defined';
+import {isDefined} from './utils/is-defined';
 
 let interval: ReturnType<typeof setInterval> | null = null;
 

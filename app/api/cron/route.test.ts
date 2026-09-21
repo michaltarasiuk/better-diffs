@@ -2,7 +2,7 @@ import {NextRequest} from 'next/server';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
-import {isDefined} from '@/utils/defined';
+import {isDefined} from '@/utils/is-defined';
 import {GET} from './route';
 
 const DELETED_SHARES = 3;

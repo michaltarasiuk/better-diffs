@@ -1,6 +1,6 @@
 import {describe, expect, expectTypeOf, it} from 'vitest';
 
-import {isDefined} from './defined';
+import {isDefined} from './is-defined';
 
 describe('isDefined', () => {
   it.each([

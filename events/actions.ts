@@ -2,7 +2,7 @@
 
 import {unauthorized} from 'next/navigation';
 
-import {isDefined} from '@/utils/defined';
+import {isDefined} from '@/utils/is-defined';
 import {getSession} from '@/auth/server';
 import {appendEvents} from '@/db/events';
 import {OpenThreadInput} from './schemas';

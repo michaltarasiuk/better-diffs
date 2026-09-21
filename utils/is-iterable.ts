@@ -1,4 +1,4 @@
-import {isDefined} from './defined';
+import {isDefined} from './is-defined';
 
 export function isIterable<T>(value: unknown): value is Iterable<T> {
   return (

@@ -8,8 +8,8 @@ import {PlusIcon} from 'lucide-react';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
 import {useKeyDown} from '@/hooks/use-key-down';
-import {isDefined} from '@/utils/defined';
-import {newId} from '@/utils/id';
+import {isDefined} from '@/utils/is-defined';
+import {newId} from '@/utils/new-id';
 import {authClient} from '@/auth/client';
 import {SessionContext} from '@/auth/context';
 import {GitHubIcon} from '@/auth/github-icon';

@@ -4,7 +4,7 @@ import {notFound} from 'next/navigation';
 import {Spinner} from '@heroui/react';
 import {preloadFileTree} from '@pierre/trees/ssr';
 
-import {isDefined} from '@/utils/defined';
+import {isDefined} from '@/utils/is-defined';
 import {SessionProvider} from '@/auth/session-provider';
 import {openShare} from '@/db/shares';
 import {computeDiffStats} from '@/diffs/stats';

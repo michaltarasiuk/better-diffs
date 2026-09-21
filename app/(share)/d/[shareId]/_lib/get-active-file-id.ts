@@ -1,6 +1,6 @@
 import type {CodeView} from '@pierre/diffs';
 
-import {isDefined} from '@/utils/defined';
+import {isDefined} from '@/utils/is-defined';
 import type {AnnotationMetadata} from '@/diffs/annotations';
 
 export function getActiveFileId(codeView: CodeView<AnnotationMetadata, null>) {
