@@ -1,25 +1,34 @@
 import type {CodeView} from '@pierre/diffs';
 
 import {isDefined} from '@/utils/defined';
+import type {AnnotationMetadata} from '@/diffs/annotations';
 
-export function getActiveFileId(
-  codeView: Pick<CodeView, 'getScrollTop' | 'getTopForItem'>,
-  fileIds: readonly string[],
-) {
-  const scrollTop = codeView.getScrollTop();
-  let active: string | null = null;
+export function getActiveFileId(codeView: CodeView<AnnotationMetadata, null>) {
+  const viewportTop = codeView.getScrollTop();
+  const viewportBottom = viewportTop + codeView.getHeight();
 
-  for (const id of fileIds) {
-    const top = codeView.getTopForItem(id);
-    if (!isDefined(top)) {
+  let activeFileId: string | null = null;
+
+  for (const {id, instance, item} of codeView.getRenderedItems()) {
+    const itemTop = codeView.getTopForItem(id);
+    if (!isDefined(itemTop)) {
       continue;
     }
-    if (top <= scrollTop) {
-      active = id;
-    } else {
+
+    const itemBottom = itemTop + instance.getVirtualizedHeight();
+    const intersectsViewport =
+      itemTop < viewportBottom && itemBottom > viewportTop;
+    if (!intersectsViewport) {
+      continue;
+    }
+
+    if (!item.collapsed) {
+      activeFileId = id;
       break;
+    } else {
+      activeFileId ??= id;
     }
   }
 
-  return active;
+  return activeFileId;
 }

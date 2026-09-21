@@ -77,10 +77,7 @@ export function DiffFiles({files}: DiffFilesProps) {
       return;
     }
 
-    const fileId = getActiveFileId(
-      codeView,
-      files.map((file) => file.id),
-    );
+    const fileId = getActiveFileId(codeView);
     if (!isDefined(fileId)) {
       return;
     }
@@ -199,22 +196,20 @@ function FileViewedCheckbox({
   return (
     <Tooltip>
       <Focusable>
-        <span className="inline-flex">
-          <Checkbox
-            aria-keyshortcuts="v"
-            variant="secondary"
-            isSelected={viewed}
-            onChange={onViewedChange}
-            className="text-xs"
-          >
-            <Checkbox.Content>
-              <Checkbox.Control>
-                <Checkbox.Indicator />
-              </Checkbox.Control>
-              Viewed
-            </Checkbox.Content>
-          </Checkbox>
-        </span>
+        <Checkbox
+          aria-keyshortcuts="v"
+          variant="secondary"
+          isSelected={viewed}
+          onChange={onViewedChange}
+          className="text-xs"
+        >
+          <Checkbox.Content>
+            <Checkbox.Control>
+              <Checkbox.Indicator />
+            </Checkbox.Control>
+            Viewed
+          </Checkbox.Content>
+        </Checkbox>
       </Focusable>
       <Tooltip.Content
         showArrow
