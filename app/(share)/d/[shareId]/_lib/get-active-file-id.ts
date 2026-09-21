@@ -9,7 +9,7 @@ export function getActiveFileId(codeView: CodeView<AnnotationMetadata, null>) {
 
   let activeFileId: string | null = null;
 
-  for (const {id, instance, item} of codeView.getRenderedItems()) {
+  for (const {id, item, instance} of codeView.getRenderedItems()) {
     const itemTop = codeView.getTopForItem(id);
     if (!isDefined(itemTop)) {
       continue;
