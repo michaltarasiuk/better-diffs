@@ -13,13 +13,13 @@ import {useKeyDown} from '@/hooks/use-key-down';
 import {useIsMobile} from '@/hooks/use-media-query';
 import {isDefined} from '@/utils/defined';
 import {isGlobalShortcut} from '@/utils/is-global-shortcut';
+import type {AnnotationMetadata} from '@/diffs/annotations';
 import {
   isDiffLine,
   isFormAnnotation,
   sortAnnotations,
   toThreadAnnotation,
 } from '@/diffs/annotations';
-import type {AnnotationMetadata} from '@/diffs/options';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
 import {ShareStateContext} from '@/events/share-events-provider';
 import type {ThreadState} from '@/events/share-state';

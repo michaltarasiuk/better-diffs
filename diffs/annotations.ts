@@ -1,7 +1,19 @@
 import type {DiffLineAnnotation, GetHoveredLineResult} from '@pierre/diffs';
 
 import type {ThreadState} from '@/events/share-state';
-import type {AnnotationMetadata, FormAnnotationMetadata} from './options';
+
+export interface FormAnnotationMetadata {
+  readonly type: 'form';
+  readonly formId: string;
+}
+
+export interface ThreadAnnotationMetadata {
+  readonly type: 'thread';
+  readonly threadId: string;
+}
+
+export type AnnotationMetadata =
+  FormAnnotationMetadata | ThreadAnnotationMetadata;
 
 export type DiffAnnotation = DiffLineAnnotation<AnnotationMetadata>;
 export type FormDiffAnnotation = DiffLineAnnotation<FormAnnotationMetadata>;

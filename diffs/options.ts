@@ -2,18 +2,7 @@ import type {FileDiffOptions} from '@pierre/diffs';
 import {DEFAULT_CODE_VIEW_LAYOUT, DEFAULT_THEMES} from '@pierre/diffs';
 import type {CodeViewReactOptions} from '@pierre/diffs/react';
 
-export interface FormAnnotationMetadata {
-  readonly type: 'form';
-  readonly formId: string;
-}
-
-export interface ThreadAnnotationMetadata {
-  readonly type: 'thread';
-  readonly threadId: string;
-}
-
-export type AnnotationMetadata =
-  FormAnnotationMetadata | ThreadAnnotationMetadata;
+import type {AnnotationMetadata} from './annotations';
 
 export const PATCH_DIFF_OPTIONS: FileDiffOptions<AnnotationMetadata, null> = {
   theme: DEFAULT_THEMES,
