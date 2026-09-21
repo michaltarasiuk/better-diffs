@@ -12,7 +12,7 @@ import {ChevronDownIcon} from 'lucide-react';
 import {useKeyDown} from '@/hooks/use-key-down';
 import {useIsMobile} from '@/hooks/use-media-query';
 import {isDefined} from '@/utils/defined';
-import {isEditableTarget} from '@/utils/is-editable-target';
+import {isGlobalShortcut} from '@/utils/is-global-shortcut';
 import {
   isDiffLine,
   isFormAnnotation,
@@ -68,14 +68,7 @@ export function DiffFiles({files}: DiffFilesProps) {
   );
 
   useKeyDown(function toggleViewed(event) {
-    if (
-      event.key !== 'v' ||
-      event.metaKey ||
-      event.ctrlKey ||
-      event.altKey ||
-      event.shiftKey ||
-      isEditableTarget(event.target)
-    ) {
+    if (!isGlobalShortcut(event, 'v')) {
       return;
     }
 
@@ -105,7 +98,7 @@ export function DiffFiles({files}: DiffFilesProps) {
     <CodeView
       ref={codeViewRef}
       items={files.map((file) => {
-        const {commentForms, collapsed, localVersion} = getFileState(file.id);
+        const {commentForms, collapsed, version} = getFileState(file.id);
         const threads = getThreadsForPath(file.metadata.name);
 
         return {
@@ -117,7 +110,7 @@ export function DiffFiles({files}: DiffFilesProps) {
             ...commentForms,
           ]),
           collapsed,
-          version: localVersion + shareState.version,
+          version: version + shareState.version,
         };
       })}
       selectedLines={selectedLines}

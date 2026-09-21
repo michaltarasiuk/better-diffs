@@ -11,14 +11,14 @@ interface DiffFileState {
   readonly commentForms: readonly FormDiffAnnotation[];
   readonly collapsed: boolean;
   readonly viewed: boolean;
-  readonly localVersion: number;
+  readonly version: number;
 }
 
 const DEFAULT_FILE_STATE = {
   commentForms: [],
   collapsed: false,
   viewed: false,
-  localVersion: 0,
+  version: 0,
 } satisfies DiffFileState;
 
 export function useDiffFileState(shareId: string) {
@@ -43,11 +43,14 @@ export function useDiffFileState(shareId: string) {
     update: (state: DiffFileState) => DiffFileState,
   ) {
     setFileStateById((byId) => {
-      const state = {...DEFAULT_FILE_STATE, ...byId.get(fileId)};
+      const state = {
+        ...DEFAULT_FILE_STATE,
+        ...byId.get(fileId),
+      };
 
       return new Map(byId).set(fileId, {
         ...update(state),
-        localVersion: state.localVersion + 1,
+        version: state.version + 1,
       });
     });
   }
