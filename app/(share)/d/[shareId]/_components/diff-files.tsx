@@ -138,15 +138,15 @@ export function DiffFiles({files}: DiffFilesProps) {
           }}
         />
       )}
-      renderAnnotation={(lineAnnotation, item) =>
+      renderAnnotation={(annotation, item) =>
         item.type === 'diff' &&
-        isDiffAnnotation<AnnotationMetadata>(lineAnnotation) ? (
+        isDiffAnnotation<AnnotationMetadata>(annotation) ? (
           <Annotation
-            annotation={lineAnnotation}
+            annotation={annotation}
             filePath={item.fileDiff.name}
             onDismiss={() => {
-              if (isFormAnnotation(lineAnnotation)) {
-                removeCommentForm(item.id, lineAnnotation.metadata.formId);
+              if (isFormAnnotation(annotation)) {
+                removeCommentForm(item.id, annotation.metadata.formId);
               }
             }}
           />
