@@ -1,16 +1,12 @@
 {
-  "editor.quickSuggestions": {
-    "strings": "on"
+  "[go]": {
+    "editor.defaultFormatter": "golang.go",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": false,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
   },
-  "tailwindCSS.experimental.configFile": {
-    "app/globals.css": [
-      "app/**",
-      "auth/**",
-      "db/**",
-      "diffs/**",
-      "events/**",
-      "trees/**"
-    ]
-  },
+  "tailwindCSS.experimental.configFile": "app/globals.css",
   "tailwindCSS.classFunctions": ["cn", "tv"]
 }
