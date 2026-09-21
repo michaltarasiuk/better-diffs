@@ -8,8 +8,8 @@ import {
   useSyncExternalStore,
 } from 'react';
 import {browser} from 'react-dom';
+import {ErrorBoundary} from 'react-error-boundary';
 
-import {ErrorBoundary} from '@/react/error-boundary';
 import type {ShareEvent} from './schemas';
 import {hydrateShareEvents, type ShareEventsSync} from './share-events-sync';
 import type {FoldedShareState} from './share-state';

@@ -1,9 +1,8 @@
 // @vitest-environment jsdom
 
 import {render, screen} from '@testing-library/react';
+import {ErrorBoundary} from 'react-error-boundary';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-
-import {ErrorBoundary} from './error-boundary';
 
 const CHILD = 'Child content';
 const FALLBACK = 'Error fallback';
