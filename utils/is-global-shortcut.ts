@@ -1,5 +1,14 @@
 import {isEditableTarget} from './is-editable-target';
-import {isUnmodifiedKeyDown} from './is-unmodified-key-down';
+
+function isUnmodifiedKeyDown(event: KeyboardEvent, key: string) {
+  return (
+    event.key === key &&
+    !event.metaKey &&
+    !event.ctrlKey &&
+    !event.altKey &&
+    !event.shiftKey
+  );
+}
 
 export function isGlobalShortcut(event: KeyboardEvent, key: string) {
   return isUnmodifiedKeyDown(event, key) && !isEditableTarget(event.target);
