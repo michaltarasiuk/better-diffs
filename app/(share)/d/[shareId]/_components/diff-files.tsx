@@ -157,6 +157,7 @@ export function DiffFiles({files}: DiffFilesProps) {
         diffStyle: isMobile ? 'unified' : 'split',
       }}
       style={CODE_VIEW_STYLE}
+      className="outline-none"
     />
   );
 }
