@@ -6,7 +6,8 @@ import {defaultExclude, defineConfig} from 'vitest/config';
 
 const dirname = import.meta.dirname;
 
-const sharedExclude = [...defaultExclude, '.next/**'];
+const SHARED_EXCLUDE = [...defaultExclude, '.next/**'];
+const BROWSER_TEST_FILES = ['**/*.browser.test.{ts,tsx}'];
 
 export default defineConfig({
   resolve: {
@@ -20,7 +21,7 @@ export default defineConfig({
     restoreMocks: true,
     unstubGlobals: true,
     env: loadEnv('test', dirname, ''),
-    exclude: sharedExclude,
+    exclude: SHARED_EXCLUDE,
     projects: [
       {
         extends: true,
@@ -28,14 +29,14 @@ export default defineConfig({
           name: 'unit',
           environment: 'node',
           setupFiles: ['./vitest.setup.ts'],
-          exclude: [...sharedExclude, 'events/idb.test.ts'],
+          exclude: [...SHARED_EXCLUDE, ...BROWSER_TEST_FILES],
         },
       },
       {
         extends: true,
         test: {
           name: 'browser',
-          include: ['events/idb.test.ts'],
+          include: BROWSER_TEST_FILES,
           fileParallelism: false,
           sequence: {concurrent: false},
           browser: {

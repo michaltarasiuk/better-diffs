@@ -1,7 +1,7 @@
 /** @type {import('lint-staged').Configuration} */
 const config = {
-  '*': 'prettier --ignore-unknown --write',
-  '*.rs': 'rustfmt --edition 2024',
+  '*': ['prettier --ignore-unknown --write', 'eslint --fix --no-warn-ignored'],
+  '*.go': 'gofmt -w',
 };
 
 export default config;

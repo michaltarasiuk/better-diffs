@@ -12,9 +12,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Use `.agents/skills/vitest/SKILL.md` for Vitest API and config.
 
-Vitest uses a `node` environment by default. Add `// @vitest-environment jsdom` when a test renders components or hooks. Tests that need real browser APIs belong in the browser project, not a polyfill.
+Vitest uses a `node` environment by default. Add `// @vitest-environment jsdom` when a test renders components or hooks. Name real browser API tests `*.browser.test.ts` or `*.browser.test.tsx`; Vitest runs them in the `browser` project, not a polyfill.
 
-Colocate tests as `*.test.ts` or `*.test.tsx` beside the module under test. Prefer calling handlers and plain functions directly over starting a server. Mock dependencies at the import boundary with `vi.mock`. Test env vars live in `.env.test`.
+Colocate tests as `*.test.ts`, `*.test.tsx`, or `*.browser.test.ts` beside the module under test. Prefer calling handlers and plain functions directly over starting a server. Mock dependencies at the import boundary with `vi.mock`. Test env vars live in `.env.test`.
 
 Import stable ids from `@/testing/ids`. Build test data with `create*` factories from `@/testing/factories/{domain}` using `Partial<>` overrides. Keep helpers used by a single test file local to that file.
 

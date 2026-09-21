@@ -57,12 +57,13 @@ const eslintConfig = defineConfig([
             [
               '^(react\\/(.*)$)|^(react$)|^(react-dom(.*)$)',
               '^(next(.*)$)|^(next$)',
-              '^(?!(?:app|auth|components|db|diffs|events|headers|hooks|trees|utils)(?:$|\\/))@?\\w',
+              '^(?!(?:app|auth|db|diffs|events|headers|hooks|react|testing|trees|utils|env|fonts)(?:$|\\/))@?\\w',
             ],
             [
-              '^(?:@\\/)?(?:utils|hooks|headers|env|fonts)(?:$|\\/)',
-              '^(?:@\\/)?(?:auth|db|diffs|events|trees)(?:$|\\/)',
-              '^(?:@\\/)?components(?:$|\\/)',
+              '^(?:@\\/)?(?:utils|hooks|headers|env|fonts|testing)(?:$|\\/)',
+              '^(?:@\\/)?(?:auth|db)(?:$|\\/)',
+              '^(?:@\\/)?(?:events|diffs|trees)(?:$|\\/)',
+              '^(?:@\\/)?react(?:$|\\/)',
               '^(?:@\\/)?app(?:$|\\/)',
               '^@\\/',
               '^\\.',
@@ -74,7 +75,7 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    files: ['**/*.{test,spec}.{ts,tsx}'],
+    files: ['**/*.{test,browser.test}.{ts,tsx}'],
     plugins: {
       vitest,
       ...testingLibraryReact.plugins,
