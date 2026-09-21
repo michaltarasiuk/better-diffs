@@ -32,10 +32,7 @@ export function useDiffFileState(shareId: string) {
   );
 
   function getFileState(fileId: string) {
-    return {
-      ...DEFAULT_FILE_STATE,
-      ...fileStateById.get(fileId),
-    };
+    return {...DEFAULT_FILE_STATE, ...fileStateById.get(fileId)};
   }
 
   function updateFileState(
@@ -43,10 +40,7 @@ export function useDiffFileState(shareId: string) {
     update: (state: DiffFileState) => DiffFileState,
   ) {
     setFileStateById((byId) => {
-      const state = {
-        ...DEFAULT_FILE_STATE,
-        ...byId.get(fileId),
-      };
+      const state = {...DEFAULT_FILE_STATE, ...byId.get(fileId)};
 
       return new Map(byId).set(fileId, {
         ...update(state),
