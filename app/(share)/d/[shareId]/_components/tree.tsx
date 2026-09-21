@@ -16,23 +16,18 @@ import {isDefined} from '@/utils/is-defined';
 import {isEditableTarget} from '@/utils/is-editable-target';
 import {isUnmodifiedKeyDown} from '@/utils/is-unmodified-key-down';
 import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';
-import {useSearchQuery} from '../_hooks/use-search-query';
-import {HandleContext} from '../_lib/handle-context';
+import {useQuery} from '../_hooks/use-query';
+import {HandleContext} from '../_lib/context';
 
-interface FilesPanelProps {
+interface TreeProps {
   readonly handoff: TreeHandoff;
   readonly preloaded: FileTreePreloadedData;
   readonly fileIdByPath: Readonly<Record<string, string>>;
   readonly children: React.ReactNode;
 }
 
-export function FilesPanel({
-  handoff,
-  preloaded,
-  fileIdByPath,
-  children,
-}: FilesPanelProps) {
-  const {searchQuery, setSearchQuery} = useSearchQuery();
+export function Tree({handoff, preloaded, fileIdByPath, children}: TreeProps) {
+  const {searchQuery, setSearchQuery} = useQuery();
   const handleRef = use(HandleContext);
   const {model} = useFileTree({
     ...getTreeOptions(handoff, {searchQuery}),

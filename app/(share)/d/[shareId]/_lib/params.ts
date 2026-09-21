@@ -7,9 +7,9 @@ const parseAsSearchQuery = createParser({
   serialize: String,
 });
 
-export const diffSearchParsers = {
+export const searchParsers = {
   q: parseAsSearchQuery,
   lines: parseAsJson(SelectedLines),
 };
 
-export const loadDiffSearchParams = createLoader(diffSearchParsers);
+export const loadParams = createLoader(searchParsers);

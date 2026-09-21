@@ -5,11 +5,23 @@ import {Skeleton, Typography} from '@heroui/react';
 import {typographyVariants} from '@heroui/styles';
 import {PatchDiff} from '@pierre/diffs/react';
 import {preloadPatchDiff} from '@pierre/diffs/ssr';
+import dedent from 'dedent';
 
 import {PATCH_DIFF_OPTIONS} from '@/diffs/options';
-import {DEMO_PATCH} from '../_lib/patches';
-import {CopyCommand} from './_components/copy-command';
-import {INSTALL_COMMAND} from './_lib/install-command';
+import {Command} from './_components/command';
+import {COMMAND} from './_lib/command';
+
+const DEMO_PATCH = dedent`
+  diff --git a/share.sh b/share.sh
+  --- a/share.sh
+  +++ b/share.sh
+  @@ -1 +1,4 @@
+  -git diff
+  +better-diffs
+  +better-diffs --staged
+  +better-diffs --base main -- src/
+  +better-diffs --open
+`;
 
 const heroTitleClass = typographyVariants({type: 'h2'}).base({
   className: 'font-mono tracking-tight',
@@ -53,7 +65,7 @@ export default function HomePage() {
         </Typography.Heading>
 
         <div className="space-y-2">
-          <CopyCommand label="Copy install command" command={INSTALL_COMMAND} />
+          <Command label="Copy install command" command={COMMAND} />
 
           <Typography.Paragraph size="xs" color="muted">
             Downloads a prebuilt binary for macOS or Linux into{' '}

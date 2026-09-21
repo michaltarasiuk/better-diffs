@@ -11,9 +11,9 @@ import {browser} from 'react-dom';
 import {ErrorBoundary} from 'react-error-boundary';
 
 import type {ShareEvent} from './schemas';
-import {hydrateShareEvents, type ShareEventsSync} from './share-events-sync';
-import type {FoldedShareState} from './share-state';
-import {EMPTY_FOLDED_STATE, ShareState} from './share-state';
+import type {FoldedShareState} from './state';
+import {EMPTY_FOLDED_STATE, ShareState} from './state';
+import {hydrateShareEvents, type ShareEventsSync} from './sync';
 
 export const ShareStateContext =
   createContext<FoldedShareState>(EMPTY_FOLDED_STATE);

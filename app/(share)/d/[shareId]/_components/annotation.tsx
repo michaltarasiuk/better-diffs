@@ -12,21 +12,21 @@ import {isDefined} from '@/utils/is-defined';
 import {newId} from '@/utils/new-id';
 import {authClient} from '@/auth/client';
 import {SessionContext} from '@/auth/context';
-import {GitHubIcon} from '@/auth/github-icon';
+import {GitHubIcon} from '@/auth/icon';
 import {type DiffAnnotation, isFormAnnotation} from '@/diffs/annotations';
 import {openThread} from '@/events/actions';
+import {ShareStoreContext} from '@/events/provider';
 import type {Anchor} from '@/events/schemas';
-import {ShareStoreContext} from '@/events/share-events-provider';
-import {useShareId} from '../_hooks/use-share-id';
-import {CommentEditorSkeleton} from './comment-editor-skeleton';
+import {useId} from '../_hooks/use-id';
+import {EditorSkeleton} from './editor-skeleton';
 
-function preloadCommentEditor() {
-  void import('./comment-editor');
+function preloadEditor() {
+  void import('./editor');
 }
 
-const CommentEditor = dynamic(
-  () => import('./comment-editor').then((module) => module.CommentEditor),
-  {loading: () => <CommentEditorSkeleton />},
+const Editor = dynamic(
+  () => import('./editor').then((module) => module.Editor),
+  {loading: () => <EditorSkeleton />},
 );
 
 const AnnotationContext = createContext<DiffAnnotation>(null as never);
@@ -40,8 +40,8 @@ export function AddCommentButton({onAddAnnotation}: AddCommentButtonProps) {
     <Button
       id="gutter-utility"
       aria-label="Add comment"
-      onHoverStart={preloadCommentEditor}
-      onFocus={preloadCommentEditor}
+      onHoverStart={preloadEditor}
+      onFocus={preloadEditor}
       onPress={onAddAnnotation}
       isIconOnly
       className="me-[calc(-1lh+1ch)] h-lh w-[1lh]"
@@ -107,7 +107,7 @@ interface CommentFormProps {
 }
 
 function CommentForm({filePath, onDismiss}: CommentFormProps) {
-  const shareId = useShareId();
+  const shareId = useId();
 
   const session = use(SessionContext);
   if (!isDefined(session)) {
@@ -122,7 +122,7 @@ function CommentForm({filePath, onDismiss}: CommentFormProps) {
   }
 
   return (
-    <CommentEditor
+    <Editor
       onComment={async (body) => {
         const threadId = newId();
         const commentId = newId();

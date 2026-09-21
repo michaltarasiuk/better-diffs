@@ -1,11 +1,11 @@
 import {useQueryState} from 'nuqs';
 
-import {diffSearchParsers} from '../_lib/search-params';
+import {searchParsers} from '../_lib/params';
 
-export function useSelectedLines() {
+export function useLines() {
   const [selectedLines, setSelectedLines] = useQueryState(
     'lines',
-    diffSearchParsers.lines.withOptions({history: 'replace'}),
+    searchParsers.lines.withOptions({history: 'replace'}),
   );
 
   return {selectedLines, setSelectedLines};

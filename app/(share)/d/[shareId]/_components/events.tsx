@@ -1,10 +1,10 @@
 'use client';
 
-import {ShareEventsProvider} from '@/events/share-events-provider';
-import {useShareId} from '../_hooks/use-share-id';
+import {ShareEventsProvider} from '@/events/provider';
+import {useId} from '../_hooks/use-id';
 
 export function SyncEvents({children}: {readonly children: React.ReactNode}) {
-  const shareId = useShareId();
+  const shareId = useId();
   return (
     <ShareEventsProvider shareId={shareId}>{children}</ShareEventsProvider>
   );

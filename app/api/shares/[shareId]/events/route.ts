@@ -1,7 +1,7 @@
 import {type NextRequest, NextResponse} from 'next/server';
 
 import {getEvents} from '@/db/events';
-import {loadEventsSearchParams} from './_lib/search-params';
+import {loadEventsSearchParams} from './_lib/params';
 
 const CACHE_CONTROL = 'no-store';
 

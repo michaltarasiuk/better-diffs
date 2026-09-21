@@ -12,7 +12,7 @@ import {
   type ThreadOpenedPayload,
   type ThreadResolvedPayload,
 } from '@/events/schemas';
-import type {OptimisticEvent, ThreadState} from '@/events/share-state';
+import type {OptimisticEvent, ThreadState} from '@/events/state';
 import {
   COMMENT_ID,
   CREATED_AT,

@@ -1,6 +1,6 @@
 import {useParams} from 'next/navigation';
 
-export function useShareId() {
+export function useId() {
   const shareId = useParams<{shareId: string}>().shareId;
   return shareId;
 }

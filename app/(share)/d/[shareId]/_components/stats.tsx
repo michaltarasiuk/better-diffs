@@ -2,7 +2,7 @@ import {Accordion, Separator, tv, type VariantProps} from '@heroui/react';
 
 import {type DiffStats as DiffStatsData, formatDiffStat} from '@/diffs/stats';
 
-export function DiffStats({stats}: {readonly stats: DiffStatsData}) {
+export function Stats({stats}: {readonly stats: DiffStatsData}) {
   return (
     <Accordion defaultExpandedKeys={['stats']}>
       <Accordion.Item id="stats">
@@ -15,21 +15,13 @@ export function DiffStats({stats}: {readonly stats: DiffStatsData}) {
         <Accordion.Panel>
           <Accordion.Body>
             <dl>
-              <DiffStat label="Files" value={stats.files} />
+              <Stat label="Files" value={stats.files} />
               <Separator />
-              <DiffStat
-                label="Additions"
-                value={stats.additions}
-                tone="success"
-              />
+              <Stat label="Additions" value={stats.additions} tone="success" />
               <Separator />
-              <DiffStat
-                label="Deletions"
-                value={stats.deletions}
-                tone="danger"
-              />
+              <Stat label="Deletions" value={stats.deletions} tone="danger" />
               <Separator />
-              <DiffStat label="Lines" value={stats.lines} />
+              <Stat label="Lines" value={stats.lines} />
             </dl>
           </Accordion.Body>
         </Accordion.Panel>
@@ -38,21 +30,21 @@ export function DiffStats({stats}: {readonly stats: DiffStatsData}) {
   );
 }
 
-interface DiffStatProps extends VariantProps<typeof diffStatValue> {
+interface StatProps extends VariantProps<typeof statValue> {
   readonly label: string;
   readonly value: number;
 }
 
-function DiffStat({label, value, tone}: DiffStatProps) {
+function Stat({label, value, tone}: StatProps) {
   return (
     <div className="flex items-center justify-between py-1 text-xs">
       <dt className="text-muted">{label}</dt>
-      <dd className={diffStatValue({tone})}>{formatDiffStat(value)}</dd>
+      <dd className={statValue({tone})}>{formatDiffStat(value)}</dd>
     </div>
   );
 }
 
-const diffStatValue = tv({
+const statValue = tv({
   base: 'tabular-nums text-foreground',
   variants: {
     tone: {

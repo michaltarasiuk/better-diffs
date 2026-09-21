@@ -123,14 +123,14 @@ function isBlockType(value: string): value is BlockType {
 
 type OnComment = (body: SerializedEditorState) => void | Promise<unknown>;
 
-interface CommentEditorProps {
+interface EditorProps {
   readonly onComment: OnComment;
   readonly onDismiss: () => void;
 }
 
-const commentEditorExtension = defineExtension({
-  name: '@better-diffs/comment-editor',
-  namespace: 'Comment Editor',
+const editorExtension = defineExtension({
+  name: '@better-diffs/editor',
+  namespace: 'Editor',
   theme: EDITOR_THEME,
   dependencies: [RichTextExtension, HistoryExtension],
   onError(error) {
@@ -138,10 +138,10 @@ const commentEditorExtension = defineExtension({
   },
 });
 
-export function CommentEditor({onComment, onDismiss}: CommentEditorProps) {
+export function Editor({onComment, onDismiss}: EditorProps) {
   return (
     <LexicalExtensionComposer
-      extension={commentEditorExtension}
+      extension={editorExtension}
       contentEditable={null}
     >
       <Card variant="secondary" className="@container m-2 mbs-1">

@@ -6,7 +6,7 @@ import {use} from 'react';
 import {Button, Checkbox, cn, Focusable, Kbd, Tooltip} from '@heroui/react';
 import type {FileDiffMetadata} from '@pierre/diffs';
 import {isDiffAnnotation} from '@pierre/diffs';
-import {CodeView} from '@pierre/diffs/react';
+import {CodeView as DiffCodeView} from '@pierre/diffs/react';
 import {ChevronDownIcon} from 'lucide-react';
 
 import {useKeyDown} from '@/hooks/use-key-down';
@@ -22,13 +22,13 @@ import {
   toThreadAnnotation,
 } from '@/diffs/annotations';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
-import {ShareStateContext} from '@/events/share-events-provider';
-import type {ThreadState} from '@/events/share-state';
-import {useDiffFileState} from '../_hooks/use-diff-file-state';
-import {useSelectedLines} from '../_hooks/use-selected-lines';
-import {useShareId} from '../_hooks/use-share-id';
-import {getActiveFileId} from '../_lib/get-active-file-id';
-import {HandleContext} from '../_lib/handle-context';
+import {ShareStateContext} from '@/events/provider';
+import type {ThreadState} from '@/events/state';
+import {useFileState} from '../_hooks/use-file-state';
+import {useId} from '../_hooks/use-id';
+import {useLines} from '../_hooks/use-lines';
+import {activeFileId} from '../_lib/active-file-id';
+import {HandleContext} from '../_lib/context';
 import {AddCommentButton, Annotation} from './annotation';
 
 const DEFAULT_THREADS: readonly ThreadState[] = [];
@@ -38,15 +38,15 @@ const CODE_VIEW_STYLE = {
   overflow: 'auto',
 } satisfies React.CSSProperties;
 
-interface DiffFilesProps {
+interface CodeViewProps {
   readonly files: readonly {
     readonly id: string;
     readonly metadata: FileDiffMetadata;
   }[];
 }
 
-export function DiffFiles({files}: DiffFilesProps) {
-  const shareId = useShareId();
+export function CodeView({files}: CodeViewProps) {
+  const shareId = useId();
 
   const {
     getFileState,
@@ -55,8 +55,8 @@ export function DiffFiles({files}: DiffFilesProps) {
     toggleFileViewed,
     addCommentForm,
     removeCommentForm,
-  } = useDiffFileState(shareId);
-  const {selectedLines, setSelectedLines} = useSelectedLines();
+  } = useFileState(shareId);
+  const {selectedLines, setSelectedLines} = useLines();
 
   const isMobile = useIsMobile();
 
@@ -78,7 +78,7 @@ export function DiffFiles({files}: DiffFilesProps) {
       return;
     }
 
-    const fileId = getActiveFileId(codeView);
+    const fileId = activeFileId(codeView);
     if (!isDefined(fileId)) {
       return;
     }
@@ -93,7 +93,7 @@ export function DiffFiles({files}: DiffFilesProps) {
   }
 
   return (
-    <CodeView
+    <DiffCodeView
       ref={codeViewRef}
       items={files.map((file) => {
         const {commentForms, collapsed, version} = getFileState(file.id);
@@ -114,13 +114,13 @@ export function DiffFiles({files}: DiffFilesProps) {
       selectedLines={selectedLines}
       onSelectedLinesChange={setSelectedLines}
       renderHeaderPrefix={(item) => (
-        <FileCollapseButton
+        <CollapseButton
           collapsed={getFileState(item.id).collapsed}
           onToggleCollapsed={() => toggleFileCollapsed(item.id)}
         />
       )}
       renderHeaderMetadata={(item) => (
-        <FileViewedCheckbox
+        <ViewedCheckbox
           viewed={getFileState(item.id).viewed}
           onViewedChange={(viewed) => setFileViewed(item.id, viewed)}
         />
@@ -160,7 +160,7 @@ export function DiffFiles({files}: DiffFilesProps) {
   );
 }
 
-function FileCollapseButton({
+function CollapseButton({
   collapsed,
   onToggleCollapsed,
 }: {
@@ -187,7 +187,7 @@ function FileCollapseButton({
   );
 }
 
-function FileViewedCheckbox({
+function ViewedCheckbox({
   viewed,
   onViewedChange,
 }: {

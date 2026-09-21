@@ -6,9 +6,9 @@ import {CheckIcon, CopyIcon} from 'lucide-react';
 
 import {isDefined} from '@/utils/is-defined';
 
-export const COPIED_FEEDBACK_MS = 2_000;
+export const FEEDBACK_MS = 2_000;
 
-interface CopyCommandProps {
+interface CommandProps {
   readonly label: string;
   readonly command: string;
 }
@@ -28,7 +28,7 @@ function selectNodeContents(node: HTMLElement): boolean {
   return true;
 }
 
-export function CopyCommand({label, command}: CopyCommandProps) {
+export function Command({label, command}: CommandProps) {
   const [feedback, setFeedback] = useState<CopyFeedback>('idle');
   const commandRef = useRef<React.ComponentRef<'code'>>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
@@ -84,7 +84,7 @@ export function CopyCommand({label, command}: CopyCommandProps) {
           } finally {
             timeoutRef.current = setTimeout(
               () => setFeedback('idle'),
-              COPIED_FEEDBACK_MS,
+              FEEDBACK_MS,
             );
           }
         }}

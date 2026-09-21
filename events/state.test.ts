@@ -25,7 +25,7 @@ import type {
   ShareEvent,
   ShareEventPayload,
 } from './schemas';
-import {foldEvents, isType, ShareState} from './share-state';
+import {foldEvents, isType, ShareState} from './state';
 
 function createShareEventLog(
   overrides: Partial<

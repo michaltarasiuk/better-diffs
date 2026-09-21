@@ -1,7 +1,7 @@
 import {Card} from '@heroui/react';
 import {Skeleton} from '@heroui/react';
 
-export function CommentEditorSkeleton() {
+export function EditorSkeleton() {
   return (
     <Card
       aria-label="Loading comment editor"

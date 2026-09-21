@@ -21,7 +21,7 @@ const DEFAULT_FILE_STATE = {
   version: 0,
 } satisfies DiffFileState;
 
-export function useDiffFileState(shareId: string) {
+export function useFileState(shareId: string) {
   const [fileStateById, setFileStateById] = useLocalStorage(
     `diff:v1:${shareId}`,
     () => new Map<string, DiffFileState>(),

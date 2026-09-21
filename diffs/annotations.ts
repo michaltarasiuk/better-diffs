@@ -1,6 +1,6 @@
 import type {DiffLineAnnotation, GetHoveredLineResult} from '@pierre/diffs';
 
-import type {ThreadState} from '@/events/share-state';
+import type {ThreadState} from '@/events/state';
 
 export interface FormAnnotationMetadata {
   readonly type: 'form';

@@ -3,7 +3,7 @@ import type {CodeView} from '@pierre/diffs';
 import {isDefined} from '@/utils/is-defined';
 import type {AnnotationMetadata} from '@/diffs/annotations';
 
-export function getActiveFileId(codeView: CodeView<AnnotationMetadata, null>) {
+export function activeFileId(codeView: CodeView<AnnotationMetadata, null>) {
   const viewportTop = codeView.getScrollTop();
   const viewportBottom = viewportTop + codeView.getHeight();
 
