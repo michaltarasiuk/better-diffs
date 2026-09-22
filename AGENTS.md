@@ -16,7 +16,7 @@ Vitest uses a `node` environment by default. Add `// @vitest-environment jsdom` 
 
 Colocate tests as `*.test.ts`, `*.test.tsx`, or `*.browser.test.ts` beside the module under test. Prefer calling handlers and plain functions directly over starting a server. Mock dependencies at the import boundary with `vi.mock`. Test env vars live in `.env.test`.
 
-Import stable ids from `@/testing/ids`. Build test data with `create*` factories from `@/testing/factories/{domain}` using `Partial<>` overrides. Keep helpers used by a single test file local to that file.
+Import stable ids from `@/testing/ids`. Build test data with `create*` factories from `@/testing/factories/{domain}` using `Partial<>` overrides. Put static fixture strings in `@/testing/fixtures/{domain}`. Keep helpers used by a single test file local to that file.
 
 Vitest clears mock call history (`clearMocks`), restores `vi.spyOn` spies (`restoreMocks`), and unstubs globals (`unstubGlobals`) automatically. Do not call `mockClear`, `mockReset`, or `restoreAllMocks` for that. Hoist bare `vi.fn()` mocks, put default return values in `beforeEach` when a test may override them, and keep permanent mock behavior (such as throwing) in the hoisted factory.
 

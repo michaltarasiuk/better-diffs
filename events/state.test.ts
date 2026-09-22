@@ -6,50 +6,20 @@ import {
   createCommentEdited,
   createLexicalBody,
   createOptimisticEvent,
-  createShareEvent,
+  createShareEventLog,
   createThreadOpened,
   createThreadResolved,
 } from '@/testing/factories/events';
 import {
   COMMENT_ID,
   COMMENT_ID_SECONDARY,
-  CREATED_AT,
   MISSING_ID,
-  SHARE_ID,
   THREAD_ID,
   THREAD_ID_SECONDARY,
   USER_ID,
 } from '@/testing/ids';
-import type {
-  CommentCreatedPayload,
-  ShareEvent,
-  ShareEventPayload,
-} from './schemas';
+import type {CommentCreatedPayload, ShareEventPayload} from './schemas';
 import {foldEvents, isType, ShareState} from './state';
-
-function createShareEventLog(
-  overrides: Partial<
-    Pick<ShareEvent, 'shareId' | 'actorId' | 'createdAt'>
-  > = {},
-) {
-  const {
-    shareId = SHARE_ID,
-    actorId = USER_ID,
-    createdAt = CREATED_AT,
-  } = overrides;
-  let seq = 0;
-
-  return (...payloads: readonly ShareEventPayload[]) =>
-    payloads.map((payload) =>
-      createShareEvent(payload, {
-        id: `event-${++seq}`,
-        shareId,
-        seq,
-        actorId,
-        createdAt,
-      }),
-    );
-}
 
 describe('ingest', () => {
   it('folds a thread from its events', () => {

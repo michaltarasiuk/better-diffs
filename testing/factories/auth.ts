@@ -1,9 +1,11 @@
+import {USER_ID} from '@/testing/ids';
 import type {Session} from '@/auth/auth';
-import {USER_ID} from '../ids';
 
-export function createSession(overrides: Partial<Session> = {}) {
+export function createSession(overrides: Partial<Session> = {}): Session {
+  const {user, ...rest} = overrides;
+
   return {
-    user: {id: USER_ID},
-    ...overrides,
+    user: {id: USER_ID, ...user},
+    ...rest,
   } as Session;
 }

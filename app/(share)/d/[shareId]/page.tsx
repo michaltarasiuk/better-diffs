@@ -55,7 +55,7 @@ export default async function DiffPage({
     files.map((file) => [file.name, file.id]),
   );
 
-  const filesPanel = (
+  const tree = (
     <Tree
       handoff={treeHandoff}
       preloaded={preloadFileTree(
@@ -72,7 +72,7 @@ export default async function DiffPage({
   return (
     <div className="flex h-full">
       <CodeViewProvider>
-        <Sidebar>{filesPanel}</Sidebar>
+        <Sidebar>{tree}</Sidebar>
 
         <main aria-label="Diff" className="min-h-0 min-w-0 flex-1">
           <SessionProvider>
@@ -85,7 +85,7 @@ export default async function DiffPage({
         </main>
 
         <div aria-label="Files" className="md:hidden">
-          <Drawer>{filesPanel}</Drawer>
+          <Drawer>{tree}</Drawer>
         </div>
       </CodeViewProvider>
     </div>

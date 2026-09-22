@@ -1,6 +1,14 @@
 import type {SerializedEditorState} from 'lexical';
 
 import {
+  COMMENT_ID,
+  CREATED_AT,
+  EVENT_ID,
+  SHARE_ID,
+  THREAD_ID,
+  USER_ID,
+} from '@/testing/ids';
+import {
   type Anchor,
   type CommentCreatedPayload,
   type CommentDeletedPayload,
@@ -13,151 +21,159 @@ import {
   type ThreadResolvedPayload,
 } from '@/events/schemas';
 import type {OptimisticEvent, ThreadState} from '@/events/state';
-import {
-  COMMENT_ID,
-  CREATED_AT,
-  EVENT_ID,
-  SHARE_ID,
-  THREAD_ID,
-  USER_ID,
-} from '../ids';
+
+const ACTOR = {
+  actorId: USER_ID,
+  createdAt: CREATED_AT,
+};
+
+export function createThreadOpened(
+  overrides: Partial<ThreadOpenedPayload> = {},
+): ThreadOpenedPayload {
+  const {anchor, ...rest} = overrides;
+
+  return {
+    $type: 'thread.opened',
+    threadId: THREAD_ID,
+    anchor: createAnchor(anchor),
+    ...rest,
+  };
+}
 
 export function createOpenThreadInput(
   overrides: Partial<OpenThreadInput> = {},
-) {
+): OpenThreadInput {
+  const {body, anchor, ...rest} = overrides;
+
   return {
     shareId: SHARE_ID,
     threadId: THREAD_ID,
     commentId: COMMENT_ID,
-    body: createLexicalBody(),
-    anchor: createAnchor(),
-    ...overrides,
-  } satisfies OpenThreadInput;
-}
-
-export function createThreadState(overrides: Partial<ThreadState> = {}) {
-  return {
-    id: THREAD_ID,
-    anchor: createAnchor(),
-    actorId: USER_ID,
-    resolved: false,
-    commentIds: [],
-    createdAt: CREATED_AT,
-    ...overrides,
-  } satisfies ThreadState;
-}
-
-export function createThreadOpened(
-  overrides: Partial<ThreadOpenedPayload> = {},
-) {
-  const {threadId = THREAD_ID, anchor, ...rest} = overrides;
-  return {
-    $type: 'thread.opened',
-    threadId,
+    body: body ?? createLexicalBody(),
     anchor: createAnchor(anchor),
     ...rest,
-  } satisfies ThreadOpenedPayload;
-}
-
-export function createCommentCreated(
-  overrides: Partial<CommentCreatedPayload> = {},
-) {
-  const {
-    threadId = THREAD_ID,
-    commentId = COMMENT_ID,
-    body = createLexicalBody(),
-    ...rest
-  } = overrides;
-  return {
-    $type: 'comment.created',
-    threadId,
-    commentId,
-    body,
-    ...rest,
-  } satisfies CommentCreatedPayload;
-}
-
-export function createCommentEdited(
-  overrides: Partial<CommentEditedPayload> = {},
-) {
-  const {
-    commentId = COMMENT_ID,
-    body = createLexicalBody(),
-    ...rest
-  } = overrides;
-  return {
-    $type: 'comment.edited',
-    commentId,
-    body,
-    ...rest,
-  } satisfies CommentEditedPayload;
+  };
 }
 
 export function createThreadResolved(
   overrides: Partial<ThreadResolvedPayload> = {},
-) {
-  const {threadId = THREAD_ID, ...rest} = overrides;
+): ThreadResolvedPayload {
   return {
     $type: 'thread.resolved',
-    threadId,
+    threadId: THREAD_ID,
+    ...overrides,
+  };
+}
+
+export function createThreadState(
+  overrides: Partial<ThreadState> = {},
+): ThreadState {
+  const {anchor, ...rest} = overrides;
+
+  return {
+    id: THREAD_ID,
+    resolved: false,
+    commentIds: [],
+    anchor: createAnchor(anchor),
+    ...ACTOR,
     ...rest,
-  } satisfies ThreadResolvedPayload;
+  };
+}
+
+export function createCommentCreated(
+  overrides: Partial<CommentCreatedPayload> = {},
+): CommentCreatedPayload {
+  const {body, ...rest} = overrides;
+
+  return {
+    $type: 'comment.created',
+    threadId: THREAD_ID,
+    commentId: COMMENT_ID,
+    body: body ?? createLexicalBody(),
+    ...rest,
+  };
+}
+
+export function createCommentEdited(
+  overrides: Partial<CommentEditedPayload> = {},
+): CommentEditedPayload {
+  const {body, ...rest} = overrides;
+
+  return {
+    $type: 'comment.edited',
+    commentId: COMMENT_ID,
+    body: body ?? createLexicalBody(),
+    ...rest,
+  };
 }
 
 export function createCommentDeleted(
   overrides: Partial<CommentDeletedPayload> = {},
-) {
-  const {commentId = COMMENT_ID, ...rest} = overrides;
+): CommentDeletedPayload {
   return {
     $type: 'comment.deleted',
-    commentId,
-    ...rest,
-  } satisfies CommentDeletedPayload;
+    commentId: COMMENT_ID,
+    ...overrides,
+  };
 }
 
 export function createShareEvent(
   payload: ShareEventPayload,
   overrides: Partial<Omit<ShareEvent, 'type' | 'subjectId' | 'payload'>> = {},
-) {
+): ShareEvent {
   return {
     id: EVENT_ID,
     shareId: SHARE_ID,
     seq: 1,
     type: payload.$type,
     subjectId: subjectIdFromPayload(payload),
-    actorId: USER_ID,
     payload,
-    createdAt: CREATED_AT,
+    ...ACTOR,
     ...overrides,
-  } satisfies ShareEvent;
+  };
 }
 
-export function createOptimisticEvent(
-  payload: ShareEventPayload,
-  overrides: Partial<OptimisticEvent> = {},
-) {
+export function createAnchor(overrides: Partial<Anchor> = {}): Anchor {
   return {
-    actorId: USER_ID,
-    createdAt: CREATED_AT,
-    payload,
+    shareId: SHARE_ID,
+    filePath: 'file.txt',
+    side: 'additions',
+    line: 1,
     ...overrides,
-  } satisfies OptimisticEvent;
+  };
 }
 
 export function createLexicalBody(text = 'value') {
   return {text} as unknown as SerializedEditorState;
 }
 
-export function createAnchor(overrides: Partial<Anchor> = {}) {
-  return {
-    ...DEFAULT_ANCHOR,
+export function createShareEventLog(
+  overrides: Partial<ShareEvent> = {},
+): (...payloads: readonly ShareEventPayload[]) => ShareEvent[] {
+  const meta = {
+    shareId: SHARE_ID,
+    ...ACTOR,
     ...overrides,
-  } satisfies Anchor;
+  };
+  let seq = 0;
+
+  return (...payloads: readonly ShareEventPayload[]): ShareEvent[] =>
+    payloads.map((payload) =>
+      createShareEvent(payload, {
+        id: `event-${++seq}`,
+        seq,
+        ...meta,
+      }),
+    );
 }
 
-const DEFAULT_ANCHOR = {
-  shareId: SHARE_ID,
-  filePath: 'file.txt',
-  side: 'additions',
-  line: 1,
-} as const satisfies Anchor;
+export function createOptimisticEvent(
+  payload: ShareEventPayload,
+  overrides: Partial<OptimisticEvent> = {},
+): OptimisticEvent {
+  return {
+    payload,
+    ...ACTOR,
+    ...overrides,
+  };
+}
