@@ -13,12 +13,12 @@ import {
 
 function annotation(
   overrides: Partial<DiffAnnotation> & Pick<DiffAnnotation, 'metadata'>,
-) {
+): DiffAnnotation {
   return {
     side: 'additions',
     lineNumber: 1,
     ...overrides,
-  } satisfies DiffAnnotation;
+  };
 }
 
 describe('isFormAnnotation', () => {
