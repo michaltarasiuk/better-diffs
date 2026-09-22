@@ -52,10 +52,10 @@ export function createThreadState(
 
   return {
     id: THREAD_ID,
-    resolved: false,
-    commentIds: [],
     anchor: createAnchor(anchor),
     actorId: USER_ID,
+    resolved: false,
+    commentIds: [],
     createdAt: CREATED_AT,
     ...rest,
   };
@@ -137,8 +137,8 @@ export function createShareEvent(
     seq: 1,
     type: payload.$type,
     subjectId: subjectIdFromPayload(payload),
-    payload,
     actorId: USER_ID,
+    payload,
     createdAt: CREATED_AT,
     ...overrides,
   };
@@ -170,9 +170,9 @@ export function createOptimisticEvent(
   overrides: Partial<OptimisticEvent> = {},
 ): OptimisticEvent {
   return {
-    payload,
     actorId: USER_ID,
     createdAt: CREATED_AT,
+    payload,
     ...overrides,
   };
 }
