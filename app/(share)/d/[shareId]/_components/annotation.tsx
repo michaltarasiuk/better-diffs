@@ -61,13 +61,19 @@ export function AddCommentButton({onAddAnnotation}: AddCommentButtonProps) {
 
 interface AnnotationProps {
   readonly annotation: DiffAnnotation;
-  readonly file: File;
+  readonly fileId: string;
+  readonly filePath: string;
   readonly onDismiss: () => void;
 }
 
-export function Annotation({annotation, file, onDismiss}: AnnotationProps) {
+export function Annotation({
+  annotation,
+  fileId,
+  filePath,
+  onDismiss,
+}: AnnotationProps) {
   return (
-    <FileContext value={file}>
+    <FileContext value={{id: fileId, path: filePath}}>
       <AnnotationContext value={annotation}>
         <AnnotationBody onDismiss={onDismiss} />
       </AnnotationContext>
