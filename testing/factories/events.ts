@@ -22,11 +22,6 @@ import {
 } from '@/events/schemas';
 import type {OptimisticEvent, ThreadState} from '@/events/state';
 
-const ACTOR = {
-  actorId: USER_ID,
-  createdAt: CREATED_AT,
-};
-
 export function createThreadOpened(
   overrides: Partial<ThreadOpenedPayload> = {},
 ): ThreadOpenedPayload {
@@ -35,21 +30,6 @@ export function createThreadOpened(
   return {
     $type: 'thread.opened',
     threadId: THREAD_ID,
-    anchor: createAnchor(anchor),
-    ...rest,
-  };
-}
-
-export function createOpenThreadInput(
-  overrides: Partial<OpenThreadInput> = {},
-): OpenThreadInput {
-  const {body, anchor, ...rest} = overrides;
-
-  return {
-    shareId: SHARE_ID,
-    threadId: THREAD_ID,
-    commentId: COMMENT_ID,
-    body: body ?? createLexicalBody(),
     anchor: createAnchor(anchor),
     ...rest,
   };
@@ -75,7 +55,23 @@ export function createThreadState(
     resolved: false,
     commentIds: [],
     anchor: createAnchor(anchor),
-    ...ACTOR,
+    actorId: USER_ID,
+    createdAt: CREATED_AT,
+    ...rest,
+  };
+}
+
+export function createOpenThreadInput(
+  overrides: Partial<OpenThreadInput> = {},
+): OpenThreadInput {
+  const {body, anchor, ...rest} = overrides;
+
+  return {
+    shareId: SHARE_ID,
+    threadId: THREAD_ID,
+    commentId: COMMENT_ID,
+    body: body ?? createLexicalBody(),
+    anchor: createAnchor(anchor),
     ...rest,
   };
 }
@@ -117,22 +113,6 @@ export function createCommentDeleted(
   };
 }
 
-export function createShareEvent(
-  payload: ShareEventPayload,
-  overrides: Partial<Omit<ShareEvent, 'type' | 'subjectId' | 'payload'>> = {},
-): ShareEvent {
-  return {
-    id: EVENT_ID,
-    shareId: SHARE_ID,
-    seq: 1,
-    type: payload.$type,
-    subjectId: subjectIdFromPayload(payload),
-    payload,
-    ...ACTOR,
-    ...overrides,
-  };
-}
-
 export function createAnchor(overrides: Partial<Anchor> = {}): Anchor {
   return {
     shareId: SHARE_ID,
@@ -147,17 +127,35 @@ export function createLexicalBody(text = 'value') {
   return {text} as unknown as SerializedEditorState;
 }
 
+export function createShareEvent(
+  payload: ShareEventPayload,
+  overrides: Partial<ShareEvent> = {},
+): ShareEvent {
+  return {
+    id: EVENT_ID,
+    shareId: SHARE_ID,
+    seq: 1,
+    type: payload.$type,
+    subjectId: subjectIdFromPayload(payload),
+    payload,
+    actorId: USER_ID,
+    createdAt: CREATED_AT,
+    ...overrides,
+  };
+}
+
 export function createShareEventLog(
   overrides: Partial<ShareEvent> = {},
 ): (...payloads: readonly ShareEventPayload[]) => ShareEvent[] {
   const meta = {
     shareId: SHARE_ID,
-    ...ACTOR,
+    actorId: USER_ID,
+    createdAt: CREATED_AT,
     ...overrides,
   };
   let seq = 0;
 
-  return (...payloads: readonly ShareEventPayload[]): ShareEvent[] =>
+  return (...payloads) =>
     payloads.map((payload) =>
       createShareEvent(payload, {
         id: `event-${++seq}`,
@@ -173,7 +171,8 @@ export function createOptimisticEvent(
 ): OptimisticEvent {
   return {
     payload,
-    ...ACTOR,
+    actorId: USER_ID,
+    createdAt: CREATED_AT,
     ...overrides,
   };
 }
