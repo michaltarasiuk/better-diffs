@@ -6,7 +6,7 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import * as storageAvailableModule from '@/utils/storage-available';
 import {useLocalStorage} from './use-local-storage';
 
-const KEY = 'test-preference:v1';
+const KEY = 'preference';
 
 interface Preference {
   theme: 'light' | 'dark';
@@ -59,7 +59,7 @@ describe('useLocalStorage', () => {
     const {result} = renderHook(() => useLocalStorage(KEY, () => ({count: 0})));
 
     act(() => {
-      result.current[1]((prev) => ({count: prev.count + 1}));
+      result.current[1]((i) => ({count: i.count + 1}));
     });
 
     expect(result.current[0]).toEqual({count: 2});

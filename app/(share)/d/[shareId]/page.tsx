@@ -16,7 +16,7 @@ import {
 import {CodeView} from './_components/code-view';
 import {Drawer} from './_components/drawer';
 import {SyncEvents} from './_components/events';
-import {CodeViewProvider} from './_components/provider';
+import {CodeViewProvider, FileStateProvider} from './_components/provider';
 import {Sidebar} from './_components/sidebar';
 import {Stats} from './_components/stats';
 import {Tree} from './_components/tree';
@@ -77,9 +77,11 @@ export default async function DiffPage({
         <main aria-label="Diff" className="min-h-0 min-w-0 flex-1">
           <SessionProvider>
             <Suspense fallback={codeViewSpinner}>
-              <SyncEvents>
-                <CodeView files={orderedFiles} />
-              </SyncEvents>
+              <FileStateProvider>
+                <SyncEvents>
+                  <CodeView files={orderedFiles} />
+                </SyncEvents>
+              </FileStateProvider>
             </Suspense>
           </SessionProvider>
         </main>

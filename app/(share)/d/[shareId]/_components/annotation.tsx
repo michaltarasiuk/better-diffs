@@ -17,7 +17,7 @@ import {type DiffAnnotation, isFormAnnotation} from '@/diffs/annotations';
 import {openThread} from '@/events/actions';
 import {ShareStoreContext} from '@/events/provider';
 import type {Anchor} from '@/events/schemas';
-import {useId} from '../_hooks/use-id';
+import {useShareId} from '../_hooks/use-share-id';
 import {EditorSkeleton} from './editor-skeleton';
 
 function preloadEditor() {
@@ -107,7 +107,7 @@ interface CommentFormProps {
 }
 
 function CommentForm({filePath, onDismiss}: CommentFormProps) {
-  const shareId = useId();
+  const shareId = useShareId();
 
   const session = use(SessionContext);
   if (!isDefined(session)) {

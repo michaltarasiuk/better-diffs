@@ -24,12 +24,10 @@ import {
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
 import {ShareStateContext} from '@/events/provider';
 import type {ThreadState} from '@/events/state';
-import {useFileState} from '../_hooks/use-file-state';
-import {useId} from '../_hooks/use-id';
 import {useLines} from '../_hooks/use-lines';
 import {activeFileId} from '../_lib/active-file-id';
 import {AddCommentButton, Annotation} from './annotation';
-import {HandleContext} from './provider';
+import {FileStateContext, HandleContext} from './provider';
 
 const DEFAULT_THREADS: readonly ThreadState[] = [];
 
@@ -46,8 +44,6 @@ interface CodeViewProps {
 }
 
 export function CodeView({files}: CodeViewProps) {
-  const shareId = useId();
-
   const {
     getFileState,
     toggleFileCollapsed,
@@ -55,7 +51,7 @@ export function CodeView({files}: CodeViewProps) {
     toggleFileViewed,
     addCommentForm,
     removeCommentForm,
-  } = useFileState(shareId);
+  } = use(FileStateContext);
   const {selectedLines, setSelectedLines} = useLines();
 
   const isMobile = useIsMobile();

@@ -50,7 +50,7 @@ export function sortAnnotations<T extends DiffAnnotation>(
   );
 }
 
-type DiffLine = GetHoveredLineResult<'diff'>;
+export type DiffLine = GetHoveredLineResult<'diff'>;
 type HoveredLine = GetHoveredLineResult<'file'> | DiffLine;
 
 export function isDiffLine(line: HoveredLine): line is DiffLine {
