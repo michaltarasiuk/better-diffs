@@ -5,6 +5,7 @@ import {createThreadState} from '@/testing/factories/events';
 import {FORM_ID, SHARE_ID, THREAD_ID, THREAD_ID_SECONDARY} from '@/testing/ids';
 import {
   type DiffAnnotation,
+  type FormAnnotationMetadata,
   isDiffLine,
   isFormAnnotation,
   sortAnnotations,
@@ -55,10 +56,7 @@ describe('isFormAnnotation', () => {
     }
 
     expect(value.metadata.type).toBe('form');
-    expectTypeOf(value.metadata).toEqualTypeOf<{
-      readonly type: 'form';
-      readonly formId: string;
-    }>();
+    expectTypeOf(value.metadata).toEqualTypeOf<FormAnnotationMetadata>();
   });
 });
 

@@ -2,6 +2,7 @@
 
 import {createContext, useRef} from 'react';
 import type {CodeViewHandle} from '@pierre/diffs/react';
+import type {SerializedEditorState} from 'lexical';
 
 import {useLocalStorage} from '@/hooks/use-local-storage';
 import {newId} from '@/utils/new-id';
@@ -133,6 +134,32 @@ function useFileState() {
     }));
   }
 
+  function updateCommentForm(
+    fileId: string,
+    formId: string,
+    update: (state: FormDiffAnnotation) => FormDiffAnnotation,
+  ) {
+    updateFileState(fileId, (state) => ({
+      ...state,
+      commentForms: state.commentForms.map((commentForm) =>
+        commentForm.metadata.formId === formId
+          ? update(commentForm)
+          : commentForm,
+      ),
+    }));
+  }
+
+  function updateCommentFormDraft(
+    fileId: string,
+    formId: string,
+    draft: SerializedEditorState,
+  ) {
+    updateCommentForm(fileId, formId, (state) => ({
+      ...state,
+      metadata: {...state.metadata, draft},
+    }));
+  }
+
   function removeCommentForm(fileId: string, formId: string) {
     updateFileState(fileId, (state) => ({
       ...state,
@@ -148,6 +175,7 @@ function useFileState() {
     setFileViewed,
     toggleFileViewed,
     addCommentForm,
+    updateCommentFormDraft,
     removeCommentForm,
   };
 }

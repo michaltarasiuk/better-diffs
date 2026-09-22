@@ -16,6 +16,7 @@ import {HistoryExtension} from '@lexical/history';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {LexicalExtensionComposer} from '@lexical/react/LexicalExtensionComposer';
+import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import {useExtensionSignalValue} from '@lexical/react/useExtensionSignalValue';
 import {useLexicalIsTextContentEmpty} from '@lexical/react/useLexicalIsTextContentEmpty';
 import {
@@ -124,26 +125,35 @@ function isBlockType(value: string): value is BlockType {
 type OnComment = (body: SerializedEditorState) => void | Promise<unknown>;
 
 interface EditorProps {
-  readonly onComment: OnComment;
-  readonly onDismiss: () => void;
+  readonly initialState?: SerializedEditorState;
+  readonly onComment?: OnComment;
+  readonly onChange?: (state: SerializedEditorState) => void;
+  readonly onDismiss?: () => void;
 }
 
-const editorExtension = defineExtension({
-  name: '@better-diffs/editor',
-  namespace: 'Editor',
-  theme: EDITOR_THEME,
-  dependencies: [RichTextExtension, HistoryExtension],
-  onError(error) {
-    console.error(error);
-  },
-});
+export function Editor({
+  initialState,
+  onComment,
+  onChange,
+  onDismiss,
+}: EditorProps) {
+  const [extension] = useState(() =>
+    defineExtension({
+      name: '@better-diffs/editor',
+      namespace: 'Editor',
+      theme: EDITOR_THEME,
+      dependencies: [RichTextExtension, HistoryExtension],
+      $initialEditorState: isDefined(initialState)
+        ? JSON.stringify(initialState)
+        : undefined,
+      onError(error) {
+        console.error(error);
+      },
+    }),
+  );
 
-export function Editor({onComment, onDismiss}: EditorProps) {
   return (
-    <LexicalExtensionComposer
-      extension={editorExtension}
-      contentEditable={null}
-    >
+    <LexicalExtensionComposer extension={extension} contentEditable={null}>
       <Card variant="secondary" className="@container m-2 mbs-1">
         <Card.Header>
           <RichTextToolbarPlugin />
@@ -172,13 +182,18 @@ export function Editor({onComment, onDismiss}: EditorProps) {
         </Card.Content>
 
         <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
-          <Button variant="ghost" size="sm" onPress={() => onDismiss()}>
+          <Button variant="ghost" size="sm" onPress={() => onDismiss?.()}>
             Cancel
           </Button>
           <SubmitCommentButton onComment={onComment} onDismiss={onDismiss} />
         </Card.Footer>
       </Card>
 
+      <OnChangePlugin
+        onChange={(editorState) => {
+          onChange?.(editorState.toJSON());
+        }}
+      />
       <PreventEscapeBlurPlugin />
     </LexicalExtensionComposer>
   );
@@ -186,7 +201,7 @@ export function Editor({onComment, onDismiss}: EditorProps) {
 
 interface SubmitCommentButtonProps {
   readonly onComment?: OnComment;
-  readonly onDismiss: () => void;
+  readonly onDismiss?: () => void;
 }
 
 function SubmitCommentButton({onComment, onDismiss}: SubmitCommentButtonProps) {
@@ -199,7 +214,7 @@ function SubmitCommentButton({onComment, onDismiss}: SubmitCommentButtonProps) {
       isDisabled={isEmpty}
       onPress={() => {
         const body = editor.getEditorState().toJSON();
-        onDismiss();
+        onDismiss?.();
         void onComment?.(body);
       }}
     >

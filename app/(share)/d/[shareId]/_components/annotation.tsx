@@ -19,6 +19,12 @@ import {ShareStoreContext} from '@/events/provider';
 import type {Anchor} from '@/events/schemas';
 import {useShareId} from '../_hooks/use-share-id';
 import {EditorSkeleton} from './editor-skeleton';
+import {FileStateContext} from './provider';
+
+interface File {
+  readonly id: string;
+  readonly path: string;
+}
 
 function preloadEditor() {
   void import('./editor');
@@ -28,6 +34,8 @@ const Editor = dynamic(
   () => import('./editor').then((module) => module.Editor),
   {loading: () => <EditorSkeleton />},
 );
+
+const FileContext = createContext<File>(null as never);
 
 const AnnotationContext = createContext<DiffAnnotation>(null as never);
 
@@ -53,24 +61,25 @@ export function AddCommentButton({onAddAnnotation}: AddCommentButtonProps) {
 
 interface AnnotationProps {
   readonly annotation: DiffAnnotation;
-  readonly filePath: string;
+  readonly file: File;
   readonly onDismiss: () => void;
 }
 
-export function Annotation({annotation, filePath, onDismiss}: AnnotationProps) {
+export function Annotation({annotation, file, onDismiss}: AnnotationProps) {
   return (
-    <AnnotationContext value={annotation}>
-      <AnnotationBody filePath={filePath} onDismiss={onDismiss} />
-    </AnnotationContext>
+    <FileContext value={file}>
+      <AnnotationContext value={annotation}>
+        <AnnotationBody onDismiss={onDismiss} />
+      </AnnotationContext>
+    </FileContext>
   );
 }
 
 interface AnnotationBodyProps {
-  readonly filePath: string;
-  readonly onDismiss: () => void;
+  readonly onDismiss?: () => void;
 }
 
-function AnnotationBody({filePath, onDismiss}: AnnotationBodyProps) {
+function AnnotationBody({onDismiss}: AnnotationBodyProps) {
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const {focusWithinProps} = useFocusWithin({
     onFocusWithinChange(isFocusWithin) {
@@ -82,14 +91,14 @@ function AnnotationBody({filePath, onDismiss}: AnnotationBodyProps) {
 
   useKeyDown((event) => {
     if (event.key === 'Escape' && metadata.type === 'form' && isFocusWithin) {
-      onDismiss();
+      onDismiss?.();
     }
   });
 
   let annotation: React.ReactNode;
   switch (metadata.type) {
     case 'form':
-      annotation = <CommentForm filePath={filePath} onDismiss={onDismiss} />;
+      annotation = <CommentForm onDismiss={onDismiss} />;
       break;
     case 'thread':
       annotation = <ThreadAnnotation />;
@@ -102,11 +111,10 @@ function AnnotationBody({filePath, onDismiss}: AnnotationBodyProps) {
 }
 
 interface CommentFormProps {
-  readonly filePath: string;
-  readonly onDismiss: () => void;
+  readonly onDismiss?: () => void;
 }
 
-function CommentForm({filePath, onDismiss}: CommentFormProps) {
+function CommentForm({onDismiss}: CommentFormProps) {
   const shareId = useShareId();
 
   const session = use(SessionContext);
@@ -115,6 +123,8 @@ function CommentForm({filePath, onDismiss}: CommentFormProps) {
   }
 
   const store = use(ShareStoreContext);
+  const file = use(FileContext);
+  const fileState = use(FileStateContext);
   const annotation = use(AnnotationContext);
 
   if (!isFormAnnotation(annotation)) {
@@ -123,6 +133,8 @@ function CommentForm({filePath, onDismiss}: CommentFormProps) {
 
   return (
     <Editor
+      key={annotation.metadata.formId}
+      initialState={annotation.metadata.draft}
       onComment={async (body) => {
         const threadId = newId();
         const commentId = newId();
@@ -130,7 +142,7 @@ function CommentForm({filePath, onDismiss}: CommentFormProps) {
         const createdAt = new Date().toISOString();
         const anchor: Anchor = {
           shareId,
-          filePath,
+          filePath: file.path,
           side: annotation.side,
           line: annotation.lineNumber,
         };
@@ -169,13 +181,20 @@ function CommentForm({filePath, onDismiss}: CommentFormProps) {
           store.rejectAll(pendingIds);
         }
       }}
+      onChange={(state) => {
+        fileState.updateCommentFormDraft(
+          file.id,
+          annotation.metadata.formId,
+          state,
+        );
+      }}
       onDismiss={onDismiss}
     />
   );
 }
 
 interface SignInPromptProps {
-  readonly onDismiss: () => void;
+  readonly onDismiss?: () => void;
 }
 
 function SignInPrompt({onDismiss}: SignInPromptProps) {
@@ -200,7 +219,7 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
           id={getLineAnnotationName(annotation) + '-sign-in-cancel'}
           variant="ghost"
           size="sm"
-          onPress={onDismiss}
+          onPress={() => onDismiss?.()}
         >
           Cancel
         </Button>

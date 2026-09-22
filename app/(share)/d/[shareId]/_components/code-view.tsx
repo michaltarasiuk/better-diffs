@@ -137,7 +137,10 @@ export function CodeView({files}: CodeViewProps) {
         isDiffAnnotation<AnnotationMetadata>(annotation) ? (
           <Annotation
             annotation={annotation}
-            filePath={item.fileDiff.name}
+            file={{
+              id: item.id,
+              path: item.fileDiff.name,
+            }}
             onDismiss={() => {
               if (isFormAnnotation(annotation)) {
                 removeCommentForm(item.id, annotation.metadata.formId);
