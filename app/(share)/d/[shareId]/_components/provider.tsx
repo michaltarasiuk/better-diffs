@@ -15,6 +15,8 @@ import {
 import {DiffProvider} from '@/diffs/provider';
 import {useShareId} from '../_hooks/use-share-id';
 
+type Handle = CodeViewHandle<AnnotationMetadata, null>;
+
 interface FileState {
   readonly commentForms: readonly FormDiffAnnotation[];
   readonly collapsed: boolean;
@@ -31,9 +33,9 @@ function defaultFileState(): FileState {
   };
 }
 
-export const HandleContext = createContext<
-  React.RefObject<CodeViewHandle<AnnotationMetadata, null> | null>
->(null as never);
+export const HandleContext = createContext<React.RefObject<Handle | null>>(
+  null as never,
+);
 
 export const FileStateContext = createContext<ReturnType<typeof useFileState>>(
   null as never,
