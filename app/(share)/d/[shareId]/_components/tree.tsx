@@ -17,7 +17,7 @@ import {isEditableTarget} from '@/utils/is-editable-target';
 import {isUnmodifiedKeyDown} from '@/utils/is-unmodified-key-down';
 import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';
 import {useQuery} from '../_hooks/use-query';
-import {HandleContext} from '../_lib/context';
+import {HandleContext} from './provider';
 
 interface TreeProps {
   readonly handoff: TreeHandoff;

@@ -28,8 +28,8 @@ import {useFileState} from '../_hooks/use-file-state';
 import {useId} from '../_hooks/use-id';
 import {useLines} from '../_hooks/use-lines';
 import {activeFileId} from '../_lib/active-file-id';
-import {HandleContext} from '../_lib/context';
 import {AddCommentButton, Annotation} from './annotation';
+import {HandleContext} from './provider';
 
 const DEFAULT_THREADS: readonly ThreadState[] = [];
 

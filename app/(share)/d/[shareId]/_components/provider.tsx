@@ -1,11 +1,14 @@
 'use client';
 
-import {useRef} from 'react';
+import {createContext, useRef} from 'react';
 import type {CodeViewHandle} from '@pierre/diffs/react';
 
 import type {AnnotationMetadata} from '@/diffs/annotations';
 import {DiffProvider} from '@/diffs/provider';
-import {HandleContext} from '../_lib/context';
+
+export const HandleContext = createContext<
+  React.RefObject<CodeViewHandle<AnnotationMetadata, null> | null>
+>({current: null});
 
 export function CodeViewProvider({
   children,
