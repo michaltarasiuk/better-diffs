@@ -257,36 +257,13 @@ export class ShareState {
   }
 
   #mergePending(): FoldedShareState {
-    const threads = new Map(this.threads);
-    const comments = new Map(this.comments);
+    const confirmedThreads = this.threads;
+    const confirmedComments = this.comments;
+
+    const threads = new Map(confirmedThreads);
+    const comments = new Map(confirmedComments);
     const deletedCommentIds = new Set(this.deletedCommentIds);
     const pendingIds = new Set<string>();
-
-    const cloneThread = (threadId: string) => {
-      const thread = threads.get(threadId);
-      if (!isDefined(thread)) {
-        throw new Error(`Thread not found: ${threadId}`);
-      }
-      if (this.threads.get(threadId) === thread) {
-        const cloned = structuredClone(thread);
-        threads.set(threadId, cloned);
-        return cloned;
-      }
-      return thread;
-    };
-
-    const cloneComment = (commentId: string) => {
-      const comment = comments.get(commentId);
-      if (!isDefined(comment)) {
-        throw new Error(`Comment not found: ${commentId}`);
-      }
-      if (this.comments.get(commentId) === comment) {
-        const cloned = structuredClone(comment);
-        comments.set(commentId, cloned);
-        return cloned;
-      }
-      return comment;
-    };
 
     for (const event of this.#pending.values()) {
       const {actorId, createdAt, payload} = event;
@@ -334,10 +311,12 @@ export class ShareState {
           if (!isDefined(comment)) {
             throw new Error(`Comment not found: ${payload.commentId}`);
           }
+
           const thread = cloneThread(comment.threadId);
           thread.commentIds = thread.commentIds.filter(
             (id) => id !== payload.commentId,
           );
+
           comments.delete(payload.commentId);
           deletedCommentIds.add(payload.commentId);
           pendingIds.add(payload.commentId);
@@ -355,6 +334,32 @@ export class ShareState {
       pendingIds,
       version: this.#version,
     };
+
+    function cloneThread(threadId: string) {
+      const thread = threads.get(threadId);
+      if (!isDefined(thread)) {
+        throw new Error(`Thread not found: ${threadId}`);
+      }
+      if (confirmedThreads.get(threadId) === thread) {
+        const cloned = structuredClone(thread);
+        threads.set(threadId, cloned);
+        return cloned;
+      }
+      return thread;
+    }
+
+    function cloneComment(commentId: string) {
+      const comment = comments.get(commentId);
+      if (!isDefined(comment)) {
+        throw new Error(`Comment not found: ${commentId}`);
+      }
+      if (confirmedComments.get(commentId) === comment) {
+        const cloned = structuredClone(comment);
+        comments.set(commentId, cloned);
+        return cloned;
+      }
+      return comment;
+    }
   }
 
   #assertOptimistic(event: OptimisticEvent) {
@@ -459,6 +464,7 @@ export class ShareState {
 
     for (const event of this.#pending.values()) {
       const {payload} = event;
+
       if (
         isType('comment.created', payload) &&
         payload.commentId === commentId
