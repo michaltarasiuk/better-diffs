@@ -128,14 +128,14 @@ function CommentForm({onDismiss}: CommentFormProps) {
     return <SignInPrompt onDismiss={onDismiss} />;
   }
 
-  const store = use(ShareStoreContext);
-  const file = use(FileContext);
-  const fileState = use(FileStateContext);
   const annotation = use(AnnotationContext);
-
   if (!isFormAnnotation(annotation)) {
     throw new TypeError('Annotation is not a form');
   }
+
+  const store = use(ShareStoreContext);
+  const file = use(FileContext);
+  const fileState = use(FileStateContext);
 
   return (
     <Editor

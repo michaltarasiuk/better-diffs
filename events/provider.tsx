@@ -15,10 +15,9 @@ import type {FoldedShareState} from './state';
 import {EMPTY_FOLDED_STATE, ShareState} from './state';
 import {hydrateShareEvents, type ShareEventsSync} from './sync';
 
-export const ShareStateContext =
-  createContext<FoldedShareState>(EMPTY_FOLDED_STATE);
-
 export const ShareStoreContext = createContext<ShareState>(null as never);
+
+export const ShareStateContext = createContext<FoldedShareState>(null as never);
 
 export function ShareEventsProvider({
   shareId,
@@ -33,14 +32,14 @@ export function ShareEventsProvider({
 
   return (
     <ErrorBoundary resetKeys={[shareId, hydratePromise]} fallback={null}>
-      <SyncedShareState hydratePromise={hydratePromise}>
+      <HydratedShareEvents hydratePromise={hydratePromise}>
         {children}
-      </SyncedShareState>
+      </HydratedShareEvents>
     </ErrorBoundary>
   );
 }
 
-function SyncedShareState({
+function HydratedShareEvents({
   hydratePromise,
   children,
 }: {
@@ -49,13 +48,13 @@ function SyncedShareState({
 }) {
   const {events, sync} = use(hydratePromise);
   return (
-    <ShareStateProvider events={events} sync={sync}>
+    <ShareStoreProvider events={events} sync={sync}>
       {children}
-    </ShareStateProvider>
+    </ShareStoreProvider>
   );
 }
 
-function ShareStateProvider({
+function ShareStoreProvider({
   events,
   sync,
   children,

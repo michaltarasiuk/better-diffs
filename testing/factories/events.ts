@@ -144,23 +144,18 @@ export function createShareEvent(
   };
 }
 
-export function createShareEventLog(
-  overrides: Partial<ShareEvent> = {},
-): (...payloads: readonly ShareEventPayload[]) => ShareEvent[] {
-  const meta = {
-    shareId: SHARE_ID,
-    actorId: USER_ID,
-    createdAt: CREATED_AT,
-    ...overrides,
-  };
+export function createShareEventLog(overrides: Partial<ShareEvent> = {}) {
   let seq = 0;
 
-  return (...payloads) =>
+  return (...payloads: readonly ShareEventPayload[]) =>
     payloads.map((payload) =>
       createShareEvent(payload, {
         id: `event-${++seq}`,
         seq,
-        ...meta,
+        shareId: SHARE_ID,
+        actorId: USER_ID,
+        createdAt: CREATED_AT,
+        ...overrides,
       }),
     );
 }
