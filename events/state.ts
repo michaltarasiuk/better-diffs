@@ -289,6 +289,7 @@ export class ShareState {
         }
         case 'comment.created': {
           const thread = cloneThread(payload.threadId);
+          thread.commentIds.push(payload.commentId);
           comments.set(payload.commentId, {
             id: payload.commentId,
             threadId: payload.threadId,
@@ -296,7 +297,6 @@ export class ShareState {
             body: payload.body,
             createdAt,
           });
-          thread.commentIds.push(payload.commentId);
           pendingIds.add(payload.commentId);
           break;
         }
@@ -499,12 +499,11 @@ export class ShareState {
   }
 
   #isCommentDeleted(commentId: string) {
-    const commentDeleted = this.deletedCommentIds.has(commentId);
-    if (commentDeleted) {
+    if (this.deletedCommentIds.has(commentId)) {
       return true;
     }
 
-    let seenCreate = this.comments.has(commentId);
+    let created = this.comments.has(commentId);
     for (const event of this.#pending.values()) {
       const {payload} = event;
 
@@ -512,11 +511,11 @@ export class ShareState {
         isType('comment.created', payload) &&
         payload.commentId === commentId
       ) {
-        seenCreate = true;
+        created = true;
       } else if (
         isType('comment.deleted', payload) &&
         payload.commentId === commentId &&
-        seenCreate
+        created
       ) {
         return true;
       }
