@@ -3,7 +3,12 @@
 import {createContext, use, useState} from 'react';
 import dynamic from 'next/dynamic';
 import {Button, Card, Spinner} from '@heroui/react';
+import {typographyVariants} from '@heroui/styles';
+import {ContentEditable} from '@lexical/react/LexicalContentEditable';
+import {LexicalExtensionComposer} from '@lexical/react/LexicalExtensionComposer';
+import {RichTextExtension} from '@lexical/rich-text';
 import {getLineAnnotationName} from '@pierre/diffs';
+import {defineExtension, type SerializedEditorState} from 'lexical';
 import {PlusIcon} from 'lucide-react';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
@@ -13,11 +18,16 @@ import {newId} from '@/utils/new-id';
 import {authClient} from '@/auth/client';
 import {SessionContext} from '@/auth/context';
 import {GitHubIcon} from '@/auth/icon';
-import {type DiffAnnotation, isFormAnnotation} from '@/diffs/annotations';
+import {
+  type DiffAnnotation,
+  isFormAnnotation,
+  isThreadAnnotation,
+} from '@/diffs/annotations';
 import {openThread} from '@/events/actions';
-import {ShareStoreContext} from '@/events/provider';
+import {ShareStateContext, ShareStoreContext} from '@/events/provider';
 import type {Anchor} from '@/events/schemas';
 import {useShareId} from '../_hooks/use-share-id';
+import {EDITOR_THEME} from '../_lib/editor-theme';
 import {EditorSkeleton} from './editor-skeleton';
 import {FileStateContext} from './provider';
 
@@ -59,19 +69,19 @@ export function AddCommentButton({onAddAnnotation}: AddCommentButtonProps) {
   );
 }
 
-interface AnnotationProps {
+interface DiffAnnotationProps {
   readonly annotation: DiffAnnotation;
   readonly fileId: string;
   readonly filePath: string;
   readonly onDismiss: () => void;
 }
 
-export function Annotation({
+export function DiffAnnotation({
   annotation,
   fileId,
   filePath,
   onDismiss,
-}: AnnotationProps) {
+}: DiffAnnotationProps) {
   return (
     <FileContext value={{id: fileId, path: filePath}}>
       <AnnotationContext value={annotation}>
@@ -263,5 +273,60 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
 }
 
 function ThreadAnnotation() {
-  return <div>Thread Annotation</div>;
+  const annotation = use(AnnotationContext);
+  if (!isThreadAnnotation(annotation)) {
+    throw new TypeError('Annotation is not a thread');
+  }
+
+  const state = use(ShareStateContext);
+
+  const thread = state.threads.get(annotation.metadata.threadId);
+  if (!isDefined(thread)) {
+    throw new Error(`Thread not found: ${annotation.metadata.threadId}`);
+  }
+
+  const comments = thread.commentIds
+    .map((commentId) => state.comments.get(commentId))
+    .filter((comment) => isDefined(comment));
+
+  return (
+    <Card variant="secondary" className="m-2 mbs-1">
+      {comments.map((comment) => (
+        <CommentBody key={comment.id} state={comment.body} />
+      ))}
+    </Card>
+  );
+}
+
+interface CommentBodyProps {
+  readonly state: SerializedEditorState;
+}
+
+function CommentBody({state}: CommentBodyProps) {
+  const [extension] = useState(() =>
+    defineExtension({
+      name: '@better-diffs/comment-body',
+      namespace: 'CommentBody',
+      theme: EDITOR_THEME,
+      dependencies: [RichTextExtension],
+      editable: false,
+      $initialEditorState: JSON.stringify(state),
+      onError(error) {
+        console.error(error);
+      },
+    }),
+  );
+
+  return (
+    <LexicalExtensionComposer extension={extension} contentEditable={null}>
+      <div className="relative block w-full rounded-field px-3 py-2">
+        <ContentEditable
+          aria-label="Comment body"
+          className={typographyVariants({type: 'body-sm'}).base({
+            className: 'w-full outline-none',
+          })}
+        />
+      </div>
+    </LexicalExtensionComposer>
+  );
 }

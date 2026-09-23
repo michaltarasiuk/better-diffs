@@ -26,7 +26,7 @@ import {ShareStateContext} from '@/events/provider';
 import type {ThreadState} from '@/events/state';
 import {useLines} from '../_hooks/use-lines';
 import {activeFileId} from '../_lib/active-file-id';
-import {AddCommentButton, Annotation} from './annotation';
+import {AddCommentButton, DiffAnnotation} from './annotation';
 import {FileStateContext, HandleContext} from './provider';
 
 const DEFAULT_THREADS: readonly ThreadState[] = [];
@@ -132,21 +132,29 @@ export function CodeView({files}: CodeViewProps) {
           }}
         />
       )}
-      renderAnnotation={(annotation, item) =>
-        item.type === 'diff' &&
-        isDiffAnnotation<AnnotationMetadata>(annotation) ? (
-          <Annotation
-            annotation={annotation}
-            fileId={item.id}
-            filePath={item.fileDiff.name}
-            onDismiss={() => {
-              if (isFormAnnotation(annotation)) {
-                removeCommentForm(item.id, annotation.metadata.formId);
-              }
-            }}
-          />
-        ) : null
-      }
+      renderAnnotation={(annotation, item) => {
+        switch (item.type) {
+          case 'diff':
+            if (!isDiffAnnotation<AnnotationMetadata>(annotation)) {
+              throw new Error('Invalid diff annotation');
+            }
+            return (
+              <DiffAnnotation
+                annotation={annotation}
+                fileId={item.id}
+                filePath={item.fileDiff.name}
+                onDismiss={() => {
+                  if (isFormAnnotation(annotation)) {
+                    removeCommentForm(item.id, annotation.metadata.formId);
+                  }
+                }}
+              />
+            );
+
+          default:
+            throw new Error(`Unexpected item type: ${item.type}`);
+        }
+      }}
       options={{
         ...CODE_VIEW_OPTIONS,
         diffStyle: isMobile ? 'unified' : 'split',

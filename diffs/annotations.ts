@@ -19,6 +19,7 @@ export type AnnotationMetadata =
 
 export type DiffAnnotation = DiffLineAnnotation<AnnotationMetadata>;
 export type FormDiffAnnotation = DiffLineAnnotation<FormAnnotationMetadata>;
+export type ThreadDiffAnnotation = DiffLineAnnotation<ThreadAnnotationMetadata>;
 
 export type DiffLine = GetHoveredLineResult<'diff'>;
 export type HoveredLine = GetHoveredLineResult<'file'> | DiffLine;
@@ -27,6 +28,12 @@ export function isFormAnnotation(
   annotation: DiffAnnotation,
 ): annotation is FormDiffAnnotation {
   return annotation.metadata.type === 'form';
+}
+
+export function isThreadAnnotation(
+  annotation: DiffAnnotation,
+): annotation is ThreadDiffAnnotation {
+  return annotation.metadata.type === 'thread';
 }
 
 export function toThreadAnnotation(thread: ThreadState): DiffAnnotation {
