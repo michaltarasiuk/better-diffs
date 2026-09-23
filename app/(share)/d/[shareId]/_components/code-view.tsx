@@ -150,7 +150,6 @@ export function CodeView({files}: CodeViewProps) {
                 }}
               />
             );
-
           default:
             throw new Error(`Unexpected item type: ${item.type}`);
         }
