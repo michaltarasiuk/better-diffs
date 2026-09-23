@@ -24,6 +24,7 @@ import type {Anchor} from '@/events/schemas';
 import {useShareId} from '../_hooks/use-share-id';
 import {EditorSkeleton} from './editor-skeleton';
 import {FileStateContext} from './provider';
+import {ReadonlyEditor} from './readonly-editor';
 
 interface File {
   readonly id: string;
@@ -37,10 +38,6 @@ function preloadEditor() {
 const Editor = dynamic(
   () => import('./editor').then((module) => module.Editor),
   {loading: () => <EditorSkeleton />},
-);
-
-const ReadonlyEditor = dynamic(() =>
-  import('./editor').then((module) => module.ReadonlyEditor),
 );
 
 const FileContext = createContext<File>(null as never);

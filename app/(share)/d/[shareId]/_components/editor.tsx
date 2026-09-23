@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useEffectEvent, useState} from 'react';
+import {startTransition, useEffect, useEffectEvent, useState} from 'react';
 import {
   Button,
   ButtonGroup,
@@ -11,7 +11,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@heroui/react';
-import {cn, typographyVariants} from '@heroui/styles';
+import {typographyVariants} from '@heroui/styles';
 import {HistoryExtension} from '@lexical/history';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
@@ -34,7 +34,6 @@ import {
   $isRootOrShadowRoot,
   COMMAND_PRIORITY_BEFORE_EDITOR,
   defineExtension,
-  type EditorThemeClasses,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
   KEY_ESCAPE_COMMAND,
@@ -57,23 +56,7 @@ import {
 } from 'lucide-react';
 
 import {isDefined} from '@/utils/is-defined';
-
-const EDITOR_THEME = {
-  heading: {
-    h1: typographyVariants({type: 'h4'}).base(),
-    h2: typographyVariants({type: 'h5'}).base(),
-    h3: typographyVariants({type: 'h6'}).base(),
-  },
-  paragraph: typographyVariants({type: 'body-sm'}).base(),
-  quote: cn('border-border text-muted border-s-4 ps-4 italic'),
-  text: {
-    bold: cn('font-semibold text-foreground'),
-    italic: cn('italic'),
-    underline: cn('underline'),
-    strikethrough: cn('line-through'),
-    underlineStrikethrough: cn('underline-strikethroug'),
-  },
-} satisfies EditorThemeClasses;
+import {EDITOR_THEME} from '../_lib/editor-theme';
 
 const BLOCK_TYPES = [
   {label: 'Normal', value: 'paragraph'},
@@ -199,39 +182,6 @@ export function Editor({
   );
 }
 
-interface ReadonlyEditorProps {
-  readonly initialState: SerializedEditorState;
-}
-
-export function ReadonlyEditor({initialState}: ReadonlyEditorProps) {
-  const [extension] = useState(() =>
-    defineExtension({
-      name: '@better-diffs/readonly-editor',
-      namespace: 'ReadonlyEditor',
-      theme: EDITOR_THEME,
-      dependencies: [RichTextExtension],
-      editable: false,
-      $initialEditorState: JSON.stringify(initialState),
-      onError(error) {
-        console.error(error);
-      },
-    }),
-  );
-
-  return (
-    <LexicalExtensionComposer extension={extension} contentEditable={null}>
-      <div className="relative block w-full rounded-field px-3 py-2">
-        <ContentEditable
-          aria-label="Comment"
-          className={typographyVariants({type: 'body-sm'}).base({
-            className: 'w-full outline-none',
-          })}
-        />
-      </div>
-    </LexicalExtensionComposer>
-  );
-}
-
 interface SubmitCommentButtonProps {
   readonly onComment?: OnComment;
   readonly onDismiss?: () => void;
@@ -248,7 +198,9 @@ function SubmitCommentButton({onComment, onDismiss}: SubmitCommentButtonProps) {
       onPress={() => {
         const body = editor.getEditorState().toJSON();
         onDismiss?.();
-        void onComment?.(body);
+        startTransition(() => {
+          void onComment?.(body);
+        });
       }}
     >
       Comment
