@@ -65,11 +65,10 @@ describe('ingest', () => {
     expect(state.comments.get(COMMENT_ID)).toMatchObject({
       threadId: THREAD_ID,
       body: createLexicalBody('value'),
-      deleted: false,
     });
   });
 
-  it('applies comment edits before deletions', () => {
+  it('removes comments after deletions', () => {
     const log = createShareEventLog();
     const state = new ShareState();
 
@@ -82,10 +81,23 @@ describe('ingest', () => {
       ),
     );
 
-    expect(state.comments.get(COMMENT_ID)).toMatchObject({
-      body: createLexicalBody('value-2'),
-      deleted: true,
-    });
+    expect(state.comments.has(COMMENT_ID)).toBe(false);
+    expect(state.deletedCommentIds.has(COMMENT_ID)).toBe(true);
+    expect(state.threads.get(THREAD_ID)?.commentIds).toEqual([]);
+  });
+
+  it('applies comment edits before deletions', () => {
+    const log = createShareEventLog();
+    const state = new ShareState();
+
+    state.ingest(log(createThreadOpened(), createCommentCreated()));
+    state.ingest(
+      log(createCommentEdited({body: createLexicalBody('value-2')})),
+    );
+
+    expect(state.comments.get(COMMENT_ID)?.body).toEqual(
+      createLexicalBody('value-2'),
+    );
   });
 
   it('applies thread resolutions after comment changes', () => {
@@ -123,10 +135,7 @@ describe('ingest', () => {
 
     state.ingest([first!]);
 
-    expect(() => state.ingest([first!])).toThrow(RangeError);
-    expect(() => state.ingest([first!])).toThrow(
-      /Event seq \d+ is not after latest \d+/,
-    );
+    expect(() => state.ingest([first!])).toThrow(/Invalid event seq:/);
   });
 });
 
@@ -135,12 +144,12 @@ describe('ingest invariants', () => {
     {
       name: 'a comment on an unknown thread',
       payloads: [createCommentCreated()],
-      error: /Comment on unknown thread/,
+      error: /Thread not found/,
     },
     {
       name: 'reopening a thread',
       payloads: [createThreadOpened(), createThreadOpened()],
-      error: /Thread already opened/,
+      error: /Thread already exists/,
     },
     {
       name: 'editing a deleted comment',
@@ -247,6 +256,16 @@ describe('getSnapshot', () => {
     expect(state.getSnapshot().comments).toBe(state.comments);
   });
 
+  it('exposes the live deleted comment ids while nothing is pending', () => {
+    const log = createShareEventLog();
+    const state = new ShareState();
+    state.ingest(
+      log(createThreadOpened(), createCommentCreated(), createCommentDeleted()),
+    );
+
+    expect(state.getSnapshot().deletedCommentIds).toBe(state.deletedCommentIds);
+  });
+
   it('reports no pending ids while nothing is pending', () => {
     const log = createShareEventLog();
     const state = new ShareState();
@@ -316,7 +335,7 @@ describe('optimistic', () => {
 
     expect(() =>
       state.optimistic(createOptimisticEvent(createThreadOpened())),
-    ).toThrow(/Thread already opened/);
+    ).toThrow(/Thread already exists/);
   });
 
   it('rejects a comment on an unknown optimistic thread', () => {
@@ -327,7 +346,7 @@ describe('optimistic', () => {
       state.optimistic(
         createOptimisticEvent(createCommentCreated({threadId: MISSING_ID})),
       ),
-    ).toThrow(/Comment on unknown thread/);
+    ).toThrow(/Thread not found/);
   });
 
   it('leaves confirmed thread ids untouched by optimistic updates', () => {
@@ -559,14 +578,15 @@ describe('optimistic', () => {
 });
 
 describe('optimistic deletions', () => {
-  it('marks an unconfirmed deletion in the snapshot', () => {
+  it('removes an unconfirmed deletion from the snapshot', () => {
     const log = createShareEventLog();
     const state = new ShareState();
     state.ingest(log(createThreadOpened(), createCommentCreated()));
 
     state.optimistic(createOptimisticEvent(createCommentDeleted()));
 
-    expect(state.getSnapshot().comments.get(COMMENT_ID)?.deleted).toBe(true);
+    expect(state.getSnapshot().comments.has(COMMENT_ID)).toBe(false);
+    expect(state.getSnapshot().deletedCommentIds.has(COMMENT_ID)).toBe(true);
   });
 
   it('marks an unconfirmed deletion as pending', () => {
@@ -579,14 +599,15 @@ describe('optimistic deletions', () => {
     expect(state.getSnapshot().pendingIds.has(COMMENT_ID)).toBe(true);
   });
 
-  it('leaves confirmed comments undeleted in the snapshot', () => {
+  it('leaves confirmed comments in place while a deletion is pending', () => {
     const log = createShareEventLog();
     const state = new ShareState();
     state.ingest(log(createThreadOpened(), createCommentCreated()));
 
     state.optimistic(createOptimisticEvent(createCommentDeleted()));
 
-    expect(state.comments.get(COMMENT_ID)?.deleted).toBe(false);
+    expect(state.comments.has(COMMENT_ID)).toBe(true);
+    expect(state.deletedCommentIds.has(COMMENT_ID)).toBe(false);
   });
 
   it('stacks a pending edit and deletion in the snapshot', () => {
@@ -608,10 +629,9 @@ describe('optimistic deletions', () => {
     );
     state.optimistic(createOptimisticEvent(createCommentDeleted()));
 
-    expect(state.getSnapshot().comments.get(COMMENT_ID)).toMatchObject({
-      body: createLexicalBody('v2'),
-      deleted: true,
-    });
+    expect(state.getSnapshot().comments.has(COMMENT_ID)).toBe(false);
+    expect(state.getSnapshot().deletedCommentIds.has(COMMENT_ID)).toBe(true);
+    expect(state.getSnapshot().threads.get(THREAD_ID)?.commentIds).toEqual([]);
   });
 
   it('leaves confirmed comments unchanged while edits and deletions stack', () => {
@@ -633,10 +653,10 @@ describe('optimistic deletions', () => {
     );
     state.optimistic(createOptimisticEvent(createCommentDeleted()));
 
-    expect(state.comments.get(COMMENT_ID)).toMatchObject({
-      body: createLexicalBody('v1'),
-      deleted: false,
-    });
+    expect(state.comments.get(COMMENT_ID)?.body).toEqual(
+      createLexicalBody('v1'),
+    );
+    expect(state.deletedCommentIds.has(COMMENT_ID)).toBe(false);
   });
 
   it('refuses to delete a comment twice across pending events', () => {
@@ -714,7 +734,7 @@ describe('optimistic events building on pending ones', () => {
 
     expect(() =>
       state.optimistic(createOptimisticEvent(createCommentCreated())),
-    ).toThrow(/Comment already created/);
+    ).toThrow(/Comment already exists/);
   });
 
   it.each([
@@ -891,7 +911,7 @@ describe('reconciliation', () => {
     expect(state.getSnapshot().pendingIds.size).toBe(0);
   });
 
-  it('marks a comment deleted when comment.deleted is confirmed', () => {
+  it('removes a confirmed comment when comment.deleted is confirmed', () => {
     const log = createShareEventLog();
     const state = new ShareState();
     state.ingest(log(createThreadOpened(), createCommentCreated()));
@@ -899,7 +919,8 @@ describe('reconciliation', () => {
 
     state.ingest(log(createCommentDeleted()));
 
-    expect(state.comments.get(COMMENT_ID)?.deleted).toBe(true);
+    expect(state.comments.has(COMMENT_ID)).toBe(false);
+    expect(state.deletedCommentIds.has(COMMENT_ID)).toBe(true);
   });
 
   it('keeps a pending resolve when another thread is resolved', () => {
@@ -1071,6 +1092,24 @@ describe('foldEvents', () => {
     expect(snapshot.threads.get(THREAD_ID)).toMatchObject({
       resolved: true,
       commentIds: [COMMENT_ID],
+    });
+  });
+
+  it('drops deleted comments from folded thread state', () => {
+    const snapshot = foldEvents(
+      createShareEventLog()(
+        createThreadOpened(),
+        createCommentCreated(),
+        createCommentDeleted(),
+        createThreadResolved(),
+      ),
+    );
+
+    expect(snapshot.comments.has(COMMENT_ID)).toBe(false);
+    expect(snapshot.deletedCommentIds.has(COMMENT_ID)).toBe(true);
+    expect(snapshot.threads.get(THREAD_ID)).toMatchObject({
+      resolved: true,
+      commentIds: [],
     });
   });
 

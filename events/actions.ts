@@ -20,9 +20,7 @@ export async function openThread(input: OpenThreadInput) {
   const {shareId, threadId, commentId, body, anchor} = input;
 
   if (anchor.shareId !== shareId) {
-    throw new TypeError(
-      `Anchor shareId ${anchor.shareId} does not match ${shareId}`,
-    );
+    throw new TypeError(`Invalid anchor share id: ${anchor.shareId}`);
   }
 
   return appendEvents(shareId, session.user.id, [

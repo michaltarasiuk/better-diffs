@@ -28,9 +28,19 @@ Use imperative mood, sentence case, no trailing period. Start with a capital ver
 
 ## Error messages
 
-Sentence case with a leading capital, no trailing period, no `Error:` prefix; the thrower already supplies that context. State what is wrong rather than what the caller should have done: `Thread already resolved`, not `You cannot resolve this twice`.
+Follow the style used in [inlay](https://tangled.org/danabra.mov/inlay): sentence case with a leading capital, no trailing period, no `Error:` prefix. State what is wrong rather than what the caller should have done (`Thread already resolved: ${threadId}`, not `You cannot resolve this twice`). Throw with `new Error(\`…\`)` at the call site; do not wrap messages in helpers.
 
-When a message names a record, append the identifier after a colon: `Comment not found: ${commentId}`. Omit it only when there is nothing useful to attach. API responses use the same casing as a noun phrase describing the rejected input (`Invalid patches`, `Unauthorized`) because the text reaches the client verbatim.
+When a message names a record, append the identifier after a colon. Omit the suffix only when there is nothing useful to attach:
+
+| Situation              | Pattern                           | Example                                 |
+| ---------------------- | --------------------------------- | --------------------------------------- |
+| Missing record         | `<Entity> not found: ${id}`       | `Comment not found: ${commentId}`       |
+| Duplicate record       | `<Entity> already exists: ${id}`  | `Thread already exists: ${threadId}`    |
+| Record in wrong state  | `<Entity> already <state>: ${id}` | `Comment already deleted: ${commentId}` |
+| Bad field or reference | `Invalid <field>: ${id}`          | `Invalid event seq: ${event.seq}`       |
+| Bad whole input        | `Invalid <input>`                 | `Invalid open thread input`             |
+
+API responses use the same casing as a noun phrase describing the rejected input (`Invalid patches`, `Unauthorized`) because the text reaches the client verbatim.
 
 Errors constructed as test fixtures are opaque values, not messages, so they need none of this.
 

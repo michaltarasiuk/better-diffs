@@ -75,9 +75,7 @@ describe('openThread', () => {
           }),
         }),
       ),
-    ).rejects.toThrow(
-      `Anchor shareId ${SHARE_ID_SECONDARY} does not match ${SHARE_ID}`,
-    );
+    ).rejects.toThrow(`Invalid anchor share id: ${SHARE_ID_SECONDARY}`);
 
     expect(appendEvents).not.toHaveBeenCalled();
   });
