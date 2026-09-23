@@ -3,12 +3,7 @@
 import {createContext, use, useState} from 'react';
 import dynamic from 'next/dynamic';
 import {Button, Card, Spinner} from '@heroui/react';
-import {typographyVariants} from '@heroui/styles';
-import {ContentEditable} from '@lexical/react/LexicalContentEditable';
-import {LexicalExtensionComposer} from '@lexical/react/LexicalExtensionComposer';
-import {RichTextExtension} from '@lexical/rich-text';
 import {getLineAnnotationName} from '@pierre/diffs';
-import {defineExtension, type SerializedEditorState} from 'lexical';
 import {PlusIcon} from 'lucide-react';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
@@ -27,7 +22,6 @@ import {openThread} from '@/events/actions';
 import {ShareStateContext, ShareStoreContext} from '@/events/provider';
 import type {Anchor} from '@/events/schemas';
 import {useShareId} from '../_hooks/use-share-id';
-import {EDITOR_THEME} from '../_lib/editor-theme';
 import {EditorSkeleton} from './editor-skeleton';
 import {FileStateContext} from './provider';
 
@@ -43,6 +37,10 @@ function preloadEditor() {
 const Editor = dynamic(
   () => import('./editor').then((module) => module.Editor),
   {loading: () => <EditorSkeleton />},
+);
+
+const ReadonlyEditor = dynamic(() =>
+  import('./editor').then((module) => module.ReadonlyEditor),
 );
 
 const FileContext = createContext<File>(null as never);
@@ -292,41 +290,8 @@ function ThreadAnnotation() {
   return (
     <Card variant="secondary" className="m-2 mbs-1">
       {comments.map((comment) => (
-        <CommentBody key={comment.id} state={comment.body} />
+        <ReadonlyEditor key={comment.id} initialState={comment.body} />
       ))}
     </Card>
-  );
-}
-
-interface CommentBodyProps {
-  readonly state: SerializedEditorState;
-}
-
-function CommentBody({state}: CommentBodyProps) {
-  const [extension] = useState(() =>
-    defineExtension({
-      name: '@better-diffs/comment-body',
-      namespace: 'CommentBody',
-      theme: EDITOR_THEME,
-      dependencies: [RichTextExtension],
-      editable: false,
-      $initialEditorState: JSON.stringify(state),
-      onError(error) {
-        console.error(error);
-      },
-    }),
-  );
-
-  return (
-    <LexicalExtensionComposer extension={extension} contentEditable={null}>
-      <div className="relative block w-full rounded-field px-3 py-2">
-        <ContentEditable
-          aria-label="Comment body"
-          className={typographyVariants({type: 'body-sm'}).base({
-            className: 'w-full outline-none',
-          })}
-        />
-      </div>
-    </LexicalExtensionComposer>
   );
 }
