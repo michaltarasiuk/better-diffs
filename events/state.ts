@@ -278,18 +278,21 @@ export class ShareState {
             commentIds: [],
             createdAt,
           });
+
           pendingIds.add(payload.threadId);
           break;
         }
         case 'thread.resolved': {
           const thread = cloneThread(payload.threadId);
           thread.resolved = true;
+
           pendingIds.add(payload.threadId);
           break;
         }
         case 'comment.created': {
           const thread = cloneThread(payload.threadId);
           thread.commentIds.push(payload.commentId);
+
           comments.set(payload.commentId, {
             id: payload.commentId,
             threadId: payload.threadId,
@@ -303,6 +306,7 @@ export class ShareState {
         case 'comment.edited': {
           const comment = cloneComment(payload.commentId);
           comment.body = payload.body;
+
           pendingIds.add(payload.commentId);
           break;
         }
