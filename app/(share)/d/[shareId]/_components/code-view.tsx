@@ -109,6 +109,7 @@ export function CodeView({files}: CodeViewProps) {
         const collapsed = getFileState(item.id).collapsed;
         return (
           <CollapseButton
+            key={item.id}
             collapsed={collapsed}
             onToggleCollapsed={() => toggleFileCollapsed(item.id)}
           />
@@ -217,12 +218,7 @@ function ViewedCheckbox({viewed, onViewedChange}: ViewedCheckboxProps) {
           </Checkbox.Content>
         </Checkbox>
       </Focusable>
-      <Tooltip.Content
-        showArrow
-        placement="top"
-        className="flex items-center gap-2"
-      >
-        <Tooltip.Arrow />
+      <Tooltip.Content placement="left" className="flex items-center gap-2">
         Viewed by me
         <Kbd>
           <Kbd.Content>v</Kbd.Content>
