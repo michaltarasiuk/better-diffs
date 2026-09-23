@@ -9,7 +9,7 @@ import {
   createShareEventLog,
   createThreadOpened,
   createThreadResolved,
-} from '@/testing/factories/events';
+} from '@/testing/events';
 import {
   COMMENT_ID,
   COMMENT_ID_SECONDARY,

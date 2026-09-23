@@ -23,18 +23,10 @@ import {
 } from '@/diffs/annotations';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
 import {ShareStateContext} from '@/events/provider';
-import type {ThreadState} from '@/events/state';
 import {useLines} from '../_hooks/use-lines';
 import {activeFileId} from '../_lib/active-file-id';
 import {AddCommentButton, DiffAnnotation} from './annotation';
 import {FileStateContext, HandleContext} from './provider';
-
-const DEFAULT_THREADS: readonly ThreadState[] = [];
-
-const CODE_VIEW_STYLE = {
-  height: '100%',
-  overflow: 'auto',
-} satisfies React.CSSProperties;
 
 interface CodeViewProps {
   readonly files: readonly {
@@ -81,11 +73,15 @@ export function CodeView({files}: CodeViewProps) {
 
     event.preventDefault();
     toggleFileViewed(fileId);
-    codeView.scrollTo({type: 'item', id: fileId, align: 'start'});
+    codeView.scrollTo({
+      type: 'item',
+      id: fileId,
+      align: 'start',
+    });
   });
 
   function getThreadsForPath(filePath: string) {
-    return threadsByFilePath.get(filePath) ?? DEFAULT_THREADS;
+    return threadsByFilePath.get(filePath) ?? [];
   }
 
   return (
@@ -109,18 +105,24 @@ export function CodeView({files}: CodeViewProps) {
       })}
       selectedLines={selectedLines}
       onSelectedLinesChange={setSelectedLines}
-      renderHeaderPrefix={(item) => (
-        <CollapseButton
-          collapsed={getFileState(item.id).collapsed}
-          onToggleCollapsed={() => toggleFileCollapsed(item.id)}
-        />
-      )}
-      renderHeaderMetadata={(item) => (
-        <ViewedCheckbox
-          viewed={getFileState(item.id).viewed}
-          onViewedChange={(viewed) => setFileViewed(item.id, viewed)}
-        />
-      )}
+      renderHeaderPrefix={(item) => {
+        const collapsed = getFileState(item.id).collapsed;
+        return (
+          <CollapseButton
+            collapsed={collapsed}
+            onToggleCollapsed={() => toggleFileCollapsed(item.id)}
+          />
+        );
+      }}
+      renderHeaderMetadata={(item) => {
+        const viewed = getFileState(item.id).viewed;
+        return (
+          <ViewedCheckbox
+            viewed={viewed}
+            onViewedChange={(viewed) => setFileViewed(item.id, viewed)}
+          />
+        );
+      }}
       renderGutterUtility={(getHoveredLine, item) => (
         <AddCommentButton
           onAddAnnotation={() => {
@@ -133,44 +135,44 @@ export function CodeView({files}: CodeViewProps) {
         />
       )}
       renderAnnotation={(annotation, item) => {
-        switch (item.type) {
-          case 'diff':
-            if (!isDiffAnnotation<AnnotationMetadata>(annotation)) {
-              throw new Error('Invalid diff annotation');
-            }
-            return (
-              <DiffAnnotation
-                annotation={annotation}
-                fileId={item.id}
-                filePath={item.fileDiff.name}
-                onDismiss={() => {
-                  if (isFormAnnotation(annotation)) {
-                    removeCommentForm(item.id, annotation.metadata.formId);
-                  }
-                }}
-              />
-            );
-          default:
-            throw new Error(`Unexpected item type: ${item.type}`);
+        if (
+          item.type !== 'diff' ||
+          !isDiffAnnotation<AnnotationMetadata>(annotation)
+        ) {
+          throw new Error(`Unexpected item type: ${item.type}`);
         }
+        return (
+          <DiffAnnotation
+            annotation={annotation}
+            fileId={item.id}
+            filePath={item.fileDiff.name}
+            onDismiss={() => {
+              if (isFormAnnotation(annotation)) {
+                removeCommentForm(item.id, annotation.metadata.formId);
+              }
+            }}
+          />
+        );
       }}
       options={{
         ...CODE_VIEW_OPTIONS,
         diffStyle: isMobile ? 'unified' : 'split',
       }}
-      style={CODE_VIEW_STYLE}
+      style={{
+        height: '100%',
+        overflow: 'auto',
+      }}
       className="outline-none"
     />
   );
 }
 
-function CollapseButton({
-  collapsed,
-  onToggleCollapsed,
-}: {
+interface CollapseButtonProps {
   readonly collapsed: boolean;
   readonly onToggleCollapsed: () => void;
-}) {
+}
+
+function CollapseButton({collapsed, onToggleCollapsed}: CollapseButtonProps) {
   return (
     <Button
       aria-expanded={!collapsed}
@@ -191,13 +193,12 @@ function CollapseButton({
   );
 }
 
-function ViewedCheckbox({
-  viewed,
-  onViewedChange,
-}: {
+interface ViewedCheckboxProps {
   readonly viewed: boolean;
   readonly onViewedChange: (viewed: boolean) => void;
-}) {
+}
+
+function ViewedCheckbox({viewed, onViewedChange}: ViewedCheckboxProps) {
   return (
     <Tooltip>
       <Focusable>

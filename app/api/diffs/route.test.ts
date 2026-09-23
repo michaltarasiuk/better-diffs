@@ -2,7 +2,7 @@ import {NextRequest} from 'next/server';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
-import {UNIFIED_DIFF} from '@/testing/fixtures/diffs';
+import {UNIFIED_DIFF} from '@/testing/diffs';
 import {SHARE_ID} from '@/testing/ids';
 import {OPTIONS, POST} from './route';
 

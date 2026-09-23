@@ -2,10 +2,7 @@ import {NextRequest} from 'next/server';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
-import {
-  createShareEvent,
-  createThreadResolved,
-} from '@/testing/factories/events';
+import {createShareEvent, createThreadResolved} from '@/testing/events';
 import {SHARE_ID} from '@/testing/ids';
 import {GET} from './route';
 

@@ -4,7 +4,7 @@ import {
   createLexicalBody,
   createShareEvent,
   createThreadResolved,
-} from '@/testing/factories/events';
+} from '@/testing/events';
 import {COMMENT_ID, SHARE_ID, SHARE_ID_SECONDARY} from '@/testing/ids';
 import {
   clearEvents,
