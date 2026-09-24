@@ -1,13 +1,6 @@
 import type {SerializedEditorState} from 'lexical';
 
-import {
-  COMMENT_ID,
-  CREATED_AT,
-  EVENT_ID,
-  SHARE_ID,
-  THREAD_ID,
-  USER_ID,
-} from '@/testing/ids';
+import {uuid} from '@/testkit/uuid';
 import {
   type Anchor,
   type CommentCreatedPayload,
@@ -22,6 +15,8 @@ import {
 } from '@/events/schemas';
 import type {OptimisticEvent, ThreadState} from '@/events/state';
 
+const CREATED_AT = '2026-01-01T00:00:00.000Z';
+
 export function createThreadOpened(
   overrides: Partial<ThreadOpenedPayload> = {},
 ): ThreadOpenedPayload {
@@ -29,7 +24,7 @@ export function createThreadOpened(
 
   return {
     $type: 'thread.opened',
-    threadId: THREAD_ID,
+    threadId: uuid(),
     anchor: createAnchor(anchor),
     ...rest,
   };
@@ -40,7 +35,7 @@ export function createThreadResolved(
 ): ThreadResolvedPayload {
   return {
     $type: 'thread.resolved',
-    threadId: THREAD_ID,
+    threadId: uuid(),
     ...overrides,
   };
 }
@@ -51,9 +46,9 @@ export function createThreadState(
   const {anchor, ...rest} = overrides;
 
   return {
-    id: THREAD_ID,
+    id: uuid(),
     anchor: createAnchor(anchor),
-    actorId: USER_ID,
+    actorId: uuid(),
     resolved: false,
     commentIds: [],
     createdAt: CREATED_AT,
@@ -64,14 +59,15 @@ export function createThreadState(
 export function createOpenThreadInput(
   overrides: Partial<OpenThreadInput> = {},
 ): OpenThreadInput {
-  const {body, anchor, ...rest} = overrides;
+  const {body, anchor, shareId: shareIdOverride, ...rest} = overrides;
+  const shareId = shareIdOverride ?? uuid();
 
   return {
-    shareId: SHARE_ID,
-    threadId: THREAD_ID,
-    commentId: COMMENT_ID,
+    shareId,
+    threadId: uuid(),
+    commentId: uuid(),
     body: body ?? createLexicalBody(),
-    anchor: createAnchor(anchor),
+    anchor: createAnchor({shareId, ...anchor}),
     ...rest,
   };
 }
@@ -83,8 +79,8 @@ export function createCommentCreated(
 
   return {
     $type: 'comment.created',
-    threadId: THREAD_ID,
-    commentId: COMMENT_ID,
+    threadId: uuid(),
+    commentId: uuid(),
     body: body ?? createLexicalBody(),
     ...rest,
   };
@@ -97,7 +93,7 @@ export function createCommentEdited(
 
   return {
     $type: 'comment.edited',
-    commentId: COMMENT_ID,
+    commentId: uuid(),
     body: body ?? createLexicalBody(),
     ...rest,
   };
@@ -108,14 +104,14 @@ export function createCommentDeleted(
 ): CommentDeletedPayload {
   return {
     $type: 'comment.deleted',
-    commentId: COMMENT_ID,
+    commentId: uuid(),
     ...overrides,
   };
 }
 
 export function createAnchor(overrides: Partial<Anchor> = {}): Anchor {
   return {
-    shareId: SHARE_ID,
+    shareId: uuid(),
     filePath: 'file.txt',
     side: 'additions',
     line: 1,
@@ -132,12 +128,12 @@ export function createShareEvent(
   overrides: Partial<ShareEvent> = {},
 ): ShareEvent {
   return {
-    id: EVENT_ID,
-    shareId: SHARE_ID,
+    id: uuid(),
+    shareId: uuid(),
     seq: 1,
     type: payload.$type,
     subjectId: subjectIdFromPayload(payload),
-    actorId: USER_ID,
+    actorId: uuid(),
     payload,
     createdAt: CREATED_AT,
     ...overrides,
@@ -146,15 +142,18 @@ export function createShareEvent(
 
 export function createShareEventLog(overrides: Partial<ShareEvent> = {}) {
   let seq = 0;
+  const shareId = overrides.shareId ?? uuid();
+  const actorId = overrides.actorId ?? uuid();
+  const createdAt = overrides.createdAt ?? CREATED_AT;
 
   return (...payloads: readonly ShareEventPayload[]) =>
     payloads.map((payload) =>
       createShareEvent(payload, {
-        id: `event-${++seq}`,
-        seq,
-        shareId: SHARE_ID,
-        actorId: USER_ID,
-        createdAt: CREATED_AT,
+        id: uuid(),
+        seq: ++seq,
+        shareId,
+        actorId,
+        createdAt,
         ...overrides,
       }),
     );
@@ -165,7 +164,7 @@ export function createOptimisticEvent(
   overrides: Partial<OptimisticEvent> = {},
 ): OptimisticEvent {
   return {
-    actorId: USER_ID,
+    actorId: uuid(),
     createdAt: CREATED_AT,
     payload,
     ...overrides,

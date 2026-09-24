@@ -1,8 +1,8 @@
 import type {GetHoveredLineResult} from '@pierre/diffs';
 import {describe, expect, expectTypeOf, it} from 'vitest';
 
-import {createThreadState} from '@/testing/events';
-import {FORM_ID, SHARE_ID, THREAD_ID, THREAD_ID_SECONDARY} from '@/testing/ids';
+import {createThreadState} from '@/testkit/events';
+import {uuid} from '@/testkit/uuid';
 import {
   type DiffAnnotation,
   type FormAnnotationMetadata,
@@ -29,7 +29,10 @@ describe('isFormAnnotation', () => {
         annotation({
           side: 'deletions',
           lineNumber: 2,
-          metadata: {type: 'form', formId: FORM_ID},
+          metadata: {
+            type: 'form',
+            formId: uuid(),
+          },
         }),
       ),
     ).toBe(true);
@@ -41,7 +44,7 @@ describe('isFormAnnotation', () => {
         annotation({
           metadata: {
             type: 'thread',
-            threadId: THREAD_ID,
+            threadId: uuid(),
           },
         }),
       ),
@@ -49,7 +52,12 @@ describe('isFormAnnotation', () => {
   });
 
   it('narrows the type when the check passes', () => {
-    const value = annotation({metadata: {type: 'form', formId: FORM_ID}});
+    const value = annotation({
+      metadata: {
+        type: 'form',
+        formId: uuid(),
+      },
+    });
 
     if (!isFormAnnotation(value)) {
       throw new Error('Expected form annotation');
@@ -62,24 +70,21 @@ describe('isFormAnnotation', () => {
 
 describe('toThreadAnnotation', () => {
   it('maps thread anchor and id to a diff annotation', () => {
-    expect(
-      toThreadAnnotation(
-        createThreadState({
-          id: THREAD_ID_SECONDARY,
-          anchor: {
-            shareId: SHARE_ID,
-            filePath: 'b.txt',
-            side: 'deletions',
-            line: 12,
-          },
-        }),
-      ),
-    ).toEqual({
+    const thread = createThreadState({
+      anchor: {
+        shareId: uuid(),
+        filePath: 'b.txt',
+        side: 'deletions',
+        line: 12,
+      },
+    });
+
+    expect(toThreadAnnotation(thread)).toEqual({
       side: 'deletions',
       lineNumber: 12,
       metadata: {
         type: 'thread',
-        threadId: THREAD_ID_SECONDARY,
+        threadId: thread.id,
       },
     });
   });
@@ -94,20 +99,26 @@ describe('sortAnnotations', () => {
     const first = annotation({
       side: 'additions',
       lineNumber: 1,
-      metadata: {type: 'form', formId: FORM_ID},
+      metadata: {
+        type: 'form',
+        formId: uuid(),
+      },
     });
     const second = annotation({
       side: 'deletions',
       lineNumber: 3,
       metadata: {
         type: 'thread',
-        threadId: THREAD_ID,
+        threadId: uuid(),
       },
     });
     const third = annotation({
       side: 'additions',
       lineNumber: 2,
-      metadata: {type: 'form', formId: FORM_ID},
+      metadata: {
+        type: 'form',
+        formId: uuid(),
+      },
     });
 
     expect(sortAnnotations([second, third, first])).toEqual([
@@ -121,14 +132,17 @@ describe('sortAnnotations', () => {
     const additions = annotation({
       side: 'additions',
       lineNumber: 4,
-      metadata: {type: 'form', formId: FORM_ID},
+      metadata: {
+        type: 'form',
+        formId: uuid(),
+      },
     });
     const deletions = annotation({
       side: 'deletions',
       lineNumber: 4,
       metadata: {
         type: 'thread',
-        threadId: THREAD_ID,
+        threadId: uuid(),
       },
     });
 
@@ -143,12 +157,18 @@ describe('sortAnnotations', () => {
       annotation({
         side: 'additions',
         lineNumber: 2,
-        metadata: {type: 'form', formId: FORM_ID},
+        metadata: {
+          type: 'form',
+          formId: uuid(),
+        },
       }),
       annotation({
         side: 'additions',
         lineNumber: 1,
-        metadata: {type: 'form', formId: FORM_ID},
+        metadata: {
+          type: 'form',
+          formId: uuid(),
+        },
       }),
     ];
 

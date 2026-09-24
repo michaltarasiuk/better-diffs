@@ -9,93 +9,101 @@ import {
   createShareEventLog,
   createThreadOpened,
   createThreadResolved,
-} from '@/testing/events';
-import {
-  COMMENT_ID,
-  COMMENT_ID_SECONDARY,
-  MISSING_ID,
-  THREAD_ID,
-  THREAD_ID_SECONDARY,
-  USER_ID,
-} from '@/testing/ids';
+} from '@/testkit/events';
+import {uuid} from '@/testkit/uuid';
 import type {CommentCreatedPayload, ShareEventPayload} from './schemas';
 import {foldEvents, isType, ShareState} from './state';
+
+function thread() {
+  const opened = createThreadOpened();
+  const {threadId} = opened;
+
+  return {
+    opened,
+    threadId,
+    comment(...[overrides]: Parameters<typeof createCommentCreated>) {
+      return createCommentCreated({threadId, ...overrides});
+    },
+    edited(commentId: string, text: string) {
+      return createCommentEdited({
+        commentId,
+        body: createLexicalBody(text),
+      });
+    },
+    deleted(commentId: string) {
+      return createCommentDeleted({commentId});
+    },
+    resolved() {
+      return createThreadResolved({threadId});
+    },
+  };
+}
 
 describe('ingest', () => {
   it('folds a thread from its events', () => {
     const log = createShareEventLog();
     const state = new ShareState();
+    const t = thread();
+    const first = t.comment({body: createLexicalBody('value')});
+    const second = t.comment();
+    const events = log(t.opened, first, second);
 
-    state.ingest(
-      log(
-        createThreadOpened(),
-        createCommentCreated({
-          body: createLexicalBody('value'),
-        }),
-        createCommentCreated({
-          commentId: COMMENT_ID_SECONDARY,
-        }),
-      ),
-    );
+    state.ingest(events);
 
-    expect(state.threads.get(THREAD_ID)).toMatchObject({
-      id: THREAD_ID,
-      actorId: USER_ID,
+    expect(state.threads.get(t.threadId)).toMatchObject({
+      id: t.threadId,
+      actorId: events[0]!.actorId,
       resolved: false,
-      commentIds: [COMMENT_ID, COMMENT_ID_SECONDARY],
+      commentIds: [first.commentId, second.commentId],
     });
   });
 
   it('folds comments from their events', () => {
     const log = createShareEventLog();
     const state = new ShareState();
+    const t = thread();
+    const first = t.comment({body: createLexicalBody('value')});
+    const second = t.comment();
 
-    state.ingest(
-      log(
-        createThreadOpened(),
-        createCommentCreated({
-          body: createLexicalBody('value'),
-        }),
-        createCommentCreated({
-          commentId: COMMENT_ID_SECONDARY,
-        }),
-      ),
-    );
+    state.ingest(log(t.opened, first, second));
 
-    expect(state.comments.get(COMMENT_ID)).toMatchObject({
-      threadId: THREAD_ID,
+    expect(state.comments.get(first.commentId)).toMatchObject({
+      threadId: t.threadId,
       body: createLexicalBody('value'),
     });
+    expect(state.comments.has(second.commentId)).toBe(true);
   });
 
   it('removes comments after deletions', () => {
     const log = createShareEventLog();
     const state = new ShareState();
+    const t = thread();
+    const created = t.comment();
 
-    state.ingest(log(createThreadOpened(), createCommentCreated()));
+    state.ingest(log(t.opened, created));
     state.ingest(
       log(
-        createCommentEdited({body: createLexicalBody('value-2')}),
-        createCommentDeleted(),
-        createThreadResolved(),
+        t.edited(created.commentId, 'value-2'),
+        t.deleted(created.commentId),
+        t.resolved(),
       ),
     );
 
-    expect(state.comments.has(COMMENT_ID)).toBe(false);
-    expect(state.deletedCommentIds.has(COMMENT_ID)).toBe(true);
-    expect(state.threads.get(THREAD_ID)?.commentIds).toEqual([]);
+    expect(state.comments.has(created.commentId)).toBe(false);
+    expect(state.deletedCommentIds.has(created.commentId)).toBe(true);
+    expect(state.threads.get(t.threadId)?.commentIds).toEqual([]);
   });
 
   it('applies comment edits before deletions', () => {
     const log = createShareEventLog();
     const state = new ShareState();
+    const t = thread();
+    const created = t.comment();
 
-    state.ingest(log(createThreadOpened(), createCommentCreated()));
-    state.ingest(
-      log(createCommentEdited({body: createLexicalBody('value-2')})),
-    );
+    state.ingest(log(t.opened, created));
+    state.ingest(log(t.edited(created.commentId, 'value-2')));
 
-    expect(state.comments.get(COMMENT_ID)?.body).toEqual(
+    expect(state.comments.get(created.commentId)?.body).toEqual(
       createLexicalBody('value-2'),
     );
   });
@@ -103,17 +111,19 @@ describe('ingest', () => {
   it('applies thread resolutions after comment changes', () => {
     const log = createShareEventLog();
     const state = new ShareState();
+    const t = thread();
+    const created = t.comment();
 
-    state.ingest(log(createThreadOpened(), createCommentCreated()));
+    state.ingest(log(t.opened, created));
     state.ingest(
       log(
-        createCommentEdited({body: createLexicalBody('value-2')}),
-        createCommentDeleted(),
-        createThreadResolved(),
+        t.edited(created.commentId, 'value-2'),
+        t.deleted(created.commentId),
+        t.resolved(),
       ),
     );
 
-    expect(state.threads.get(THREAD_ID)?.resolved).toBe(true);
+    expect(state.threads.get(t.threadId)?.resolved).toBe(true);
   });
 
   it('reports false when nothing was applied', () => {
@@ -143,38 +153,44 @@ describe('ingest invariants', () => {
   it.each([
     {
       name: 'a comment on an unknown thread',
-      payloads: [createCommentCreated()],
+      payloads: () => [createCommentCreated()],
       error: /Thread not found/,
     },
     {
       name: 'reopening a thread',
-      payloads: [createThreadOpened(), createThreadOpened()],
+      payloads: () => {
+        const opened = createThreadOpened();
+        return [opened, createThreadOpened({threadId: opened.threadId})];
+      },
       error: /Thread already exists/,
     },
     {
       name: 'editing a deleted comment',
-      payloads: [
-        createThreadOpened(),
-        createCommentCreated(),
-        createCommentDeleted(),
-        createCommentEdited({body: createLexicalBody('value')}),
-      ],
+      payloads: () => {
+        const t = thread();
+        const created = t.comment();
+        return [
+          t.opened,
+          created,
+          t.deleted(created.commentId),
+          t.edited(created.commentId, 'value'),
+        ];
+      },
       error: /Comment already deleted/,
     },
     {
       name: 'resolving a resolved thread',
-      payloads: [
-        createThreadOpened(),
-        createThreadResolved(),
-        createThreadResolved(),
-      ],
+      payloads: () => {
+        const t = thread();
+        return [t.opened, t.resolved(), t.resolved()];
+      },
       error: /Thread already resolved/,
     },
   ])('rejects $name', ({payloads, error}) => {
     const log = createShareEventLog();
     const state = new ShareState();
 
-    expect(() => state.ingest(log(...payloads))).toThrow(error);
+    expect(() => state.ingest(log(...payloads()))).toThrow(error);
   });
 });
 
@@ -216,11 +232,7 @@ describe('getSnapshot', () => {
     state.ingest(log(createThreadOpened()));
 
     const afterIngest = state.getSnapshot();
-    state.optimistic(
-      createOptimisticEvent(
-        createThreadOpened({threadId: THREAD_ID_SECONDARY}),
-      ),
-    );
+    state.optimistic(createOptimisticEvent(createThreadOpened()));
 
     expect(state.getSnapshot()).not.toBe(afterIngest);
   });
@@ -231,11 +243,7 @@ describe('getSnapshot', () => {
     state.ingest(log(createThreadOpened()));
 
     const afterIngest = state.getSnapshot();
-    state.optimistic(
-      createOptimisticEvent(
-        createThreadOpened({threadId: THREAD_ID_SECONDARY}),
-      ),
-    );
+    state.optimistic(createOptimisticEvent(createThreadOpened()));
 
     expect(state.getSnapshot().version).toBeGreaterThan(afterIngest.version);
   });
@@ -259,9 +267,9 @@ describe('getSnapshot', () => {
   it('exposes the live deleted comment ids while nothing is pending', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(
-      log(createThreadOpened(), createCommentCreated(), createCommentDeleted()),
-    );
+    const t = thread();
+    const created = t.comment();
+    state.ingest(log(t.opened, created, t.deleted(created.commentId)));
 
     expect(state.getSnapshot().deletedCommentIds).toBe(state.deletedCommentIds);
   });
@@ -286,55 +294,64 @@ describe('optimistic', () => {
 
   it('surfaces an optimistic thread in the snapshot', () => {
     const state = new ShareState();
+    const opened = createThreadOpened();
 
-    state.optimistic(createOptimisticEvent(createThreadOpened()));
+    state.optimistic(createOptimisticEvent(opened));
 
-    expect(state.getSnapshot().threads.get(THREAD_ID)).toMatchObject({
-      id: THREAD_ID,
+    expect(state.getSnapshot().threads.get(opened.threadId)).toMatchObject({
+      id: opened.threadId,
     });
   });
 
   it('marks an optimistic thread as pending', () => {
     const state = new ShareState();
+    const opened = createThreadOpened();
 
-    state.optimistic(createOptimisticEvent(createThreadOpened()));
+    state.optimistic(createOptimisticEvent(opened));
 
-    expect(state.getSnapshot().pendingIds.has(THREAD_ID)).toBe(true);
+    expect(state.getSnapshot().pendingIds.has(opened.threadId)).toBe(true);
   });
 
   it('leaves confirmed threads untouched by optimistic updates', () => {
     const state = new ShareState();
+    const opened = createThreadOpened();
 
-    state.optimistic(createOptimisticEvent(createThreadOpened()));
+    state.optimistic(createOptimisticEvent(opened));
 
-    expect(state.threads.has(THREAD_ID)).toBe(false);
+    expect(state.threads.has(opened.threadId)).toBe(false);
   });
 
   it('accepts a follow-up pending event on an optimistic thread', () => {
     const state = new ShareState();
-    state.optimistic(createOptimisticEvent(createThreadOpened()));
+    const t = thread();
+    state.optimistic(createOptimisticEvent(t.opened));
 
     expect(() =>
-      state.optimistic(createOptimisticEvent(createCommentCreated())),
+      state.optimistic(createOptimisticEvent(t.comment())),
     ).not.toThrow();
   });
 
   it('surfaces a follow-up pending comment in the snapshot', () => {
     const state = new ShareState();
-    state.optimistic(createOptimisticEvent(createThreadOpened()));
-    state.optimistic(createOptimisticEvent(createCommentCreated()));
+    const t = thread();
+    const created = t.comment();
+    state.optimistic(createOptimisticEvent(t.opened));
+    state.optimistic(createOptimisticEvent(created));
 
-    expect(state.getSnapshot().comments.get(COMMENT_ID)).toMatchObject({
-      threadId: THREAD_ID,
+    expect(state.getSnapshot().comments.get(created.commentId)).toMatchObject({
+      threadId: t.threadId,
     });
   });
 
   it('rejects reopening an optimistic thread', () => {
     const state = new ShareState();
-    state.optimistic(createOptimisticEvent(createThreadOpened()));
+    const opened = createThreadOpened();
+    state.optimistic(createOptimisticEvent(opened));
 
     expect(() =>
-      state.optimistic(createOptimisticEvent(createThreadOpened())),
+      state.optimistic(
+        createOptimisticEvent(createThreadOpened({threadId: opened.threadId})),
+      ),
     ).toThrow(/Thread already exists/);
   });
 
@@ -344,7 +361,7 @@ describe('optimistic', () => {
 
     expect(() =>
       state.optimistic(
-        createOptimisticEvent(createCommentCreated({threadId: MISSING_ID})),
+        createOptimisticEvent(createCommentCreated({threadId: uuid()})),
       ),
     ).toThrow(/Thread not found/);
   });
@@ -352,53 +369,34 @@ describe('optimistic', () => {
   it('leaves confirmed thread ids untouched by optimistic updates', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(
-      log(
-        createThreadOpened(),
-        createCommentCreated({
-          body: createLexicalBody('value-1'),
-        }),
-      ),
+    const t = thread();
+    const created = t.comment({body: createLexicalBody('value-1')});
+    const pending = t.comment();
+    state.ingest(log(t.opened, created));
+
+    state.optimistic(createOptimisticEvent(pending));
+    state.optimistic(
+      createOptimisticEvent(t.edited(created.commentId, 'value-2')),
     );
 
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentCreated({commentId: COMMENT_ID_SECONDARY}),
-      ),
-    );
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentEdited({body: createLexicalBody('value-2')}),
-      ),
-    );
-
-    expect(state.threads.get(THREAD_ID)?.commentIds).toEqual([COMMENT_ID]);
+    expect(state.threads.get(t.threadId)?.commentIds).toEqual([
+      created.commentId,
+    ]);
   });
 
   it('leaves confirmed comment bodies untouched by optimistic updates', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(
-      log(
-        createThreadOpened(),
-        createCommentCreated({
-          body: createLexicalBody('value-1'),
-        }),
-      ),
+    const t = thread();
+    const created = t.comment({body: createLexicalBody('value-1')});
+    state.ingest(log(t.opened, created));
+
+    state.optimistic(createOptimisticEvent(t.comment()));
+    state.optimistic(
+      createOptimisticEvent(t.edited(created.commentId, 'value-2')),
     );
 
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentCreated({commentId: COMMENT_ID_SECONDARY}),
-      ),
-    );
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentEdited({body: createLexicalBody('value-2')}),
-      ),
-    );
-
-    expect(state.comments.get(COMMENT_ID)?.body).toEqual(
+    expect(state.comments.get(created.commentId)?.body).toEqual(
       createLexicalBody('value-1'),
     );
   });
@@ -406,56 +404,35 @@ describe('optimistic', () => {
   it('surfaces optimistic thread changes only in the snapshot', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(
-      log(
-        createThreadOpened(),
-        createCommentCreated({
-          body: createLexicalBody('value-1'),
-        }),
-      ),
+    const t = thread();
+    const created = t.comment({body: createLexicalBody('value-1')});
+    const pending = t.comment();
+    state.ingest(log(t.opened, created));
+
+    state.optimistic(createOptimisticEvent(pending));
+    state.optimistic(
+      createOptimisticEvent(t.edited(created.commentId, 'value-2')),
     );
 
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentCreated({commentId: COMMENT_ID_SECONDARY}),
-      ),
-    );
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentEdited({body: createLexicalBody('value-2')}),
-      ),
-    );
-
-    expect(state.getSnapshot().threads.get(THREAD_ID)?.commentIds).toEqual([
-      COMMENT_ID,
-      COMMENT_ID_SECONDARY,
+    expect(state.getSnapshot().threads.get(t.threadId)?.commentIds).toEqual([
+      created.commentId,
+      pending.commentId,
     ]);
   });
 
   it('surfaces optimistic comment edits only in the snapshot', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(
-      log(
-        createThreadOpened(),
-        createCommentCreated({
-          body: createLexicalBody('value-1'),
-        }),
-      ),
+    const t = thread();
+    const created = t.comment({body: createLexicalBody('value-1')});
+    state.ingest(log(t.opened, created));
+
+    state.optimistic(createOptimisticEvent(t.comment()));
+    state.optimistic(
+      createOptimisticEvent(t.edited(created.commentId, 'value-2')),
     );
 
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentCreated({commentId: COMMENT_ID_SECONDARY}),
-      ),
-    );
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentEdited({body: createLexicalBody('value-2')}),
-      ),
-    );
-
-    expect(state.getSnapshot().comments.get(COMMENT_ID)?.body).toEqual(
+    expect(state.getSnapshot().comments.get(created.commentId)?.body).toEqual(
       createLexicalBody('value-2'),
     );
   });
@@ -463,34 +440,28 @@ describe('optimistic', () => {
   it('reuses untouched threads instead of copying them', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(
-      log(
-        createThreadOpened(),
-        createThreadOpened({threadId: THREAD_ID_SECONDARY}),
-      ),
-    );
+    const t = thread();
+    const other = thread();
+    state.ingest(log(t.opened, other.opened));
 
-    state.optimistic(createOptimisticEvent(createThreadResolved()));
+    state.optimistic(createOptimisticEvent(t.resolved()));
 
-    expect(state.getSnapshot().threads.get(THREAD_ID_SECONDARY)).toBe(
-      state.threads.get(THREAD_ID_SECONDARY),
+    expect(state.getSnapshot().threads.get(other.threadId)).toBe(
+      state.threads.get(other.threadId),
     );
   });
 
   it('copies threads that change during optimistic updates', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(
-      log(
-        createThreadOpened(),
-        createThreadOpened({threadId: THREAD_ID_SECONDARY}),
-      ),
-    );
+    const t = thread();
+    const other = thread();
+    state.ingest(log(t.opened, other.opened));
 
-    state.optimistic(createOptimisticEvent(createThreadResolved()));
+    state.optimistic(createOptimisticEvent(t.resolved()));
 
-    expect(state.getSnapshot().threads.get(THREAD_ID)).not.toBe(
-      state.threads.get(THREAD_ID),
+    expect(state.getSnapshot().threads.get(t.threadId)).not.toBe(
+      state.threads.get(t.threadId),
     );
   });
 
@@ -505,13 +476,12 @@ describe('optimistic', () => {
 
   it('removes a rejected pending thread from the snapshot', () => {
     const state = new ShareState();
-    const pendingId = state.optimistic(
-      createOptimisticEvent(createThreadOpened()),
-    );
+    const opened = createThreadOpened();
+    const pendingId = state.optimistic(createOptimisticEvent(opened));
 
     state.reject(pendingId);
 
-    expect(state.getSnapshot().threads.has(THREAD_ID)).toBe(false);
+    expect(state.getSnapshot().threads.has(opened.threadId)).toBe(false);
   });
 
   it('returns false when rejecting an unknown pending id', () => {
@@ -540,20 +510,24 @@ describe('optimistic', () => {
 
   it('returns every pending id from rejectAll', () => {
     const state = new ShareState();
+    const t = thread();
+    const created = t.comment();
 
     expect(
       state.optimisticAll([
-        createOptimisticEvent(createThreadOpened()),
-        createOptimisticEvent(createCommentCreated()),
+        createOptimisticEvent(t.opened),
+        createOptimisticEvent(created),
       ]),
     ).toHaveLength(2);
   });
 
   it('clears every pending id with rejectAll', () => {
     const state = new ShareState();
+    const t = thread();
+    const created = t.comment();
     const pendingIds = state.optimisticAll([
-      createOptimisticEvent(createThreadOpened()),
-      createOptimisticEvent(createCommentCreated()),
+      createOptimisticEvent(t.opened),
+      createOptimisticEvent(created),
     ]);
 
     state.rejectAll(pendingIds);
@@ -581,104 +555,98 @@ describe('optimistic deletions', () => {
   it('removes an unconfirmed deletion from the snapshot', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(log(createThreadOpened(), createCommentCreated()));
+    const t = thread();
+    const created = t.comment();
+    state.ingest(log(t.opened, created));
 
-    state.optimistic(createOptimisticEvent(createCommentDeleted()));
+    state.optimistic(createOptimisticEvent(t.deleted(created.commentId)));
 
-    expect(state.getSnapshot().comments.has(COMMENT_ID)).toBe(false);
-    expect(state.getSnapshot().deletedCommentIds.has(COMMENT_ID)).toBe(true);
+    expect(state.getSnapshot().comments.has(created.commentId)).toBe(false);
+    expect(state.getSnapshot().deletedCommentIds.has(created.commentId)).toBe(
+      true,
+    );
   });
 
   it('marks an unconfirmed deletion as pending', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(log(createThreadOpened(), createCommentCreated()));
+    const t = thread();
+    const created = t.comment();
+    state.ingest(log(t.opened, created));
 
-    state.optimistic(createOptimisticEvent(createCommentDeleted()));
+    state.optimistic(createOptimisticEvent(t.deleted(created.commentId)));
 
-    expect(state.getSnapshot().pendingIds.has(COMMENT_ID)).toBe(true);
+    expect(state.getSnapshot().pendingIds.has(created.commentId)).toBe(true);
   });
 
   it('leaves confirmed comments in place while a deletion is pending', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(log(createThreadOpened(), createCommentCreated()));
+    const t = thread();
+    const created = t.comment();
+    state.ingest(log(t.opened, created));
 
-    state.optimistic(createOptimisticEvent(createCommentDeleted()));
+    state.optimistic(createOptimisticEvent(t.deleted(created.commentId)));
 
-    expect(state.comments.has(COMMENT_ID)).toBe(true);
-    expect(state.deletedCommentIds.has(COMMENT_ID)).toBe(false);
+    expect(state.comments.has(created.commentId)).toBe(true);
+    expect(state.deletedCommentIds.has(created.commentId)).toBe(false);
   });
 
   it('stacks a pending edit and deletion in the snapshot', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(
-      log(
-        createThreadOpened(),
-        createCommentCreated({
-          body: createLexicalBody('v1'),
-        }),
-      ),
-    );
+    const t = thread();
+    const created = t.comment({body: createLexicalBody('v1')});
+    state.ingest(log(t.opened, created));
 
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentEdited({body: createLexicalBody('v2')}),
-      ),
-    );
-    state.optimistic(createOptimisticEvent(createCommentDeleted()));
+    state.optimistic(createOptimisticEvent(t.edited(created.commentId, 'v2')));
+    state.optimistic(createOptimisticEvent(t.deleted(created.commentId)));
 
-    expect(state.getSnapshot().comments.has(COMMENT_ID)).toBe(false);
-    expect(state.getSnapshot().deletedCommentIds.has(COMMENT_ID)).toBe(true);
-    expect(state.getSnapshot().threads.get(THREAD_ID)?.commentIds).toEqual([]);
+    expect(state.getSnapshot().comments.has(created.commentId)).toBe(false);
+    expect(state.getSnapshot().deletedCommentIds.has(created.commentId)).toBe(
+      true,
+    );
+    expect(state.getSnapshot().threads.get(t.threadId)?.commentIds).toEqual([]);
   });
 
   it('leaves confirmed comments unchanged while edits and deletions stack', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(
-      log(
-        createThreadOpened(),
-        createCommentCreated({
-          body: createLexicalBody('v1'),
-        }),
-      ),
-    );
+    const t = thread();
+    const created = t.comment({body: createLexicalBody('v1')});
+    state.ingest(log(t.opened, created));
 
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentEdited({body: createLexicalBody('v2')}),
-      ),
-    );
-    state.optimistic(createOptimisticEvent(createCommentDeleted()));
+    state.optimistic(createOptimisticEvent(t.edited(created.commentId, 'v2')));
+    state.optimistic(createOptimisticEvent(t.deleted(created.commentId)));
 
-    expect(state.comments.get(COMMENT_ID)?.body).toEqual(
+    expect(state.comments.get(created.commentId)?.body).toEqual(
       createLexicalBody('v1'),
     );
-    expect(state.deletedCommentIds.has(COMMENT_ID)).toBe(false);
+    expect(state.deletedCommentIds.has(created.commentId)).toBe(false);
   });
 
   it('refuses to delete a comment twice across pending events', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(log(createThreadOpened(), createCommentCreated()));
-    state.optimistic(createOptimisticEvent(createCommentDeleted()));
+    const t = thread();
+    const created = t.comment();
+    state.ingest(log(t.opened, created));
+    state.optimistic(createOptimisticEvent(t.deleted(created.commentId)));
 
     expect(() =>
-      state.optimistic(createOptimisticEvent(createCommentDeleted())),
+      state.optimistic(createOptimisticEvent(t.deleted(created.commentId))),
     ).toThrow(/Comment already deleted/);
   });
 
   it('refuses to delete a comment the log already deleted', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(
-      log(createThreadOpened(), createCommentCreated(), createCommentDeleted()),
-    );
+    const t = thread();
+    const created = t.comment();
+    state.ingest(log(t.opened, created, t.deleted(created.commentId)));
 
     expect(() =>
-      state.optimistic(createOptimisticEvent(createCommentDeleted())),
+      state.optimistic(createOptimisticEvent(t.deleted(created.commentId))),
     ).toThrow(/Comment already deleted/);
   });
 });
@@ -686,42 +654,36 @@ describe('optimistic deletions', () => {
 describe('optimistic events building on pending ones', () => {
   it('resolves a thread that only exists optimistically', () => {
     const state = new ShareState();
-    state.optimistic(createOptimisticEvent(createThreadOpened()));
+    const t = thread();
+    state.optimistic(createOptimisticEvent(t.opened));
 
-    state.optimistic(createOptimisticEvent(createThreadResolved()));
+    state.optimistic(createOptimisticEvent(t.resolved()));
 
-    expect(state.getSnapshot().threads.get(THREAD_ID)?.resolved).toBe(true);
+    expect(state.getSnapshot().threads.get(t.threadId)?.resolved).toBe(true);
   });
 
   it('refuses to resolve an optimistically resolved thread again', () => {
     const state = new ShareState();
-    state.optimistic(createOptimisticEvent(createThreadOpened()));
-    state.optimistic(createOptimisticEvent(createThreadResolved()));
+    const t = thread();
+    state.optimistic(createOptimisticEvent(t.opened));
+    state.optimistic(createOptimisticEvent(t.resolved()));
 
-    expect(() =>
-      state.optimistic(createOptimisticEvent(createThreadResolved())),
-    ).toThrow(/Thread already resolved/);
+    expect(() => state.optimistic(createOptimisticEvent(t.resolved()))).toThrow(
+      /Thread already resolved/,
+    );
   });
 
   it('edits a comment that only exists optimistically', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(log(createThreadOpened()));
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentCreated({
-          body: createLexicalBody('v1'),
-        }),
-      ),
-    );
+    const t = thread();
+    const created = t.comment({body: createLexicalBody('v1')});
+    state.ingest(log(t.opened));
+    state.optimistic(createOptimisticEvent(created));
 
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentEdited({body: createLexicalBody('v2')}),
-      ),
-    );
+    state.optimistic(createOptimisticEvent(t.edited(created.commentId, 'v2')));
 
-    expect(state.getSnapshot().comments.get(COMMENT_ID)?.body).toEqual(
+    expect(state.getSnapshot().comments.get(created.commentId)?.body).toEqual(
       createLexicalBody('v2'),
     );
   });
@@ -729,41 +691,46 @@ describe('optimistic events building on pending ones', () => {
   it('refuses to create the same comment twice', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(log(createThreadOpened()));
-    state.optimistic(createOptimisticEvent(createCommentCreated()));
+    const t = thread();
+    const created = t.comment();
+    state.ingest(log(t.opened));
+    state.optimistic(createOptimisticEvent(created));
 
-    expect(() =>
-      state.optimistic(createOptimisticEvent(createCommentCreated())),
-    ).toThrow(/Comment already exists/);
+    expect(() => state.optimistic(createOptimisticEvent(created))).toThrow(
+      /Comment already exists/,
+    );
   });
 
   it.each([
     {
       name: 'editing an unknown comment',
-      payload: createCommentEdited({
-        commentId: MISSING_ID,
-        body: createLexicalBody('text'),
-      }),
+      payload: () =>
+        createCommentEdited({
+          commentId: uuid(),
+          body: createLexicalBody('text'),
+        }),
       error: /Comment not found/,
     },
     {
       name: 'deleting an unknown comment',
-      payload: createCommentDeleted({
-        commentId: MISSING_ID,
-      }),
+      payload: () =>
+        createCommentDeleted({
+          commentId: uuid(),
+        }),
       error: /Comment not found/,
     },
     {
       name: 'resolving an unknown thread',
-      payload: createThreadResolved({
-        threadId: MISSING_ID,
-      }),
+      payload: () =>
+        createThreadResolved({
+          threadId: uuid(),
+        }),
       error: /Thread not found/,
     },
   ])('rejects $name', ({payload, error}) => {
     const state = new ShareState();
 
-    expect(() => state.optimistic(createOptimisticEvent(payload))).toThrow(
+    expect(() => state.optimistic(createOptimisticEvent(payload()))).toThrow(
       error,
     );
   });
@@ -773,41 +740,23 @@ describe('reconciliation', () => {
   it('keeps a pending edit before its confirmed twin arrives', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(
-      log(
-        createThreadOpened(),
-        createCommentCreated({
-          body: createLexicalBody('v1'),
-        }),
-      ),
-    );
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentEdited({body: createLexicalBody('v2')}),
-      ),
-    );
+    const t = thread();
+    const created = t.comment({body: createLexicalBody('v1')});
+    state.ingest(log(t.opened, created));
+    state.optimistic(createOptimisticEvent(t.edited(created.commentId, 'v2')));
 
-    expect(state.getSnapshot().pendingIds.has(COMMENT_ID)).toBe(true);
+    expect(state.getSnapshot().pendingIds.has(created.commentId)).toBe(true);
   });
 
   it('clears pending ids when a confirmed twin arrives', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(
-      log(
-        createThreadOpened(),
-        createCommentCreated({
-          body: createLexicalBody('v1'),
-        }),
-      ),
-    );
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentEdited({body: createLexicalBody('v2')}),
-      ),
-    );
+    const t = thread();
+    const created = t.comment({body: createLexicalBody('v1')});
+    state.ingest(log(t.opened, created));
+    state.optimistic(createOptimisticEvent(t.edited(created.commentId, 'v2')));
 
-    state.ingest(log(createCommentEdited({body: createLexicalBody('v3')})));
+    state.ingest(log(t.edited(created.commentId, 'v3')));
 
     expect(state.getSnapshot().pendingIds.size).toBe(0);
   });
@@ -815,23 +764,14 @@ describe('reconciliation', () => {
   it('applies the confirmed edit when its twin arrives', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(
-      log(
-        createThreadOpened(),
-        createCommentCreated({
-          body: createLexicalBody('v1'),
-        }),
-      ),
-    );
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentEdited({body: createLexicalBody('v2')}),
-      ),
-    );
+    const t = thread();
+    const created = t.comment({body: createLexicalBody('v1')});
+    state.ingest(log(t.opened, created));
+    state.optimistic(createOptimisticEvent(t.edited(created.commentId, 'v2')));
 
-    state.ingest(log(createCommentEdited({body: createLexicalBody('v3')})));
+    state.ingest(log(t.edited(created.commentId, 'v3')));
 
-    expect(state.getSnapshot().comments.get(COMMENT_ID)?.body).toEqual(
+    expect(state.getSnapshot().comments.get(created.commentId)?.body).toEqual(
       createLexicalBody('v3'),
     );
   });
@@ -839,9 +779,10 @@ describe('reconciliation', () => {
   it('clears pending ids when thread.opened is confirmed', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.optimistic(createOptimisticEvent(createThreadOpened()));
+    const opened = createThreadOpened();
+    state.optimistic(createOptimisticEvent(opened));
 
-    state.ingest(log(createThreadOpened()));
+    state.ingest(log(opened));
 
     expect(state.getSnapshot().pendingIds.size).toBe(0);
   });
@@ -849,20 +790,22 @@ describe('reconciliation', () => {
   it('moves a confirmed thread.opened into confirmed state', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.optimistic(createOptimisticEvent(createThreadOpened()));
+    const opened = createThreadOpened();
+    state.optimistic(createOptimisticEvent(opened));
 
-    state.ingest(log(createThreadOpened()));
+    state.ingest(log(opened));
 
-    expect(state.threads.has(THREAD_ID)).toBe(true);
+    expect(state.threads.has(opened.threadId)).toBe(true);
   });
 
   it('clears pending ids when thread.resolved is confirmed', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(log(createThreadOpened()));
-    state.optimistic(createOptimisticEvent(createThreadResolved()));
+    const t = thread();
+    state.ingest(log(t.opened));
+    state.optimistic(createOptimisticEvent(t.resolved()));
 
-    state.ingest(log(createThreadResolved()));
+    state.ingest(log(t.resolved()));
 
     expect(state.getSnapshot().pendingIds.size).toBe(0);
   });
@@ -870,21 +813,24 @@ describe('reconciliation', () => {
   it('marks a thread resolved when thread.resolved is confirmed', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(log(createThreadOpened()));
-    state.optimistic(createOptimisticEvent(createThreadResolved()));
+    const t = thread();
+    state.ingest(log(t.opened));
+    state.optimistic(createOptimisticEvent(t.resolved()));
 
-    state.ingest(log(createThreadResolved()));
+    state.ingest(log(t.resolved()));
 
-    expect(state.threads.get(THREAD_ID)?.resolved).toBe(true);
+    expect(state.threads.get(t.threadId)?.resolved).toBe(true);
   });
 
   it('clears pending ids when comment.created is confirmed', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(log(createThreadOpened()));
-    state.optimistic(createOptimisticEvent(createCommentCreated()));
+    const t = thread();
+    const created = t.comment();
+    state.ingest(log(t.opened));
+    state.optimistic(createOptimisticEvent(created));
 
-    state.ingest(log(createCommentCreated()));
+    state.ingest(log(created));
 
     expect(state.getSnapshot().pendingIds.size).toBe(0);
   });
@@ -892,21 +838,25 @@ describe('reconciliation', () => {
   it('moves a confirmed comment.created into confirmed state', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(log(createThreadOpened()));
-    state.optimistic(createOptimisticEvent(createCommentCreated()));
+    const t = thread();
+    const created = t.comment();
+    state.ingest(log(t.opened));
+    state.optimistic(createOptimisticEvent(created));
 
-    state.ingest(log(createCommentCreated()));
+    state.ingest(log(created));
 
-    expect(state.comments.has(COMMENT_ID)).toBe(true);
+    expect(state.comments.has(created.commentId)).toBe(true);
   });
 
   it('clears pending ids when comment.deleted is confirmed', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(log(createThreadOpened(), createCommentCreated()));
-    state.optimistic(createOptimisticEvent(createCommentDeleted()));
+    const t = thread();
+    const created = t.comment();
+    state.ingest(log(t.opened, created));
+    state.optimistic(createOptimisticEvent(t.deleted(created.commentId)));
 
-    state.ingest(log(createCommentDeleted()));
+    state.ingest(log(t.deleted(created.commentId)));
 
     expect(state.getSnapshot().pendingIds.size).toBe(0);
   });
@@ -914,91 +864,80 @@ describe('reconciliation', () => {
   it('removes a confirmed comment when comment.deleted is confirmed', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(log(createThreadOpened(), createCommentCreated()));
-    state.optimistic(createOptimisticEvent(createCommentDeleted()));
+    const t = thread();
+    const created = t.comment();
+    state.ingest(log(t.opened, created));
+    state.optimistic(createOptimisticEvent(t.deleted(created.commentId)));
 
-    state.ingest(log(createCommentDeleted()));
+    state.ingest(log(t.deleted(created.commentId)));
 
-    expect(state.comments.has(COMMENT_ID)).toBe(false);
-    expect(state.deletedCommentIds.has(COMMENT_ID)).toBe(true);
+    expect(state.comments.has(created.commentId)).toBe(false);
+    expect(state.deletedCommentIds.has(created.commentId)).toBe(true);
   });
 
   it('keeps a pending resolve when another thread is resolved', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(
-      log(
-        createThreadOpened(),
-        createThreadOpened({threadId: THREAD_ID_SECONDARY}),
-      ),
-    );
-    state.optimistic(createOptimisticEvent(createThreadResolved()));
+    const t = thread();
+    const other = thread();
+    state.ingest(log(t.opened, other.opened));
+    state.optimistic(createOptimisticEvent(t.resolved()));
 
-    state.ingest(log(createThreadResolved({threadId: THREAD_ID_SECONDARY})));
+    state.ingest(log(other.resolved()));
 
-    expect(state.getSnapshot().pendingIds.has(THREAD_ID)).toBe(true);
+    expect(state.getSnapshot().pendingIds.has(t.threadId)).toBe(true);
   });
 
   it('applies an optimistic resolve to the snapshot when another thread is resolved', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(
-      log(
-        createThreadOpened(),
-        createThreadOpened({threadId: THREAD_ID_SECONDARY}),
-      ),
-    );
-    state.optimistic(createOptimisticEvent(createThreadResolved()));
+    const t = thread();
+    const other = thread();
+    state.ingest(log(t.opened, other.opened));
+    state.optimistic(createOptimisticEvent(t.resolved()));
 
-    state.ingest(log(createThreadResolved({threadId: THREAD_ID_SECONDARY})));
+    state.ingest(log(other.resolved()));
 
-    expect(state.getSnapshot().threads.get(THREAD_ID)?.resolved).toBe(true);
+    expect(state.getSnapshot().threads.get(t.threadId)?.resolved).toBe(true);
   });
 
   it('leaves confirmed threads unresolved when another thread is resolved', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(
-      log(
-        createThreadOpened(),
-        createThreadOpened({threadId: THREAD_ID_SECONDARY}),
-      ),
-    );
-    state.optimistic(createOptimisticEvent(createThreadResolved()));
+    const t = thread();
+    const other = thread();
+    state.ingest(log(t.opened, other.opened));
+    state.optimistic(createOptimisticEvent(t.resolved()));
 
-    state.ingest(log(createThreadResolved({threadId: THREAD_ID_SECONDARY})));
+    state.ingest(log(other.resolved()));
 
-    expect(state.threads.get(THREAD_ID)?.resolved).toBe(false);
+    expect(state.threads.get(t.threadId)?.resolved).toBe(false);
   });
 
   it('keeps a pending edit when an unrelated event is confirmed', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(log(createThreadOpened(), createCommentCreated()));
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentEdited({body: createLexicalBody('v2')}),
-      ),
-    );
+    const t = thread();
+    const created = t.comment();
+    state.ingest(log(t.opened, created));
+    state.optimistic(createOptimisticEvent(t.edited(created.commentId, 'v2')));
 
-    state.ingest(log(createThreadResolved()));
+    state.ingest(log(t.resolved()));
 
-    expect(state.getSnapshot().pendingIds.has(COMMENT_ID)).toBe(true);
+    expect(state.getSnapshot().pendingIds.has(created.commentId)).toBe(true);
   });
 
   it('keeps an optimistic edit in the snapshot when an unrelated event is confirmed', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(log(createThreadOpened(), createCommentCreated()));
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentEdited({body: createLexicalBody('v2')}),
-      ),
-    );
+    const t = thread();
+    const created = t.comment();
+    state.ingest(log(t.opened, created));
+    state.optimistic(createOptimisticEvent(t.edited(created.commentId, 'v2')));
 
-    state.ingest(log(createThreadResolved()));
+    state.ingest(log(t.resolved()));
 
-    expect(state.getSnapshot().comments.get(COMMENT_ID)?.body).toEqual(
+    expect(state.getSnapshot().comments.get(created.commentId)?.body).toEqual(
       createLexicalBody('v2'),
     );
   });
@@ -1006,16 +945,14 @@ describe('reconciliation', () => {
   it('resolves the thread in the snapshot when an unrelated event is confirmed', () => {
     const log = createShareEventLog();
     const state = new ShareState();
-    state.ingest(log(createThreadOpened(), createCommentCreated()));
-    state.optimistic(
-      createOptimisticEvent(
-        createCommentEdited({body: createLexicalBody('v2')}),
-      ),
-    );
+    const t = thread();
+    const created = t.comment();
+    state.ingest(log(t.opened, created));
+    state.optimistic(createOptimisticEvent(t.edited(created.commentId, 'v2')));
 
-    state.ingest(log(createThreadResolved()));
+    state.ingest(log(t.resolved()));
 
-    expect(state.getSnapshot().threads.get(THREAD_ID)?.resolved).toBe(true);
+    expect(state.getSnapshot().threads.get(t.threadId)?.resolved).toBe(true);
   });
 });
 
@@ -1075,51 +1012,49 @@ describe('isType', () => {
       throw new Error('Expected comment.created payload');
     }
 
-    expect(payload.commentId).toBe(COMMENT_ID);
+    expect(payload.commentId).toEqual(expect.any(String));
   });
 });
 
 describe('foldEvents', () => {
   it('folds thread state from a log in one call', () => {
+    const t = thread();
+    const created = t.comment();
     const snapshot = foldEvents(
-      createShareEventLog()(
-        createThreadOpened(),
-        createCommentCreated(),
-        createThreadResolved(),
-      ),
+      createShareEventLog()(t.opened, created, t.resolved()),
     );
 
-    expect(snapshot.threads.get(THREAD_ID)).toMatchObject({
+    expect(snapshot.threads.get(t.threadId)).toMatchObject({
       resolved: true,
-      commentIds: [COMMENT_ID],
+      commentIds: [created.commentId],
     });
   });
 
   it('drops deleted comments from folded thread state', () => {
+    const t = thread();
+    const created = t.comment();
     const snapshot = foldEvents(
       createShareEventLog()(
-        createThreadOpened(),
-        createCommentCreated(),
-        createCommentDeleted(),
-        createThreadResolved(),
+        t.opened,
+        created,
+        t.deleted(created.commentId),
+        t.resolved(),
       ),
     );
 
-    expect(snapshot.comments.has(COMMENT_ID)).toBe(false);
-    expect(snapshot.deletedCommentIds.has(COMMENT_ID)).toBe(true);
-    expect(snapshot.threads.get(THREAD_ID)).toMatchObject({
+    expect(snapshot.comments.has(created.commentId)).toBe(false);
+    expect(snapshot.deletedCommentIds.has(created.commentId)).toBe(true);
+    expect(snapshot.threads.get(t.threadId)).toMatchObject({
       resolved: true,
       commentIds: [],
     });
   });
 
   it('returns no pending ids from a folded log', () => {
+    const t = thread();
+    const created = t.comment();
     const snapshot = foldEvents(
-      createShareEventLog()(
-        createThreadOpened(),
-        createCommentCreated(),
-        createThreadResolved(),
-      ),
+      createShareEventLog()(t.opened, created, t.resolved()),
     );
 
     expect(snapshot.pendingIds.size).toBe(0);

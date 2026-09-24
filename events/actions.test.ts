@@ -1,13 +1,13 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-import {createSession} from '@/testing/auth';
+import {createSession} from '@/testkit/auth';
 import {
   createAnchor,
   createCommentCreated,
   createOpenThreadInput,
   createThreadOpened,
-} from '@/testing/events';
-import {SHARE_ID, SHARE_ID_SECONDARY, USER_ID} from '@/testing/ids';
+} from '@/testkit/events';
+import {uuid} from '@/testkit/uuid';
 import {openThread} from './actions';
 import type {OpenThreadInput, ShareEventPayload} from './schemas';
 
@@ -66,28 +66,32 @@ describe('openThread', () => {
   });
 
   it('rejects anchors that belong to another share', async () => {
+    const otherShareId = uuid();
+
     await expect(
       openThread(
         createOpenThreadInput({
           anchor: createAnchor({
-            shareId: SHARE_ID_SECONDARY,
+            shareId: otherShareId,
             line: 3,
           }),
         }),
       ),
-    ).rejects.toThrow(`Invalid anchor share id: ${SHARE_ID_SECONDARY}`);
+    ).rejects.toThrow(`Invalid anchor share id: ${otherShareId}`);
 
     expect(appendEvents).not.toHaveBeenCalled();
   });
 
   it('appends thread and comment events for the signed-in user', async () => {
+    const session = createSession();
+    getSession.mockResolvedValue(session);
     const input = createOpenThreadInput();
 
     await openThread(input);
 
     expect(appendEvents).toHaveBeenCalledExactlyOnceWith(
-      SHARE_ID,
-      USER_ID,
+      input.shareId,
+      session.user.id,
       createOpenThreadPayloads(input),
     );
   });

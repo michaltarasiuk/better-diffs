@@ -44,7 +44,11 @@ export function Tree({handoff, preloaded, fileIdByPath, children}: TreeProps) {
         throw new Error(`File not found: ${selectedPath}`);
       }
 
-      handleRef.current?.scrollTo({type: 'item', id, align: 'start'});
+      handleRef.current?.scrollTo({
+        type: 'item',
+        id,
+        align: 'start',
+      });
     },
   });
   const search = useFileTreeSearch(model);

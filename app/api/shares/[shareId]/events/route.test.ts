@@ -2,8 +2,7 @@ import {NextRequest} from 'next/server';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
-import {createShareEvent, createThreadResolved} from '@/testing/events';
-import {SHARE_ID} from '@/testing/ids';
+import {createShareEvent, createThreadResolved} from '@/testkit/events';
 import {GET} from './route';
 
 const {getEvents} = vi.hoisted(() => ({
@@ -13,15 +12,16 @@ const {getEvents} = vi.hoisted(() => ({
 vi.mock('@/db/events', () => ({getEvents}));
 
 const event = createShareEvent(createThreadResolved(), {seq: 4});
+const shareId = event.shareId;
 
 function request(search = '') {
   return new NextRequest(
-    `${env.BASE_URL}/api/shares/${SHARE_ID}/events${search}`,
+    `${env.BASE_URL}/api/shares/${shareId}/events${search}`,
   );
 }
 
 function context() {
-  return {params: Promise.resolve({shareId: SHARE_ID})};
+  return {params: Promise.resolve({shareId})};
 }
 
 beforeEach(() => {
@@ -53,13 +53,13 @@ describe('GET', () => {
   it('starts from the beginning when no cursor is given', async () => {
     await GET(request(), context());
 
-    expect(getEvents).toHaveBeenCalledExactlyOnceWith(SHARE_ID, 0);
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(shareId, 0);
   });
 
   it('forwards the afterSeq cursor', async () => {
     await GET(request('?afterSeq=7'), context());
 
-    expect(getEvents).toHaveBeenCalledExactlyOnceWith(SHARE_ID, 7);
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(shareId, 7);
   });
 
   it.each([
@@ -68,7 +68,7 @@ describe('GET', () => {
   ])('falls back to the beginning for $name', async ({search}) => {
     await GET(request(search), context());
 
-    expect(getEvents).toHaveBeenCalledExactlyOnceWith(SHARE_ID, 0);
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(shareId, 0);
   });
 
   it('returns an empty event list', async () => {

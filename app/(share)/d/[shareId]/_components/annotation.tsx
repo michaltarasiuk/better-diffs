@@ -83,7 +83,12 @@ export function DiffAnnotation({
   onDismiss,
 }: DiffAnnotationProps) {
   return (
-    <FileContext value={{id: fileId, path: filePath}}>
+    <FileContext
+      value={{
+        id: fileId,
+        path: filePath,
+      }}
+    >
       <AnnotationContext value={annotation}>
         <AnnotationBody onDismiss={onDismiss} />
       </AnnotationContext>

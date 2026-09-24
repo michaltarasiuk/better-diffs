@@ -1,10 +1,23 @@
 import {NextRequest} from 'next/server';
+import dedent from 'dedent';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
-import {UNIFIED_DIFF} from '@/testing/diffs';
-import {SHARE_ID} from '@/testing/ids';
+import {uuid} from '@/testkit/uuid';
 import {OPTIONS, POST} from './route';
+
+const DIFF_TEXT = dedent`
+  diff --git a/file.txt b/file.txt
+  index 0000001..0000002 100644
+  --- a/file.txt
+  +++ b/file.txt
+  @@ -1,2 +1,2 @@
+  -old line
+  +new line
+   context
+`;
+
+const shareId = uuid();
 
 const {createShare} = vi.hoisted(() => ({
   createShare: vi.fn<typeof import('@/db/shares').createShare>(),
@@ -21,7 +34,7 @@ function request(body: string, headers: Record<string, string>) {
 }
 
 beforeEach(() => {
-  createShare.mockResolvedValue(SHARE_ID);
+  createShare.mockResolvedValue(shareId);
 });
 
 describe('OPTIONS', () => {
@@ -62,13 +75,13 @@ describe('POST', () => {
 
     expect(await response.json()).toEqual({
       ok: true,
-      url: `${env.BASE_URL}/d/${SHARE_ID}`,
+      url: `${env.BASE_URL}/d/${shareId}`,
     });
   });
 
   it('returns 201 for patch text input', async () => {
     const response = await POST(
-      request(UNIFIED_DIFF, {
+      request(DIFF_TEXT, {
         'Content-Type': 'text/plain',
         Accept: 'text/plain',
       }),
@@ -79,18 +92,18 @@ describe('POST', () => {
 
   it('returns a plain-text share URL for patch text input', async () => {
     const response = await POST(
-      request(UNIFIED_DIFF, {
+      request(DIFF_TEXT, {
         'Content-Type': 'text/plain',
         Accept: 'text/plain',
       }),
     );
 
-    expect(await response.text()).toBe(`${env.BASE_URL}/d/${SHARE_ID}`);
+    expect(await response.text()).toBe(`${env.BASE_URL}/d/${shareId}`);
   });
 
   it('passes parsed patches to createShare for patch text input', async () => {
     await POST(
-      request(UNIFIED_DIFF, {
+      request(DIFF_TEXT, {
         'Content-Type': 'text/plain',
         Accept: 'text/plain',
       }),
