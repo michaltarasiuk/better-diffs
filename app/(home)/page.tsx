@@ -1,7 +1,6 @@
 import '@/diffs/diffs.css';
 
-import {Suspense} from 'react';
-import {Skeleton, Typography} from '@heroui/react';
+import {Typography} from '@heroui/react';
 import {typographyVariants} from '@heroui/styles';
 import {PatchDiff} from '@pierre/diffs/react';
 import {preloadPatchDiff} from '@pierre/diffs/ssr';
@@ -28,20 +27,12 @@ const heroTitleClass = typographyVariants({type: 'h2'}).base({
 });
 const sectionTitleClass = typographyVariants({type: 'h6'}).base();
 
-const demoPatchPreload = preloadPatchDiff({
-  patch: DEMO_PATCH,
-  options: PATCH_DIFF_OPTIONS,
-});
+export default async function HomePage() {
+  const preloaded = await preloadPatchDiff({
+    patch: DEMO_PATCH,
+    options: PATCH_DIFF_OPTIONS,
+  });
 
-const usageDiffSkeleton = (
-  <Skeleton
-    aria-busy="true"
-    aria-label="Loading diff preview"
-    className="h-36 w-full rounded-none"
-  />
-);
-
-export default function HomePage() {
   return (
     <main className="mx-auto h-full max-w-2xl space-y-10 px-6 py-12 sm:px-8 sm:py-16">
       <header className="space-y-3">
@@ -84,14 +75,8 @@ export default function HomePage() {
           Usage
         </Typography.Heading>
 
-        <Suspense fallback={usageDiffSkeleton}>
-          <UsageDiff />
-        </Suspense>
+        <PatchDiff {...preloaded} className="w-full" />
       </section>
     </main>
   );
-}
-
-async function UsageDiff() {
-  return <PatchDiff {...await demoPatchPreload} className="w-full" />;
 }
