@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestIsFlag(t *testing.T) {
+func TestFlag(t *testing.T) {
 	tests := []struct {
 		arg  string
 		want bool
@@ -20,7 +20,7 @@ func TestIsFlag(t *testing.T) {
 		},
 		{
 			arg:  "-",
-			want: true,
+			want: false,
 		},
 		{
 			arg:  "src/",
@@ -34,14 +34,14 @@ func TestIsFlag(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.arg, func(t *testing.T) {
-			if got := isFlag(tc.arg); got != tc.want {
-				t.Fatalf("isFlag(%q) = %v; want %v", tc.arg, got, tc.want)
+			if got := flag(tc.arg); got != tc.want {
+				t.Fatalf("flag(%q) = %v; want %v", tc.arg, got, tc.want)
 			}
 		})
 	}
 }
 
-func TestSplitFlag(t *testing.T) {
+func TestCutFlag(t *testing.T) {
 	tests := []struct {
 		arg        string
 		wantName   string
@@ -74,16 +74,16 @@ func TestSplitFlag(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.arg, func(t *testing.T) {
-			name, value, inline := splitFlag(tc.arg)
+			name, value, inline := cutFlag(tc.arg)
 			if name != tc.wantName || value != tc.wantValue || inline != tc.wantInline {
-				t.Fatalf("splitFlag(%q) = (%q, %q, %v); want (%q, %q, %v)",
+				t.Fatalf("cutFlag(%q) = (%q, %q, %v); want (%q, %q, %v)",
 					tc.arg, name, value, inline, tc.wantName, tc.wantValue, tc.wantInline)
 			}
 		})
 	}
 }
 
-func TestParseArgs(t *testing.T) {
+func TestParse(t *testing.T) {
 	tests := []struct {
 		name string
 		args []string
@@ -141,39 +141,39 @@ func TestParseArgs(t *testing.T) {
 		{
 			name: "option with value rejected",
 			args: []string{"--staged=1"},
-			err:  "option takes no value: --staged=1",
+			err:  "Option takes no value: --staged=1",
 		},
 		{
 			name: "open with value rejected",
 			args: []string{"--open=1"},
-			err:  "option takes no value: --open=1",
+			err:  "Option takes no value: --open=1",
 		},
 		{
 			name: "unknown option",
 			args: []string{"--bogus"},
-			err:  "unknown option: --bogus",
+			err:  "Unknown option: --bogus",
 		},
 		{
 			name: "missing base value",
 			args: []string{"--base"},
-			err:  "missing value for --base",
+			err:  "Missing value for --base",
 		},
 		{
 			name: "missing url value",
 			args: []string{"--url"},
-			err:  "missing value for --url",
+			err:  "Missing value for --url",
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := parseArgs(tc.args)
+			got, err := parse(tc.args)
 			if tc.err != "" {
 				assertUsageError(t, err, tc.err)
 				return
 			}
 			if err != nil {
-				t.Fatalf("parseArgs(%v) = %v; want nil err", tc.args, err)
+				t.Fatalf("parse(%v) = %v; want nil err", tc.args, err)
 			}
 			assertCommandEqual(t, got, tc.want)
 		})
@@ -202,7 +202,7 @@ func TestRunVersion(t *testing.T) {
 
 func TestRunUsageError(t *testing.T) {
 	err := run([]string{"--bogus"}, &bytes.Buffer{})
-	assertUsageError(t, err, "unknown option: --bogus")
+	assertUsageError(t, err, "Unknown option: --bogus")
 }
 
 func TestRunNoInstance(t *testing.T) {
@@ -212,5 +212,5 @@ func TestRunNoInstance(t *testing.T) {
 	withDefaultURL(t, "")
 
 	err := run(nil, &bytes.Buffer{})
-	assertErrorContains(t, err, "no instance configured")
+	assertError(t, err, "No instance configured")
 }

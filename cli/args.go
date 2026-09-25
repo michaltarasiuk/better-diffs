@@ -18,45 +18,47 @@ type options struct {
 	paths  []string
 }
 
-func parseArgs(args []string) (command, error) {
+func parse(args []string) (command, error) {
 	opts := options{}
 	i := 0
 	for i < len(args) {
 		arg := args[i]
 		i++
 
-		// Parsing stops at the first path so that a file named like an
-		// option still reaches git.
-		if !isFlag(arg) {
+		/*
+		 * Paths start at "--", a lone "-", or the first non-flag so a file
+		 * named like an option still reaches git.
+		 */
+		if arg == "--" || arg == "-" {
+			opts.paths = append(opts.paths, args[i:]...)
+			break
+		}
+		if !flag(arg) {
 			opts.paths = append(opts.paths, arg)
 			opts.paths = append(opts.paths, args[i:]...)
 			break
 		}
-		if arg == "-" || arg == "--" {
-			opts.paths = append(opts.paths, args[i:]...)
-			break
-		}
 
-		name, value, inline := splitFlag(arg)
+		name, value, inline := cutFlag(arg)
 		switch name {
 		case "staged":
-			if err := takesNoValue(inline, value, arg); err != nil {
+			if err := noValue(inline, value, arg); err != nil {
 				return command{}, err
 			}
 			opts.staged = true
 		case "open", "o":
-			if err := takesNoValue(inline, value, arg); err != nil {
+			if err := noValue(inline, value, arg); err != nil {
 				return command{}, err
 			}
 			opts.open = true
 		case "base":
-			v, err := takeValue(inline, value, args, &i, arg)
+			v, err := need(inline, value, args, &i, arg)
 			if err != nil {
 				return command{}, err
 			}
 			opts.base = v
 		case "url":
-			v, err := takeValue(inline, value, args, &i, arg)
+			v, err := need(inline, value, args, &i, arg)
 			if err != nil {
 				return command{}, err
 			}
@@ -66,41 +68,41 @@ func parseArgs(args []string) (command, error) {
 		case "version":
 			return command{version: true}, nil
 		default:
-			return command{}, usagef("unknown option: %s", arg)
+			return command{}, usagef("Unknown option: %s", arg)
 		}
 	}
 
 	return command{options: opts}, nil
 }
 
-func isFlag(arg string) bool {
-	return len(arg) > 0 && arg[0] == '-'
+func flag(arg string) bool {
+	return len(arg) > 1 && arg[0] == '-'
 }
 
-func splitFlag(arg string) (name, value string, inline bool) {
-	flag := arg
-	for len(flag) > 0 && flag[0] == '-' {
-		flag = flag[1:]
+func cutFlag(arg string) (name, value string, inline bool) {
+	s := arg
+	for len(s) > 0 && s[0] == '-' {
+		s = s[1:]
 	}
-	if before, after, ok := strings.Cut(flag, "="); ok {
+	if before, after, ok := strings.Cut(s, "="); ok {
 		return before, after, true
 	}
-	return flag, "", false
+	return s, "", false
 }
 
-func takesNoValue(inline bool, value, arg string) error {
+func noValue(inline bool, value, arg string) error {
 	if inline || value != "" {
-		return usagef("option takes no value: %s", arg)
+		return usagef("Option takes no value: %s", arg)
 	}
 	return nil
 }
 
-func takeValue(inline bool, value string, args []string, i *int, arg string) (string, error) {
+func need(inline bool, value string, args []string, i *int, arg string) (string, error) {
 	if inline {
 		return value, nil
 	}
 	if *i >= len(args) {
-		return "", usagef("missing value for %s", arg)
+		return "", usagef("Missing value for %s", arg)
 	}
 	v := args[*i]
 	*i++

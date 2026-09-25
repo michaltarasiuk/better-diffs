@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestPickBaseURL(t *testing.T) {
+func TestPick(t *testing.T) {
 	tests := []struct {
 		name            string
 		flag            string
@@ -71,15 +71,15 @@ func TestPickBaseURL(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got, ok := pickBaseURL(tc.flag, tc.env, tc.configured, tc.defaultInstance)
+			got, ok := pick(tc.flag, tc.env, tc.configured, tc.defaultInstance)
 			if got != tc.want || ok != tc.ok {
-				t.Fatalf("pickBaseURL(...) = %q, %v; want %q, %v", got, ok, tc.want, tc.ok)
+				t.Fatalf("pick(...) = %q, %v; want %q, %v", got, ok, tc.want, tc.ok)
 			}
 		})
 	}
 }
 
-func TestValidateBaseURL(t *testing.T) {
+func TestCheckURL(t *testing.T) {
 	tests := []struct {
 		name        string
 		raw         string
@@ -97,26 +97,26 @@ func TestValidateBaseURL(t *testing.T) {
 		{
 			name:        "missing scheme",
 			raw:         "127.0.0.1:3000",
-			wantErrLike: `invalid instance URL "127.0.0.1:3000":`,
+			wantErrLike: `Invalid instance URL "127.0.0.1:3000":`,
 		},
 		{
 			name:    "unsupported scheme",
 			raw:     "ftp://example.com",
-			wantErr: `invalid instance URL "ftp://example.com": missing http(s) scheme`,
+			wantErr: `Invalid instance URL "ftp://example.com": missing http(s) scheme`,
 		},
 		{
 			name:    "missing host",
 			raw:     "http://",
-			wantErr: `invalid instance URL "http://": missing host`,
+			wantErr: `Invalid instance URL "http://": missing host`,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			err := validateBaseURL(tc.raw)
+			err := checkURL(tc.raw)
 			if tc.wantErr == "" && tc.wantErrLike == "" {
 				if err != nil {
-					t.Fatalf("validateBaseURL(%q) = %v; want nil err", tc.raw, err)
+					t.Fatalf("checkURL(%q) = %v; want nil err", tc.raw, err)
 				}
 				return
 			}
@@ -129,7 +129,7 @@ func TestValidateBaseURL(t *testing.T) {
 	}
 }
 
-func TestResolveBaseURL(t *testing.T) {
+func TestInstance(t *testing.T) {
 	tests := []struct {
 		name        string
 		flag        string
@@ -162,17 +162,17 @@ func TestResolveBaseURL(t *testing.T) {
 		},
 		{
 			name:    "missing",
-			wantErr: "no instance configured; pass --url, set BETTER_DIFFS_URL, or write url= to config",
+			wantErr: "No instance configured",
 		},
 		{
 			name:        "invalid flag",
 			flag:        "not-a-url",
-			wantErrLike: `invalid instance URL "not-a-url":`,
+			wantErrLike: `Invalid instance URL "not-a-url":`,
 		},
 		{
 			name:    "invalid env",
 			env:     "ftp://example.com",
-			wantErr: `invalid instance URL "ftp://example.com": missing http(s) scheme`,
+			wantErr: `Invalid instance URL "ftp://example.com": missing http(s) scheme`,
 		},
 	}
 
@@ -186,7 +186,7 @@ func TestResolveBaseURL(t *testing.T) {
 				writeConfig(t, dir, tc.config)
 			}
 
-			got, err := resolveBaseURL(tc.flag)
+			got, err := instance(tc.flag)
 			if tc.wantErr != "" {
 				assertError(t, err, tc.wantErr)
 				return
@@ -196,16 +196,16 @@ func TestResolveBaseURL(t *testing.T) {
 				return
 			}
 			if err != nil {
-				t.Fatalf("resolveBaseURL(%q) = %v; want nil err", tc.flag, err)
+				t.Fatalf("instance(%q) = %v; want nil err", tc.flag, err)
 			}
 			if got != tc.want {
-				t.Fatalf("resolveBaseURL(%q) = %q; want %q", tc.flag, got, tc.want)
+				t.Fatalf("instance(%q) = %q; want %q", tc.flag, got, tc.want)
 			}
 		})
 	}
 }
 
-func TestReadConfiguredURL(t *testing.T) {
+func TestReadConfig(t *testing.T) {
 	dir := t.TempDir()
 
 	tests := []struct {
@@ -254,18 +254,18 @@ func TestReadConfiguredURL(t *testing.T) {
 				}
 			}
 
-			got, err := readConfiguredURL(path)
+			got, err := readConfig(path)
 			if tc.wantErr {
 				if err == nil {
-					t.Fatal("readConfiguredURL() = nil err; want err")
+					t.Fatal("readConfig() = nil err; want err")
 				}
 				return
 			}
 			if err != nil {
-				t.Fatalf("readConfiguredURL(%q) = %v; want nil err", path, err)
+				t.Fatalf("readConfig(%q) = %v; want nil err", path, err)
 			}
 			if got != tc.want {
-				t.Fatalf("readConfiguredURL(%q) = %q; want %q", path, got, tc.want)
+				t.Fatalf("readConfig(%q) = %q; want %q", path, got, tc.want)
 			}
 		})
 	}

@@ -68,12 +68,17 @@ func TestUploadErrors(t *testing.T) {
 			name:    "bad request body",
 			status:  http.StatusBadRequest,
 			body:    "No diffs found in patch\n",
-			wantErr: "upload failed: No diffs found in patch",
+			wantErr: "Upload failed: No diffs found in patch",
 		},
 		{
 			name:    "empty error body",
 			status:  http.StatusInternalServerError,
-			wantErr: "upload failed with status 500 Internal Server Error",
+			wantErr: "Upload failed with status 500 Internal Server Error",
+		},
+		{
+			name:    "empty success body",
+			status:  http.StatusCreated,
+			wantErr: "Empty share URL",
 		},
 	}
 
@@ -98,7 +103,7 @@ func TestUploadInvalidBaseURL(t *testing.T) {
 	if err == nil {
 		t.Fatal("upload(invalid URL) = nil err; want err")
 	}
-	if !strings.Contains(err.Error(), "invalid instance URL") {
-		t.Fatalf("upload(invalid URL) = %q; want invalid instance URL", err.Error())
+	if !strings.Contains(err.Error(), "Invalid instance URL") {
+		t.Fatalf("upload(invalid URL) = %q; want Invalid instance URL", err.Error())
 	}
 }

@@ -8,7 +8,18 @@ import (
 	"strings"
 )
 
-func gitDiff(base string, staged bool, paths []string) ([]byte, error) {
+func diff(base string, staged bool, paths []string) ([]byte, error) {
+	out, err := exec.Command("git", diffArgs(base, staged, paths)...).Output()
+	if err != nil {
+		return nil, diffErr(err)
+	}
+	if len(bytes.TrimSpace(out)) == 0 {
+		return nil, errors.New("No changes found")
+	}
+	return out, nil
+}
+
+func diffArgs(base string, staged bool, paths []string) []string {
 	args := []string{"diff"}
 	if base != "" {
 		args = append(args, base)
@@ -16,28 +27,20 @@ func gitDiff(base string, staged bool, paths []string) ([]byte, error) {
 	if staged {
 		args = append(args, "--staged")
 	}
-	args = append(args, "--")
-	args = append(args, paths...)
+	return append(append(args, "--"), paths...)
+}
 
-	cmd := exec.Command("git", args...)
-	output, err := cmd.Output()
-	if err != nil {
-		if errors.Is(err, exec.ErrNotFound) {
-			return nil, errors.New("git is required")
-		}
-		var exitErr *exec.ExitError
-		if errors.As(err, &exitErr) {
-			message := strings.TrimSpace(string(exitErr.Stderr))
-			if message == "" {
-				return nil, fmt.Errorf("git diff exited with %v", exitErr.ProcessState)
-			}
-			return nil, errors.New(message)
-		}
-		return nil, fmt.Errorf("run git diff: %w", err)
+func diffErr(err error) error {
+	if errors.Is(err, exec.ErrNotFound) {
+		return errors.New("Git is required")
 	}
-
-	if len(bytes.TrimSpace(output)) == 0 {
-		return nil, errors.New("no changes found")
+	var exitErr *exec.ExitError
+	if errors.As(err, &exitErr) {
+		msg := strings.TrimSpace(string(exitErr.Stderr))
+		if msg == "" {
+			return fmt.Errorf("Git diff exited with %v", exitErr.ProcessState)
+		}
+		return errors.New(msg)
 	}
-	return output, nil
+	return fmt.Errorf("Run git diff: %w", err)
 }

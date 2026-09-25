@@ -4,16 +4,19 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"runtime"
 )
 
-// Version is set at link time with -ldflags "-X main.Version=...".
-var Version = "0.1.0"
+/**
+ * Version is set at link time with -ldflags "-X main.Version=...".
+ */
+var Version = "0.1.2"
 
-// DefaultURL is the fallback instance when no flag, env, or config is set.
-// Set at link time with -ldflags "-X main.DefaultURL=...".
+/**
+ * DefaultURL is the fallback instance when no flag, env, or config is set.
+ * Set at link time with -ldflags "-X main.DefaultURL=...".
+ */
 var DefaultURL = ""
 
 const usageLine = "better-diffs [options] [--] [<path>...]"
@@ -46,7 +49,6 @@ EXAMPLES
 `
 
 func main() {
-	log.SetFlags(0)
 	if err := run(os.Args[1:], os.Stdout); err != nil {
 		var u usageError
 		if errors.As(err, &u) {
@@ -57,7 +59,7 @@ func main() {
 }
 
 func run(args []string, stdout io.Writer) error {
-	cmd, err := parseArgs(args)
+	cmd, err := parse(args)
 	if err != nil {
 		return err
 	}
@@ -69,26 +71,26 @@ func run(args []string, stdout io.Writer) error {
 		return err
 	}
 
-	baseURL, err := resolveBaseURL(cmd.options.url)
+	baseURL, err := instance(cmd.options.url)
 	if err != nil {
 		return err
 	}
 
-	patch, err := gitDiff(cmd.options.base, cmd.options.staged, cmd.options.paths)
+	patch, err := diff(cmd.options.base, cmd.options.staged, cmd.options.paths)
 	if err != nil {
 		return err
 	}
 
-	shareURL, err := upload(baseURL, Version, patch)
+	url, err := upload(baseURL, Version, patch)
 	if err != nil {
 		return err
 	}
 
-	if _, err := fmt.Fprintln(stdout, shareURL); err != nil {
+	if _, err := fmt.Fprintln(stdout, url); err != nil {
 		return err
 	}
 	if cmd.options.open {
-		return openBrowser(shareURL)
+		return browse(url)
 	}
 	return nil
 }

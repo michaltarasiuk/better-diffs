@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestBrowserCommands(t *testing.T) {
+func TestBrowsers(t *testing.T) {
 	tests := []struct {
 		name    string
 		browser string
@@ -35,24 +35,24 @@ func TestBrowserCommands(t *testing.T) {
 				t.Setenv("DISPLAY", "")
 			}
 
-			cmds := browserCommands()
+			cmds := browsers()
 			if len(cmds) == 0 {
-				t.Fatal("browserCommands() = empty; want commands")
+				t.Fatal("browsers() = empty; want commands")
 			}
 			if got := cmds[0]; len(got) != len(tc.want) || got[0] != tc.want[0] {
-				t.Fatalf("browserCommands()[0] = %v; want %v", got, tc.want)
+				t.Fatalf("browsers()[0] = %v; want %v", got, tc.want)
 			}
 		})
 	}
 }
 
-func TestOpenBrowserMissing(t *testing.T) {
+func TestBrowseMissing(t *testing.T) {
 	if runtime.GOOS == "darwin" {
 		t.Skip("/usr/bin/open is available even when PATH is empty")
 	}
 	t.Setenv("PATH", "")
 	t.Setenv("BROWSER", "")
 	t.Setenv("DISPLAY", "")
-	err := openBrowser("http://127.0.0.1/d/abc")
-	assertError(t, err, "cannot open browser")
+	err := browse("http://127.0.0.1/d/abc")
+	assertError(t, err, "Cannot open browser")
 }

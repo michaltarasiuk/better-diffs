@@ -8,9 +8,11 @@ import (
 	"time"
 )
 
-// browserCommands returns commands to try when opening a URL, in order.
-// The logic matches cmd/internal/browser in the Go toolchain.
-func browserCommands() [][]string {
+/*
+ * browsers returns commands to try when opening a URL, in order.
+ * The logic matches cmd/internal/browser in the Go toolchain.
+ */
+func browsers() [][]string {
 	var cmds [][]string
 	if exe := os.Getenv("BROWSER"); exe != "" {
 		cmds = append(cmds, []string{exe})
@@ -34,22 +36,24 @@ func browserCommands() [][]string {
 	return cmds
 }
 
-func openBrowser(url string) error {
-	for _, args := range browserCommands() {
+func browse(url string) error {
+	for _, args := range browsers() {
 		cmd := exec.Command(args[0], append(args[1:], url)...)
 		if err := cmd.Start(); err != nil {
 			continue
 		}
-		if browserAppearsSuccessful(cmd, 3*time.Second) {
+		if started(cmd, 3*time.Second) {
 			return nil
 		}
 	}
-	return errors.New("cannot open browser")
+	return errors.New("Cannot open browser")
 }
 
-// browserAppearsSuccessful reports whether the browser command likely worked.
-// If the command runs longer than timeout, it is treated as success.
-func browserAppearsSuccessful(cmd *exec.Cmd, timeout time.Duration) bool {
+/*
+ * started reports whether the browser command likely worked. If the command
+ * runs longer than timeout, it is treated as success.
+ */
+func started(cmd *exec.Cmd, timeout time.Duration) bool {
 	errc := make(chan error, 1)
 	go func() {
 		errc <- cmd.Wait()

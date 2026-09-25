@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestGitDiff(t *testing.T) {
+func TestDiff(t *testing.T) {
 	requireGit(t)
 
 	tests := []struct {
@@ -55,7 +55,7 @@ func TestGitDiff(t *testing.T) {
 				runGit(t, dir, "commit", "-m", "init")
 				return options{}
 			},
-			wantErr: "no changes found",
+			wantErr: "No changes found",
 		},
 	}
 
@@ -65,25 +65,25 @@ func TestGitDiff(t *testing.T) {
 			opts := tc.setup(t, dir)
 
 			chdir(t, dir)
-			got, err := gitDiff(opts.base, opts.staged, opts.paths)
+			got, err := diff(opts.base, opts.staged, opts.paths)
 			if tc.wantErr != "" {
 				assertError(t, err, tc.wantErr)
 				return
 			}
 			if err != nil {
-				t.Fatalf("gitDiff(...) = %v; want nil err", err)
+				t.Fatalf("diff(...) = %v; want nil err", err)
 			}
 			if len(got) == 0 {
-				t.Fatal("gitDiff(...) returned empty patch")
+				t.Fatal("diff(...) returned empty patch")
 			}
 		})
 	}
 }
 
-func TestGitDiffGitMissing(t *testing.T) {
+func TestDiffGitMissing(t *testing.T) {
 	t.Setenv("PATH", "")
-	_, err := gitDiff("", false, nil)
-	assertError(t, err, "git is required")
+	_, err := diff("", false, nil)
+	assertError(t, err, "Git is required")
 }
 
 func writeFile(t *testing.T, dir, name, contents string) {
