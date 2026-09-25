@@ -11,13 +11,14 @@ import {ToastProvider} from './_components/toast-provider';
 
 export const metadata: Metadata = {
   title: 'Better Diffs',
+  description:
+    'Share your code changes with your team without opening a pull request. ' +
+    'Your teammates can open the link, read the diff, and leave line comments.',
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default function RootLayout({children}: LayoutProps<'/'>) {
