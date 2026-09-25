@@ -1,6 +1,6 @@
 # Better Diffs
 
-Share your code changes with your team without opening a pull request. Your teammates can open the link, read the diff, and leave line comments.
+Share your current changes with teammates without creating a PR. They can view the diff and leave comments.
 
 <a href="https://better-diffs.vercel.app/d/84d7c7dd-9312-4de7-b54a-16034dac8455">
   <picture>

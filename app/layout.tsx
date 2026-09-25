@@ -12,8 +12,8 @@ import {ToastProvider} from './_components/toast-provider';
 export const metadata: Metadata = {
   title: 'Better Diffs',
   description:
-    'Share your code changes with your team without opening a pull request. ' +
-    'Your teammates can open the link, read the diff, and leave line comments.',
+    'Share your current changes with teammates without creating a PR. ' +
+    'They can view the diff and leave comments.',
 };
 
 export const viewport: Viewport = {
