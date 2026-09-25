@@ -59,11 +59,8 @@ export default async function HomePage() {
           <Command label="Copy install command" command={COMMAND} />
 
           <Typography.Paragraph size="xs" color="muted">
-            Downloads a prebuilt binary for macOS or Linux into{' '}
-            <Typography.Code className="text-xs leading-5">
-              ~/.local/bin
-            </Typography.Code>{' '}
-            and points it at this instance. Needs{' '}
+            Downloads the CLI for macOS or Linux and points it at this instance.
+            Needs{' '}
             <Typography.Code className="text-xs leading-5">git</Typography.Code>{' '}
             to run.
           </Typography.Paragraph>

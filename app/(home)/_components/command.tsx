@@ -44,7 +44,7 @@ export function Command({label, command}: CommandProps) {
     <div className="flex items-start gap-2 rounded-field border border-border bg-surface-secondary p-2 ps-3">
       <code
         ref={commandRef}
-        className="min-w-0 flex-1 py-1.5 font-mono text-sm leading-relaxed whitespace-pre-wrap"
+        className="min-w-0 flex-1 overflow-x-auto py-1.5 font-mono text-sm leading-relaxed whitespace-pre"
       >
         {command}
       </code>
