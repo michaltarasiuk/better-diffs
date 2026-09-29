@@ -84,10 +84,7 @@ export const events = sqliteTable(
       .notNull()
       .default(sql`(datetime('now'))`),
   },
-  (t) => [
-    index('events_shareId_seq_idx').on(t.shareId, t.seq),
-    index('events_shareId_idx').on(t.shareId),
-  ],
+  (t) => [index('events_shareId_seq_idx').on(t.shareId, t.seq)],
 );
 
 export const eventsRelations = relations(events, ({one}) => ({
