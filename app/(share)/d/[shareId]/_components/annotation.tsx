@@ -24,12 +24,12 @@ import {
   isThreadAnnotation,
 } from '@/diffs/annotations';
 import {openThread} from '@/events/actions';
-import {ShareStateContext, ShareStoreContext} from '@/events/provider';
+import {FoldedShareStateContext, ShareStateContext} from '@/events/provider';
 import type {Anchor} from '@/events/schemas';
 import {useShareId} from '../_hooks/use-share-id';
 import {EDITOR_THEME} from '../_lib/editor-theme';
 import {EditorSkeleton} from './editor-skeleton';
-import {FileStateContext} from './provider';
+import {FileStatesContext} from './provider';
 
 interface File {
   readonly id: string;
@@ -148,9 +148,9 @@ function CommentForm({onDismiss}: CommentFormProps) {
     throw new TypeError('Annotation is not a form');
   }
 
-  const store = use(ShareStoreContext);
+  const state = use(ShareStateContext);
   const file = use(FileContext);
-  const fileState = use(FileStateContext);
+  const fileStates = use(FileStatesContext);
 
   return (
     <Editor
@@ -168,7 +168,7 @@ function CommentForm({onDismiss}: CommentFormProps) {
           line: annotation.lineNumber,
         };
 
-        const pendingIds = store.optimisticAll([
+        const pendingIds = state.optimisticAll([
           {
             actorId,
             createdAt,
@@ -199,11 +199,11 @@ function CommentForm({onDismiss}: CommentFormProps) {
             anchor,
           });
         } catch {
-          store.rejectAll(pendingIds);
+          state.rejectAll(pendingIds);
         }
       }}
       onChange={(state) => {
-        fileState.updateCommentFormDraft(
+        fileStates.updateCommentFormDraft(
           file.id,
           annotation.metadata.formId,
           state,
@@ -283,15 +283,15 @@ function ThreadAnnotation() {
     throw new TypeError('Annotation is not a thread');
   }
 
-  const state = use(ShareStateContext);
+  const folded = use(FoldedShareStateContext);
 
-  const thread = state.threads.get(annotation.metadata.threadId);
+  const thread = folded.threads.get(annotation.metadata.threadId);
   if (!isDefined(thread)) {
     throw new Error(`Thread not found: ${annotation.metadata.threadId}`);
   }
 
   const comments = thread.commentIds
-    .map((commentId) => state.comments.get(commentId))
+    .map((commentId) => folded.comments.get(commentId))
     .filter((comment) => isDefined(comment));
 
   return (

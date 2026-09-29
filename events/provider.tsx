@@ -15,9 +15,11 @@ import type {FoldedShareState} from './state';
 import {EMPTY_FOLDED_STATE, ShareState} from './state';
 import {hydrateShareEvents, type ShareEventsSync} from './sync';
 
-export const ShareStoreContext = createContext<ShareState>(null as never);
+export const ShareStateContext = createContext<ShareState>(null as never);
 
-export const ShareStateContext = createContext<FoldedShareState>(null as never);
+export const FoldedShareStateContext = createContext<FoldedShareState>(
+  null as never,
+);
 
 export function ShareEventsProvider({
   shareId,
@@ -48,13 +50,13 @@ function HydratedShareEvents({
 }) {
   const {events, sync} = use(hydratePromise);
   return (
-    <ShareStoreProvider events={events} sync={sync}>
+    <ShareStateProvider events={events} sync={sync}>
       {children}
-    </ShareStoreProvider>
+    </ShareStateProvider>
   );
 }
 
-function ShareStoreProvider({
+function ShareStateProvider({
   events,
   sync,
   children,
@@ -63,28 +65,30 @@ function ShareStoreProvider({
   readonly sync: ShareEventsSync;
   readonly children: React.ReactNode;
 }) {
-  const [store] = useState(() => {
-    const state = new ShareState();
-    state.ingest(events);
-    return state;
+  const [state] = useState(() => {
+    const shareState = new ShareState();
+    shareState.ingest(events);
+    return shareState;
   });
 
   useEffect(() => {
     return sync.startPolling((batch) => {
-      store.ingest(batch);
+      state.ingest(batch);
     });
-  }, [store, sync]);
+  }, [state, sync]);
 
   const snapshot = useSyncExternalStore(
-    store.subscribe,
-    store.getSnapshot,
+    state.subscribe,
+    state.getSnapshot,
     getServerSnapshot,
   );
 
   return (
-    <ShareStoreContext value={store}>
-      <ShareStateContext value={snapshot}>{children}</ShareStateContext>
-    </ShareStoreContext>
+    <ShareStateContext value={state}>
+      <FoldedShareStateContext value={snapshot}>
+        {children}
+      </FoldedShareStateContext>
+    </ShareStateContext>
   );
 }
 

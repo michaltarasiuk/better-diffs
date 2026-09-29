@@ -34,39 +34,39 @@ function defaultFileState(): FileState {
   };
 }
 
-export const HandleContext = createContext<React.RefObject<Handle | null>>(
+export const CodeViewRefContext = createContext<React.RefObject<Handle | null>>(
   null as never,
 );
 
-export const FileStateContext = createContext<ReturnType<typeof useFileState>>(
-  null as never,
-);
+export const FileStatesContext = createContext<
+  ReturnType<typeof useFileStates>
+>(null as never);
 
 export function CodeViewProvider({
   children,
 }: {
   readonly children: React.ReactNode;
 }) {
-  const handleRef = useRef<Handle>(null);
+  const codeViewRef = useRef<Handle>(null);
 
   return (
     <DiffProvider>
-      <HandleContext value={handleRef}>{children}</HandleContext>
+      <CodeViewRefContext value={codeViewRef}>{children}</CodeViewRefContext>
     </DiffProvider>
   );
 }
 
-export function FileStateProvider({
+export function FileStatesProvider({
   children,
 }: {
   readonly children: React.ReactNode;
 }) {
-  const fileState = useFileState();
+  const fileStates = useFileStates();
 
-  return <FileStateContext value={fileState}>{children}</FileStateContext>;
+  return <FileStatesContext value={fileStates}>{children}</FileStatesContext>;
 }
 
-function useFileState() {
+function useFileStates() {
   const shareId = useShareId();
   const [fileStates, setFileStates] = useLocalStorage(
     `share:${shareId}`,

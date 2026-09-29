@@ -17,7 +17,7 @@ import {isEditableTarget} from '@/utils/is-editable-target';
 import {isUnmodifiedKeyDown} from '@/utils/is-unmodified-key-down';
 import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';
 import {useQuery} from '../_hooks/use-query';
-import {HandleContext} from './provider';
+import {CodeViewRefContext} from './provider';
 
 interface TreeProps {
   readonly handoff: TreeHandoff;
@@ -28,7 +28,7 @@ interface TreeProps {
 
 export function Tree({handoff, preloaded, fileIdByPath, children}: TreeProps) {
   const {searchQuery, setSearchQuery} = useQuery();
-  const handleRef = use(HandleContext);
+  const codeViewRef = use(CodeViewRefContext);
   const {model} = useFileTree({
     ...getTreeOptions(handoff, {searchQuery}),
     onSearchChange(value) {
@@ -44,7 +44,7 @@ export function Tree({handoff, preloaded, fileIdByPath, children}: TreeProps) {
         throw new Error(`File not found: ${selectedPath}`);
       }
 
-      handleRef.current?.scrollTo({
+      codeViewRef.current?.scrollTo({
         type: 'item',
         id,
         align: 'start',

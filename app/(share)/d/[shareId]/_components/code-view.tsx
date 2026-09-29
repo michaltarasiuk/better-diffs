@@ -22,11 +22,11 @@ import {
   toThreadAnnotation,
 } from '@/diffs/annotations';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
-import {ShareStateContext} from '@/events/provider';
+import {FoldedShareStateContext} from '@/events/provider';
 import {useLines} from '../_hooks/use-lines';
 import {activeFileId} from '../_lib/active-file-id';
 import {AddCommentButton, DiffAnnotation} from './annotation';
-import {FileStateContext, HandleContext} from './provider';
+import {CodeViewRefContext, FileStatesContext} from './provider';
 
 interface CodeViewProps {
   readonly files: readonly {
@@ -43,16 +43,16 @@ export function CodeView({files}: CodeViewProps) {
     toggleFileViewed,
     addCommentForm,
     removeCommentForm,
-  } = use(FileStateContext);
+  } = use(FileStatesContext);
   const {selectedLines, setSelectedLines} = useLines();
 
   const isMobile = useIsMobile();
 
-  const shareState = use(ShareStateContext);
-  const codeViewRef = use(HandleContext);
+  const folded = use(FoldedShareStateContext);
+  const codeViewRef = use(CodeViewRefContext);
 
   const threadsByFilePath = Map.groupBy(
-    shareState.threads.values(),
+    folded.threads.values(),
     (thread) => thread.anchor.filePath,
   );
 
@@ -100,7 +100,7 @@ export function CodeView({files}: CodeViewProps) {
             ...commentForms,
           ]),
           collapsed,
-          version: version + shareState.version,
+          version: version + folded.version,
         };
       })}
       selectedLines={selectedLines}
