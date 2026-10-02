@@ -27,17 +27,15 @@ describe('deserializeMap', () => {
     expect(deserializeMap('[]')).toEqual(new Map());
   });
 
-  it('deserializes map entries', () => {
-    const map = deserializeMap<string, number>(
-      JSON.stringify([
-        ['b', 2],
-        ['a', 1],
-      ]),
-    );
+  it('deserializes map entries in stored order', () => {
+    const entries = [
+      ['b', 2],
+      ['a', 1],
+    ];
 
-    expect(map.get('a')).toBe(1);
-    expect(map.get('b')).toBe(2);
-    expect([...map.keys()]).toEqual(['b', 'a']);
+    const map = deserializeMap<string, number>(JSON.stringify(entries));
+
+    expect([...map]).toEqual(entries);
   });
 
   it('round-trips nested object values', () => {
@@ -56,10 +54,14 @@ describe('deserializeMap', () => {
     expect(restored).toEqual(original);
   });
 
-  it('throws when stored text is not an array', () => {
-    expect(() => deserializeMap('{"a":1}')).toThrow(TypeError);
-    expect(() => deserializeMap('{"a":1}')).toThrow(
-      'Map entries are not an array',
+  it.each([
+    {name: 'not an array', text: '{"a":1}'},
+    {name: 'an array of non-entries', text: '[1,2]'},
+    {name: 'an array with a short entry', text: '[["a"]]'},
+    {name: 'an array with a long entry', text: '[["a",1,2]]'},
+  ])('throws when stored text is $name', ({text}) => {
+    expect(() => deserializeMap(text)).toThrow(
+      new TypeError('Invalid map entries'),
     );
   });
 });

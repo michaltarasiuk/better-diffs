@@ -8,6 +8,8 @@ describe('isIterable', () => {
     {name: 'a string array', value: ['text/html']},
     {name: 'a Map', value: new Map()},
     {name: 'a Set', value: new Set()},
+    {name: 'a string', value: 'text/html'},
+    {name: 'a generator', value: (function* () {})()},
   ])('accepts $name', ({value}) => {
     expect(isIterable(value)).toBe(true);
   });
@@ -17,6 +19,7 @@ describe('isIterable', () => {
     {name: 'undefined', value: undefined},
     {name: 'a plain object', value: {}},
     {name: 'a record', value: {'text/html': 1}},
+    {name: 'a number', value: 1},
   ])('rejects $name', ({value}) => {
     expect(isIterable(value)).toBe(false);
   });

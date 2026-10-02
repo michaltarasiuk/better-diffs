@@ -14,7 +14,7 @@ import {
 import {useKeyDown} from '@/hooks/use-key-down';
 import {isDefined} from '@/utils/is-defined';
 import {isEditableTarget} from '@/utils/is-editable-target';
-import {isUnmodifiedKeyDown} from '@/utils/is-unmodified-key-down';
+import {isUnmodifiedKey} from '@/utils/is-unmodified-key';
 import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';
 import {useQuery} from '../_hooks/use-query';
 import {CodeViewRefContext} from './provider';
@@ -55,7 +55,7 @@ export function Tree({handoff, preloaded, fileIdByPath, children}: TreeProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useKeyDown(function focusSearch(event) {
-    if (!isUnmodifiedKeyDown(event, '/') || isEditableTarget(event.target)) {
+    if (!isUnmodifiedKey(event, '/') || isEditableTarget(event.target)) {
       return;
     }
     event.preventDefault();

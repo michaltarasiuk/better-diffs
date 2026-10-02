@@ -5,9 +5,13 @@ export function serializeMap<K, V>(map: ReadonlyMap<K, V>) {
 export function deserializeMap<K, V>(text: string) {
   const parsed: unknown = JSON.parse(text);
 
-  if (!Array.isArray(parsed)) {
-    throw new TypeError('Map entries are not an array');
+  if (!Array.isArray(parsed) || !parsed.every(isEntry)) {
+    throw new TypeError('Invalid map entries');
   }
 
   return new Map(parsed as [K, V][]);
+}
+
+function isEntry(value: unknown) {
+  return Array.isArray(value) && value.length === 2;
 }

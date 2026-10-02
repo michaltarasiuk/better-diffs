@@ -12,13 +12,13 @@ if (typeof window !== 'undefined') {
   });
 }
 
-export function storageAvailable(type: StorageType) {
+export function isStorageAvailable(type: StorageType) {
   let available = availabilityCache.get(type);
   if (!isDefined(available)) {
     available = probeStorage(type);
     availabilityCache.set(type, available);
   }
-  return available ?? false;
+  return available;
 }
 
 function probeStorage(type: StorageType) {
@@ -34,8 +34,10 @@ function probeStorage(type: StorageType) {
     return (
       error instanceof DOMException &&
       error.name === 'QuotaExceededError' &&
-      /* QuotaExceededError can also mean storage is disabled; treat it as
-         available only when something is already stored */
+      /*
+       * Some browsers throw QuotaExceededError when storage is disabled, so
+       * the error only means "full" when something is already stored.
+       */
       isDefined(storage) &&
       storage.length !== 0
     );

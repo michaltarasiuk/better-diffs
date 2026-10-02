@@ -3,7 +3,7 @@
 import {act, renderHook} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-import * as storageAvailableModule from '@/utils/storage-available';
+import * as isStorageAvailableModule from '@/utils/is-storage-available';
 import {useLocalStorage} from './use-local-storage';
 
 const KEY = 'preference';
@@ -129,7 +129,9 @@ describe('useLocalStorage', () => {
 
   it('returns the initial value when storage is unavailable', () => {
     localStorage.setItem(KEY, JSON.stringify({theme: 'dark'}));
-    vi.spyOn(storageAvailableModule, 'storageAvailable').mockReturnValue(false);
+    vi.spyOn(isStorageAvailableModule, 'isStorageAvailable').mockReturnValue(
+      false,
+    );
 
     const {result} = renderPreferenceHook();
 
@@ -137,7 +139,9 @@ describe('useLocalStorage', () => {
   });
 
   it('does not write to localStorage when storage is unavailable', () => {
-    vi.spyOn(storageAvailableModule, 'storageAvailable').mockReturnValue(false);
+    vi.spyOn(isStorageAvailableModule, 'isStorageAvailable').mockReturnValue(
+      false,
+    );
     const setItem = vi.spyOn(Storage.prototype, 'setItem');
 
     const {result} = renderPreferenceHook();

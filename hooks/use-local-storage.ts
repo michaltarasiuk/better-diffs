@@ -2,7 +2,7 @@ import {use, useEffect, useEffectEvent, useState} from 'react';
 import {browser} from 'react-dom';
 
 import {isDefined} from '@/utils/is-defined';
-import {storageAvailable} from '@/utils/storage-available';
+import {isStorageAvailable} from '@/utils/is-storage-available';
 
 export function useLocalStorage<T>(
   key: string,
@@ -27,7 +27,7 @@ export function useLocalStorage<T>(
   }
 
   function getItem() {
-    if (!storageAvailable('localStorage')) {
+    if (!isStorageAvailable('localStorage')) {
       return initialItem();
     }
 
@@ -54,7 +54,7 @@ export function useLocalStorage<T>(
           ? (setItemAction as (prevState: T) => T)(i)
           : setItemAction;
 
-      if (storageAvailable('localStorage')) {
+      if (isStorageAvailable('localStorage')) {
         localStorage.setItem(key, serialize(newItem));
       }
 

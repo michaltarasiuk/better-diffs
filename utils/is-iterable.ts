@@ -1,8 +1,8 @@
 import {isDefined} from './is-defined';
 
-export function isIterable<T>(value: unknown): value is Iterable<T> {
+export function isIterable(value: unknown): value is Iterable<unknown> {
   return (
     isDefined(value) &&
-    typeof (value as Iterable<T>)[Symbol.iterator] === 'function'
+    typeof (value as Partial<Iterable<unknown>>)[Symbol.iterator] === 'function'
   );
 }

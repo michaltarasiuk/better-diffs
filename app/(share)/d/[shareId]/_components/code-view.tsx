@@ -13,7 +13,7 @@ import {useKeyDown} from '@/hooks/use-key-down';
 import {useIsMobile} from '@/hooks/use-media-query';
 import {isDefined} from '@/utils/is-defined';
 import {isEditableTarget} from '@/utils/is-editable-target';
-import {isUnmodifiedKeyDown} from '@/utils/is-unmodified-key-down';
+import {isUnmodifiedKey} from '@/utils/is-unmodified-key';
 import type {AnnotationMetadata} from '@/diffs/annotations';
 import {
   isDiffLine,
@@ -56,7 +56,7 @@ export function CodeView({files}: CodeViewProps) {
   );
 
   useKeyDown(function toggleViewed(event) {
-    if (!isUnmodifiedKeyDown(event, 'v') || isEditableTarget(event.target)) {
+    if (!isUnmodifiedKey(event, 'v') || isEditableTarget(event.target)) {
       return;
     }
 

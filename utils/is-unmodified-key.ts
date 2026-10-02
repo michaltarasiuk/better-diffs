@@ -1,4 +1,4 @@
-export function isUnmodifiedKeyDown(event: KeyboardEvent, key: string) {
+export function isUnmodifiedKey(event: KeyboardEvent, key: string) {
   return (
     event.key === key &&
     !event.metaKey &&
