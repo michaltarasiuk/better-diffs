@@ -1,20 +1,16 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-import {createSession} from '@/testing/auth';
 import {
   createAnchor,
   createCommentCreated,
   createCommentDeleted,
   createCommentEdited,
-  createCreateCommentInput,
-  createDeleteCommentInput,
-  createEditCommentInput,
-  createOpenThreadInput,
-  createResolveThreadInput,
+  createLexicalBody,
   createThreadOpened,
   createThreadResolved,
 } from '@/testing/events';
 import {uuid} from '@/testing/uuid';
+import type {Session} from '@/auth/auth';
 import {
   createComment,
   deleteComment,
@@ -22,7 +18,14 @@ import {
   openThread,
   resolveThread,
 } from './actions';
-import type {OpenThreadInput, ShareEventPayload} from './schemas';
+import type {
+  CreateCommentInput,
+  DeleteCommentInput,
+  EditCommentInput,
+  OpenThreadInput,
+  ResolveThreadInput,
+  ShareEventPayload,
+} from './schemas';
 
 const {appendEvents, getSession, unauthorized} = vi.hoisted(() => ({
   appendEvents: vi.fn<typeof import('@/db/events').appendEvents>(),
@@ -35,6 +38,68 @@ const {appendEvents, getSession, unauthorized} = vi.hoisted(() => ({
 vi.mock('@/auth/server', () => ({getSession}));
 vi.mock('@/db/events', () => ({appendEvents}));
 vi.mock('next/navigation', () => ({unauthorized}));
+
+function createSession() {
+  return {user: {id: uuid()}} as Session;
+}
+
+function createOpenThreadInput(
+  overrides: Partial<OpenThreadInput> = {},
+): OpenThreadInput {
+  const shareId = overrides.shareId ?? uuid();
+
+  return {
+    shareId,
+    threadId: uuid(),
+    commentId: uuid(),
+    body: createLexicalBody(),
+    anchor: createAnchor({shareId}),
+    ...overrides,
+  };
+}
+
+function createResolveThreadInput(
+  overrides: Partial<ResolveThreadInput> = {},
+): ResolveThreadInput {
+  return {
+    shareId: uuid(),
+    threadId: uuid(),
+    ...overrides,
+  };
+}
+
+function createCreateCommentInput(
+  overrides: Partial<CreateCommentInput> = {},
+): CreateCommentInput {
+  return {
+    shareId: uuid(),
+    threadId: uuid(),
+    commentId: uuid(),
+    body: createLexicalBody(),
+    ...overrides,
+  };
+}
+
+function createEditCommentInput(
+  overrides: Partial<EditCommentInput> = {},
+): EditCommentInput {
+  return {
+    shareId: uuid(),
+    commentId: uuid(),
+    body: createLexicalBody(),
+    ...overrides,
+  };
+}
+
+function createDeleteCommentInput(
+  overrides: Partial<DeleteCommentInput> = {},
+): DeleteCommentInput {
+  return {
+    shareId: uuid(),
+    commentId: uuid(),
+    ...overrides,
+  };
+}
 
 function createOpenThreadPayloads(input: OpenThreadInput) {
   return [

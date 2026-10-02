@@ -1,8 +1,9 @@
 import type {GetHoveredLineResult} from '@pierre/diffs';
 import {describe, expect, expectTypeOf, it} from 'vitest';
 
-import {createThreadState} from '@/testing/events';
+import {createActor, createAnchor, CREATED_AT} from '@/testing/events';
 import {uuid} from '@/testing/uuid';
+import type {ThreadState} from '@/events/state';
 import {
   type DiffAnnotation,
   type FormAnnotationMetadata,
@@ -70,14 +71,15 @@ describe('isFormAnnotation', () => {
 
 describe('toThreadAnnotation', () => {
   it('maps thread anchor and id to a diff annotation', () => {
-    const thread = createThreadState({
-      anchor: {
-        shareId: uuid(),
-        filePath: 'b.txt',
-        side: 'deletions',
-        line: 12,
-      },
-    });
+    const thread: ThreadState = {
+      id: uuid(),
+      anchor: createAnchor({side: 'deletions', line: 12}),
+      actorId: uuid(),
+      actor: createActor(),
+      resolved: false,
+      commentIds: [],
+      createdAt: CREATED_AT,
+    };
 
     expect(toThreadAnnotation(thread)).toEqual({
       side: 'deletions',

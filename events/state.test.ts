@@ -1,18 +1,40 @@
 import {describe, expect, expectTypeOf, it, vi} from 'vitest';
 
 import {
+  createActor,
   createCommentCreated,
   createCommentDeleted,
   createCommentEdited,
+  CREATED_AT,
   createLexicalBody,
-  createOptimisticEvent,
-  createShareEventLog,
+  createShareEvent,
   createThreadOpened,
   createThreadResolved,
 } from '@/testing/events';
 import {uuid} from '@/testing/uuid';
 import type {CommentCreatedPayload, ShareEventPayload} from './schemas';
-import {foldEvents, isType, ShareState} from './state';
+import {foldEvents, isType, type OptimisticEvent, ShareState} from './state';
+
+function createShareEventLog() {
+  const shareId = uuid();
+  const actorId = uuid();
+  const actor = createActor();
+  let seq = 0;
+
+  return (...payloads: readonly ShareEventPayload[]) =>
+    payloads.map((payload) =>
+      createShareEvent(payload, {seq: ++seq, shareId, actorId, actor}),
+    );
+}
+
+function createOptimisticEvent(payload: ShareEventPayload): OptimisticEvent {
+  return {
+    actorId: uuid(),
+    actor: createActor(),
+    createdAt: CREATED_AT,
+    payload,
+  };
+}
 
 function thread() {
   const opened = createThreadOpened();

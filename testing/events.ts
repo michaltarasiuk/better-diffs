@@ -2,24 +2,27 @@ import type {SerializedEditorState} from 'lexical';
 
 import {uuid} from '@/testing/uuid';
 import {
+  type Actor,
   type Anchor,
   type CommentCreatedPayload,
   type CommentDeletedPayload,
   type CommentEditedPayload,
-  type CreateCommentInput,
-  type DeleteCommentInput,
-  type EditCommentInput,
-  type OpenThreadInput,
-  type ResolveThreadInput,
   type ShareEvent,
   type ShareEventPayload,
   subjectIdFromPayload,
   type ThreadOpenedPayload,
   type ThreadResolvedPayload,
 } from '@/events/schemas';
-import type {OptimisticEvent, ThreadState} from '@/events/state';
 
-const CREATED_AT = '1970-01-01T00:00:00.000Z';
+export const CREATED_AT = '1970-01-01T00:00:00.000Z';
+
+export function createActor(overrides: Partial<Actor> = {}): Actor {
+  return {
+    name: 'Name',
+    image: null,
+    ...overrides,
+  };
+}
 
 export function createAnchor(overrides: Partial<Anchor> = {}): Anchor {
   return {
@@ -38,13 +41,11 @@ export function createLexicalBody(text = 'text') {
 export function createThreadOpened(
   overrides: Partial<ThreadOpenedPayload> = {},
 ): ThreadOpenedPayload {
-  const {anchor, ...rest} = overrides;
-
   return {
     $type: 'thread.opened',
     threadId: uuid(),
-    anchor: createAnchor(anchor),
-    ...rest,
+    anchor: createAnchor(),
+    ...overrides,
   };
 }
 
@@ -61,27 +62,23 @@ export function createThreadResolved(
 export function createCommentCreated(
   overrides: Partial<CommentCreatedPayload> = {},
 ): CommentCreatedPayload {
-  const {body, ...rest} = overrides;
-
   return {
     $type: 'comment.created',
     threadId: uuid(),
     commentId: uuid(),
-    body: body ?? createLexicalBody(),
-    ...rest,
+    body: createLexicalBody(),
+    ...overrides,
   };
 }
 
 export function createCommentEdited(
   overrides: Partial<CommentEditedPayload> = {},
 ): CommentEditedPayload {
-  const {body, ...rest} = overrides;
-
   return {
     $type: 'comment.edited',
     commentId: uuid(),
-    body: body ?? createLexicalBody(),
-    ...rest,
+    body: createLexicalBody(),
+    ...overrides,
   };
 }
 
@@ -95,147 +92,20 @@ export function createCommentDeleted(
   };
 }
 
-export function createOpenThreadInput(
-  overrides: Partial<OpenThreadInput> = {},
-): OpenThreadInput {
-  const {body, anchor, shareId: shareIdOverride, ...rest} = overrides;
-  const shareId = shareIdOverride ?? uuid();
-
-  return {
-    shareId,
-    threadId: uuid(),
-    commentId: uuid(),
-    body: body ?? createLexicalBody(),
-    anchor: createAnchor({shareId, ...anchor}),
-    ...rest,
-  };
-}
-
-export function createResolveThreadInput(
-  overrides: Partial<ResolveThreadInput> = {},
-): ResolveThreadInput {
-  return {
-    shareId: uuid(),
-    threadId: uuid(),
-    ...overrides,
-  };
-}
-
-export function createCreateCommentInput(
-  overrides: Partial<CreateCommentInput> = {},
-): CreateCommentInput {
-  const {body, ...rest} = overrides;
-
-  return {
-    shareId: uuid(),
-    threadId: uuid(),
-    commentId: uuid(),
-    body: body ?? createLexicalBody(),
-    ...rest,
-  };
-}
-
-export function createEditCommentInput(
-  overrides: Partial<EditCommentInput> = {},
-): EditCommentInput {
-  const {body, ...rest} = overrides;
-
-  return {
-    shareId: uuid(),
-    commentId: uuid(),
-    body: body ?? createLexicalBody(),
-    ...rest,
-  };
-}
-
-export function createDeleteCommentInput(
-  overrides: Partial<DeleteCommentInput> = {},
-): DeleteCommentInput {
-  return {
-    shareId: uuid(),
-    commentId: uuid(),
-    ...overrides,
-  };
-}
-
-export function createThreadState(
-  overrides: Partial<ThreadState> = {},
-): ThreadState {
-  const {anchor, ...rest} = overrides;
-
-  return {
-    id: uuid(),
-    anchor: createAnchor(anchor),
-    actorId: uuid(),
-    actor: {
-      name: 'Name',
-      image: null,
-    },
-    resolved: false,
-    commentIds: [],
-    createdAt: CREATED_AT,
-    ...rest,
-  };
-}
-
 export function createShareEvent(
   payload: ShareEventPayload,
-  overrides: Partial<ShareEvent> = {},
+  overrides: Partial<Omit<ShareEvent, 'payload' | 'type' | 'subjectId'>> = {},
 ): ShareEvent {
   return {
     id: uuid(),
     shareId: uuid(),
     seq: 1,
+    actorId: uuid(),
+    actor: createActor(),
+    createdAt: CREATED_AT,
+    ...overrides,
     type: payload.$type,
     subjectId: subjectIdFromPayload(payload),
-    actorId: uuid(),
-    actor: {
-      name: 'Name',
-      image: null,
-    },
     payload,
-    createdAt: CREATED_AT,
-    ...overrides,
-  };
-}
-
-export function createShareEventLog(overrides: Partial<ShareEvent> = {}) {
-  let seq = 0;
-
-  const shareId = overrides.shareId ?? uuid();
-  const actorId = overrides.actorId ?? uuid();
-  const actor = overrides.actor ?? {
-    name: 'Name',
-    image: null,
-  };
-  const createdAt = overrides.createdAt ?? CREATED_AT;
-
-  return (...payloads: readonly ShareEventPayload[]) =>
-    payloads.map((payload) =>
-      createShareEvent(payload, {
-        id: uuid(),
-        seq: ++seq,
-        shareId,
-        actorId,
-        actor,
-        createdAt,
-        ...overrides,
-      }),
-    );
-}
-
-export function createOptimisticEvent(
-  payload: ShareEventPayload,
-  overrides: Partial<OptimisticEvent> = {},
-): OptimisticEvent {
-  return {
-    actorId: uuid(),
-    actor: {
-      name: 'Name',
-      image: null,
-    },
-    createdAt: CREATED_AT,
-    payload,
-    ...overrides,
   };
 }
