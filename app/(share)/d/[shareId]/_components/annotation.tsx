@@ -1,6 +1,6 @@
 'use client';
 
-import {createContext, Fragment, use, useState} from 'react';
+import {createContext, use, useState} from 'react';
 import dynamic from 'next/dynamic';
 import {Button, Card, Separator, Spinner} from '@heroui/react';
 import {getLineAnnotationName} from '@pierre/diffs';
@@ -45,19 +45,19 @@ const FileContext = createContext<File>(null as never);
 
 const AnnotationContext = createContext<DiffAnnotation>(null as never);
 
-interface DiffAnnotationProps {
+interface AnnotationProps {
   readonly annotation: DiffAnnotation;
   readonly fileId: string;
   readonly filePath: string;
   readonly onDismiss: () => void;
 }
 
-export function DiffAnnotation({
+export function Annotation({
   annotation,
   fileId,
   filePath,
   onDismiss,
-}: DiffAnnotationProps) {
+}: AnnotationProps) {
   return (
     <FileContext
       value={{
@@ -104,7 +104,14 @@ function AnnotationBody({onDismiss}: AnnotationBodyProps) {
       metadata satisfies never;
   }
 
-  return <div {...focusWithinProps}>{annotation}</div>;
+  return (
+    <div
+      {...focusWithinProps}
+      className="w-(--diffs-single-annotation-width,100%)"
+    >
+      {annotation}
+    </div>
+  );
 }
 
 interface CommentFormProps {

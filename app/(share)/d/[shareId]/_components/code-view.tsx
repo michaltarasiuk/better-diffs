@@ -25,7 +25,7 @@ import {CODE_VIEW_OPTIONS} from '@/diffs/options';
 import {FoldedShareStateContext} from '@/events/provider';
 import {useLines} from '../_hooks/use-lines';
 import {activeFileId} from '../_lib/active-file-id';
-import {DiffAnnotation} from './annotation';
+import {Annotation} from './annotation';
 import {GutterUtility} from './gutter-utility';
 import {CodeViewRefContext, FileStatesContext} from './provider';
 
@@ -144,7 +144,7 @@ export function CodeView({files}: CodeViewProps) {
           throw new Error(`Unexpected item type: ${item.type}`);
         }
         return (
-          <DiffAnnotation
+          <Annotation
             annotation={annotation}
             fileId={item.id}
             filePath={item.fileDiff.name}
