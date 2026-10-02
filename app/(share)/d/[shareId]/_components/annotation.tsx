@@ -294,6 +294,7 @@ function ThreadAnnotation() {
           <div className="mx-3">
             <Separator />
           </div>
+
           <div className="p-3">
             <ReplyInput
               onComment={async (body) => {
