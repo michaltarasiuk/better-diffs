@@ -139,16 +139,13 @@ export function CodeView({files}: CodeViewProps) {
           item.type === 'diff' &&
           isDiffAnnotation<AnnotationMetadata>(annotation);
 
-        if (!isDiff) {
-          return null;
-        }
-        return (
+        return isDiff ? (
           <Annotation
             annotation={annotation}
             fileId={item.id}
             filePath={item.fileDiff.name}
           />
-        );
+        ) : null;
       }}
       options={{
         ...CODE_VIEW_OPTIONS,
