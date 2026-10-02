@@ -231,7 +231,7 @@ function SignInCard({variant = 'primary', onDismiss}: SignInCardProps) {
       <Card.Header>
         <Card.Title>Sign in to comment</Card.Title>
         <Card.Description>
-          Connect your GitHub account to leave comments on this diff.
+          Use your GitHub account to leave a comment.
         </Card.Description>
       </Card.Header>
 
