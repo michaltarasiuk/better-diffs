@@ -223,7 +223,7 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
 
       <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
         <Button
-          id={getLineAnnotationName(annotation) + '-sign-in-cancel'}
+          id={`${getLineAnnotationName(annotation)}-sign-in-cancel`}
           variant="ghost"
           size="sm"
           onPress={() => onDismiss?.()}
@@ -232,7 +232,7 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
         </Button>
 
         <Button
-          id={getLineAnnotationName(annotation) + '-sign-in-github'}
+          id={`${getLineAnnotationName(annotation)}-sign-in-github`}
           size="sm"
           isPending={isSigningIn}
           onPress={async () => {
