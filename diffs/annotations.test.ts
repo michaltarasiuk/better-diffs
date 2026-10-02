@@ -1,4 +1,3 @@
-import type {GetHoveredLineResult} from '@pierre/diffs';
 import {describe, expect, expectTypeOf, it} from 'vitest';
 
 import {createActor, createAnchor, CREATED_AT} from '@/testing/events';
@@ -7,58 +6,56 @@ import type {ThreadState} from '@/events/state';
 import {
   type DiffAnnotation,
   type FormAnnotationMetadata,
-  isDiffLine,
+  type FormDiffAnnotation,
   isFormAnnotation,
+  isThreadAnnotation,
   sortAnnotations,
+  type ThreadAnnotationMetadata,
+  type ThreadDiffAnnotation,
   toThreadAnnotation,
 } from './annotations';
 
-function annotation(
-  overrides: Partial<DiffAnnotation> & Pick<DiffAnnotation, 'metadata'>,
-): DiffAnnotation {
+type AnnotationPosition = Partial<Pick<DiffAnnotation, 'side' | 'lineNumber'>>;
+
+function createFormAnnotation(
+  position: AnnotationPosition = {},
+): FormDiffAnnotation {
   return {
     side: 'additions',
     lineNumber: 1,
-    ...overrides,
+    metadata: {
+      type: 'form',
+      formId: uuid(),
+    },
+    ...position,
+  };
+}
+
+function createThreadAnnotation(
+  position: AnnotationPosition = {},
+): ThreadDiffAnnotation {
+  return {
+    side: 'additions',
+    lineNumber: 1,
+    metadata: {
+      type: 'thread',
+      threadId: uuid(),
+    },
+    ...position,
   };
 }
 
 describe('isFormAnnotation', () => {
   it('returns true for form metadata', () => {
-    expect(
-      isFormAnnotation(
-        annotation({
-          side: 'deletions',
-          lineNumber: 2,
-          metadata: {
-            type: 'form',
-            formId: uuid(),
-          },
-        }),
-      ),
-    ).toBe(true);
+    expect(isFormAnnotation(createFormAnnotation())).toBe(true);
   });
 
   it('returns false for thread metadata', () => {
-    expect(
-      isFormAnnotation(
-        annotation({
-          metadata: {
-            type: 'thread',
-            threadId: uuid(),
-          },
-        }),
-      ),
-    ).toBe(false);
+    expect(isFormAnnotation(createThreadAnnotation())).toBe(false);
   });
 
   it('narrows the type when the check passes', () => {
-    const value = annotation({
-      metadata: {
-        type: 'form',
-        formId: uuid(),
-      },
-    });
+    const value: DiffAnnotation = createFormAnnotation();
 
     if (!isFormAnnotation(value)) {
       throw new Error('Expected form annotation');
@@ -66,6 +63,27 @@ describe('isFormAnnotation', () => {
 
     expect(value.metadata.type).toBe('form');
     expectTypeOf(value.metadata).toEqualTypeOf<FormAnnotationMetadata>();
+  });
+});
+
+describe('isThreadAnnotation', () => {
+  it('returns true for thread metadata', () => {
+    expect(isThreadAnnotation(createThreadAnnotation())).toBe(true);
+  });
+
+  it('returns false for form metadata', () => {
+    expect(isThreadAnnotation(createFormAnnotation())).toBe(false);
+  });
+
+  it('narrows the type when the check passes', () => {
+    const value: DiffAnnotation = createThreadAnnotation();
+
+    if (!isThreadAnnotation(value)) {
+      throw new Error('Expected thread annotation');
+    }
+
+    expect(value.metadata.type).toBe('thread');
+    expectTypeOf(value.metadata).toEqualTypeOf<ThreadAnnotationMetadata>();
   });
 });
 
@@ -81,7 +99,9 @@ describe('toThreadAnnotation', () => {
       createdAt: CREATED_AT,
     };
 
-    expect(toThreadAnnotation(thread)).toEqual({
+    const annotation = toThreadAnnotation(thread);
+
+    expect(annotation).toEqual({
       side: 'deletions',
       lineNumber: 12,
       metadata: {
@@ -89,6 +109,7 @@ describe('toThreadAnnotation', () => {
         threadId: thread.id,
       },
     });
+    expectTypeOf(annotation).toEqualTypeOf<ThreadDiffAnnotation>();
   });
 });
 
@@ -98,30 +119,12 @@ describe('sortAnnotations', () => {
   });
 
   it('sorts by line number ascending', () => {
-    const first = annotation({
-      side: 'additions',
-      lineNumber: 1,
-      metadata: {
-        type: 'form',
-        formId: uuid(),
-      },
-    });
-    const second = annotation({
+    const first = createFormAnnotation({lineNumber: 1});
+    const second = createThreadAnnotation({
       side: 'deletions',
       lineNumber: 3,
-      metadata: {
-        type: 'thread',
-        threadId: uuid(),
-      },
     });
-    const third = annotation({
-      side: 'additions',
-      lineNumber: 2,
-      metadata: {
-        type: 'form',
-        formId: uuid(),
-      },
-    });
+    const third = createFormAnnotation({lineNumber: 2});
 
     expect(sortAnnotations([second, third, first])).toEqual([
       first,
@@ -131,21 +134,10 @@ describe('sortAnnotations', () => {
   });
 
   it('orders deletions before additions on the same line', () => {
-    const additions = annotation({
-      side: 'additions',
-      lineNumber: 4,
-      metadata: {
-        type: 'form',
-        formId: uuid(),
-      },
-    });
-    const deletions = annotation({
+    const additions = createFormAnnotation({lineNumber: 4});
+    const deletions = createThreadAnnotation({
       side: 'deletions',
       lineNumber: 4,
-      metadata: {
-        type: 'thread',
-        threadId: uuid(),
-      },
     });
 
     expect(sortAnnotations([additions, deletions])).toEqual([
@@ -156,68 +148,11 @@ describe('sortAnnotations', () => {
 
   it('does not mutate the input array', () => {
     const annotations = [
-      annotation({
-        side: 'additions',
-        lineNumber: 2,
-        metadata: {
-          type: 'form',
-          formId: uuid(),
-        },
-      }),
-      annotation({
-        side: 'additions',
-        lineNumber: 1,
-        metadata: {
-          type: 'form',
-          formId: uuid(),
-        },
-      }),
+      createFormAnnotation({lineNumber: 2}),
+      createFormAnnotation({lineNumber: 1}),
     ];
 
     expect(sortAnnotations(annotations)).not.toBe(annotations);
-    expect(annotations[0]?.lineNumber).toBe(2);
-  });
-});
-
-type DiffLine = GetHoveredLineResult<'diff'>;
-type FileLine = GetHoveredLineResult<'file'>;
-type HoveredLine = FileLine | DiffLine;
-
-function diffLine(overrides: Partial<DiffLine> = {}) {
-  return {
-    side: 'additions',
-    lineNumber: 1,
-    ...overrides,
-  } satisfies DiffLine;
-}
-
-function fileLine(overrides: Partial<FileLine> = {}) {
-  return {
-    lineNumber: 1,
-    ...overrides,
-  } satisfies FileLine;
-}
-
-describe('isDiffLine', () => {
-  it('returns true for diff hover results', () => {
-    expect(isDiffLine(diffLine({lineNumber: 7}))).toBe(true);
-  });
-
-  it('returns false for file hover results', () => {
-    expect(isDiffLine(fileLine({lineNumber: 7}))).toBe(false);
-  });
-
-  it('narrows the type when the check passes', () => {
-    const line: HoveredLine = diffLine({
-      side: 'deletions',
-      lineNumber: 3,
-    });
-
-    if (!isDiffLine(line)) {
-      throw new Error('Expected diff line');
-    }
-
-    expect(line.side).toBe('deletions');
-    expectTypeOf(line).toEqualTypeOf<DiffLine>();
+    expect(annotations.map(({lineNumber}) => lineNumber)).toEqual([2, 1]);
   });
 });

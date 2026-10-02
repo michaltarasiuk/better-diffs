@@ -2,12 +2,12 @@ import type {SerializedEditorState} from 'lexical';
 import {z} from 'zod';
 
 import {isDefined} from '@/utils/is-defined';
-import {SelectionSide} from '@/diffs/schemas';
+import {AnnotationSide} from '@/diffs/schemas';
 
 export const Anchor = z.object({
   shareId: z.uuid(),
   filePath: z.string(),
-  side: SelectionSide,
+  side: AnnotationSide,
   line: z.int().positive(),
 });
 export type Anchor = z.infer<typeof Anchor>;

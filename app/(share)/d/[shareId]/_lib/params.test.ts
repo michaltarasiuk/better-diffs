@@ -41,6 +41,8 @@ describe('loadParams', () => {
     it.each([
       ['malformed JSON', '{not json'],
       ['incomplete SelectedLines', '{"id":"a"}'],
+      ['a zero line number', '{"id":"a","range":{"start":0,"end":2}}'],
+      ['a fractional line number', '{"id":"a","range":{"start":1.5,"end":2}}'],
       ['a non-object payload', '[]'],
     ])('returns null for %s', (_name, value) => {
       expect(loadParams({lines: value}).lines).toBe(null);

@@ -1,4 +1,4 @@
-import type {DiffLineAnnotation, GetHoveredLineResult} from '@pierre/diffs';
+import type {AnnotationSide, DiffLineAnnotation} from '@pierre/diffs';
 import type {SerializedEditorState} from 'lexical';
 
 import type {ThreadState} from '@/events/state';
@@ -21,9 +21,6 @@ export type DiffAnnotation = DiffLineAnnotation<AnnotationMetadata>;
 export type FormDiffAnnotation = DiffLineAnnotation<FormAnnotationMetadata>;
 export type ThreadDiffAnnotation = DiffLineAnnotation<ThreadAnnotationMetadata>;
 
-export type DiffLine = GetHoveredLineResult<'diff'>;
-export type HoveredLine = GetHoveredLineResult<'file'> | DiffLine;
-
 export function isFormAnnotation(
   annotation: DiffAnnotation,
 ): annotation is FormDiffAnnotation {
@@ -36,7 +33,7 @@ export function isThreadAnnotation(
   return annotation.metadata.type === 'thread';
 }
 
-export function toThreadAnnotation(thread: ThreadState): DiffAnnotation {
+export function toThreadAnnotation(thread: ThreadState): ThreadDiffAnnotation {
   return {
     side: thread.anchor.side,
     lineNumber: thread.anchor.line,
@@ -47,21 +44,16 @@ export function toThreadAnnotation(thread: ThreadState): DiffAnnotation {
   };
 }
 
-const ANNOTATION_SIDE_ORDER = {
+const SIDE_ORDER = {
   deletions: 0,
   additions: 1,
-} as const;
+} as const satisfies Record<AnnotationSide, number>;
 
 export function sortAnnotations<T extends DiffAnnotation>(
   annotations: readonly T[],
 ) {
   return annotations.toSorted(
     (a, b) =>
-      a.lineNumber - b.lineNumber ||
-      ANNOTATION_SIDE_ORDER[a.side] - ANNOTATION_SIDE_ORDER[b.side],
+      a.lineNumber - b.lineNumber || SIDE_ORDER[a.side] - SIDE_ORDER[b.side],
   );
-}
-
-export function isDiffLine(line: HoveredLine): line is DiffLine {
-  return 'side' in line;
 }

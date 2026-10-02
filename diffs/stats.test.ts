@@ -2,8 +2,8 @@ import {describe, expect, it} from 'vitest';
 
 import {computeDiffStats, type DiffStatsFile, formatDiffStat} from './stats';
 
-function fileDiff(...hunks: DiffStatsFile['hunks'][number][]) {
-  return {hunks} satisfies DiffStatsFile;
+function createDiffStatsFile(...hunks: DiffStatsFile['hunks']): DiffStatsFile {
+  return {hunks};
 }
 
 describe('computeDiffStats', () => {
@@ -19,7 +19,7 @@ describe('computeDiffStats', () => {
   it('sums every hunk across every file', () => {
     expect(
       computeDiffStats([
-        fileDiff(
+        createDiffStatsFile(
           {
             additionLines: 3,
             deletionLines: 1,
@@ -29,7 +29,7 @@ describe('computeDiffStats', () => {
             deletionLines: 0,
           },
         ),
-        fileDiff({
+        createDiffStatsFile({
           additionLines: 0,
           deletionLines: 4,
         }),
@@ -43,7 +43,7 @@ describe('computeDiffStats', () => {
   });
 
   it('counts a file with no hunks and reports zero line changes', () => {
-    expect(computeDiffStats([fileDiff()])).toEqual({
+    expect(computeDiffStats([createDiffStatsFile()])).toEqual({
       files: 1,
       additions: 0,
       deletions: 0,

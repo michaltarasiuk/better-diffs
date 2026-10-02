@@ -1,8 +1,8 @@
 import {Accordion, Separator, tv, type VariantProps} from '@heroui/react';
 
-import {type DiffStats as DiffStatsData, formatDiffStat} from '@/diffs/stats';
+import {type DiffStats, formatDiffStat} from '@/diffs/stats';
 
-export function Stats({stats}: {readonly stats: DiffStatsData}) {
+export function Stats({stats}: {readonly stats: DiffStats}) {
   return (
     <Accordion defaultExpandedKeys={['stats']}>
       <Accordion.Item id="stats">

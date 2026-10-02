@@ -1,15 +1,22 @@
+import type * as Diffs from '@pierre/diffs';
 import {z} from 'zod';
 
-export const SelectionSide = z.enum(['deletions', 'additions']);
-export type SelectionSide = z.infer<typeof SelectionSide>;
+export const AnnotationSide = z.enum([
+  'deletions',
+  'additions',
+]) satisfies z.ZodType<Diffs.AnnotationSide>;
+
+const SelectionSide = z.enum([
+  'deletions',
+  'additions',
+]) satisfies z.ZodType<Diffs.SelectionSide>;
 
 const SelectedLineRange = z.object({
-  start: z.number(),
-  end: z.number(),
+  start: z.int().positive(),
+  end: z.int().positive(),
   side: SelectionSide.optional(),
   endSide: SelectionSide.optional(),
-});
-export type SelectedLineRange = z.infer<typeof SelectedLineRange>;
+}) satisfies z.ZodType<Diffs.SelectedLineRange>;
 
 export const SelectedLines = z.object({
   id: z.string(),

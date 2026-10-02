@@ -9,10 +9,10 @@ import {newId} from '@/utils/new-id';
 import {deserializeMap, serializeMap} from '@/utils/serialize-map';
 import {
   type AnnotationMetadata,
-  type DiffLine,
   type FormDiffAnnotation,
   sortAnnotations,
 } from '@/diffs/annotations';
+import type {DiffLine} from '@/diffs/lines';
 import {DiffProvider} from '@/diffs/provider';
 import {useShareId} from '../_hooks/use-share-id';
 

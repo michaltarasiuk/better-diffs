@@ -15,11 +15,8 @@ import {isDefined} from '@/utils/is-defined';
 import {isEditableTarget} from '@/utils/is-editable-target';
 import {isUnmodifiedKey} from '@/utils/is-unmodified-key';
 import type {AnnotationMetadata} from '@/diffs/annotations';
-import {
-  isDiffLine,
-  sortAnnotations,
-  toThreadAnnotation,
-} from '@/diffs/annotations';
+import {sortAnnotations, toThreadAnnotation} from '@/diffs/annotations';
+import {isDiffLine} from '@/diffs/lines';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
 import {FoldedShareStateContext} from '@/events/provider';
 import {useLines} from '../_hooks/use-lines';
