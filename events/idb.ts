@@ -8,46 +8,43 @@ import type {ShareEvent} from './schemas';
 const DB_NAME = 'better-diffs';
 const DB_VERSION = 1;
 const STORE_NAME = 'events';
+const SEQ_INDEX = 'by-share-seq';
 
 interface EventDbSchema extends DBSchema {
-  events: {
+  [STORE_NAME]: {
     key: string;
     value: ShareEvent;
-    indexes: {'by-share-seq': [shareId: string, seq: number]};
+    indexes: {[SEQ_INDEX]: [shareId: string, seq: number]};
   };
 }
 
 let dbPromise: Promise<IDBPDatabase<EventDbSchema>> | null = null;
 
-async function openEventDb() {
+function openEventDb() {
   dbPromise ??= openDB<EventDbSchema>(DB_NAME, DB_VERSION, {
     upgrade(db) {
       const store = db.createObjectStore(STORE_NAME, {keyPath: 'id'});
-      store.createIndex('by-share-seq', ['shareId', 'seq']);
+      store.createIndex(SEQ_INDEX, ['shareId', 'seq']);
     },
   });
   return dbPromise;
 }
 
+function shareSeqRange(shareId: string) {
+  return IDBKeyRange.bound([shareId, 0], [shareId, Number.MAX_SAFE_INTEGER]);
+}
+
 export async function getEvents(shareId: string) {
   const db = await openEventDb();
-  const range = IDBKeyRange.bound(
-    [shareId, 0],
-    [shareId, Number.MAX_SAFE_INTEGER],
-  );
-  const events = await db.getAllFromIndex(STORE_NAME, 'by-share-seq', range);
-  return events;
+  return db.getAllFromIndex(STORE_NAME, SEQ_INDEX, shareSeqRange(shareId));
 }
 
 export async function getLastSeq(shareId: string) {
   const db = await openEventDb();
-  const range = IDBKeyRange.bound(
-    [shareId, 0],
-    [shareId, Number.MAX_SAFE_INTEGER],
-  );
-
   const tx = db.transaction(STORE_NAME, 'readonly');
-  const cursor = await tx.store.index('by-share-seq').openCursor(range, 'prev');
+  const cursor = await tx.store
+    .index(SEQ_INDEX)
+    .openCursor(shareSeqRange(shareId), 'prev');
   const lastSeq = isDefined(cursor) ? cursor.value.seq : null;
   await tx.done;
 

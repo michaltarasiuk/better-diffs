@@ -13,11 +13,16 @@ import {
   ResolveThreadInput,
 } from './schemas';
 
-export async function openThread(input: OpenThreadInput) {
+async function getActorId() {
   const session = await getSession();
   if (!isDefined(session)) {
     unauthorized();
   }
+  return session.user.id;
+}
+
+export async function openThread(input: OpenThreadInput) {
+  const actorId = await getActorId();
 
   if (!OpenThreadInput.validate(input)) {
     throw new TypeError('Invalid open thread input');
@@ -29,26 +34,14 @@ export async function openThread(input: OpenThreadInput) {
     throw new TypeError(`Invalid anchor share id: ${anchor.shareId}`);
   }
 
-  return appendEvents(shareId, session.user.id, [
-    {
-      $type: 'thread.opened',
-      threadId,
-      anchor,
-    },
-    {
-      $type: 'comment.created',
-      threadId,
-      commentId,
-      body,
-    },
+  return appendEvents(shareId, actorId, [
+    {$type: 'thread.opened', threadId, anchor},
+    {$type: 'comment.created', threadId, commentId, body},
   ]);
 }
 
 export async function resolveThread(input: ResolveThreadInput) {
-  const session = await getSession();
-  if (!isDefined(session)) {
-    unauthorized();
-  }
+  const actorId = await getActorId();
 
   if (!ResolveThreadInput.validate(input)) {
     throw new TypeError('Invalid resolve thread input');
@@ -56,19 +49,11 @@ export async function resolveThread(input: ResolveThreadInput) {
 
   const {shareId, threadId} = input;
 
-  return appendEvents(shareId, session.user.id, [
-    {
-      $type: 'thread.resolved',
-      threadId,
-    },
-  ]);
+  return appendEvents(shareId, actorId, [{$type: 'thread.resolved', threadId}]);
 }
 
 export async function createComment(input: CreateCommentInput) {
-  const session = await getSession();
-  if (!isDefined(session)) {
-    unauthorized();
-  }
+  const actorId = await getActorId();
 
   if (!CreateCommentInput.validate(input)) {
     throw new TypeError('Invalid create comment input');
@@ -76,21 +61,13 @@ export async function createComment(input: CreateCommentInput) {
 
   const {shareId, threadId, commentId, body} = input;
 
-  return appendEvents(shareId, session.user.id, [
-    {
-      $type: 'comment.created',
-      threadId,
-      commentId,
-      body,
-    },
+  return appendEvents(shareId, actorId, [
+    {$type: 'comment.created', threadId, commentId, body},
   ]);
 }
 
 export async function editComment(input: EditCommentInput) {
-  const session = await getSession();
-  if (!isDefined(session)) {
-    unauthorized();
-  }
+  const actorId = await getActorId();
 
   if (!EditCommentInput.validate(input)) {
     throw new TypeError('Invalid edit comment input');
@@ -98,20 +75,13 @@ export async function editComment(input: EditCommentInput) {
 
   const {shareId, commentId, body} = input;
 
-  return appendEvents(shareId, session.user.id, [
-    {
-      $type: 'comment.edited',
-      commentId,
-      body,
-    },
+  return appendEvents(shareId, actorId, [
+    {$type: 'comment.edited', commentId, body},
   ]);
 }
 
 export async function deleteComment(input: DeleteCommentInput) {
-  const session = await getSession();
-  if (!isDefined(session)) {
-    unauthorized();
-  }
+  const actorId = await getActorId();
 
   if (!DeleteCommentInput.validate(input)) {
     throw new TypeError('Invalid delete comment input');
@@ -119,10 +89,7 @@ export async function deleteComment(input: DeleteCommentInput) {
 
   const {shareId, commentId} = input;
 
-  return appendEvents(shareId, session.user.id, [
-    {
-      $type: 'comment.deleted',
-      commentId,
-    },
+  return appendEvents(shareId, actorId, [
+    {$type: 'comment.deleted', commentId},
   ]);
 }

@@ -42,7 +42,7 @@ async function fetchEvents(shareId: string, afterSeq: number | null) {
 
 export class ShareEventsSync {
   readonly #shareId: string;
-  #isPolling = false;
+  #isPulling = false;
 
   constructor(shareId: string) {
     this.#shareId = shareId;
@@ -54,7 +54,7 @@ export class ShareEventsSync {
   }
 
   startPolling(onBatch: (events: readonly ShareEvent[]) => void) {
-    let intervalRef: ReturnType<typeof setInterval> | null = null;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
 
     const getInterval = () =>
       document.visibilityState === 'visible'
@@ -62,11 +62,11 @@ export class ShareEventsSync {
         : BACKGROUND_POLL_INTERVAL;
 
     const poll = async () => {
-      if (this.#isPolling) {
+      if (this.#isPulling) {
         return;
       }
 
-      this.#isPolling = true;
+      this.#isPulling = true;
 
       try {
         const events = await this.#pull();
@@ -76,15 +76,15 @@ export class ShareEventsSync {
       } catch {
         /* Retried on the next interval */
       } finally {
-        this.#isPolling = false;
+        this.#isPulling = false;
       }
     };
 
     const resetInterval = () => {
-      if (isDefined(intervalRef)) {
-        clearInterval(intervalRef);
+      if (isDefined(intervalId)) {
+        clearInterval(intervalId);
       }
-      intervalRef = setInterval(() => void poll(), getInterval());
+      intervalId = setInterval(() => void poll(), getInterval());
     };
 
     void poll();
@@ -100,8 +100,8 @@ export class ShareEventsSync {
     document.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
-      if (isDefined(intervalRef)) {
-        clearInterval(intervalRef);
+      if (isDefined(intervalId)) {
+        clearInterval(intervalId);
       }
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
@@ -109,8 +109,7 @@ export class ShareEventsSync {
 
   async #pull() {
     const lastSeq = await getLastSeq(this.#shareId);
-    const afterSeq = isDefined(lastSeq) && lastSeq > 0 ? lastSeq : null;
-    const events = await fetchEvents(this.#shareId, afterSeq);
+    const events = await fetchEvents(this.#shareId, lastSeq);
 
     if (events.length > 0) {
       await putEvents(events);

@@ -19,7 +19,7 @@ import type {ShareEvent} from './schemas';
 const body = createLexicalBody();
 const shareId = uuid();
 
-function resolvedAt(seq: number, overrides: Partial<ShareEvent> = {}) {
+function createEventAt(seq: number, overrides: Partial<ShareEvent> = {}) {
   return createShareEvent(createThreadResolved(), {
     id: `event-${overrides.shareId ?? shareId}-${seq}`,
     seq,
@@ -34,9 +34,11 @@ afterAll(() => closeEventDb());
 
 describe('putEvents', () => {
   it('stores events so they can be read back', async () => {
-    await putEvents([resolvedAt(1), resolvedAt(2)]);
+    await putEvents([createEventAt(1), createEventAt(2)]);
 
-    expect((await getEvents(shareId)).map((it) => it.seq)).toEqual([1, 2]);
+    expect((await getEvents(shareId)).map((event) => event.seq)).toEqual([
+      1, 2,
+    ]);
   });
 
   it('accepts an empty batch', async () => {
@@ -50,17 +52,19 @@ describe('putEvents', () => {
   });
 
   it('replaces an event that is stored twice', async () => {
-    await putEvents([resolvedAt(1)]);
-    await putEvents([resolvedAt(1)]);
+    await putEvents([createEventAt(1)]);
+    await putEvents([createEventAt(1)]);
 
     await expect(getEvents(shareId)).resolves.toHaveLength(1);
   });
 
   it('keeps events written by separate calls', async () => {
-    await putEvents([resolvedAt(1)]);
-    await putEvents([resolvedAt(2)]);
+    await putEvents([createEventAt(1)]);
+    await putEvents([createEventAt(2)]);
 
-    expect((await getEvents(shareId)).map((it) => it.seq)).toEqual([1, 2]);
+    expect((await getEvents(shareId)).map((event) => event.seq)).toEqual([
+      1, 2,
+    ]);
   });
 });
 
@@ -70,27 +74,29 @@ describe('getEvents', () => {
   });
 
   it('orders the log by sequence regardless of write order', async () => {
-    await putEvents([resolvedAt(3), resolvedAt(1), resolvedAt(2)]);
+    await putEvents([createEventAt(3), createEventAt(1), createEventAt(2)]);
 
-    expect((await getEvents(shareId)).map((it) => it.seq)).toEqual([1, 2, 3]);
+    expect((await getEvents(shareId)).map((event) => event.seq)).toEqual([
+      1, 2, 3,
+    ]);
   });
 
   it('returns only one event for the requested share', async () => {
-    await putEvents([resolvedAt(1), resolvedAt(1, {shareId: uuid()})]);
+    await putEvents([createEventAt(1), createEventAt(1, {shareId: uuid()})]);
 
     expect(await getEvents(shareId)).toHaveLength(1);
   });
 
   it('scopes results to the requested share', async () => {
-    await putEvents([resolvedAt(1), resolvedAt(1, {shareId: uuid()})]);
+    await putEvents([createEventAt(1), createEventAt(1, {shareId: uuid()})]);
 
     expect((await getEvents(shareId))[0]?.shareId).toBe(shareId);
   });
 
   it('round-trips the whole event', async () => {
     const stored = {
-      ...resolvedAt(1),
-      payload: {...resolvedAt(1).payload},
+      ...createEventAt(1),
+      payload: {...createEventAt(1).payload},
     } as ShareEvent;
 
     await putEvents([stored]);
@@ -101,7 +107,7 @@ describe('getEvents', () => {
   it('keeps a body that is not plain JSON intact', async () => {
     const edited = createCommentEdited({body});
     const stored: ShareEvent = {
-      ...resolvedAt(1),
+      ...createEventAt(1),
       type: 'comment.edited',
       payload: edited,
     };
@@ -118,19 +124,19 @@ describe('getLastSeq', () => {
   });
 
   it('returns the highest sequence stored for the share', async () => {
-    await putEvents([resolvedAt(1), resolvedAt(3), resolvedAt(2)]);
+    await putEvents([createEventAt(1), createEventAt(3), createEventAt(2)]);
 
     await expect(getLastSeq(shareId)).resolves.toBe(3);
   });
 
   it('ignores the sequences of other shares', async () => {
-    await putEvents([resolvedAt(1), resolvedAt(9, {shareId: uuid()})]);
+    await putEvents([createEventAt(1), createEventAt(9, {shareId: uuid()})]);
 
     await expect(getLastSeq(shareId)).resolves.toBe(1);
   });
 
   it('returns null when only other shares have events', async () => {
-    await putEvents([resolvedAt(9, {shareId: uuid()})]);
+    await putEvents([createEventAt(9, {shareId: uuid()})]);
 
     await expect(getLastSeq(shareId)).resolves.toBe(null);
   });
