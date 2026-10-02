@@ -17,15 +17,19 @@ interface CommentListProps {
 }
 
 export function CommentList({comments}: CommentListProps) {
+  const lastIndex = comments.length - 1;
+
   return (
     <div className="space-y-0">
-      {comments.map((comment) => (
+      {comments.map((comment, index) => (
         <Fragment key={comment.id}>
           <Comment comment={comment} />
 
-          <div className="mx-3">
-            <Separator />
-          </div>
+          {index < lastIndex && (
+            <div className="mx-3">
+              <Separator />
+            </div>
+          )}
         </Fragment>
       ))}
     </div>

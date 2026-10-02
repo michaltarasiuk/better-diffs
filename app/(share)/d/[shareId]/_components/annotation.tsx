@@ -2,7 +2,7 @@
 
 import {createContext, Fragment, use, useState} from 'react';
 import dynamic from 'next/dynamic';
-import {Button, Card, Spinner} from '@heroui/react';
+import {Button, Card, Separator, Spinner} from '@heroui/react';
 import {getLineAnnotationName} from '@pierre/diffs';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
@@ -290,45 +290,50 @@ function ThreadAnnotation() {
       <CommentList comments={comments} />
 
       {isDefined(session) && (
-        <div className="p-3">
-          <ReplyInput
-            onComment={async (body) => {
-              const actorId = session.user.id;
-              const actor: Actor = {
-                name: session.user.name,
-                image: session.user.image ?? null,
-              };
+        <>
+          <div className="mx-3">
+            <Separator />
+          </div>
+          <div className="p-3">
+            <ReplyInput
+              onComment={async (body) => {
+                const actorId = session.user.id;
+                const actor: Actor = {
+                  name: session.user.name,
+                  image: session.user.image ?? null,
+                };
 
-              const commentId = newId();
-              const createdAt = new Date().toISOString();
+                const commentId = newId();
+                const createdAt = new Date().toISOString();
 
-              const threadId = annotation.metadata.threadId;
+                const threadId = annotation.metadata.threadId;
 
-              const pendingId = state.optimistic({
-                actorId,
-                actor,
-                createdAt,
-                payload: {
-                  $type: 'comment.created',
-                  threadId,
-                  commentId,
-                  body,
-                },
-              });
-
-              try {
-                await createComment({
-                  shareId,
-                  threadId,
-                  commentId,
-                  body,
+                const pendingId = state.optimistic({
+                  actorId,
+                  actor,
+                  createdAt,
+                  payload: {
+                    $type: 'comment.created',
+                    threadId,
+                    commentId,
+                    body,
+                  },
                 });
-              } catch {
-                state.reject(pendingId);
-              }
-            }}
-          />
-        </div>
+
+                try {
+                  await createComment({
+                    shareId,
+                    threadId,
+                    commentId,
+                    body,
+                  });
+                } catch {
+                  state.reject(pendingId);
+                }
+              }}
+            />
+          </div>
+        </>
       )}
     </Card>
   );

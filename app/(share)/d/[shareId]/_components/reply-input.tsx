@@ -7,7 +7,7 @@ import {useFocusWithin} from 'react-aria/useFocusWithin';
 import {useKeyDown} from '@/hooks/use-key-down';
 import {Editor, type OnComment} from './editor';
 
-export interface ReplyInputProps {
+interface ReplyInputProps {
   readonly onComment?: OnComment;
 }
 
