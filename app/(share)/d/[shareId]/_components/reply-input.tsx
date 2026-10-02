@@ -27,28 +27,28 @@ export function ReplyInput({onComment}: ReplyInputProps) {
     }
   });
 
-  if (isEditing) {
+  if (!isEditing) {
     return (
-      <div {...focusWithinProps}>
-        <Editor
-          placeholder="Write a reply…"
-          autoFocus
-          variant="secondary"
-          className="rounded-b-xl"
-          onComment={onComment}
-          onDismiss={() => setIsEditing(false)}
-        />
-      </div>
+      <Input
+        aria-label="Write a reply"
+        placeholder="Write a reply…"
+        variant="secondary"
+        fullWidth
+        onFocus={() => setIsEditing(true)}
+      />
     );
   }
 
   return (
-    <Input
-      aria-label="Write a reply"
-      placeholder="Write a reply…"
-      variant="secondary"
-      fullWidth
-      onFocus={() => setIsEditing(true)}
-    />
+    <div {...focusWithinProps}>
+      <Editor
+        placeholder="Write a reply…"
+        autoFocus
+        variant="secondary"
+        className="rounded-b-xl"
+        onComment={onComment}
+        onDismiss={() => setIsEditing(false)}
+      />
+    </div>
   );
 }
