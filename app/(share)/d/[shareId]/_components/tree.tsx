@@ -15,22 +15,23 @@ import {useKeyDown} from '@/hooks/use-key-down';
 import {isDefined} from '@/utils/is-defined';
 import {isEditableTarget} from '@/utils/is-editable-target';
 import {isUnmodifiedKey} from '@/utils/is-unmodified-key';
-import {getTreeOptions, type TreeHandoff} from '@/trees/handoff';
+import type {TreeInput} from '@/trees/input';
+import {getFileTreeOptions} from '@/trees/options';
 import {useQuery} from '../_hooks/use-query';
 import {CodeViewRefContext} from './provider';
 
 interface TreeProps {
-  readonly handoff: TreeHandoff;
+  readonly input: TreeInput;
   readonly preloaded: FileTreePreloadedData;
   readonly fileIdByPath: Readonly<Record<string, string>>;
   readonly children: React.ReactNode;
 }
 
-export function Tree({handoff, preloaded, fileIdByPath, children}: TreeProps) {
+export function Tree({input, preloaded, fileIdByPath, children}: TreeProps) {
   const {searchQuery, setSearchQuery} = useQuery();
   const codeViewRef = use(CodeViewRefContext);
   const {model} = useFileTree({
-    ...getTreeOptions(handoff, {searchQuery}),
+    ...getFileTreeOptions(input, {searchQuery}),
     onSearchChange(value) {
       void setSearchQuery(value);
     },

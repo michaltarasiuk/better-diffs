@@ -8,11 +8,8 @@ import {isDefined} from '@/utils/is-defined';
 import {SessionProvider} from '@/auth/provider';
 import {openShare} from '@/db/shares';
 import {computeDiffStats} from '@/diffs/stats';
-import {
-  getTreeOptions,
-  orderFilesByTree,
-  prepareTreeHandoff,
-} from '@/trees/handoff';
+import {prepareTreeInput, sortByTree} from '@/trees/input';
+import {getFileTreeOptions} from '@/trees/options';
 import {CodeView} from './_components/code-view';
 import {Drawer} from './_components/drawer';
 import {SyncEvents} from './_components/events';
@@ -47,22 +44,18 @@ export default async function DiffPage({
 
   const fileDiffs = files.map(({metadata}) => metadata);
 
-  const treeHandoff = prepareTreeHandoff(fileDiffs);
+  const treeInput = prepareTreeInput(fileDiffs);
   const stats = computeDiffStats(fileDiffs);
 
-  const orderedFiles = orderFilesByTree(files, treeHandoff);
+  const sortedFiles = sortByTree(files, treeInput);
   const fileIdByPath = Object.fromEntries(
     files.map((file) => [file.name, file.id]),
   );
 
   const tree = (
     <Tree
-      handoff={treeHandoff}
-      preloaded={preloadFileTree(
-        getTreeOptions(treeHandoff, {
-          searchQuery,
-        }),
-      )}
+      input={treeInput}
+      preloaded={preloadFileTree(getFileTreeOptions(treeInput, {searchQuery}))}
       fileIdByPath={fileIdByPath}
     >
       <Stats stats={stats} />
@@ -79,7 +72,7 @@ export default async function DiffPage({
             <Suspense fallback={codeViewSpinner}>
               <FileStatesProvider>
                 <SyncEvents>
-                  <CodeView files={orderedFiles} />
+                  <CodeView files={sortedFiles} />
                 </SyncEvents>
               </FileStatesProvider>
             </Suspense>
