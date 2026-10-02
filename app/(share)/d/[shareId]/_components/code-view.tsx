@@ -17,7 +17,6 @@ import {isUnmodifiedKeyDown} from '@/utils/is-unmodified-key-down';
 import type {AnnotationMetadata} from '@/diffs/annotations';
 import {
   isDiffLine,
-  isFormAnnotation,
   sortAnnotations,
   toThreadAnnotation,
 } from '@/diffs/annotations';
@@ -43,7 +42,6 @@ export function CodeView({files}: CodeViewProps) {
     setFileViewed,
     toggleFileViewed,
     addCommentForm,
-    removeCommentForm,
   } = use(FileStatesContext);
   const {selectedLines, setSelectedLines} = useLines();
 
@@ -137,22 +135,18 @@ export function CodeView({files}: CodeViewProps) {
         />
       )}
       renderAnnotation={(annotation, item) => {
-        if (
-          item.type !== 'diff' ||
-          !isDiffAnnotation<AnnotationMetadata>(annotation)
-        ) {
-          throw new Error(`Unexpected item type: ${item.type}`);
+        const isDiff =
+          item.type === 'diff' &&
+          isDiffAnnotation<AnnotationMetadata>(annotation);
+
+        if (!isDiff) {
+          return null;
         }
         return (
           <Annotation
             annotation={annotation}
             fileId={item.id}
             filePath={item.fileDiff.name}
-            onDismiss={() => {
-              if (isFormAnnotation(annotation)) {
-                removeCommentForm(item.id, annotation.metadata.formId);
-              }
-            }}
           />
         );
       }}

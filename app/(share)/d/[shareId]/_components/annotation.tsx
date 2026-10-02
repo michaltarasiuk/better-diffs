@@ -49,15 +49,9 @@ interface AnnotationProps {
   readonly annotation: DiffAnnotation;
   readonly fileId: string;
   readonly filePath: string;
-  readonly onDismiss: () => void;
 }
 
-export function Annotation({
-  annotation,
-  fileId,
-  filePath,
-  onDismiss,
-}: AnnotationProps) {
+export function Annotation({annotation, fileId, filePath}: AnnotationProps) {
   return (
     <FileContext
       value={{
@@ -66,17 +60,13 @@ export function Annotation({
       }}
     >
       <AnnotationContext value={annotation}>
-        <AnnotationBody onDismiss={onDismiss} />
+        <AnnotationBody />
       </AnnotationContext>
     </FileContext>
   );
 }
 
-interface AnnotationBodyProps {
-  readonly onDismiss?: () => void;
-}
-
-function AnnotationBody({onDismiss}: AnnotationBodyProps) {
+function AnnotationBody() {
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const {focusWithinProps} = useFocusWithin({
     onFocusWithinChange(isFocusWithin) {
@@ -84,24 +74,30 @@ function AnnotationBody({onDismiss}: AnnotationBodyProps) {
     },
   });
 
-  const {metadata} = use(AnnotationContext);
+  const annotation = use(AnnotationContext);
+  const file = use(FileContext);
+  const {removeCommentForm} = use(FileStatesContext);
+
+  const onDismiss = isFormAnnotation(annotation)
+    ? () => removeCommentForm(file.id, annotation.metadata.formId)
+    : undefined;
 
   useKeyDown((event) => {
-    if (event.key === 'Escape' && metadata.type === 'form' && isFocusWithin) {
+    if (event.key === 'Escape' && isFocusWithin) {
       onDismiss?.();
     }
   });
 
-  let annotation: React.ReactNode;
-  switch (metadata.type) {
+  let body: React.ReactNode;
+  switch (annotation.metadata.type) {
     case 'form':
-      annotation = <CommentForm onDismiss={onDismiss} />;
+      body = <CommentForm onDismiss={onDismiss} />;
       break;
     case 'thread':
-      annotation = <ThreadAnnotation />;
+      body = <ThreadAnnotation />;
       break;
     default:
-      metadata satisfies never;
+      annotation.metadata satisfies never;
   }
 
   return (
@@ -109,7 +105,7 @@ function AnnotationBody({onDismiss}: AnnotationBodyProps) {
       {...focusWithinProps}
       className="w-(--diffs-single-annotation-width,100%)"
     >
-      {annotation}
+      {body}
     </div>
   );
 }
