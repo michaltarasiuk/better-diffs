@@ -3,8 +3,14 @@
 import {act, renderHook} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-import * as isStorageAvailableModule from '@/utils/is-storage-available';
 import {useLocalStorage} from './use-local-storage';
+
+const {isStorageAvailable} = vi.hoisted(() => ({
+  isStorageAvailable:
+    vi.fn<typeof import('@/utils/is-storage-available').isStorageAvailable>(),
+}));
+
+vi.mock('@/utils/is-storage-available', () => ({isStorageAvailable}));
 
 const KEY = 'preference';
 
@@ -26,6 +32,7 @@ function dispatchStorage(key: string | null, newValue: string | null) {
 
 beforeEach(() => {
   localStorage.clear();
+  isStorageAvailable.mockReturnValue(true);
 });
 
 describe('useLocalStorage', () => {
@@ -129,9 +136,7 @@ describe('useLocalStorage', () => {
 
   it('returns the initial value when storage is unavailable', () => {
     localStorage.setItem(KEY, JSON.stringify({theme: 'dark'}));
-    vi.spyOn(isStorageAvailableModule, 'isStorageAvailable').mockReturnValue(
-      false,
-    );
+    isStorageAvailable.mockReturnValue(false);
 
     const {result} = renderPreferenceHook();
 
@@ -139,9 +144,7 @@ describe('useLocalStorage', () => {
   });
 
   it('does not write to localStorage when storage is unavailable', () => {
-    vi.spyOn(isStorageAvailableModule, 'isStorageAvailable').mockReturnValue(
-      false,
-    );
+    isStorageAvailable.mockReturnValue(false);
     const setItem = vi.spyOn(Storage.prototype, 'setItem');
 
     const {result} = renderPreferenceHook();

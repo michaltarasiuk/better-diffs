@@ -9,8 +9,8 @@ import {isDiffAnnotation} from '@pierre/diffs';
 import {CodeView as DiffCodeView} from '@pierre/diffs/react';
 import {ChevronDownIcon} from 'lucide-react';
 
+import {useIsMobile} from '@/hooks/use-is-mobile';
 import {useKeyDown} from '@/hooks/use-key-down';
-import {useIsMobile} from '@/hooks/use-media-query';
 import {isDefined} from '@/utils/is-defined';
 import {isEditableTarget} from '@/utils/is-editable-target';
 import {isUnmodifiedKey} from '@/utils/is-unmodified-key';

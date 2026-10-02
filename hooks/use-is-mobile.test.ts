@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import {act, renderHook} from '@testing-library/react';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, type Mock, vi} from 'vitest';
 
 import {isDefined} from '@/utils/is-defined';
 
@@ -12,7 +12,7 @@ class FakeMediaQueryList extends EventTarget {
 }
 
 let lists: Map<string, FakeMediaQueryList>;
-let matchMedia: ReturnType<typeof vi.fn>;
+let matchMedia: Mock<typeof listFor>;
 
 function listFor(query: string) {
   let list = lists.get(query);
@@ -24,7 +24,7 @@ function listFor(query: string) {
 }
 
 async function importUseIsMobile() {
-  const {useIsMobile} = await import('./use-media-query');
+  const {useIsMobile} = await import('./use-is-mobile');
   return useIsMobile;
 }
 
