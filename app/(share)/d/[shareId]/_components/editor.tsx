@@ -149,14 +149,8 @@ export function Editor({
   return (
     <LexicalExtensionComposer extension={extension} contentEditable={null}>
       <Card
-        variant={variant === 'primary' ? 'secondary' : 'tertiary'}
-        className={cn(
-          '@container',
-          {
-            'shadow-none': variant === 'secondary',
-          },
-          className,
-        )}
+        variant={variant === 'primary' ? 'secondary' : 'transparent'}
+        className={cn('@container', className)}
       >
         <Card.Header>
           <RichTextToolbarPlugin />

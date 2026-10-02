@@ -295,45 +295,43 @@ function ThreadAnnotation() {
             <Separator />
           </div>
 
-          <div className="p-3">
-            <ReplyInput
-              onComment={async (body) => {
-                const actorId = session.user.id;
-                const actor: Actor = {
-                  name: session.user.name,
-                  image: session.user.image ?? null,
-                };
+          <ReplyInput
+            onComment={async (body) => {
+              const actorId = session.user.id;
+              const actor: Actor = {
+                name: session.user.name,
+                image: session.user.image ?? null,
+              };
 
-                const commentId = newId();
-                const createdAt = new Date().toISOString();
+              const commentId = newId();
+              const createdAt = new Date().toISOString();
 
-                const threadId = annotation.metadata.threadId;
+              const threadId = annotation.metadata.threadId;
 
-                const pendingId = state.optimistic({
-                  actorId,
-                  actor,
-                  createdAt,
-                  payload: {
-                    $type: 'comment.created',
-                    threadId,
-                    commentId,
-                    body,
-                  },
+              const pendingId = state.optimistic({
+                actorId,
+                actor,
+                createdAt,
+                payload: {
+                  $type: 'comment.created',
+                  threadId,
+                  commentId,
+                  body,
+                },
+              });
+
+              try {
+                await createComment({
+                  shareId,
+                  threadId,
+                  commentId,
+                  body,
                 });
-
-                try {
-                  await createComment({
-                    shareId,
-                    threadId,
-                    commentId,
-                    body,
-                  });
-                } catch {
-                  state.reject(pendingId);
-                }
-              }}
-            />
-          </div>
+              } catch {
+                state.reject(pendingId);
+              }
+            }}
+          />
         </>
       )}
     </Card>

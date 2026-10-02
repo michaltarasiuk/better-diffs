@@ -29,13 +29,15 @@ export function ReplyInput({onComment}: ReplyInputProps) {
 
   if (!isEditing) {
     return (
-      <Input
-        aria-label="Write a reply"
-        placeholder="Write a reply…"
-        variant="secondary"
-        fullWidth
-        onFocus={() => setIsEditing(true)}
-      />
+      <div className="p-3">
+        <Input
+          aria-label="Write a reply"
+          placeholder="Write a reply…"
+          variant="secondary"
+          fullWidth
+          onFocus={() => setIsEditing(true)}
+        />
+      </div>
     );
   }
 
