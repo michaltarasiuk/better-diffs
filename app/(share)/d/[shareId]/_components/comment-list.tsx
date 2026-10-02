@@ -45,9 +45,8 @@ export function Comment({comment}: CommentProps) {
     <div className="flex gap-3 p-3">
       <Avatar size="sm">
         {isDefined(comment.actor.image) ? (
-          <Avatar.Image alt={comment.actor.name} src={comment.actor.image} />
+          <Avatar.Image src={comment.actor.image} alt={comment.actor.name} />
         ) : null}
-        <Avatar.Fallback>{comment.actor.name}</Avatar.Fallback>
       </Avatar>
 
       <div className="min-w-0 flex-1 space-y-1">
