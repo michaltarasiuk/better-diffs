@@ -2,27 +2,26 @@ import 'server-only';
 
 import {timingSafeEqual} from 'node:crypto';
 
+import {Authorization} from '@/headers/authorization';
 import {isDefined} from '@/utils/is-defined';
 
-export function verifyBearerSecret(
-  request: Request,
-  secret: string | undefined,
-) {
+export function hasBearerToken(request: Request, secret: string | undefined) {
   if (!isDefined(secret)) {
     return false;
   }
 
-  const provided = request.headers.get('authorization');
-  if (!isDefined(provided)) {
+  const authorization = Authorization.from(
+    request.headers.get('authorization'),
+  );
+  if (!authorization.hasScheme('Bearer')) {
+    return false;
+  }
+  if (!isDefined(authorization.credentials)) {
     return false;
   }
 
-  const expected = `Bearer ${secret}`;
-  const expectedBuffer = Buffer.from(expected);
-  const providedBuffer = Buffer.from(provided);
+  const actual = Buffer.from(authorization.credentials);
+  const expected = Buffer.from(secret);
 
-  return (
-    providedBuffer.length === expectedBuffer.length &&
-    timingSafeEqual(providedBuffer, expectedBuffer)
-  );
+  return actual.length === expected.length && timingSafeEqual(actual, expected);
 }

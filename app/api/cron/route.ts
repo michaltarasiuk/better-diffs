@@ -1,13 +1,13 @@
 import {type NextRequest, NextResponse} from 'next/server';
 
 import {env} from '@/env';
-import {verifyBearerSecret} from '@/auth/bearer';
+import {hasBearerToken} from '@/auth/bearer';
 import {deleteExpiredShares} from '@/db/shares';
 
 const SHARE_MAX_AGE_HOURS = 24;
 
 export async function GET(request: NextRequest) {
-  if (!verifyBearerSecret(request, env.CRON_SECRET)) {
+  if (!hasBearerToken(request, env.CRON_SECRET)) {
     return NextResponse.json({ok: false, error: 'Unauthorized'}, {status: 401});
   }
 

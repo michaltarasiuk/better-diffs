@@ -2,29 +2,51 @@ import {describe, expect, it} from 'vitest';
 
 import {env} from '@/env';
 import {isDefined} from '@/utils/is-defined';
-import {verifyBearerSecret} from './bearer';
+import {hasBearerToken} from './bearer';
+
+const SECRET = 'bearer-secret';
 
 function request(authorization?: string) {
-  return new Request(`${env.BASE_URL}/api/cron`, {
+  return new Request(env.BASE_URL, {
     headers: isDefined(authorization) ? {authorization} : {},
   });
 }
 
-describe('verifyBearerSecret', () => {
+describe('hasBearerToken', () => {
   it('accepts a matching bearer token', () => {
-    expect(
-      verifyBearerSecret(request(`Bearer ${env.CRON_SECRET}`), env.CRON_SECRET),
-    ).toBe(true);
+    expect(hasBearerToken(request(`Bearer ${SECRET}`), SECRET)).toBe(true);
+  });
+
+  it('accepts a lowercase bearer scheme', () => {
+    expect(hasBearerToken(request(`bearer ${SECRET}`), SECRET)).toBe(true);
+  });
+
+  it('rejects any token when none is expected', () => {
+    expect(hasBearerToken(request(`Bearer ${SECRET}`), undefined)).toBe(false);
   });
 
   it.each([
-    {name: 'missing authorization', authorization: undefined},
-    {name: 'invalid secret', authorization: 'Bearer invalid'},
-    {name: 'missing bearer prefix', authorization: env.CRON_SECRET},
-    {name: 'wrong scheme', authorization: `Basic ${env.CRON_SECRET}`},
+    {
+      name: 'missing authorization',
+      authorization: undefined,
+    },
+    {
+      name: 'invalid token',
+      authorization: 'Bearer invalid',
+    },
+    {
+      name: 'same-length invalid token',
+      authorization: `Bearer ${'x'.repeat(SECRET.length)}`,
+    },
+    {
+      name: 'missing bearer scheme',
+      authorization: SECRET,
+    },
+    {
+      name: 'wrong scheme',
+      authorization: `Basic ${SECRET}`,
+    },
   ])('rejects $name', ({authorization}) => {
-    expect(verifyBearerSecret(request(authorization), env.CRON_SECRET)).toBe(
-      false,
-    );
+    expect(hasBearerToken(request(authorization), SECRET)).toBe(false);
   });
 });
