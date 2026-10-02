@@ -55,20 +55,20 @@ export function ReplyInput({signIn, onReply}: ReplyInputProps) {
     );
   }
 
-  if (!isDefined(session)) {
-    return <div {...focusWithinProps}>{signIn({onDismiss})}</div>;
-  }
-
   return (
     <div {...focusWithinProps}>
-      <Editor
-        placeholder="Write a reply…"
-        autoFocus
-        variant="secondary"
-        className="rounded-b-xl"
-        onComment={(body) => onReply?.(body, session)}
-        onDismiss={onDismiss}
-      />
+      {isDefined(session) ? (
+        <Editor
+          placeholder="Write a reply…"
+          autoFocus
+          variant="secondary"
+          className="rounded-b-xl"
+          onComment={(body) => onReply?.(body, session)}
+          onDismiss={onDismiss}
+        />
+      ) : (
+        signIn({onDismiss})
+      )}
     </div>
   );
 }
