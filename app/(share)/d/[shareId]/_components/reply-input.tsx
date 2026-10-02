@@ -2,9 +2,10 @@
 
 import {useState} from 'react';
 import {Input} from '@heroui/react';
+import {useFocusWithin} from 'react-aria/useFocusWithin';
 
-import type {OnComment} from './editor';
-import {Editor} from './editor';
+import {useKeyDown} from '@/hooks/use-key-down';
+import {Editor, type OnComment} from './editor';
 
 export interface ReplyInputProps {
   readonly onComment?: OnComment;
@@ -12,16 +13,31 @@ export interface ReplyInputProps {
 
 export function ReplyInput({onComment}: ReplyInputProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isFocusWithin, setIsFocusWithin] = useState(false);
+
+  const {focusWithinProps} = useFocusWithin({
+    onFocusWithinChange(isFocusWithin) {
+      setIsFocusWithin(isFocusWithin);
+    },
+  });
+
+  useKeyDown((event) => {
+    if (event.key === 'Escape' && isFocusWithin && isEditing) {
+      setIsEditing(false);
+    }
+  });
 
   if (isEditing) {
     return (
-      <Editor
-        placeholder="Write a reply…"
-        variant="secondary"
-        autoFocus
-        onComment={onComment}
-        onDismiss={() => setIsEditing(false)}
-      />
+      <div {...focusWithinProps}>
+        <Editor
+          placeholder="Write a reply…"
+          variant="secondary"
+          autoFocus
+          onComment={onComment}
+          onDismiss={() => setIsEditing(false)}
+        />
+      </div>
     );
   }
 
