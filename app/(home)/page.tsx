@@ -10,7 +10,7 @@ import {PATCH_DIFF_OPTIONS} from '@/diffs/options';
 import {Command} from './_components/command';
 import {COMMAND} from './_lib/command';
 
-const DEMO_PATCH = dedent`
+const HOME_PATCH = dedent`
   diff --git a/share.sh b/share.sh
   --- a/share.sh
   +++ b/share.sh
@@ -22,14 +22,19 @@ const DEMO_PATCH = dedent`
   +better-diffs --open
 `;
 
-const heroTitleClass = typographyVariants({type: 'h2'}).base({
+const {base: typographyClass} = typographyVariants();
+
+const heroTitleClass = typographyClass({
+  type: 'h2',
   className: 'font-mono tracking-tight',
 });
-const sectionTitleClass = typographyVariants({type: 'h6'}).base();
+const sectionTitleClass = typographyClass({
+  type: 'h6',
+});
 
 export default async function HomePage() {
   const preloaded = await preloadPatchDiff({
-    patch: DEMO_PATCH,
+    patch: HOME_PATCH,
     options: PATCH_DIFF_OPTIONS,
   });
 
