@@ -11,7 +11,7 @@ import {isDefined} from '@/utils/is-defined';
 import {newId} from '@/utils/new-id';
 import {authClient} from '@/auth/client';
 import {SessionContext} from '@/auth/context';
-import {GitHubIcon} from '@/auth/icon';
+import {GitHubIcon} from '@/auth/github-icon';
 import {
   type DiffAnnotation,
   isFormAnnotation,

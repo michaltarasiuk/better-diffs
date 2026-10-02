@@ -7,8 +7,8 @@ import {useFocusWithin} from 'react-aria/useFocusWithin';
 
 import {useKeyDown} from '@/hooks/use-key-down';
 import {isDefined} from '@/utils/is-defined';
-import type {Session} from '@/auth/auth';
 import {SessionContext} from '@/auth/context';
+import type {Session} from '@/auth/server';
 import {Editor} from './editor';
 
 interface ReplyInputProps {

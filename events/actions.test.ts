@@ -10,7 +10,7 @@ import {
   createThreadResolved,
 } from '@/testing/events';
 import {uuid} from '@/testing/uuid';
-import type {Session} from '@/auth/auth';
+import type {Session} from '@/auth/server';
 import {
   createComment,
   deleteComment,
