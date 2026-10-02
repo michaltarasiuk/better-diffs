@@ -5,7 +5,11 @@ import {and, asc, eq, gt, max} from 'drizzle-orm';
 import {isDefined} from '@/utils/is-defined';
 import {type ShareEventPayload, subjectIdFromPayload} from '@/events/schemas';
 import {db} from './db';
-import {events as eventsTable, shares as sharesTable} from './schema';
+import {
+  events as eventsTable,
+  shares as sharesTable,
+  user as userTable,
+} from './schema';
 
 export function getEvents(shareId: string, afterSeq = 0) {
   const where = and(
@@ -14,8 +18,22 @@ export function getEvents(shareId: string, afterSeq = 0) {
   );
 
   return db
-    .select()
+    .select({
+      id: eventsTable.id,
+      shareId: eventsTable.shareId,
+      seq: eventsTable.seq,
+      type: eventsTable.type,
+      subjectId: eventsTable.subjectId,
+      actorId: eventsTable.actorId,
+      actor: {
+        name: userTable.name,
+        image: userTable.image,
+      },
+      payload: eventsTable.payload,
+      createdAt: eventsTable.createdAt,
+    })
     .from(eventsTable)
+    .innerJoin(userTable, eq(eventsTable.actorId, userTable.id))
     .where(where)
     .orderBy(asc(eventsTable.seq));
 }

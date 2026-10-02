@@ -2,12 +2,13 @@ import type {SerializedEditorState} from 'lexical';
 
 import {isDefined} from '@/utils/is-defined';
 import {newId} from '@/utils/new-id';
-import type {Anchor, ShareEvent, ShareEventPayload} from './schemas';
+import type {Actor, Anchor, ShareEvent, ShareEventPayload} from './schemas';
 
 export interface ThreadState {
   readonly id: string;
   readonly anchor: Anchor;
   readonly actorId: string;
+  readonly actor: Actor;
   resolved: boolean;
   commentIds: string[];
   readonly createdAt: string;
@@ -17,6 +18,7 @@ export interface CommentState {
   readonly id: string;
   readonly threadId: string;
   readonly actorId: string;
+  readonly actor: Actor;
   body: SerializedEditorState;
   readonly createdAt: string;
 }
@@ -31,6 +33,7 @@ export interface FoldedShareState {
 
 export interface OptimisticEvent {
   readonly actorId: string;
+  readonly actor: Actor;
   readonly createdAt: string;
   readonly payload: ShareEventPayload;
 }
@@ -163,7 +166,7 @@ export class ShareState {
   }
 
   #apply(event: ShareEvent) {
-    const {actorId, payload, createdAt} = event;
+    const {actorId, actor, payload, createdAt} = event;
 
     switch (payload.$type) {
       case 'thread.opened': {
@@ -176,6 +179,7 @@ export class ShareState {
           id: payload.threadId,
           anchor: payload.anchor,
           actorId,
+          actor,
           resolved: false,
           commentIds: [],
           createdAt,
@@ -217,6 +221,7 @@ export class ShareState {
           id: payload.commentId,
           threadId: payload.threadId,
           actorId,
+          actor,
           body: payload.body,
           createdAt,
         });
@@ -266,7 +271,7 @@ export class ShareState {
     const pendingIds = new Set<string>();
 
     for (const event of this.#pending.values()) {
-      const {actorId, createdAt, payload} = event;
+      const {actorId, actor, createdAt, payload} = event;
 
       switch (payload.$type) {
         case 'thread.opened': {
@@ -274,6 +279,7 @@ export class ShareState {
             id: payload.threadId,
             anchor: payload.anchor,
             actorId,
+            actor,
             resolved: false,
             commentIds: [],
             createdAt,
@@ -297,6 +303,7 @@ export class ShareState {
             id: payload.commentId,
             threadId: payload.threadId,
             actorId,
+            actor,
             body: payload.body,
             createdAt,
           });
@@ -433,13 +440,14 @@ export class ShareState {
     let thread = this.threads.get(threadId);
 
     for (const event of this.#pending.values()) {
-      const {actorId, createdAt, payload} = event;
+      const {actorId, actor, createdAt, payload} = event;
 
       if (isType('thread.opened', payload) && payload.threadId === threadId) {
         thread = {
           id: threadId,
           anchor: payload.anchor,
           actorId,
+          actor,
           resolved: false,
           commentIds: [],
           createdAt,
@@ -477,6 +485,7 @@ export class ShareState {
           id: commentId,
           threadId: payload.threadId,
           actorId: event.actorId,
+          actor: event.actor,
           body: payload.body,
           createdAt: event.createdAt,
         };

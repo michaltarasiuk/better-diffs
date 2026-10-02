@@ -11,8 +11,9 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@heroui/react';
-import {typographyVariants} from '@heroui/styles';
+import {cn, typographyVariants} from '@heroui/styles';
 import {HistoryExtension} from '@lexical/history';
+import {AutoFocusPlugin} from '@lexical/react/LexicalAutoFocusPlugin';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {LexicalExtensionComposer} from '@lexical/react/LexicalExtensionComposer';
@@ -105,17 +106,27 @@ function isBlockType(value: string): value is BlockType {
   return BLOCK_TYPES.some((blockType) => blockType.value === value);
 }
 
-type OnComment = (body: SerializedEditorState) => void | Promise<unknown>;
+export type OnComment = (
+  body: SerializedEditorState,
+) => void | Promise<unknown>;
 
 interface EditorProps {
+  readonly placeholder: string;
   readonly initialState?: SerializedEditorState;
+  readonly autoFocus?: boolean;
+  readonly variant?: 'primary' | 'secondary';
+  readonly className?: string;
   readonly onComment?: OnComment;
   readonly onChange?: (state: SerializedEditorState) => void;
   readonly onDismiss?: () => void;
 }
 
 export function Editor({
+  placeholder,
   initialState,
+  autoFocus = false,
+  variant = 'primary',
+  className,
   onComment,
   onChange,
   onDismiss,
@@ -137,7 +148,16 @@ export function Editor({
 
   return (
     <LexicalExtensionComposer extension={extension} contentEditable={null}>
-      <Card variant="secondary" className="@container m-2 mbs-1">
+      <Card
+        variant={variant === 'primary' ? 'secondary' : 'tertiary'}
+        className={cn(
+          '@container',
+          {
+            'shadow-none': variant === 'secondary',
+          },
+          className,
+        )}
+      >
         <Card.Header>
           <RichTextToolbarPlugin />
         </Card.Header>
@@ -146,7 +166,7 @@ export function Editor({
           <div className="relative block h-24 w-full rounded-field px-3 py-2">
             <ContentEditable
               aria-label="Comment"
-              aria-placeholder="Leave a comment…"
+              aria-placeholder={placeholder}
               placeholder={
                 <div
                   className={typographyVariants({type: 'body-sm'}).base({
@@ -154,7 +174,7 @@ export function Editor({
                       'pointer-events-none absolute inset-0 px-3 py-2 text-field-placeholder',
                   })}
                 >
-                  Leave a comment…
+                  {placeholder}
                 </div>
               }
               className={typographyVariants({type: 'body-sm'}).base({
@@ -177,6 +197,7 @@ export function Editor({
           onChange?.(editorState.toJSON());
         }}
       />
+      {autoFocus ? <AutoFocusPlugin /> : null}
       <PreventEscapeBlurPlugin />
     </LexicalExtensionComposer>
   );

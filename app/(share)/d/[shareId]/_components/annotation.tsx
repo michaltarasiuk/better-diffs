@@ -1,15 +1,9 @@
 'use client';
 
-import {createContext, use, useState} from 'react';
+import {createContext, Fragment, use, useState} from 'react';
 import dynamic from 'next/dynamic';
 import {Button, Card, Spinner} from '@heroui/react';
-import {typographyVariants} from '@heroui/styles';
-import {ContentEditable} from '@lexical/react/LexicalContentEditable';
-import {LexicalExtensionComposer} from '@lexical/react/LexicalExtensionComposer';
-import {RichTextExtension} from '@lexical/rich-text';
 import {getLineAnnotationName} from '@pierre/diffs';
-import {defineExtension, type SerializedEditorState} from 'lexical';
-import {PlusIcon} from 'lucide-react';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
 import {useKeyDown} from '@/hooks/use-key-down';
@@ -23,21 +17,18 @@ import {
   isFormAnnotation,
   isThreadAnnotation,
 } from '@/diffs/annotations';
-import {openThread} from '@/events/actions';
+import {createComment, openThread} from '@/events/actions';
 import {FoldedShareStateContext, ShareStateContext} from '@/events/provider';
-import type {Anchor} from '@/events/schemas';
+import type {Actor, Anchor} from '@/events/schemas';
 import {useShareId} from '../_hooks/use-share-id';
-import {EDITOR_THEME} from '../_lib/editor-theme';
+import {CommentList} from './comment-list';
 import {EditorSkeleton} from './editor-skeleton';
 import {FileStatesContext} from './provider';
+import {ReplyInputSkeleton} from './reply-input-skeleton';
 
 interface File {
   readonly id: string;
   readonly path: string;
-}
-
-function preloadEditor() {
-  void import('./editor');
 }
 
 const Editor = dynamic(
@@ -45,29 +36,14 @@ const Editor = dynamic(
   {loading: () => <EditorSkeleton />},
 );
 
+const ReplyInput = dynamic(
+  () => import('./reply-input').then((module) => module.ReplyInput),
+  {loading: () => <ReplyInputSkeleton />},
+);
+
 const FileContext = createContext<File>(null as never);
 
 const AnnotationContext = createContext<DiffAnnotation>(null as never);
-
-interface AddCommentButtonProps {
-  readonly onAddAnnotation: () => void;
-}
-
-export function AddCommentButton({onAddAnnotation}: AddCommentButtonProps) {
-  return (
-    <Button
-      id="gutter-utility"
-      aria-label="Add comment"
-      onHoverStart={preloadEditor}
-      onFocus={preloadEditor}
-      onPress={onAddAnnotation}
-      isIconOnly
-      className="me-[calc(-1lh+1ch)] h-lh w-[1lh]"
-    >
-      <PlusIcon aria-hidden className="size-4" />
-    </Button>
-  );
-}
 
 interface DiffAnnotationProps {
   readonly annotation: DiffAnnotation;
@@ -154,13 +130,20 @@ function CommentForm({onDismiss}: CommentFormProps) {
 
   return (
     <Editor
-      key={annotation.metadata.formId}
+      placeholder="Leave a comment…"
       initialState={annotation.metadata.draft}
       onComment={async (body) => {
         const threadId = newId();
         const commentId = newId();
+
         const actorId = session.user.id;
+        const actor: Actor = {
+          name: session.user.name,
+          image: session.user.image ?? null,
+        };
+
         const createdAt = new Date().toISOString();
+
         const anchor: Anchor = {
           shareId,
           filePath: file.path,
@@ -171,6 +154,7 @@ function CommentForm({onDismiss}: CommentFormProps) {
         const pendingIds = state.optimisticAll([
           {
             actorId,
+            actor,
             createdAt,
             payload: {
               $type: 'thread.opened',
@@ -180,6 +164,7 @@ function CommentForm({onDismiss}: CommentFormProps) {
           },
           {
             actorId,
+            actor,
             createdAt,
             payload: {
               $type: 'comment.created',
@@ -210,6 +195,7 @@ function CommentForm({onDismiss}: CommentFormProps) {
         );
       }}
       onDismiss={onDismiss}
+      className="m-2 mbs-1"
     />
   );
 }
@@ -244,6 +230,7 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
         >
           Cancel
         </Button>
+
         <Button
           id={getLineAnnotationName(annotation) + '-sign-in-github'}
           size="sm"
@@ -283,6 +270,7 @@ function ThreadAnnotation() {
     throw new TypeError('Annotation is not a thread');
   }
 
+  const shareId = useShareId();
   const folded = use(FoldedShareStateContext);
 
   const thread = folded.threads.get(annotation.metadata.threadId);
@@ -290,48 +278,58 @@ function ThreadAnnotation() {
     throw new Error(`Thread not found: ${annotation.metadata.threadId}`);
   }
 
+  const session = use(SessionContext);
+  const state = use(ShareStateContext);
+
   const comments = thread.commentIds
     .map((commentId) => folded.comments.get(commentId))
     .filter((comment) => isDefined(comment));
 
   return (
-    <Card variant="secondary" className="m-2 mbs-1">
-      {comments.map((comment) => (
-        <CommentBody key={comment.id} initialState={comment.body} />
-      ))}
+    <Card variant="secondary" className="m-2 mbs-1 gap-0 p-0">
+      <CommentList comments={comments} />
+
+      {isDefined(session) && (
+        <div className="p-3">
+          <ReplyInput
+            onComment={async (body) => {
+              const actorId = session.user.id;
+              const actor: Actor = {
+                name: session.user.name,
+                image: session.user.image ?? null,
+              };
+
+              const commentId = newId();
+              const createdAt = new Date().toISOString();
+
+              const threadId = annotation.metadata.threadId;
+
+              const pendingId = state.optimistic({
+                actorId,
+                actor,
+                createdAt,
+                payload: {
+                  $type: 'comment.created',
+                  threadId,
+                  commentId,
+                  body,
+                },
+              });
+
+              try {
+                await createComment({
+                  shareId,
+                  threadId,
+                  commentId,
+                  body,
+                });
+              } catch {
+                state.reject(pendingId);
+              }
+            }}
+          />
+        </div>
+      )}
     </Card>
-  );
-}
-
-interface CommentBodyProps {
-  readonly initialState: SerializedEditorState;
-}
-
-function CommentBody({initialState}: CommentBodyProps) {
-  const [extension] = useState(() =>
-    defineExtension({
-      name: '@better-diffs/comment-body',
-      namespace: 'CommentBody',
-      theme: EDITOR_THEME,
-      dependencies: [RichTextExtension],
-      editable: false,
-      $initialEditorState: JSON.stringify(initialState),
-      onError(error) {
-        console.error(error);
-      },
-    }),
-  );
-
-  return (
-    <LexicalExtensionComposer extension={extension} contentEditable={null}>
-      <div className="relative block w-full rounded-field px-3 py-2">
-        <ContentEditable
-          aria-label="Comment"
-          className={typographyVariants({type: 'body-sm'}).base({
-            className: 'w-full outline-none',
-          })}
-        />
-      </div>
-    </LexicalExtensionComposer>
   );
 }

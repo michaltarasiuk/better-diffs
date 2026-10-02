@@ -69,7 +69,7 @@ export function FileStatesProvider({
 function useFileStates() {
   const shareId = useShareId();
   const [fileStates, setFileStates] = useLocalStorage(
-    `share:${shareId}`,
+    `share:v1:${shareId}`,
     () => new Map<string, FileState>(),
     {
       serialize: serializeMap<string, FileState>,

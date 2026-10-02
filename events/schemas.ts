@@ -87,6 +87,39 @@ export const OpenThreadInput = z.object({
 });
 export type OpenThreadInput = z.infer<typeof OpenThreadInput>;
 
+export const ResolveThreadInput = z.object({
+  shareId: z.uuid(),
+  threadId: z.uuid(),
+});
+export type ResolveThreadInput = z.infer<typeof ResolveThreadInput>;
+
+export const CreateCommentInput = z.object({
+  shareId: z.uuid(),
+  threadId: z.uuid(),
+  commentId: z.uuid(),
+  body: LexicalBody,
+});
+export type CreateCommentInput = z.infer<typeof CreateCommentInput>;
+
+export const EditCommentInput = z.object({
+  shareId: z.uuid(),
+  commentId: z.uuid(),
+  body: LexicalBody,
+});
+export type EditCommentInput = z.infer<typeof EditCommentInput>;
+
+export const DeleteCommentInput = z.object({
+  shareId: z.uuid(),
+  commentId: z.uuid(),
+});
+export type DeleteCommentInput = z.infer<typeof DeleteCommentInput>;
+
+export const Actor = z.object({
+  name: z.string().min(1),
+  image: z.string().nullable(),
+});
+export type Actor = z.infer<typeof Actor>;
+
 export const ShareEvent = z.object({
   id: z.uuid(),
   shareId: z.uuid(),
@@ -94,6 +127,7 @@ export const ShareEvent = z.object({
   type: z.enum(EVENT_TYPES),
   subjectId: z.uuid(),
   actorId: z.string().min(1),
+  actor: Actor,
   payload: ShareEventPayload,
   createdAt: z.iso.datetime(),
 });

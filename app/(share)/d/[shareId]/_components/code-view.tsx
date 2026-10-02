@@ -25,7 +25,8 @@ import {CODE_VIEW_OPTIONS} from '@/diffs/options';
 import {FoldedShareStateContext} from '@/events/provider';
 import {useLines} from '../_hooks/use-lines';
 import {activeFileId} from '../_lib/active-file-id';
-import {AddCommentButton, DiffAnnotation} from './annotation';
+import {DiffAnnotation} from './annotation';
+import {GutterUtility} from './gutter-utility';
 import {CodeViewRefContext, FileStatesContext} from './provider';
 
 interface CodeViewProps {
@@ -125,8 +126,8 @@ export function CodeView({files}: CodeViewProps) {
         );
       }}
       renderGutterUtility={(getHoveredLine, item) => (
-        <AddCommentButton
-          onAddAnnotation={() => {
+        <GutterUtility
+          onPress={() => {
             const line = getHoveredLine();
             if (!isDefined(line) || !isDiffLine(line)) {
               return;
