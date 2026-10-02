@@ -1,29 +1,43 @@
 'use client';
 
-import {useState} from 'react';
+import {use, useState} from 'react';
 import {Input} from '@heroui/react';
+import type {SerializedEditorState} from 'lexical';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
 import {useKeyDown} from '@/hooks/use-key-down';
-import {Editor, type OnComment} from './editor';
+import {isDefined} from '@/utils/is-defined';
+import type {Session} from '@/auth/auth';
+import {SessionContext} from '@/auth/context';
+import {Editor} from './editor';
 
 interface ReplyInputProps {
-  readonly onComment?: OnComment;
+  readonly signIn: (props: {onDismiss: () => void}) => React.ReactNode;
+  readonly onReply?: (
+    body: SerializedEditorState,
+    session: Session,
+  ) => void | Promise<unknown>;
 }
 
-export function ReplyInput({onComment}: ReplyInputProps) {
+export function ReplyInput({signIn, onReply}: ReplyInputProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [isFocusWithin, setIsFocusWithin] = useState(false);
 
+  const [isFocusWithin, setIsFocusWithin] = useState(false);
   const {focusWithinProps} = useFocusWithin({
     onFocusWithinChange(isFocusWithin) {
       setIsFocusWithin(isFocusWithin);
     },
   });
 
+  const session = use(SessionContext);
+
+  function onDismiss() {
+    setIsEditing(false);
+  }
+
   useKeyDown((event) => {
     if (event.key === 'Escape' && isFocusWithin && isEditing) {
-      setIsEditing(false);
+      onDismiss();
     }
   });
 
@@ -41,6 +55,10 @@ export function ReplyInput({onComment}: ReplyInputProps) {
     );
   }
 
+  if (!isDefined(session)) {
+    return <div {...focusWithinProps}>{signIn({onDismiss})}</div>;
+  }
+
   return (
     <div {...focusWithinProps}>
       <Editor
@@ -48,8 +66,8 @@ export function ReplyInput({onComment}: ReplyInputProps) {
         autoFocus
         variant="secondary"
         className="rounded-b-xl"
-        onComment={onComment}
-        onDismiss={() => setIsEditing(false)}
+        onComment={(body) => onReply?.(body, session)}
+        onDismiss={onDismiss}
       />
     </div>
   );

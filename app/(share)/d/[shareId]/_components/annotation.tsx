@@ -123,7 +123,11 @@ function CommentForm({onDismiss}: CommentFormProps) {
 
   const session = use(SessionContext);
   if (!isDefined(session)) {
-    return <SignInPrompt onDismiss={onDismiss} />;
+    return (
+      <div className="m-2 mbs-1">
+        <SignInCard onDismiss={onDismiss} />
+      </div>
+    );
   }
 
   const annotation = use(AnnotationContext);
@@ -207,20 +211,23 @@ function CommentForm({onDismiss}: CommentFormProps) {
   );
 }
 
-interface SignInPromptProps {
+interface SignInCardProps {
+  readonly variant?: 'primary' | 'secondary';
   readonly onDismiss?: () => void;
 }
 
-function SignInPrompt({onDismiss}: SignInPromptProps) {
+function SignInCard({variant = 'primary', onDismiss}: SignInCardProps) {
   const [isSigningIn, setIsSigningIn] = useState(false);
 
   const annotation = use(AnnotationContext);
-  if (!isFormAnnotation(annotation)) {
-    throw new TypeError('Annotation is not a form');
-  }
+
+  const annotationName = getLineAnnotationName({
+    side: annotation.side,
+    lineNumber: annotation.lineNumber,
+  });
 
   return (
-    <Card variant="secondary" className="m-2 mbs-1">
+    <Card variant={variant === 'primary' ? 'secondary' : 'transparent'}>
       <Card.Header>
         <Card.Title>Sign in to comment</Card.Title>
         <Card.Description>
@@ -230,7 +237,7 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
 
       <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
         <Button
-          id={`${getLineAnnotationName(annotation)}-sign-in-cancel`}
+          id={`${annotationName}-sign-in-cancel`}
           variant="ghost"
           size="sm"
           onPress={() => onDismiss?.()}
@@ -239,7 +246,7 @@ function SignInPrompt({onDismiss}: SignInPromptProps) {
         </Button>
 
         <Button
-          id={`${getLineAnnotationName(annotation)}-sign-in-github`}
+          id={`${annotationName}-sign-in-github`}
           size="sm"
           isPending={isSigningIn}
           onPress={async () => {
@@ -285,7 +292,6 @@ function ThreadAnnotation() {
     throw new Error(`Thread not found: ${annotation.metadata.threadId}`);
   }
 
-  const session = use(SessionContext);
   const state = use(ShareStateContext);
 
   const comments = thread.commentIds
@@ -296,51 +302,50 @@ function ThreadAnnotation() {
     <Card variant="secondary" className="m-2 mbs-1 gap-0 p-0">
       <CommentList comments={comments} />
 
-      {isDefined(session) && (
-        <>
-          <div className="mx-3">
-            <Separator />
-          </div>
+      <div className="mx-3">
+        <Separator />
+      </div>
 
-          <ReplyInput
-            onComment={async (body) => {
-              const actorId = session.user.id;
-              const actor: Actor = {
-                name: session.user.name,
-                image: session.user.image ?? null,
-              };
+      <ReplyInput
+        signIn={({onDismiss}) => (
+          <SignInCard variant="secondary" onDismiss={onDismiss} />
+        )}
+        onReply={async (body, session) => {
+          const actorId = session.user.id;
+          const actor: Actor = {
+            name: session.user.name,
+            image: session.user.image ?? null,
+          };
 
-              const commentId = newId();
-              const createdAt = new Date().toISOString();
+          const commentId = newId();
+          const createdAt = new Date().toISOString();
 
-              const threadId = annotation.metadata.threadId;
+          const threadId = annotation.metadata.threadId;
 
-              const pendingId = state.optimistic({
-                actorId,
-                actor,
-                createdAt,
-                payload: {
-                  $type: 'comment.created',
-                  threadId,
-                  commentId,
-                  body,
-                },
-              });
+          const pendingId = state.optimistic({
+            actorId,
+            actor,
+            createdAt,
+            payload: {
+              $type: 'comment.created',
+              threadId,
+              commentId,
+              body,
+            },
+          });
 
-              try {
-                await createComment({
-                  shareId,
-                  threadId,
-                  commentId,
-                  body,
-                });
-              } catch {
-                state.reject(pendingId);
-              }
-            }}
-          />
-        </>
-      )}
+          try {
+            await createComment({
+              shareId,
+              threadId,
+              commentId,
+              body,
+            });
+          } catch {
+            state.reject(pendingId);
+          }
+        }}
+      />
     </Card>
   );
 }

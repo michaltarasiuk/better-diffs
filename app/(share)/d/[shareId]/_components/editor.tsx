@@ -106,9 +106,7 @@ function isBlockType(value: string): value is BlockType {
   return BLOCK_TYPES.some((blockType) => blockType.value === value);
 }
 
-export type OnComment = (
-  body: SerializedEditorState,
-) => void | Promise<unknown>;
+type OnComment = (body: SerializedEditorState) => void | Promise<unknown>;
 
 interface EditorProps {
   readonly placeholder: string;
