@@ -32,8 +32,9 @@ export function ReplyInput({onComment}: ReplyInputProps) {
       <div {...focusWithinProps}>
         <Editor
           placeholder="Write a reply…"
-          variant="secondary"
           autoFocus
+          variant="secondary"
+          className="rounded-b-xl"
           onComment={onComment}
           onDismiss={() => setIsEditing(false)}
         />
