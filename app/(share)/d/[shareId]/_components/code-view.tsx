@@ -18,7 +18,7 @@ import type {AnnotationMetadata} from '@/diffs/annotations';
 import {sortAnnotations, toThreadAnnotation} from '@/diffs/annotations';
 import {isDiffLine} from '@/diffs/lines';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
-import {FoldedShareStateContext} from '@/events/provider';
+import {FoldedStateContext} from '@/events/provider';
 import {useLines} from '../_hooks/use-lines';
 import {activeFileId} from '../_lib/active-file-id';
 import {Annotation} from './annotation';
@@ -44,7 +44,7 @@ export function CodeView({files}: CodeViewProps) {
 
   const isMobile = useIsMobile();
 
-  const folded = use(FoldedShareStateContext);
+  const folded = use(FoldedStateContext);
   const codeViewRef = use(CodeViewRefContext);
 
   const threadsByFilePath = Map.groupBy(

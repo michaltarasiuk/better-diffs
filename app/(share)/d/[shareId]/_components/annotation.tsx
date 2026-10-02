@@ -18,7 +18,7 @@ import {
   isThreadAnnotation,
 } from '@/diffs/annotations';
 import {createComment, openThread} from '@/events/actions';
-import {FoldedShareStateContext, ShareStateContext} from '@/events/provider';
+import {FoldedStateContext, ShareStateContext} from '@/events/provider';
 import type {Actor, Anchor} from '@/events/schemas';
 import {useShareId} from '../_hooks/use-share-id';
 import {CommentList} from './comment-list';
@@ -281,7 +281,7 @@ function ThreadAnnotation() {
   }
 
   const shareId = useShareId();
-  const folded = use(FoldedShareStateContext);
+  const folded = use(FoldedStateContext);
 
   const thread = folded.threads.get(annotation.metadata.threadId);
   if (!isDefined(thread)) {

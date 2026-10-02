@@ -11,15 +11,13 @@ import {browser} from 'react-dom';
 import {ErrorBoundary} from 'react-error-boundary';
 
 import type {ShareEvent} from './schemas';
-import type {FoldedShareState} from './state';
+import type {FoldedState} from './state';
 import {EMPTY_FOLDED_STATE, ShareState} from './state';
 import {hydrateShareEvents, type ShareEventsSync} from './sync';
 
 export const ShareStateContext = createContext<ShareState>(null as never);
 
-export const FoldedShareStateContext = createContext<FoldedShareState>(
-  null as never,
-);
+export const FoldedStateContext = createContext<FoldedState>(null as never);
 
 export function ShareEventsProvider({
   shareId,
@@ -85,9 +83,7 @@ function ShareStateProvider({
 
   return (
     <ShareStateContext value={state}>
-      <FoldedShareStateContext value={snapshot}>
-        {children}
-      </FoldedShareStateContext>
+      <FoldedStateContext value={snapshot}>{children}</FoldedStateContext>
     </ShareStateContext>
   );
 }

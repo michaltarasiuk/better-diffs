@@ -23,7 +23,7 @@ export interface CommentState {
   readonly createdAt: string;
 }
 
-export interface FoldedShareState {
+export interface FoldedState {
   readonly threads: ReadonlyMap<string, ThreadState>;
   readonly comments: ReadonlyMap<string, CommentState>;
   readonly deletedCommentIds: ReadonlySet<string>;
@@ -38,7 +38,7 @@ export interface OptimisticEvent {
   readonly payload: ShareEventPayload;
 }
 
-export const EMPTY_FOLDED_STATE: FoldedShareState = {
+export const EMPTY_FOLDED_STATE: FoldedState = {
   threads: new Map(),
   comments: new Map(),
   deletedCommentIds: new Set(),
@@ -57,7 +57,7 @@ export class ShareState {
   readonly comments = new Map<string, CommentState>();
   readonly deletedCommentIds = new Set<string>();
 
-  #snapshot: FoldedShareState | null = null;
+  #snapshot: FoldedState | null = null;
   #pending = new Map<string, OptimisticEvent>();
   #version = 0;
   #latestSeq = 0;
@@ -70,7 +70,7 @@ export class ShareState {
     };
   };
 
-  getSnapshot = (): FoldedShareState => {
+  getSnapshot = (): FoldedState => {
     if (!this.#snapshot) {
       if (!this.#pending.size) {
         this.#snapshot = {
@@ -261,7 +261,7 @@ export class ShareState {
     }
   }
 
-  #mergePending(): FoldedShareState {
+  #mergePending(): FoldedState {
     const confirmedThreads = this.threads;
     const confirmedComments = this.comments;
 

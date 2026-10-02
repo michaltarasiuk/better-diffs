@@ -18,6 +18,10 @@ import {useShareId} from '../_hooks/use-share-id';
 
 type Handle = CodeViewHandle<AnnotationMetadata, null>;
 
+type CodeViewRef = React.RefObject<Handle | null>;
+
+type FileStates = ReturnType<typeof useFileStates>;
+
 interface FileState {
   readonly commentForms: readonly FormDiffAnnotation[];
   readonly collapsed: boolean;
@@ -34,13 +38,9 @@ function defaultFileState(): FileState {
   };
 }
 
-export const CodeViewRefContext = createContext<React.RefObject<Handle | null>>(
-  null as never,
-);
+export const CodeViewRefContext = createContext<CodeViewRef>(null as never);
 
-export const FileStatesContext = createContext<
-  ReturnType<typeof useFileStates>
->(null as never);
+export const FileStatesContext = createContext<FileStates>(null as never);
 
 export function CodeViewProvider({
   children,
@@ -137,7 +137,7 @@ function useFileStates() {
   function updateCommentForm(
     fileId: string,
     formId: string,
-    update: (state: FormDiffAnnotation) => FormDiffAnnotation,
+    update: (commentForm: FormDiffAnnotation) => FormDiffAnnotation,
   ) {
     updateFileState(fileId, (state) => ({
       ...state,
@@ -154,9 +154,9 @@ function useFileStates() {
     formId: string,
     draft: SerializedEditorState,
   ) {
-    updateCommentForm(fileId, formId, (state) => ({
-      ...state,
-      metadata: {...state.metadata, draft},
+    updateCommentForm(fileId, formId, (commentForm) => ({
+      ...commentForm,
+      metadata: {...commentForm.metadata, draft},
     }));
   }
 
