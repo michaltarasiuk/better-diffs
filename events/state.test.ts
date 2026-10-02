@@ -9,8 +9,8 @@ import {
   createShareEventLog,
   createThreadOpened,
   createThreadResolved,
-} from '@/testkit/events';
-import {uuid} from '@/testkit/uuid';
+} from '@/testing/events';
+import {uuid} from '@/testing/uuid';
 import type {CommentCreatedPayload, ShareEventPayload} from './schemas';
 import {foldEvents, isType, ShareState} from './state';
 

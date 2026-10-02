@@ -1,8 +1,8 @@
 import type {GetHoveredLineResult} from '@pierre/diffs';
 import {describe, expect, expectTypeOf, it} from 'vitest';
 
-import {createThreadState} from '@/testkit/events';
-import {uuid} from '@/testkit/uuid';
+import {createThreadState} from '@/testing/events';
+import {uuid} from '@/testing/uuid';
 import {
   type DiffAnnotation,
   type FormAnnotationMetadata,

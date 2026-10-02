@@ -3,7 +3,7 @@ import dedent from 'dedent';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
-import {uuid} from '@/testkit/uuid';
+import {uuid} from '@/testing/uuid';
 import {OPTIONS, POST} from './route';
 
 const DIFF_TEXT = dedent`

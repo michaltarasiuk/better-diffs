@@ -57,10 +57,10 @@ const eslintConfig = defineConfig([
             [
               '^(react\\/(.*)$)|^(react$)|^(react-dom(.*)$)',
               '^(next(.*)$)|^(next$)',
-              '^(?!(?:app|auth|db|diffs|events|headers|hooks|react|testkit|trees|utils|env|fonts)(?:$|\\/))@?\\w',
+              '^(?!(?:app|auth|db|diffs|events|headers|hooks|react|testing|trees|utils|env|fonts)(?:$|\\/))@?\\w',
             ],
             [
-              '^(?:@\\/)?(?:utils|hooks|headers|env|fonts|testkit)(?:$|\\/)',
+              '^(?:@\\/)?(?:utils|hooks|headers|env|fonts|testing)(?:$|\\/)',
               '^(?:@\\/)?(?:auth|db)(?:$|\\/)',
               '^(?:@\\/)?(?:events|diffs|trees)(?:$|\\/)',
               '^(?:@\\/)?react(?:$|\\/)',

@@ -1,4 +1,4 @@
-import {uuid} from '@/testkit/uuid';
+import {uuid} from '@/testing/uuid';
 import type {Session} from '@/auth/auth';
 
 export function createSession(overrides: Partial<Session> = {}): Session {

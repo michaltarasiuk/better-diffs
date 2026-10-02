@@ -1,6 +1,6 @@
 import type {SerializedEditorState} from 'lexical';
 
-import {uuid} from '@/testkit/uuid';
+import {uuid} from '@/testing/uuid';
 import {
   type Anchor,
   type CommentCreatedPayload,

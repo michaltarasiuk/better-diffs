@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-import {createSession} from '@/testkit/auth';
+import {createSession} from '@/testing/auth';
 import {
   createAnchor,
   createCommentCreated,
@@ -13,8 +13,8 @@ import {
   createResolveThreadInput,
   createThreadOpened,
   createThreadResolved,
-} from '@/testkit/events';
-import {uuid} from '@/testkit/uuid';
+} from '@/testing/events';
+import {uuid} from '@/testing/uuid';
 import {
   createComment,
   deleteComment,

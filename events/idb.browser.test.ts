@@ -5,8 +5,8 @@ import {
   createLexicalBody,
   createShareEvent,
   createThreadResolved,
-} from '@/testkit/events';
-import {uuid} from '@/testkit/uuid';
+} from '@/testing/events';
+import {uuid} from '@/testing/uuid';
 import {
   clearEvents,
   closeEventDb,

@@ -2,7 +2,7 @@ import {NextRequest} from 'next/server';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
-import {createShareEvent, createThreadResolved} from '@/testkit/events';
+import {createShareEvent, createThreadResolved} from '@/testing/events';
 import {GET} from './route';
 
 const {getEvents} = vi.hoisted(() => ({
