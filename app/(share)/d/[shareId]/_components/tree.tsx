@@ -12,13 +12,12 @@ import {
   useFileTreeSearch,
 } from '@pierre/trees/react';
 
-import {useKeyDown} from '@/hooks/use-key-down';
+import {useShortcut} from '@/hooks/use-shortcut';
 import {isDefined} from '@/utils/is-defined';
-import {isEditableTarget} from '@/utils/is-editable-target';
-import {isUnmodifiedKey} from '@/utils/is-unmodified-key';
 import type {TreeInput} from '@/trees/input';
 import {getFileTreeOptions} from '@/trees/options';
 import {useQuery} from '../_hooks/use-query';
+import {scrollToFile} from '../_lib/scroll-to-file';
 import {CodeViewRefContext} from './provider';
 
 interface TreeProps {
@@ -37,18 +36,21 @@ export function Tree({input, preloaded, fileIdByPath, children}: TreeProps) {
       void setSearchQuery(value);
     },
     onSelectionChange([selectedPath]) {
-      if (!isDefined(selectedPath) || selectedPath.endsWith('/')) {
+      const codeView = codeViewRef.current;
+      if (
+        !isDefined(codeView) ||
+        !isDefined(selectedPath) ||
+        selectedPath.endsWith('/')
+      ) {
         return;
       }
-      const fileid = fileIdByPath[selectedPath];
-      if (!isDefined(fileid)) {
+
+      const fileId = fileIdByPath[selectedPath];
+      if (!isDefined(fileId)) {
         throw new Error(`File id not found: ${selectedPath}`);
       }
-      codeViewRef.current?.scrollTo({
-        type: 'item',
-        id: fileid,
-        align: 'start',
-      });
+
+      scrollToFile(codeView, fileId);
     },
   });
 
@@ -72,11 +74,7 @@ function TreeSearch({model}: {readonly model: FileTreeModel}) {
   const search = useFileTreeSearch(model);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useKeyDown(function focusSearch(event) {
-    if (!isUnmodifiedKey(event, '/') || isEditableTarget(event.target)) {
-      return;
-    }
-    event.preventDefault();
+  useShortcut('/', function focusSearch() {
     const input = inputRef.current;
     if (!isDefined(input)) {
       throw new Error('Search input missing');

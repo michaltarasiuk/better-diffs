@@ -10,10 +10,8 @@ import {CodeView as DiffCodeView} from '@pierre/diffs/react';
 import {ChevronDownIcon} from 'lucide-react';
 
 import {useIsMobile} from '@/hooks/use-is-mobile';
-import {useKeyDown} from '@/hooks/use-key-down';
+import {useShortcut} from '@/hooks/use-shortcut';
 import {isDefined} from '@/utils/is-defined';
-import {isEditableTarget} from '@/utils/is-editable-target';
-import {isUnmodifiedKey} from '@/utils/is-unmodified-key';
 import type {AnnotationMetadata} from '@/diffs/annotations';
 import {sortAnnotations, toThreadAnnotation} from '@/diffs/annotations';
 import {isDiffLine} from '@/diffs/lines';
@@ -21,6 +19,7 @@ import {CODE_VIEW_OPTIONS} from '@/diffs/options';
 import {FoldedStateContext} from '@/events/provider';
 import {useLines} from '../_hooks/use-lines';
 import {activeFileId} from '../_lib/active-file-id';
+import {scrollToFile} from '../_lib/scroll-to-file';
 import {Annotation} from './annotation';
 import {GutterUtility} from './gutter-utility';
 import {CodeViewRefContext, ReviewStateContext} from './provider';
@@ -52,28 +51,15 @@ export function CodeView({files}: CodeViewProps) {
     (thread) => thread.anchor.filePath,
   );
 
-  useKeyDown(function toggleViewed(event) {
-    if (!isUnmodifiedKey(event, 'v') || isEditableTarget(event.target)) {
-      return;
-    }
-
+  useShortcut('v', function toggleViewed() {
     const codeView = codeViewRef.current?.getInstance();
-    if (!isDefined(codeView)) {
+    const fileId = isDefined(codeView) ? activeFileId(codeView) : null;
+    if (!isDefined(codeView) || !isDefined(fileId)) {
       return;
     }
 
-    const fileId = activeFileId(codeView);
-    if (!isDefined(fileId)) {
-      return;
-    }
-
-    event.preventDefault();
     toggleFileViewed(fileId);
-    codeView.scrollTo({
-      type: 'item',
-      id: fileId,
-      align: 'start',
-    });
+    scrollToFile(codeView, fileId);
   });
 
   return (
