@@ -23,7 +23,7 @@ import type {Actor, Anchor} from '@/events/schemas';
 import {useShareId} from '../_hooks/use-share-id';
 import {CommentList} from './comment-list';
 import {EditorSkeleton} from './editor-skeleton';
-import {FileStatesContext} from './provider';
+import {ReviewStateContext} from './provider';
 import {ReplyInputSkeleton} from './reply-input-skeleton';
 
 interface File {
@@ -76,7 +76,7 @@ function AnnotationBody() {
 
   const annotation = use(AnnotationContext);
   const file = use(FileContext);
-  const {removeCommentForm} = use(FileStatesContext);
+  const {removeCommentForm} = use(ReviewStateContext);
 
   const onDismiss = isFormAnnotation(annotation)
     ? () => removeCommentForm(file.id, annotation.metadata.formId)
@@ -133,7 +133,7 @@ function CommentForm({onDismiss}: CommentFormProps) {
 
   const state = use(ShareStateContext);
   const file = use(FileContext);
-  const fileStates = use(FileStatesContext);
+  const reviewState = use(ReviewStateContext);
 
   return (
     <Editor
@@ -195,7 +195,7 @@ function CommentForm({onDismiss}: CommentFormProps) {
         }
       }}
       onChange={(state) => {
-        fileStates.updateCommentFormDraft(
+        reviewState.setCommentFormDraft(
           file.id,
           annotation.metadata.formId,
           state,

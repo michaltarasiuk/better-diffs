@@ -20,8 +20,6 @@ type Handle = CodeViewHandle<AnnotationMetadata, null>;
 
 type CodeViewRef = React.RefObject<Handle | null>;
 
-type FileStates = ReturnType<typeof useFileStates>;
-
 interface FileState {
   readonly commentForms: readonly FormDiffAnnotation[];
   readonly collapsed: boolean;
@@ -29,18 +27,22 @@ interface FileState {
   readonly version: number;
 }
 
-function defaultFileState(): FileState {
-  return {
-    commentForms: [],
-    collapsed: false,
-    viewed: false,
-    version: 0,
-  };
-}
+type CommentForms = FileState['commentForms'];
+
+type FileStatePatch = Partial<Omit<FileState, 'version'>>;
+
+type ReviewState = ReturnType<typeof useReviewState>;
+
+const DEFAULT_FILE_STATE: FileState = {
+  commentForms: [],
+  collapsed: false,
+  viewed: false,
+  version: 0,
+};
 
 export const CodeViewRefContext = createContext<CodeViewRef>(null as never);
 
-export const FileStatesContext = createContext<FileStates>(null as never);
+export const ReviewStateContext = createContext<ReviewState>(null as never);
 
 export function CodeViewProvider({
   children,
@@ -56,17 +58,19 @@ export function CodeViewProvider({
   );
 }
 
-export function FileStatesProvider({
+export function ReviewStateProvider({
   children,
 }: {
   readonly children: React.ReactNode;
 }) {
-  const fileStates = useFileStates();
+  const reviewState = useReviewState();
 
-  return <FileStatesContext value={fileStates}>{children}</FileStatesContext>;
+  return (
+    <ReviewStateContext value={reviewState}>{children}</ReviewStateContext>
+  );
 }
 
-function useFileStates() {
+function useReviewState() {
   const shareId = useShareId();
   const [fileStates, setFileStates] = useLocalStorage(
     `share:v1:${shareId}`,
@@ -77,105 +81,81 @@ function useFileStates() {
     },
   );
 
-  function getFileState(fileId: string) {
-    return {...defaultFileState(), ...fileStates.get(fileId)};
-  }
-
-  function updateFileState(
+  function patchFileState(
     fileId: string,
-    update: (state: FileState) => FileState,
+    patch: (state: FileState) => FileStatePatch,
   ) {
     setFileStates((fs) => {
-      const state = {...defaultFileState(), ...fs.get(fileId)};
+      const state = {...DEFAULT_FILE_STATE, ...fs.get(fileId)};
 
       return new Map(fs).set(fileId, {
-        ...update(state),
+        ...state,
+        ...patch(state),
         version: state.version + 1,
       });
     });
   }
 
-  function toggleFileCollapsed(fileId: string) {
-    updateFileState(fileId, (state) => ({
-      ...state,
-      collapsed: !state.collapsed,
-    }));
-  }
-
-  function setFileViewed(fileId: string, viewed: boolean) {
-    updateFileState(fileId, (state) => ({
-      ...state,
-      viewed,
-      collapsed: viewed,
-    }));
-  }
-
-  function toggleFileViewed(fileId: string) {
-    updateFileState(fileId, (state) => ({
-      ...state,
-      viewed: !state.viewed,
-      collapsed: !state.viewed,
-    }));
-  }
-
-  function addCommentForm(fileId: string, line: DiffLine) {
-    updateFileState(fileId, (state) => ({
-      ...state,
-      commentForms: sortAnnotations([
-        ...state.commentForms,
-        {
-          ...line,
-          metadata: {
-            type: 'form',
-            formId: newId(),
-          },
-        },
-      ]),
-    }));
-  }
-
-  function updateCommentForm(
+  function patchCommentForms(
     fileId: string,
-    formId: string,
-    update: (commentForm: FormDiffAnnotation) => FormDiffAnnotation,
+    patch: (commentForms: CommentForms) => CommentForms,
   ) {
-    updateFileState(fileId, (state) => ({
-      ...state,
-      commentForms: state.commentForms.map((commentForm) =>
-        commentForm.metadata.formId === formId
-          ? update(commentForm)
-          : commentForm,
-      ),
-    }));
-  }
-
-  function updateCommentFormDraft(
-    fileId: string,
-    formId: string,
-    draft: SerializedEditorState,
-  ) {
-    updateCommentForm(fileId, formId, (commentForm) => ({
-      ...commentForm,
-      metadata: {...commentForm.metadata, draft},
-    }));
-  }
-
-  function removeCommentForm(fileId: string, formId: string) {
-    updateFileState(fileId, (state) => ({
-      ...state,
-      commentForms: state.commentForms.filter(
-        (commentForm) => commentForm.metadata.formId !== formId,
-      ),
+    patchFileState(fileId, (state) => ({
+      commentForms: patch(state.commentForms),
     }));
   }
 
   return {
-    getFileState,
-    toggleFileCollapsed,
-    setFileViewed,
-    toggleFileViewed,
-    addCommentForm,
-    updateCommentFormDraft,
-    removeCommentForm,
+    getFileState(fileId: string) {
+      return {...DEFAULT_FILE_STATE, ...fileStates.get(fileId)};
+    },
+
+    toggleFileCollapsed(fileId: string) {
+      patchFileState(fileId, (state) => ({collapsed: !state.collapsed}));
+    },
+
+    setFileViewed(fileId: string, viewed: boolean) {
+      patchFileState(fileId, () => ({viewed, collapsed: viewed}));
+    },
+
+    toggleFileViewed(fileId: string) {
+      patchFileState(fileId, (state) => ({
+        viewed: !state.viewed,
+        collapsed: !state.viewed,
+      }));
+    },
+
+    addCommentForm(fileId: string, line: DiffLine) {
+      const commentForm: FormDiffAnnotation = {
+        ...line,
+        metadata: {type: 'form', formId: newId()},
+      };
+
+      patchCommentForms(fileId, (commentForms) =>
+        sortAnnotations([...commentForms, commentForm]),
+      );
+    },
+
+    setCommentFormDraft(
+      fileId: string,
+      formId: string,
+      draft: SerializedEditorState,
+    ) {
+      patchCommentForms(fileId, (commentForms) =>
+        commentForms.map((commentForm) =>
+          commentForm.metadata.formId === formId
+            ? {...commentForm, metadata: {...commentForm.metadata, draft}}
+            : commentForm,
+        ),
+      );
+    },
+
+    removeCommentForm(fileId: string, formId: string) {
+      patchCommentForms(fileId, (commentForms) =>
+        commentForms.filter(
+          (commentForm) => commentForm.metadata.formId !== formId,
+        ),
+      );
+    },
   };
 }

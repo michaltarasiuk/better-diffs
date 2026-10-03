@@ -23,7 +23,7 @@ import {useLines} from '../_hooks/use-lines';
 import {activeFileId} from '../_lib/active-file-id';
 import {Annotation} from './annotation';
 import {GutterUtility} from './gutter-utility';
-import {CodeViewRefContext, FileStatesContext} from './provider';
+import {CodeViewRefContext, ReviewStateContext} from './provider';
 
 interface CodeViewProps {
   readonly files: readonly {
@@ -39,7 +39,7 @@ export function CodeView({files}: CodeViewProps) {
     setFileViewed,
     toggleFileViewed,
     addCommentForm,
-  } = use(FileStatesContext);
+  } = use(ReviewStateContext);
   const {selectedLines, setSelectedLines} = useLines();
 
   const isMobile = useIsMobile();
