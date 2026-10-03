@@ -281,7 +281,7 @@ function RichTextToolbarPlugin() {
   }, [editor]);
 
   return (
-    <div className="flex [scrollbar-width:none] items-center gap-2 overflow-x-auto">
+    <div className="-m-1 flex [scrollbar-width:none] items-center gap-2 overflow-x-auto p-1">
       <Select
         aria-label="Block type"
         variant="secondary"
