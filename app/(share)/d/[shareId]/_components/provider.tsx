@@ -111,11 +111,16 @@ function useReviewState() {
     },
 
     toggleFileCollapsed(fileId: string) {
-      patchFileState(fileId, (state) => ({collapsed: !state.collapsed}));
+      patchFileState(fileId, (state) => ({
+        collapsed: !state.collapsed,
+      }));
     },
 
     setFileViewed(fileId: string, viewed: boolean) {
-      patchFileState(fileId, () => ({viewed, collapsed: viewed}));
+      patchFileState(fileId, () => ({
+        viewed,
+        collapsed: viewed,
+      }));
     },
 
     toggleFileViewed(fileId: string) {
