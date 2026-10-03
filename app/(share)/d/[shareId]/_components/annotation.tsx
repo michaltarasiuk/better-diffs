@@ -222,12 +222,14 @@ function SignInCard({variant = 'primary', onDismiss}: SignInCardProps) {
     lineNumber: annotation.lineNumber,
   });
 
+  const action = variant === 'primary' ? 'comment' : 'reply';
+
   return (
     <Card variant={variant === 'primary' ? 'secondary' : 'transparent'}>
       <Card.Header>
-        <Card.Title>Sign in to comment</Card.Title>
+        <Card.Title>Sign in to {action}</Card.Title>
         <Card.Description>
-          Use your GitHub account to leave a comment.
+          Use your GitHub account to {action}.
         </Card.Description>
       </Card.Header>
 
