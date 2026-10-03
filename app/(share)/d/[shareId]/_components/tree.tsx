@@ -4,6 +4,7 @@ import '@/trees/trees.css';
 
 import {use, useRef} from 'react';
 import {SearchField} from '@heroui/react';
+import type {FileTree as FileTreeModel} from '@pierre/trees';
 import {
   FileTree,
   type FileTreePreloadedData,
@@ -39,75 +40,21 @@ export function Tree({input, preloaded, fileIdByPath, children}: TreeProps) {
       if (!isDefined(selectedPath) || selectedPath.endsWith('/')) {
         return;
       }
-
-      const id = fileIdByPath[selectedPath];
-      if (!isDefined(id)) {
-        throw new Error(`File not found: ${selectedPath}`);
+      const fileid = fileIdByPath[selectedPath];
+      if (!isDefined(fileid)) {
+        throw new Error(`File id not found: ${selectedPath}`);
       }
-
       codeViewRef.current?.scrollTo({
         type: 'item',
-        id,
+        id: fileid,
         align: 'start',
       });
     },
   });
-  const search = useFileTreeSearch(model);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
-  useKeyDown(function focusSearch(event) {
-    if (!isUnmodifiedKey(event, '/') || isEditableTarget(event.target)) {
-      return;
-    }
-    event.preventDefault();
-    const searchInput = searchInputRef.current;
-    if (!isDefined(searchInput)) {
-      throw new Error('Search input missing');
-    }
-    searchInput.focus();
-    searchInput.select();
-  });
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <SearchField
-        variant="secondary"
-        aria-label="Search files"
-        value={search.value}
-        onChange={(value) => search.setValue(value || null)}
-        fullWidth
-        className="bg-trees-sidebar p-2"
-      >
-        <SearchField.Group className="bg-transparent">
-          <SearchField.SearchIcon />
-          <SearchField.Input
-            ref={searchInputRef}
-            aria-keyshortcuts="/ Escape"
-            placeholder="Search files"
-            onKeyDown={(event) => {
-              switch (event.key) {
-                case 'ArrowUp':
-                  event.preventDefault();
-                  search.focusPreviousMatch();
-                  break;
-                case 'ArrowDown':
-                  event.preventDefault();
-                  search.focusNextMatch();
-                  break;
-                case 'Escape':
-                  event.preventDefault();
-                  search.setValue(null);
-                  event.currentTarget.blur();
-                  break;
-              }
-            }}
-          />
-          <SearchField.ClearButton
-            aria-label="Clear search"
-            onClick={() => search.setValue(null)}
-          />
-        </SearchField.Group>
-      </SearchField>
+      <TreeSearch model={model} />
 
       <FileTree
         aria-label="Changed files"
@@ -118,5 +65,59 @@ export function Tree({input, preloaded, fileIdByPath, children}: TreeProps) {
 
       {children}
     </div>
+  );
+}
+
+function TreeSearch({model}: {readonly model: FileTreeModel}) {
+  const search = useFileTreeSearch(model);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useKeyDown(function focusSearch(event) {
+    if (!isUnmodifiedKey(event, '/') || isEditableTarget(event.target)) {
+      return;
+    }
+    event.preventDefault();
+    const input = inputRef.current;
+    if (!isDefined(input)) {
+      throw new Error('Search input missing');
+    }
+    input.focus();
+    input.select();
+  });
+
+  return (
+    <SearchField
+      variant="secondary"
+      aria-label="Search files"
+      value={search.value}
+      onChange={(value) => search.setValue(value || null)}
+      fullWidth
+      className="bg-trees-sidebar p-2"
+    >
+      <SearchField.Group className="bg-transparent">
+        <SearchField.SearchIcon />
+        <SearchField.Input
+          ref={inputRef}
+          aria-keyshortcuts="/ Escape"
+          placeholder="Search files"
+          onKeyDown={(event) => {
+            switch (event.key) {
+              case 'ArrowUp':
+                event.preventDefault();
+                search.focusPreviousMatch();
+                break;
+              case 'ArrowDown':
+                event.preventDefault();
+                search.focusNextMatch();
+                break;
+              case 'Escape':
+                event.currentTarget.blur();
+                break;
+            }
+          }}
+        />
+        <SearchField.ClearButton aria-label="Clear search" />
+      </SearchField.Group>
+    </SearchField>
   );
 }
