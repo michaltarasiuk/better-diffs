@@ -76,16 +76,12 @@ export function CodeView({files}: CodeViewProps) {
     });
   });
 
-  function getThreadsForPath(filePath: string) {
-    return threadsByFilePath.get(filePath) ?? [];
-  }
-
   return (
     <DiffCodeView
       ref={codeViewRef}
       items={files.map((file) => {
         const {commentForms, collapsed, version} = getFileState(file.id);
-        const threads = getThreadsForPath(file.metadata.name);
+        const threads = threadsByFilePath.get(file.metadata.name) ?? [];
 
         return {
           id: file.id,
@@ -101,25 +97,18 @@ export function CodeView({files}: CodeViewProps) {
       })}
       selectedLines={selectedLines}
       onSelectedLinesChange={setSelectedLines}
-      renderHeaderPrefix={(item) => {
-        const collapsed = getFileState(item.id).collapsed;
-        return (
-          <CollapseButton
-            key={item.id}
-            collapsed={collapsed}
-            onToggleCollapsed={() => toggleFileCollapsed(item.id)}
-          />
-        );
-      }}
-      renderHeaderMetadata={(item) => {
-        const viewed = getFileState(item.id).viewed;
-        return (
-          <ViewedCheckbox
-            viewed={viewed}
-            onViewedChange={(viewed) => setFileViewed(item.id, viewed)}
-          />
-        );
-      }}
+      renderHeaderPrefix={(item) => (
+        <CollapseButton
+          collapsed={getFileState(item.id).collapsed}
+          onToggleCollapsed={() => toggleFileCollapsed(item.id)}
+        />
+      )}
+      renderHeaderMetadata={(item) => (
+        <ViewedCheckbox
+          viewed={getFileState(item.id).viewed}
+          onViewedChange={(viewed) => setFileViewed(item.id, viewed)}
+        />
+      )}
       renderGutterUtility={(getHoveredLine, item) => (
         <GutterUtility
           onPress={() => {

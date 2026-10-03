@@ -7,11 +7,7 @@ import type {SerializedEditorState} from 'lexical';
 import {useLocalStorage} from '@/hooks/use-local-storage';
 import {newId} from '@/utils/new-id';
 import {deserializeMap, serializeMap} from '@/utils/serialize-map';
-import {
-  type AnnotationMetadata,
-  type FormDiffAnnotation,
-  sortAnnotations,
-} from '@/diffs/annotations';
+import type {AnnotationMetadata, FormDiffAnnotation} from '@/diffs/annotations';
 import type {DiffLine} from '@/diffs/lines';
 import {DiffProvider} from '@/diffs/provider';
 import {useShareId} from '../_hooks/use-share-id';
@@ -136,9 +132,10 @@ function useReviewState() {
         metadata: {type: 'form', formId: newId()},
       };
 
-      patchCommentForms(fileId, (commentForms) =>
-        sortAnnotations([...commentForms, commentForm]),
-      );
+      patchCommentForms(fileId, (commentForms) => [
+        ...commentForms,
+        commentForm,
+      ]);
     },
 
     setCommentFormDraft(
