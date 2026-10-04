@@ -214,34 +214,27 @@ interface SignInCardProps {
 }
 
 function SignInCard({variant = 'primary', onDismiss}: SignInCardProps) {
-  if (variant === 'secondary') {
-    return (
-      <div className="flex flex-wrap items-center justify-between gap-2 p-3">
-        <p
-          className={typographyVariants({type: 'body-sm'}).base({
-            className: 'text-muted',
-          })}
-        >
-          Sign in to reply
-        </p>
-        <div className="flex items-center gap-2">
-          <SignInActions onDismiss={onDismiss} />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <Card variant="secondary">
-      <Card.Header>
-        <Card.Title>Sign in to comment</Card.Title>
-        <Card.Description>Use your GitHub account to comment.</Card.Description>
-      </Card.Header>
-
-      <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
+  const prompt = (
+    <div className="flex flex-wrap items-center justify-between gap-2 p-3">
+      <p
+        className={typographyVariants({type: 'body-sm'}).base({
+          className: 'text-muted',
+        })}
+      >
+        Sign in to {variant === 'primary' ? 'comment' : 'reply'}
+      </p>
+      <div className="flex items-center gap-2">
         <SignInActions onDismiss={onDismiss} />
-      </Card.Footer>
+      </div>
+    </div>
+  );
+
+  return variant === 'primary' ? (
+    <Card variant="secondary" className="p-0">
+      {prompt}
     </Card>
+  ) : (
+    prompt
   );
 }
 
