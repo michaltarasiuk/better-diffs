@@ -2,11 +2,12 @@ import {parsePatchFiles} from '@pierre/diffs';
 import dedent from 'dedent';
 import {describe, expect, it} from 'vitest';
 
+import {isDefined} from '@/utils/is-defined';
 import {isEmptyDiff} from './empty';
 
 function parseFile(patch: string) {
   const [file] = parsePatchFiles(patch).flatMap(({files}) => files);
-  if (file === undefined) {
+  if (!isDefined(file)) {
     throw new Error('Patch has no files');
   }
   return file;
@@ -19,7 +20,6 @@ describe('isEmptyDiff', () => {
       new file mode 100644
       index 0000000..5c125de
       Binary files /dev/null and b/favicon.ico differ
-
     `);
 
     expect(isEmptyDiff(file)).toBe(true);
@@ -34,7 +34,6 @@ describe('isEmptyDiff', () => {
       +++ b/index.js
       @@ -0,0 +1 @@
       +export {};
-
     `);
 
     expect(isEmptyDiff(file)).toBe(false);
