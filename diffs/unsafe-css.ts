@@ -24,3 +24,17 @@ export const DIFFS_SINGLE_COLUMN_ANNOTATION_UNSAFE_CSS = dedent`
     width: var(--diffs-single-annotation-width);
   }
 `;
+
+export const EMPTY_DIFF_ATTRIBUTE = 'data-empty-diff';
+
+/**
+ * @pierre/diffs always prints `-0 +0` for a diff without hunks and offers no
+ * per-item option to drop it, so hide the counts on hosts flagged with
+ * EMPTY_DIFF_ATTRIBUTE.
+ */
+export const DIFFS_EMPTY_DIFF_UNSAFE_CSS = dedent`
+  :host([${EMPTY_DIFF_ATTRIBUTE}]) [data-deletions-count],
+  :host([${EMPTY_DIFF_ATTRIBUTE}]) [data-additions-count] {
+    display: none;
+  }
+`;

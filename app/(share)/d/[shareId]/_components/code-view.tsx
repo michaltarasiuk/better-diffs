@@ -14,6 +14,7 @@ import {useShortcut} from '@/hooks/use-shortcut';
 import {isDefined} from '@/utils/is-defined';
 import type {AnnotationMetadata} from '@/diffs/annotations';
 import {sortAnnotations, toThreadAnnotation} from '@/diffs/annotations';
+import {isEmptyDiff} from '@/diffs/empty';
 import {isDiffLine} from '@/diffs/lines';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
 import {FoldedStateContext} from '@/events/provider';
@@ -83,12 +84,21 @@ export function CodeView({files}: CodeViewProps) {
       })}
       selectedLines={selectedLines}
       onSelectedLinesChange={setSelectedLines}
-      renderHeaderPrefix={(item) => (
-        <CollapseButton
-          collapsed={getFileState(item.id).collapsed}
-          onToggleCollapsed={() => toggleFileCollapsed(item.id)}
-        />
-      )}
+      renderHeaderPrefix={(item) =>
+        item.type === 'diff' && isEmptyDiff(item.fileDiff) ? (
+          <span aria-hidden className="block size-8 shrink-0" />
+        ) : (
+          <CollapseButton
+            collapsed={getFileState(item.id).collapsed}
+            onToggleCollapsed={() => toggleFileCollapsed(item.id)}
+          />
+        )
+      }
+      renderHeaderFilenameSuffix={(item) =>
+        item.type === 'diff' && isEmptyDiff(item.fileDiff) ? (
+          <span className="text-xs text-muted">No text changes</span>
+        ) : null
+      }
       renderHeaderMetadata={(item) => (
         <ViewedCheckbox
           viewed={getFileState(item.id).viewed}
