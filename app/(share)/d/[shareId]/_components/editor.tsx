@@ -58,6 +58,7 @@ import {
 
 import {isDefined} from '@/utils/is-defined';
 import {EDITOR_THEME} from '../_lib/editor-theme';
+import {$trimRoot} from '../_lib/trim-root';
 
 const BLOCK_TYPES = [
   {label: 'Normal', value: 'paragraph'},
@@ -209,6 +210,7 @@ function SubmitCommentButton({onComment, onDismiss}: SubmitCommentButtonProps) {
       size="sm"
       isDisabled={isEmpty}
       onPress={() => {
+        editor.update($trimRoot, {discrete: true});
         const body = editor.getEditorState().toJSON();
         onDismiss?.();
         startTransition(() => {
