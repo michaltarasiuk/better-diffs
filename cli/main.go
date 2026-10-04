@@ -11,7 +11,7 @@ import (
 /**
  * Version is set at link time with -ldflags "-X main.Version=...".
  */
-var Version = "0.1.2"
+var Version = "0.1.3"
 
 /**
  * DefaultURL is the fallback instance when no flag, env, or config is set.
