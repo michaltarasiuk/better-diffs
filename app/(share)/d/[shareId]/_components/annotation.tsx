@@ -134,7 +134,7 @@ function CommentForm({onDismiss}: CommentFormProps) {
 
   const state = use(ShareStateContext);
   const file = use(FileContext);
-  const reviewState = use(ReviewStateContext);
+  const {setCommentFormDraft} = use(ReviewStateContext);
 
   return (
     <Editor
@@ -196,11 +196,7 @@ function CommentForm({onDismiss}: CommentFormProps) {
         }
       }}
       onChange={(state) => {
-        reviewState.setCommentFormDraft(
-          file.id,
-          annotation.metadata.formId,
-          state,
-        );
+        setCommentFormDraft(file.id, annotation.metadata.formId, state);
       }}
       onDismiss={onDismiss}
       className="m-2 mbs-1"
