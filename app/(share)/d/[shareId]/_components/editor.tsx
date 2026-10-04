@@ -156,7 +156,7 @@ export function Editor({
         </Card.Header>
 
         <Card.Content>
-          <div className="relative block h-24 w-full rounded-field px-3 py-2">
+          <div className="relative block max-h-48 min-h-24 w-full overflow-y-auto rounded-field px-3 py-2">
             <ContentEditable
               aria-label="Comment"
               aria-placeholder={placeholder}
@@ -171,7 +171,7 @@ export function Editor({
                 </div>
               }
               className={typographyVariants({type: 'body-sm'}).base({
-                className: 'h-full w-full overflow-y-auto outline-none',
+                className: 'min-h-full w-full outline-none',
               })}
             />
           </div>

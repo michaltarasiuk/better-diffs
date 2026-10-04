@@ -19,7 +19,7 @@ export function EditorSkeleton() {
       </Card.Header>
 
       <Card.Content>
-        <Skeleton className="h-24 w-full rounded-field px-3 py-2" />
+        <Skeleton className="max-h-48 min-h-24 w-full rounded-field px-3 py-2" />
       </Card.Content>
 
       <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
