@@ -1,6 +1,6 @@
 'use client';
 
-import {createContext, use, useState} from 'react';
+import {createContext, use, useEffect, useRef, useState} from 'react';
 import dynamic from 'next/dynamic';
 import {Button, Card, Separator, Spinner} from '@heroui/react';
 import {typographyVariants} from '@heroui/styles';
@@ -240,6 +240,11 @@ function SignInCard({variant = 'primary', onDismiss}: SignInCardProps) {
 
 function SignInActions({onDismiss}: {readonly onDismiss?: () => void}) {
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const signInRef = useRef<AbortController>(null);
+
+  useEffect(() => {
+    return () => signInRef.current?.abort();
+  }, []);
 
   const annotation = use(AnnotationContext);
 
@@ -264,13 +269,26 @@ function SignInActions({onDismiss}: {readonly onDismiss?: () => void}) {
         size="sm"
         isPending={isSigningIn}
         onPress={async () => {
+          const controller = new AbortController();
+          signInRef.current = controller;
           setIsSigningIn(true);
           try {
-            await authClient.signIn.social({
+            const {url} = await authClient.signIn.social({
               provider: 'github',
               callbackURL: window.location.href,
-              fetchOptions: {throw: true},
+              disableRedirect: true,
+              fetchOptions: {throw: true, signal: controller.signal},
             });
+            controller.signal.throwIfAborted();
+            if (!isDefined(url)) {
+              throw new Error('Sign-in response has no redirect URL');
+            }
+            /*
+             * The page stays interactive until GitHub responds, so a dismiss
+             * after this point has to cancel the pending navigation.
+             */
+            controller.signal.addEventListener('abort', () => window.stop());
+            window.location.assign(url);
           } catch {
             setIsSigningIn(false);
           }

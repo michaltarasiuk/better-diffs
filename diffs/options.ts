@@ -5,6 +5,7 @@ import type {CodeViewItem, CodeViewReactOptions} from '@pierre/diffs/react';
 import type {AnnotationMetadata} from './annotations';
 import {isEmptyDiff} from './empty';
 import {
+  DIFFS_CODE_BOTTOM_PADDING_UNSAFE_CSS,
   DIFFS_EMPTY_DIFF_UNSAFE_CSS,
   DIFFS_SINGLE_COLUMN_ANNOTATION_UNSAFE_CSS,
   EMPTY_DIFF_ATTRIBUTE,
@@ -28,11 +29,17 @@ export const CODE_VIEW_OPTIONS: CodeViewReactOptions<AnnotationMetadata, null> =
     unsafeCSS: [
       DIFFS_SINGLE_COLUMN_ANNOTATION_UNSAFE_CSS,
       DIFFS_EMPTY_DIFF_UNSAFE_CSS,
+      DIFFS_CODE_BOTTOM_PADDING_UNSAFE_CSS,
     ].join('\n\n'),
+    /*
+     * The gap between files shares the header background, so it reads as
+     * extra header height with the filename pushed below center.
+     */
     layout: {
       ...DEFAULT_CODE_VIEW_LAYOUT,
       paddingTop: 0,
       paddingBottom: 0,
+      gap: 0,
     },
     onPostRender: markEmptyDiff,
   };

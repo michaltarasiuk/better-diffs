@@ -25,6 +25,17 @@ export const DIFFS_SINGLE_COLUMN_ANNOTATION_UNSAFE_CSS = dedent`
   }
 `;
 
+/**
+ * @pierre/diffs pads the bottom of every code block to make room for the
+ * horizontal scrollbar. That strip shares the next file's header background,
+ * so it reads as extra header height with the filename pushed below center.
+ */
+export const DIFFS_CODE_BOTTOM_PADDING_UNSAFE_CSS = dedent`
+  [data-code] {
+    padding-bottom: 0;
+  }
+`;
+
 export const EMPTY_DIFF_ATTRIBUTE = 'data-empty-diff';
 
 /**
