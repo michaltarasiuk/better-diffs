@@ -10,7 +10,7 @@ import {defineExtension, type SerializedEditorState} from 'lexical';
 
 import {isDefined} from '@/utils/is-defined';
 import type {CommentState} from '@/events/state';
-import {EDITOR_THEME} from '../_lib/editor-theme';
+import {EDITOR_THEME} from '@/lexical/editor-theme';
 
 interface CommentListProps {
   readonly comments: readonly CommentState[];

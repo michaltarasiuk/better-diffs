@@ -57,8 +57,8 @@ import {
 } from 'lucide-react';
 
 import {isDefined} from '@/utils/is-defined';
-import {EDITOR_THEME} from '../_lib/editor-theme';
-import {$trimRoot} from '../_lib/trim-root';
+import {EDITOR_THEME} from '@/lexical/editor-theme';
+import {$trimRoot} from '@/lexical/trim-root';
 
 const BLOCK_TYPES = [
   {label: 'Normal', value: 'paragraph'},
