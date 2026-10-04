@@ -13,7 +13,7 @@ Share your current changes with teammates without creating a PR. They can view t
       srcset="docs/annotation-form-light.png"
     />
     <img
-      alt="Comment form on a shared diff — click to open the live demo"
+      alt="Comment and reply editor on a shared diff. Click to open the live demo."
       src="docs/annotation-form-light.png"
     />
   </picture>
