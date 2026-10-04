@@ -2,21 +2,19 @@ package main
 
 import (
 	"bytes"
-	"context"
+	"errors"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 )
 
-const (
-	uploadTimeout = 30 * time.Second
-	responseLimit = 64 * 1024
-)
+const responseLimit = 64 * 1024
 
-var uploadClient = &http.Client{}
+var uploadClient = &http.Client{Timeout: 30 * time.Second}
 
 func upload(baseURL, version string, patch []byte) (string, error) {
 	endpoint, err := url.JoinPath(baseURL, "api", "diffs")
@@ -24,10 +22,7 @@ func upload(baseURL, version string, patch []byte) (string, error) {
 		return "", fmt.Errorf("Invalid instance URL %q: %w", baseURL, err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), uploadTimeout)
-	defer cancel()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(patch))
+	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(patch))
 	if err != nil {
 		return "", fmt.Errorf("Create upload request: %w", err)
 	}
@@ -49,16 +44,29 @@ func shareURL(baseURL string, resp *http.Response) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("Read response from %s: %w", baseURL, err)
 	}
-
 	msg := strings.TrimSpace(string(body))
+
 	if resp.StatusCode != http.StatusCreated {
-		if msg == "" {
+		/*
+		 * Proxies and size limits answer with HTML pages, which are noise on
+		 * a terminal. Only the API's own plain-text errors are worth showing.
+		 */
+		if msg == "" || !plainText(resp.Header.Get("Content-Type")) {
 			return "", fmt.Errorf("Upload failed with status %s", resp.Status)
 		}
 		return "", fmt.Errorf("Upload failed: %s", msg)
 	}
+
 	if msg == "" {
-		return "", fmt.Errorf("Empty share URL")
+		return "", errors.New("Empty share URL")
+	}
+	if u, err := url.Parse(msg); err != nil || (u.Scheme != "http" && u.Scheme != "https") {
+		return "", fmt.Errorf("Invalid share URL: %q", msg)
 	}
 	return msg, nil
+}
+
+func plainText(contentType string) bool {
+	mediaType, _, err := mime.ParseMediaType(contentType)
+	return err == nil && mediaType == "text/plain"
 }

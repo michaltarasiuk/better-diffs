@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -11,14 +12,16 @@ import (
 )
 
 func instance(flagURL string) (string, error) {
-	fromFile, err := fromConfig()
-	if err != nil {
-		return "", err
-	}
-
-	raw, ok := pick(flagURL, os.Getenv("BETTER_DIFFS_URL"), fromFile, DefaultURL)
+	raw, ok := pick(flagURL, os.Getenv("BETTER_DIFFS_URL"))
 	if !ok {
-		return "", fmt.Errorf("No instance configured")
+		fromFile, err := fromConfig()
+		if err != nil {
+			return "", err
+		}
+		raw, ok = pick(fromFile, DefaultURL)
+	}
+	if !ok {
+		return "", errors.New("No instance configured")
 	}
 	if err := checkURL(raw); err != nil {
 		return "", err
@@ -34,8 +37,8 @@ func fromConfig() (string, error) {
 	return readConfig(path)
 }
 
-func pick(flagURL, envURL, configured, defaultInstance string) (string, bool) {
-	for _, s := range []string{flagURL, envURL, configured, defaultInstance} {
+func pick(candidates ...string) (string, bool) {
+	for _, s := range candidates {
 		s = strings.TrimSpace(s)
 		if s == "" {
 			continue

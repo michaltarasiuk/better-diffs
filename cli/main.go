@@ -23,11 +23,14 @@ const usageLine = "better-diffs [options] [--] [<path>...]"
 
 const usage = `Create shareable links for code diffs
 
+Shares uncommitted changes, including untracked files not ignored by
+.gitignore. With --staged, shares only what is staged.
+
 USAGE
   ` + usageLine + `
 
 OPTIONS
-  --staged       Diff staged changes
+  --staged       Diff staged changes only
   --base <ref>   Diff against a specific ref
   --url <url>    Upload to a specific better-diffs instance
   --open, -o     Open the URL in your browser

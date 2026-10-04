@@ -59,11 +59,25 @@ func TestUploadSuccess(t *testing.T) {
 
 func TestUploadErrors(t *testing.T) {
 	tests := []struct {
-		name    string
-		status  int
-		body    string
-		wantErr string
+		name        string
+		status      int
+		contentType string
+		body        string
+		wantErr     string
 	}{
+		{
+			name:        "html error page",
+			status:      http.StatusRequestEntityTooLarge,
+			contentType: "text/html",
+			body:        "<html><body>413 Request Entity Too Large</body></html>",
+			wantErr:     "Upload failed with status 413 Request Entity Too Large",
+		},
+		{
+			name:    "success body that is not a url",
+			status:  http.StatusCreated,
+			body:    "ok",
+			wantErr: `Invalid share URL: "ok"`,
+		},
 		{
 			name:    "bad request body",
 			status:  http.StatusBadRequest,
@@ -85,6 +99,9 @@ func TestUploadErrors(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if tc.contentType != "" {
+					w.Header().Set("Content-Type", tc.contentType)
+				}
 				w.WriteHeader(tc.status)
 				if tc.body != "" {
 					_, _ = io.WriteString(w, tc.body)

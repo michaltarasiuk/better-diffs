@@ -34,38 +34,44 @@ func parse(args []string) (command, error) {
 			break
 		}
 		if !flag(arg) {
-			opts.paths = append(opts.paths, arg)
-			opts.paths = append(opts.paths, args[i:]...)
+			opts.paths = append(opts.paths, args[i-1:]...)
 			break
 		}
 
-		name, value, inline := cutFlag(arg)
+		name, value, inline := strings.Cut(arg, "=")
 		switch name {
-		case "staged":
-			if err := noValue(inline, value, arg); err != nil {
-				return command{}, err
+		case "--staged":
+			if inline {
+				return command{}, usagef("Option takes no value: %s", arg)
 			}
 			opts.staged = true
-		case "open", "o":
-			if err := noValue(inline, value, arg); err != nil {
-				return command{}, err
+		case "--open", "-o":
+			if inline {
+				return command{}, usagef("Option takes no value: %s", arg)
 			}
 			opts.open = true
-		case "base":
-			v, err := need(inline, value, args, &i, arg)
+		case "--base":
+			v, err := need(name, value, inline, args, &i)
 			if err != nil {
 				return command{}, err
 			}
+			/*
+			 * git diff reads a leading dash as an option, and options like
+			 * --output write files.
+			 */
+			if strings.HasPrefix(v, "-") {
+				return command{}, usagef("Invalid base: %s", v)
+			}
 			opts.base = v
-		case "url":
-			v, err := need(inline, value, args, &i, arg)
+		case "--url":
+			v, err := need(name, value, inline, args, &i)
 			if err != nil {
 				return command{}, err
 			}
 			opts.url = v
-		case "help", "h":
+		case "--help", "-h":
 			return command{help: true}, nil
-		case "version":
+		case "--version":
 			return command{version: true}, nil
 		default:
 			return command{}, usagef("Unknown option: %s", arg)
@@ -79,32 +85,16 @@ func flag(arg string) bool {
 	return len(arg) > 1 && arg[0] == '-'
 }
 
-func cutFlag(arg string) (name, value string, inline bool) {
-	s := arg
-	for len(s) > 0 && s[0] == '-' {
-		s = s[1:]
+func need(name, value string, inline bool, args []string, i *int) (string, error) {
+	if !inline {
+		if *i >= len(args) {
+			return "", usagef("Missing value for %s", name)
+		}
+		value = args[*i]
+		*i++
 	}
-	if before, after, ok := strings.Cut(s, "="); ok {
-		return before, after, true
+	if value == "" {
+		return "", usagef("Missing value for %s", name)
 	}
-	return s, "", false
-}
-
-func noValue(inline bool, value, arg string) error {
-	if inline || value != "" {
-		return usagef("Option takes no value: %s", arg)
-	}
-	return nil
-}
-
-func need(inline bool, value string, args []string, i *int, arg string) (string, error) {
-	if inline {
-		return value, nil
-	}
-	if *i >= len(args) {
-		return "", usagef("Missing value for %s", arg)
-	}
-	v := args[*i]
-	*i++
-	return v, nil
+	return value, nil
 }

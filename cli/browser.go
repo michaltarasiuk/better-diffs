@@ -9,8 +9,10 @@ import (
 )
 
 /*
- * browsers returns commands to try when opening a URL, in order.
- * The logic matches cmd/internal/browser in the Go toolchain.
+ * browsers returns commands to try when opening a URL, in order, based on
+ * cmd/internal/browser in the Go toolchain. That uses "cmd /c start", where
+ * cmd.exe splits the URL at "&" and treats a quoted first argument as a
+ * window title, so Windows goes through rundll32 instead.
  */
 func browsers() [][]string {
 	var cmds [][]string
@@ -21,9 +23,9 @@ func browsers() [][]string {
 	case "darwin":
 		cmds = append(cmds, []string{"/usr/bin/open"})
 	case "windows":
-		cmds = append(cmds, []string{"cmd", "/c", "start"})
+		cmds = append(cmds, []string{"rundll32", "url.dll,FileProtocolHandler"})
 	default:
-		if os.Getenv("DISPLAY") != "" {
+		if os.Getenv("DISPLAY") != "" || os.Getenv("WAYLAND_DISPLAY") != "" {
 			cmds = append(cmds, []string{"xdg-open"})
 		}
 	}

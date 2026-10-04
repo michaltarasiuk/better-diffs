@@ -41,48 +41,6 @@ func TestFlag(t *testing.T) {
 	}
 }
 
-func TestCutFlag(t *testing.T) {
-	tests := []struct {
-		arg        string
-		wantName   string
-		wantValue  string
-		wantInline bool
-	}{
-		{
-			arg:        "--base=main",
-			wantName:   "base",
-			wantValue:  "main",
-			wantInline: true,
-		},
-		{
-			arg:        "--base",
-			wantName:   "base",
-			wantInline: false,
-		},
-		{
-			arg:        "-o",
-			wantName:   "o",
-			wantInline: false,
-		},
-		{
-			arg:        "--url=http://127.0.0.1:3000",
-			wantName:   "url",
-			wantValue:  "http://127.0.0.1:3000",
-			wantInline: true,
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.arg, func(t *testing.T) {
-			name, value, inline := cutFlag(tc.arg)
-			if name != tc.wantName || value != tc.wantValue || inline != tc.wantInline {
-				t.Fatalf("cutFlag(%q) = (%q, %q, %v); want (%q, %q, %v)",
-					tc.arg, name, value, inline, tc.wantName, tc.wantValue, tc.wantInline)
-			}
-		})
-	}
-}
-
 func TestParse(t *testing.T) {
 	tests := []struct {
 		name string
@@ -162,6 +120,31 @@ func TestParse(t *testing.T) {
 			name: "missing url value",
 			args: []string{"--url"},
 			err:  "Missing value for --url",
+		},
+		{
+			name: "empty inline value",
+			args: []string{"--base="},
+			err:  "Missing value for --base",
+		},
+		{
+			name: "base that git reads as an option",
+			args: []string{"--base=--output=/tmp/patch"},
+			err:  "Invalid base: --output=/tmp/patch",
+		},
+		{
+			name: "base followed by a flag",
+			args: []string{"--base", "--staged"},
+			err:  "Invalid base: --staged",
+		},
+		{
+			name: "long option with one dash",
+			args: []string{"-staged"},
+			err:  "Unknown option: -staged",
+		},
+		{
+			name: "short option with two dashes",
+			args: []string{"--o"},
+			err:  "Unknown option: --o",
 		},
 	}
 
