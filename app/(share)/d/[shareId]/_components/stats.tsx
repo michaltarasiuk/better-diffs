@@ -1,26 +1,26 @@
-import {Accordion, Separator, tv, type VariantProps} from '@heroui/react';
+import {Accordion, tv, type VariantProps} from '@heroui/react';
 
 import {type DiffStats, formatDiffStat} from '@/diffs/stats';
 
 export function Stats({stats}: {readonly stats: DiffStats}) {
   return (
-    <Accordion defaultExpandedKeys={['stats']}>
+    <Accordion
+      defaultExpandedKeys={['stats']}
+      className="border-t border-border bg-trees-sidebar"
+    >
       <Accordion.Item id="stats">
         <Accordion.Heading>
-          <Accordion.Trigger className="hover:bg-inherit">
+          <Accordion.Trigger className="px-4 py-3 text-xs font-medium text-muted hover:bg-inherit">
             Stats
-            <Accordion.Indicator />
+            <Accordion.Indicator className="size-3.5" />
           </Accordion.Trigger>
         </Accordion.Heading>
         <Accordion.Panel>
-          <Accordion.Body>
-            <dl>
+          <Accordion.Body className="px-4 pt-0 pb-3">
+            <dl className="space-y-1.5">
               <Stat label="Files" value={stats.files} />
-              <Separator />
               <Stat label="Additions" value={stats.additions} tone="success" />
-              <Separator />
               <Stat label="Deletions" value={stats.deletions} tone="danger" />
-              <Separator />
               <Stat label="Lines" value={stats.lines} />
             </dl>
           </Accordion.Body>
@@ -37,7 +37,7 @@ interface StatProps extends VariantProps<typeof statValue> {
 
 function Stat({label, value, tone}: StatProps) {
   return (
-    <div className="flex items-center justify-between py-1 text-xs">
+    <div className="flex items-center justify-between text-xs">
       <dt className="text-muted">{label}</dt>
       <dd className={statValue({tone})}>{formatDiffStat(value)}</dd>
     </div>

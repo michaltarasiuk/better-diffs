@@ -3,6 +3,7 @@
 import {createContext, use, useState} from 'react';
 import dynamic from 'next/dynamic';
 import {Button, Card, Separator, Spinner} from '@heroui/react';
+import {typographyVariants} from '@heroui/styles';
 import {getLineAnnotationName} from '@pierre/diffs';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
@@ -103,7 +104,7 @@ function AnnotationBody() {
   return (
     <div
       {...focusWithinProps}
-      className="w-(--diffs-single-annotation-width,100%)"
+      className="w-(--diffs-single-annotation-width,100%) font-sans"
     >
       {body}
     </div>
@@ -213,6 +214,38 @@ interface SignInCardProps {
 }
 
 function SignInCard({variant = 'primary', onDismiss}: SignInCardProps) {
+  if (variant === 'secondary') {
+    return (
+      <div className="flex flex-wrap items-center justify-between gap-2 p-3">
+        <p
+          className={typographyVariants({type: 'body-sm'}).base({
+            className: 'text-muted',
+          })}
+        >
+          Sign in to reply
+        </p>
+        <div className="flex items-center gap-2">
+          <SignInActions onDismiss={onDismiss} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Card variant="secondary">
+      <Card.Header>
+        <Card.Title>Sign in to comment</Card.Title>
+        <Card.Description>Use your GitHub account to comment.</Card.Description>
+      </Card.Header>
+
+      <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
+        <SignInActions onDismiss={onDismiss} />
+      </Card.Footer>
+    </Card>
+  );
+}
+
+function SignInActions({onDismiss}: {readonly onDismiss?: () => void}) {
   const [isSigningIn, setIsSigningIn] = useState(false);
 
   const annotation = use(AnnotationContext);
@@ -222,57 +255,46 @@ function SignInCard({variant = 'primary', onDismiss}: SignInCardProps) {
     lineNumber: annotation.lineNumber,
   });
 
-  const action = variant === 'primary' ? 'comment' : 'reply';
-
   return (
-    <Card variant={variant === 'primary' ? 'secondary' : 'transparent'}>
-      <Card.Header>
-        <Card.Title>Sign in to {action}</Card.Title>
-        <Card.Description>
-          Use your GitHub account to {action}.
-        </Card.Description>
-      </Card.Header>
+    <>
+      <Button
+        id={`${annotationName}-sign-in-cancel`}
+        variant="ghost"
+        size="sm"
+        onPress={() => onDismiss?.()}
+      >
+        Cancel
+      </Button>
 
-      <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
-        <Button
-          id={`${annotationName}-sign-in-cancel`}
-          variant="ghost"
-          size="sm"
-          onPress={() => onDismiss?.()}
-        >
-          Cancel
-        </Button>
-
-        <Button
-          id={`${annotationName}-sign-in-github`}
-          size="sm"
-          isPending={isSigningIn}
-          onPress={async () => {
-            setIsSigningIn(true);
-            try {
-              await authClient.signIn.social({
-                provider: 'github',
-                callbackURL: window.location.href,
-                fetchOptions: {throw: true},
-              });
-            } catch {
-              setIsSigningIn(false);
-            }
-          }}
-        >
-          {({isPending}) => (
-            <>
-              {isPending ? (
-                <Spinner aria-hidden color="current" size="sm" />
-              ) : (
-                <GitHubIcon aria-hidden className="size-4" />
-              )}
-              {isPending ? 'Signing in…' : 'Continue with GitHub'}
-            </>
-          )}
-        </Button>
-      </Card.Footer>
-    </Card>
+      <Button
+        id={`${annotationName}-sign-in-github`}
+        size="sm"
+        isPending={isSigningIn}
+        onPress={async () => {
+          setIsSigningIn(true);
+          try {
+            await authClient.signIn.social({
+              provider: 'github',
+              callbackURL: window.location.href,
+              fetchOptions: {throw: true},
+            });
+          } catch {
+            setIsSigningIn(false);
+          }
+        }}
+      >
+        {({isPending}) => (
+          <>
+            {isPending ? (
+              <Spinner aria-hidden color="current" size="sm" />
+            ) : (
+              <GitHubIcon aria-hidden className="size-4" />
+            )}
+            {isPending ? 'Signing in…' : 'Continue with GitHub'}
+          </>
+        )}
+      </Button>
+    </>
   );
 }
 
