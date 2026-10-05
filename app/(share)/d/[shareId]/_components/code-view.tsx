@@ -3,21 +3,25 @@
 import '@/diffs/diffs.css';
 
 import {use} from 'react';
+
 import {Button, Checkbox, cn, Focusable, Kbd, Tooltip} from '@heroui/react';
-import type {FileDiffMetadata} from '@pierre/diffs';
-import {isDiffAnnotation} from '@pierre/diffs';
+import {type FileDiffMetadata, isDiffAnnotation} from '@pierre/diffs';
 import {CodeView as DiffCodeView} from '@pierre/diffs/react';
 import {ChevronDownIcon} from 'lucide-react';
 
-import {useIsMobile} from '@/hooks/use-is-mobile';
-import {useShortcut} from '@/hooks/use-shortcut';
-import {isDefined} from '@/utils/is-defined';
-import type {AnnotationMetadata} from '@/diffs/annotations';
-import {sortAnnotations, toThreadAnnotation} from '@/diffs/annotations';
+import {
+  type AnnotationMetadata,
+  sortAnnotations,
+  toThreadAnnotation,
+} from '@/diffs/annotations';
 import {isEmptyDiff} from '@/diffs/empty';
 import {isDiffLine} from '@/diffs/lines';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
 import {FoldedStateContext} from '@/events/provider';
+import {useIsMobile} from '@/hooks/use-is-mobile';
+import {useShortcut} from '@/hooks/use-shortcut';
+import {isDefined} from '@/utils/is-defined';
+
 import {useLines} from '../_hooks/use-lines';
 import {activeFileId} from '../_lib/active-file-id';
 import {scrollToFile} from '../_lib/scroll-to-file';

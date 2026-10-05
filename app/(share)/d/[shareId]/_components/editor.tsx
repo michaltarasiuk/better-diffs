@@ -1,6 +1,7 @@
 'use client';
 
 import {startTransition, useEffect, useEffectEvent, useState} from 'react';
+
 import {
   Button,
   ButtonGroup,
@@ -56,9 +57,9 @@ import {
   Undo2Icon,
 } from 'lucide-react';
 
-import {isDefined} from '@/utils/is-defined';
 import {EDITOR_THEME} from '@/lexical/editor-theme';
 import {$trimRoot} from '@/lexical/trim-root';
+import {isDefined} from '@/utils/is-defined';
 
 const BLOCK_TYPES = [
   {label: 'Normal', value: 'paragraph'},

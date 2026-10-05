@@ -2,9 +2,10 @@
 
 import {unauthorized} from 'next/navigation';
 
-import {isDefined} from '@/utils/is-defined';
 import {getSession} from '@/auth/server';
 import {appendEvents} from '@/db/events';
+import {isDefined} from '@/utils/is-defined';
+
 import {
   CreateCommentInput,
   DeleteCommentInput,

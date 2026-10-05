@@ -2,14 +2,12 @@
 
 import {createContext, use, useEffect, useRef, useState} from 'react';
 import dynamic from 'next/dynamic';
+
 import {Button, Card, Separator, Spinner} from '@heroui/react';
 import {typographyVariants} from '@heroui/styles';
 import {getLineAnnotationName} from '@pierre/diffs';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
-import {useKeyDown} from '@/hooks/use-key-down';
-import {isDefined} from '@/utils/is-defined';
-import {newId} from '@/utils/new-id';
 import {authClient} from '@/auth/client';
 import {SessionContext} from '@/auth/context';
 import {GitHubIcon} from '@/auth/github-icon';
@@ -21,6 +19,10 @@ import {
 import {createComment, openThread} from '@/events/actions';
 import {FoldedStateContext, ShareStateContext} from '@/events/provider';
 import type {Actor, Anchor} from '@/events/schemas';
+import {useKeyDown} from '@/hooks/use-key-down';
+import {isDefined} from '@/utils/is-defined';
+import {newId} from '@/utils/new-id';
+
 import {useShareId} from '../_hooks/use-share-id';
 import {CommentList} from './comment-list';
 import {EditorSkeleton} from './editor-skeleton';

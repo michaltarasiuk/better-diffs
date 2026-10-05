@@ -1,6 +1,5 @@
 import type {SerializedEditorState} from 'lexical';
 
-import {uuid} from '@/testing/uuid';
 import {
   type Actor,
   type Anchor,
@@ -13,6 +12,8 @@ import {
   type ThreadOpenedPayload,
   type ThreadResolvedPayload,
 } from '@/events/schemas';
+
+import {uuid} from './uuid';
 
 export const CREATED_AT = '1970-01-01T00:00:00.000Z';
 

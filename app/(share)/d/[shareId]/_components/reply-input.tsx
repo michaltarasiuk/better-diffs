@@ -1,14 +1,16 @@
 'use client';
 
 import {use, useState} from 'react';
+
 import {Input} from '@heroui/react';
 import type {SerializedEditorState} from 'lexical';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
-import {useKeyDown} from '@/hooks/use-key-down';
-import {isDefined} from '@/utils/is-defined';
 import {SessionContext} from '@/auth/context';
 import type {Session} from '@/auth/server';
+import {useKeyDown} from '@/hooks/use-key-down';
+import {isDefined} from '@/utils/is-defined';
+
 import {Editor} from './editor';
 
 interface ReplyInputProps {

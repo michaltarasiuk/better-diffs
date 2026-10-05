@@ -1,5 +1,4 @@
-import {Card} from '@heroui/react';
-import {Skeleton} from '@heroui/react';
+import {Card, Skeleton} from '@heroui/react';
 
 export function EditorSkeleton() {
   return (

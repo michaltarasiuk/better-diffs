@@ -2,6 +2,7 @@ import {describe, expect, it} from 'vitest';
 
 import {env} from '@/env';
 import {isDefined} from '@/utils/is-defined';
+
 import {hasBearerToken} from './bearer';
 
 const SECRET = 'bearer-secret';

@@ -1,8 +1,8 @@
 import {type NextRequest, NextResponse} from 'next/server';
 
-import {env} from '@/env';
 import {hasBearerToken} from '@/auth/bearer';
 import {deleteExpiredShares} from '@/db/shares';
+import {env} from '@/env';
 
 const SHARE_MAX_AGE_HOURS = 24;
 

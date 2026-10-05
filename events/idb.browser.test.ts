@@ -7,6 +7,7 @@ import {
   createThreadResolved,
 } from '@/testing/events';
 import {uuid} from '@/testing/uuid';
+
 import {
   clearEvents,
   closeEventDb,

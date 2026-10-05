@@ -1,6 +1,7 @@
 'use client';
 
 import {useState} from 'react';
+
 import {useMove} from 'react-aria/useMove';
 
 const MIN_WIDTH = 240;

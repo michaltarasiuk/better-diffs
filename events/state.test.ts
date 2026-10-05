@@ -12,6 +12,7 @@ import {
   createThreadResolved,
 } from '@/testing/events';
 import {uuid} from '@/testing/uuid';
+
 import type {CommentCreatedPayload, ShareEventPayload} from './schemas';
 import {foldEvents, isType, type OptimisticEvent, ShareState} from './state';
 

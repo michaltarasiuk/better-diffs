@@ -1,6 +1,7 @@
 import {z} from 'zod';
 
 import {isDefined} from '@/utils/is-defined';
+
 import {getEvents, getLastSeq, putEvents} from './idb';
 import {ShareEvent} from './schemas';
 

@@ -1,5 +1,6 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
+import type {Session} from '@/auth/server';
 import {
   createAnchor,
   createCommentCreated,
@@ -10,7 +11,7 @@ import {
   createThreadResolved,
 } from '@/testing/events';
 import {uuid} from '@/testing/uuid';
-import type {Session} from '@/auth/server';
+
 import {
   createComment,
   deleteComment,

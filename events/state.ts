@@ -2,6 +2,7 @@ import type {SerializedEditorState} from 'lexical';
 
 import {isDefined} from '@/utils/is-defined';
 import {newId} from '@/utils/new-id';
+
 import type {Actor, Anchor, ShareEvent, ShareEventPayload} from './schemas';
 
 export interface ThreadState {

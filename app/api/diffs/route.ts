@@ -1,13 +1,13 @@
 import {type NextRequest, NextResponse} from 'next/server';
-import type {FileDiffMetadata} from '@pierre/diffs';
-import {parsePatchFiles} from '@pierre/diffs';
+
+import {type FileDiffMetadata, parsePatchFiles} from '@pierre/diffs';
 import {z} from 'zod';
 
+import {createShare} from '@/db/shares';
 import {env} from '@/env';
 import {Accept} from '@/headers/accept';
 import {ContentType} from '@/headers/content-type';
 import {isDefined} from '@/utils/is-defined';
-import {createShare} from '@/db/shares';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',

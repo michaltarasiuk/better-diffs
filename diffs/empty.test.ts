@@ -3,6 +3,7 @@ import dedent from 'dedent';
 import {describe, expect, it} from 'vitest';
 
 import {isDefined} from '@/utils/is-defined';
+
 import {isEmptyDiff} from './empty';
 
 function parseFile(patch: string) {

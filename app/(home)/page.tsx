@@ -7,6 +7,7 @@ import {preloadPatchDiff} from '@pierre/diffs/ssr';
 import dedent from 'dedent';
 
 import {PATCH_DIFF_OPTIONS} from '@/diffs/options';
+
 import {Command} from './_components/command';
 import {COMMAND} from './_lib/command';
 

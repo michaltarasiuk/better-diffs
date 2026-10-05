@@ -1,8 +1,9 @@
 import {describe, expect, expectTypeOf, it} from 'vitest';
 
+import type {ThreadState} from '@/events/state';
 import {createActor, createAnchor, CREATED_AT} from '@/testing/events';
 import {uuid} from '@/testing/uuid';
-import type {ThreadState} from '@/events/state';
+
 import {
   type DiffAnnotation,
   type FormAnnotationMetadata,

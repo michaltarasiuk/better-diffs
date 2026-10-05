@@ -1,4 +1,5 @@
 import {isDefined} from '@/utils/is-defined';
+
 import {parseParams, quote} from './param-values';
 
 export interface ContentTypeInit {

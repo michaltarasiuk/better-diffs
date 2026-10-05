@@ -3,6 +3,7 @@
 import '@/trees/trees.css';
 
 import {use, useRef} from 'react';
+
 import {SearchField} from '@heroui/react';
 import type {FileTree as FileTreeModel} from '@pierre/trees';
 import {
@@ -13,9 +14,10 @@ import {
 } from '@pierre/trees/react';
 
 import {useShortcut} from '@/hooks/use-shortcut';
-import {isDefined} from '@/utils/is-defined';
 import type {TreeInput} from '@/trees/input';
 import {getFileTreeOptions} from '@/trees/options';
+import {isDefined} from '@/utils/is-defined';
+
 import {useQuery} from '../_hooks/use-query';
 import {scrollToFile} from '../_lib/scroll-to-file';
 import {CodeViewRefContext} from './provider';

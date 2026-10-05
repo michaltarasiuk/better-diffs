@@ -1,15 +1,17 @@
 import {Suspense} from 'react';
-import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
+
 import {Spinner} from '@heroui/react';
 import {preloadFileTree} from '@pierre/trees/ssr';
+import type {Metadata} from 'next';
 
-import {isDefined} from '@/utils/is-defined';
 import {SessionProvider} from '@/auth/provider';
 import {openShare} from '@/db/shares';
 import {computeDiffStats} from '@/diffs/stats';
 import {prepareTreeInput, sortByTree} from '@/trees/input';
 import {getFileTreeOptions} from '@/trees/options';
+import {isDefined} from '@/utils/is-defined';
+
 import {CodeView} from './_components/code-view';
 import {Drawer} from './_components/drawer';
 import {SyncEvents} from './_components/events';

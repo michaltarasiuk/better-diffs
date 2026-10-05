@@ -1,13 +1,14 @@
 import 'server-only';
 
 import {headers} from 'next/headers';
+
 import {betterAuth} from 'better-auth';
 import {drizzleAdapter} from 'better-auth/adapters/drizzle';
 import {nextCookies} from 'better-auth/next-js';
 
-import {env} from '@/env';
 import {db} from '@/db/db';
 import * as authSchema from '@/db/schema/auth';
+import {env} from '@/env';
 
 export const auth = betterAuth({
   appName: 'Better Diffs',

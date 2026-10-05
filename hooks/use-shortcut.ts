@@ -1,6 +1,7 @@
-import {useKeyDown} from '@/hooks/use-key-down';
 import {isEditableTarget} from '@/utils/is-editable-target';
 import {isUnmodifiedKey} from '@/utils/is-unmodified-key';
+
+import {useKeyDown} from './use-key-down';
 
 export function useShortcut(key: string, onShortcut: () => void) {
   useKeyDown((event) => {

@@ -8,6 +8,24 @@ import testingLibrary from 'eslint-plugin-testing-library';
 
 const testingLibraryReact = testingLibrary.configs['flat/react'];
 
+const MODULES = [
+  'auth',
+  'db',
+  'diffs',
+  'events',
+  'headers',
+  'hooks',
+  'lexical',
+  'testing',
+  'trees',
+  'utils',
+];
+
+const DEEP_PARENT_IMPORT = {
+  group: ['../../*'],
+  message: 'Parent imports beyond one level use the @/ alias',
+};
+
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
@@ -28,6 +46,8 @@ const eslintConfig = defineConfig([
         },
       ],
       '@typescript-eslint/no-import-type-side-effects': 'error',
+      'import/no-duplicates': ['error', {'prefer-inline': true}],
+      'no-restricted-imports': ['error', {patterns: [DEEP_PARENT_IMPORT]}],
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -54,26 +74,32 @@ const eslintConfig = defineConfig([
           groups: [
             ['^\\u0000'],
             ['^node:'],
-            [
-              '^(react\\/(.*)$)|^(react$)|^(react-dom(.*)$)',
-              '^(next(.*)$)|^(next$)',
-              '^(?!(?:app|auth|db|diffs|events|headers|hooks|react|testing|trees|utils|env|fonts)(?:$|\\/))@?\\w',
-            ],
-            [
-              '^(?:@\\/)?(?:utils|hooks|headers|env|fonts|testing)(?:$|\\/)',
-              '^(?:@\\/)?(?:auth|db)(?:$|\\/)',
-              '^(?:@\\/)?(?:events|diffs|trees)(?:$|\\/)',
-              '^(?:@\\/)?react(?:$|\\/)',
-              '^(?:@\\/)?app(?:$|\\/)',
-              '^@\\/',
-              '^\\.',
-            ],
-            ['^'],
+            ['^react(?:-dom)?(?:$|/)', '^next(?:$|/)'],
+            ['^@?\\w'],
+            ['^@/'],
+            ['^\\.'],
           ],
         },
       ],
     },
   },
+  ...MODULES.map((mod) => ({
+    files: [`${mod}/**`],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            DEEP_PARENT_IMPORT,
+            {
+              group: [`@/${mod}/*`],
+              message: `Imports within ${mod} use relative paths`,
+            },
+          ],
+        },
+      ],
+    },
+  })),
   {
     files: ['**/*.{test,browser.test}.{ts,tsx}'],
     plugins: {

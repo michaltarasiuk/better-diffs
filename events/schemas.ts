@@ -1,8 +1,8 @@
 import type {SerializedEditorState} from 'lexical';
 import {z} from 'zod';
 
-import {isDefined} from '@/utils/is-defined';
 import {AnnotationSide} from '@/diffs/schemas';
+import {isDefined} from '@/utils/is-defined';
 
 export const Anchor = z.object({
   shareId: z.uuid(),
