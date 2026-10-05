@@ -28,7 +28,7 @@ Use imperative mood, sentence case, no trailing period. Start with a capital ver
 
 ## Error messages
 
-Follow the style used in [inlay](https://tangled.org/danabra.mov/inlay): sentence case with a leading capital, no trailing period, no `Error:` prefix. State what is wrong rather than what the caller should have done (`Thread already resolved: ${threadId}`, not `You cannot resolve this twice`). Throw with `new Error(\`…\`)` at the call site; do not wrap messages in helpers.
+Use sentence case with a leading capital, no trailing period, and no `Error:` prefix. State what is wrong rather than what the caller should have done (`Thread already resolved: ${threadId}`, not `You cannot resolve this twice`). Throw with `new Error(\`…\`)` at the call site; do not wrap messages in helpers.
 
 When a message names a record, append the identifier after a colon. Omit the suffix only when there is nothing useful to attach:
 
