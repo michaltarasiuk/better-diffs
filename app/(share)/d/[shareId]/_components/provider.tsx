@@ -185,10 +185,9 @@ function useReviewState() {
     },
 
     clearReplyDraft(fileId: string, threadId: string) {
-      patchReplyDrafts(fileId, (replyDrafts) =>
-        Object.fromEntries(
-          Object.entries(replyDrafts).filter(([id]) => id !== threadId),
-        ),
+      patchReplyDrafts(
+        fileId,
+        ({[threadId]: _, ...replyDrafts}) => replyDrafts,
       );
     },
   };
