@@ -26,6 +26,9 @@ const DEEP_PARENT_IMPORT = {
   message: 'Parent imports beyond one level use the @/ alias',
 };
 
+const REACT_NAMESPACE_FOR_TYPES =
+  'Use the React namespace for types (e.g. React.ReactNode).';
+
 const namedSpecifierOrder = (selector) => ({
   customGroups: [
     {
@@ -57,25 +60,25 @@ const eslintConfig = defineConfig([
         },
       ],
       '@typescript-eslint/no-import-type-side-effects': 'error',
-      'import/no-duplicates': ['error', {'prefer-inline': true}],
-      'no-restricted-imports': ['error', {patterns: [DEEP_PARENT_IMPORT]}],
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
           argsIgnorePattern: '^_',
         },
       ],
+      'import/no-duplicates': ['error', {'prefer-inline': true}],
+      'no-restricted-imports': ['error', {patterns: [DEEP_PARENT_IMPORT]}],
       'no-restricted-syntax': [
         'error',
         {
           selector:
             "ImportDeclaration[source.value='react'] ImportSpecifier[importKind='type']",
-          message: 'Use the React namespace for types (e.g. React.ReactNode).',
+          message: REACT_NAMESPACE_FOR_TYPES,
         },
         {
           selector:
             "ImportDeclaration[source.value='react'][importKind='type']",
-          message: 'Use the React namespace for types (e.g. React.ReactNode).',
+          message: REACT_NAMESPACE_FOR_TYPES,
         },
       ],
       'perfectionist/sort-imports': [
@@ -84,8 +87,14 @@ const eslintConfig = defineConfig([
           internalPattern: ['^@/'],
           newlinesBetween: 1,
           customGroups: [
-            {groupName: 'react', elementNamePattern: '^react(?:-dom)?(?:$|/)'},
-            {groupName: 'next', elementNamePattern: '^next(?:$|/)'},
+            {
+              groupName: 'react',
+              elementNamePattern: '^react(?:-dom)?(?:$|/)',
+            },
+            {
+              groupName: 'next',
+              elementNamePattern: '^next(?:$|/)',
+            },
           ],
           groups: [
             ['side-effect', 'side-effect-style'],
