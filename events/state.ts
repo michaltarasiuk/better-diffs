@@ -3,7 +3,13 @@ import type {SerializedEditorState} from 'lexical';
 import {isDefined} from '@/utils/is-defined';
 import {newId} from '@/utils/new-id';
 
-import type {Actor, Anchor, ShareEvent, ShareEventPayload} from './schemas';
+import {
+  subjectIdFromPayload,
+  type Actor,
+  type Anchor,
+  type ShareEvent,
+  type ShareEventPayload,
+} from './schemas';
 
 export interface ThreadState {
   readonly id: string;
@@ -58,6 +64,7 @@ export class ShareState {
   readonly comments = new Map<string, CommentState>();
   readonly deletedCommentIds = new Set<string>();
 
+  #confirmed = Draft.live(this);
   #snapshot: FoldedState | null = null;
   #pending = new Map<string, OptimisticEvent>();
   #version = 0;
@@ -72,90 +79,65 @@ export class ShareState {
   };
 
   getSnapshot = (): FoldedState => {
-    if (!this.#snapshot) {
-      if (!this.#pending.size) {
-        this.#snapshot = {
-          threads: this.threads,
-          comments: this.comments,
-          deletedCommentIds: this.deletedCommentIds,
-          pendingIds: new Set(),
-          version: this.#version,
-        };
-      } else {
-        this.#snapshot = this.#mergePending();
-      }
-    }
-
+    this.#snapshot ??= this.#fold();
     return this.#snapshot;
   };
 
   ingest(events: readonly ShareEvent[]) {
-    let changed = false;
-
     for (const event of events) {
       if (event.seq <= this.#latestSeq) {
         throw new Error(`Invalid event seq: ${event.seq}`);
       }
-
       this.#latestSeq = event.seq;
 
-      this.#apply(event);
+      this.#confirmed.apply(event);
       this.#reconcilePending(event.payload);
-
-      changed = true;
     }
 
-    if (changed) {
-      this.#commit();
+    if (events.length === 0) {
+      return false;
     }
-
-    return changed;
+    this.#commit();
+    return true;
   }
 
   optimistic(event: OptimisticEvent) {
-    this.#assertOptimistic(event);
-
-    const pendingId = newId();
-    this.#pending.set(pendingId, event);
-
-    this.#commit();
-
-    return pendingId;
+    const [pendingId] = this.optimisticAll([event]);
+    return pendingId!;
   }
 
   optimisticAll(events: readonly OptimisticEvent[]) {
-    const pendingIds: string[] = [];
-    for (const event of events) {
-      this.#assertOptimistic(event);
+    if (events.length === 0) {
+      return [];
+    }
 
+    const draft = this.#draftWithPending();
+    for (const event of events) {
+      draft.apply(event);
+    }
+
+    const pendingIds = events.map((event) => {
       const pendingId = newId();
       this.#pending.set(pendingId, event);
-      pendingIds.push(pendingId);
-    }
-    if (pendingIds.length > 0) {
-      this.#commit();
-    }
+      return pendingId;
+    });
+    this.#commit();
     return pendingIds;
   }
 
   reject(pendingId: string) {
-    const deleted = this.#pending.delete(pendingId);
-    if (deleted) {
-      this.#commit();
-    }
-    return deleted;
+    return this.rejectAll([pendingId]);
   }
 
   rejectAll(pendingIds: readonly string[]) {
     let changed = false;
     for (const pendingId of pendingIds) {
-      if (this.#pending.delete(pendingId)) {
-        changed = true;
-      }
+      changed = this.#pending.delete(pendingId) || changed;
     }
     if (changed) {
       this.#commit();
     }
+    return changed;
   }
 
   #commit() {
@@ -166,17 +148,84 @@ export class ShareState {
     }
   }
 
-  #apply(event: ShareEvent) {
-    const {actorId, actor, payload, createdAt} = event;
+  #fold(): FoldedState {
+    const {threads, comments, deletedCommentIds} =
+      this.#pending.size > 0 ? this.#draftWithPending() : this;
+    const pendingIds = new Set(
+      Array.from(this.#pending.values(), ({payload}) =>
+        subjectIdFromPayload(payload),
+      ),
+    );
 
+    return {
+      threads,
+      comments,
+      deletedCommentIds,
+      pendingIds,
+      version: this.#version,
+    };
+  }
+
+  #draftWithPending() {
+    const draft = Draft.fork(this);
+    for (const event of this.#pending.values()) {
+      draft.apply(event);
+    }
+    return draft;
+  }
+
+  #reconcilePending(confirmed: ShareEventPayload) {
+    for (const [pendingId, {payload}] of this.#pending) {
+      if (isSupersededBy(payload, confirmed)) {
+        this.#pending.delete(pendingId);
+      }
+    }
+  }
+}
+
+interface Entities {
+  readonly threads: Map<string, ThreadState>;
+  readonly comments: Map<string, CommentState>;
+  readonly deletedCommentIds: Set<string>;
+}
+
+class Draft implements Entities {
+  readonly threads: Map<string, ThreadState>;
+  readonly comments: Map<string, CommentState>;
+  readonly deletedCommentIds: Set<string>;
+
+  readonly #owned: WeakSet<object> | null;
+
+  private constructor(entities: Entities, owned: WeakSet<object> | null) {
+    this.threads = entities.threads;
+    this.comments = entities.comments;
+    this.deletedCommentIds = entities.deletedCommentIds;
+    this.#owned = owned;
+  }
+
+  static live(entities: Entities) {
+    return new Draft(entities, null);
+  }
+
+  static fork(base: Entities) {
+    return new Draft(
+      {
+        threads: new Map(base.threads),
+        comments: new Map(base.comments),
+        deletedCommentIds: new Set(base.deletedCommentIds),
+      },
+      new WeakSet(),
+    );
+  }
+
+  apply({actorId, actor, createdAt, payload}: OptimisticEvent) {
     switch (payload.$type) {
       case 'thread.opened': {
-        const threadAlreadyOpened = this.threads.has(payload.threadId);
-        if (threadAlreadyOpened) {
+        if (this.threads.has(payload.threadId)) {
           throw new Error(`Thread already exists: ${payload.threadId}`);
         }
 
-        this.threads.set(payload.threadId, {
+        this.#own(this.threads, {
           id: payload.threadId,
           anchor: payload.anchor,
           actorId,
@@ -188,37 +237,24 @@ export class ShareState {
         break;
       }
       case 'thread.resolved': {
-        const thread = this.threads.get(payload.threadId);
-        if (!isDefined(thread)) {
-          throw new Error(`Thread not found: ${payload.threadId}`);
-        } else if (thread.resolved) {
+        const thread = this.#getThread(payload.threadId);
+        if (thread.resolved) {
           throw new Error(`Thread already resolved: ${payload.threadId}`);
         }
 
-        thread.resolved = true;
+        this.#writableThread(thread).resolved = true;
         break;
       }
       case 'comment.created': {
-        const thread = this.threads.get(payload.threadId);
-        if (!isDefined(thread)) {
-          throw new Error(`Thread not found: ${payload.threadId}`);
-        }
-
-        const alreadyCreated =
+        const thread = this.#getThread(payload.threadId);
+        if (
           this.comments.has(payload.commentId) ||
-          this.deletedCommentIds.has(payload.commentId);
-        if (alreadyCreated) {
+          this.deletedCommentIds.has(payload.commentId)
+        ) {
           throw new Error(`Comment already exists: ${payload.commentId}`);
         }
 
-        const commentAlreadyOnThread = thread.commentIds.includes(
-          payload.commentId,
-        );
-        if (commentAlreadyOnThread) {
-          throw new Error(`Comment already exists: ${payload.commentId}`);
-        }
-
-        this.comments.set(payload.commentId, {
+        this.#own(this.comments, {
           id: payload.commentId,
           threadId: payload.threadId,
           actorId,
@@ -226,210 +262,24 @@ export class ShareState {
           body: payload.body,
           createdAt,
         });
-        thread.commentIds.push(payload.commentId);
+        this.#writableThread(thread).commentIds.push(payload.commentId);
         break;
       }
       case 'comment.edited': {
-        const commentAlreadyDeleted = this.deletedCommentIds.has(
-          payload.commentId,
+        const comment = this.#getComment(payload.commentId);
+
+        this.#writableComment(comment).body = payload.body;
+        break;
+      }
+      case 'comment.deleted': {
+        const comment = this.#getComment(payload.commentId);
+        const thread = this.#writableThread(this.#getThread(comment.threadId));
+
+        thread.commentIds = thread.commentIds.filter(
+          (id) => id !== payload.commentId,
         );
-        if (commentAlreadyDeleted) {
-          throw new Error(`Comment already deleted: ${payload.commentId}`);
-        }
-
-        const comment = this.comments.get(payload.commentId);
-        if (!isDefined(comment)) {
-          throw new Error(`Comment not found: ${payload.commentId}`);
-        }
-
-        comment.body = payload.body;
-        break;
-      }
-      case 'comment.deleted': {
-        this.#deleteComment(payload.commentId);
-        break;
-      }
-      default:
-        payload satisfies never;
-    }
-  }
-
-  #reconcilePending(payload: ShareEventPayload) {
-    for (const [pendingId, event] of this.#pending) {
-      if (isSupersededBy(event.payload, payload)) {
-        this.#pending.delete(pendingId);
-      }
-    }
-  }
-
-  #mergePending(): FoldedState {
-    const confirmedThreads = this.threads;
-    const confirmedComments = this.comments;
-
-    const threads = new Map(confirmedThreads);
-    const comments = new Map(confirmedComments);
-    const deletedCommentIds = new Set(this.deletedCommentIds);
-    const pendingIds = new Set<string>();
-
-    for (const event of this.#pending.values()) {
-      const {actorId, actor, createdAt, payload} = event;
-
-      switch (payload.$type) {
-        case 'thread.opened': {
-          threads.set(payload.threadId, {
-            id: payload.threadId,
-            anchor: payload.anchor,
-            actorId,
-            actor,
-            resolved: false,
-            commentIds: [],
-            createdAt,
-          });
-
-          pendingIds.add(payload.threadId);
-          break;
-        }
-        case 'thread.resolved': {
-          const thread = cloneThread(payload.threadId);
-          thread.resolved = true;
-
-          pendingIds.add(payload.threadId);
-          break;
-        }
-        case 'comment.created': {
-          const thread = cloneThread(payload.threadId);
-          thread.commentIds.push(payload.commentId);
-
-          comments.set(payload.commentId, {
-            id: payload.commentId,
-            threadId: payload.threadId,
-            actorId,
-            actor,
-            body: payload.body,
-            createdAt,
-          });
-          pendingIds.add(payload.commentId);
-          break;
-        }
-        case 'comment.edited': {
-          const comment = cloneComment(payload.commentId);
-          comment.body = payload.body;
-
-          pendingIds.add(payload.commentId);
-          break;
-        }
-        case 'comment.deleted': {
-          const comment = comments.get(payload.commentId);
-          if (!isDefined(comment)) {
-            throw new Error(`Comment not found: ${payload.commentId}`);
-          }
-
-          const thread = cloneThread(comment.threadId);
-          thread.commentIds = thread.commentIds.filter(
-            (id) => id !== payload.commentId,
-          );
-
-          comments.delete(payload.commentId);
-          deletedCommentIds.add(payload.commentId);
-          pendingIds.add(payload.commentId);
-          break;
-        }
-        default:
-          payload satisfies never;
-      }
-    }
-
-    return {
-      threads,
-      comments,
-      deletedCommentIds,
-      pendingIds,
-      version: this.#version,
-    };
-
-    function cloneThread(threadId: string) {
-      const thread = threads.get(threadId);
-      if (!isDefined(thread)) {
-        throw new Error(`Thread not found: ${threadId}`);
-      }
-      if (confirmedThreads.get(threadId) === thread) {
-        const cloned = structuredClone(thread);
-        threads.set(threadId, cloned);
-        return cloned;
-      }
-      return thread;
-    }
-
-    function cloneComment(commentId: string) {
-      const comment = comments.get(commentId);
-      if (!isDefined(comment)) {
-        throw new Error(`Comment not found: ${commentId}`);
-      }
-      if (confirmedComments.get(commentId) === comment) {
-        const cloned = structuredClone(comment);
-        comments.set(commentId, cloned);
-        return cloned;
-      }
-      return comment;
-    }
-  }
-
-  #assertOptimistic(event: OptimisticEvent) {
-    const {payload} = event;
-
-    switch (payload.$type) {
-      case 'thread.opened': {
-        const threadAlreadyOpened = this.#hasThread(payload.threadId);
-        if (threadAlreadyOpened) {
-          throw new Error(`Thread already exists: ${payload.threadId}`);
-        }
-        break;
-      }
-      case 'thread.resolved': {
-        const thread = this.#getThread(payload.threadId);
-        if (!isDefined(thread)) {
-          throw new Error(`Thread not found: ${payload.threadId}`);
-        } else if (thread.resolved) {
-          throw new Error(`Thread already resolved: ${payload.threadId}`);
-        }
-        break;
-      }
-      case 'comment.created': {
-        const threadUnknown = !this.#hasThread(payload.threadId);
-        if (threadUnknown) {
-          throw new Error(`Thread not found: ${payload.threadId}`);
-        }
-
-        const alreadyCreated =
-          this.#hasComment(payload.commentId) ||
-          this.deletedCommentIds.has(payload.commentId);
-        if (alreadyCreated) {
-          throw new Error(`Comment already exists: ${payload.commentId}`);
-        }
-        break;
-      }
-      case 'comment.edited': {
-        const commentAlreadyDeleted = this.#isCommentDeleted(payload.commentId);
-        if (commentAlreadyDeleted) {
-          throw new Error(`Comment already deleted: ${payload.commentId}`);
-        }
-
-        const commentNotFound = !this.#hasComment(payload.commentId);
-        if (commentNotFound) {
-          throw new Error(`Comment not found: ${payload.commentId}`);
-        }
-        break;
-      }
-      case 'comment.deleted': {
-        const commentAlreadyDeleted = this.#isCommentDeleted(payload.commentId);
-        if (commentAlreadyDeleted) {
-          throw new Error(`Comment already deleted: ${payload.commentId}`);
-        }
-
-        const commentNotFound = !this.#hasComment(payload.commentId);
-        if (commentNotFound) {
-          throw new Error(`Comment not found: ${payload.commentId}`);
-        }
+        this.comments.delete(payload.commentId);
+        this.deletedCommentIds.add(payload.commentId);
         break;
       }
       default:
@@ -438,127 +288,48 @@ export class ShareState {
   }
 
   #getThread(threadId: string) {
-    let thread = this.threads.get(threadId);
-
-    for (const event of this.#pending.values()) {
-      const {actorId, actor, createdAt, payload} = event;
-
-      if (isType('thread.opened', payload) && payload.threadId === threadId) {
-        thread = {
-          id: threadId,
-          anchor: payload.anchor,
-          actorId,
-          actor,
-          resolved: false,
-          commentIds: [],
-          createdAt,
-        };
-        continue;
-      }
-      if (
-        isType('thread.resolved', payload) &&
-        payload.threadId === threadId &&
-        isDefined(thread)
-      ) {
-        thread = structuredClone(thread);
-        thread.resolved = true;
-      }
+    const thread = this.threads.get(threadId);
+    if (!isDefined(thread)) {
+      throw new Error(`Thread not found: ${threadId}`);
     }
-
     return thread;
   }
 
-  #hasThread(threadId: string) {
-    return isDefined(this.#getThread(threadId));
-  }
-
   #getComment(commentId: string) {
-    let comment = this.comments.get(commentId);
-
-    for (const event of this.#pending.values()) {
-      const {payload} = event;
-
-      if (
-        isType('comment.created', payload) &&
-        payload.commentId === commentId
-      ) {
-        comment = {
-          id: commentId,
-          threadId: payload.threadId,
-          actorId: event.actorId,
-          actor: event.actor,
-          body: payload.body,
-          createdAt: event.createdAt,
-        };
-        continue;
-      }
-      if (
-        isType('comment.edited', payload) &&
-        payload.commentId === commentId &&
-        isDefined(comment)
-      ) {
-        comment = structuredClone(comment);
-        comment.body = payload.body;
-        continue;
-      }
-      if (
-        isType('comment.deleted', payload) &&
-        payload.commentId === commentId
-      ) {
-        comment = undefined;
-      }
+    if (this.deletedCommentIds.has(commentId)) {
+      throw new Error(`Comment already deleted: ${commentId}`);
     }
 
+    const comment = this.comments.get(commentId);
+    if (!isDefined(comment)) {
+      throw new Error(`Comment not found: ${commentId}`);
+    }
     return comment;
   }
 
-  #isCommentDeleted(commentId: string) {
-    if (this.deletedCommentIds.has(commentId)) {
-      return true;
-    }
-
-    let created = this.comments.has(commentId);
-    for (const event of this.#pending.values()) {
-      const {payload} = event;
-
-      if (
-        isType('comment.created', payload) &&
-        payload.commentId === commentId
-      ) {
-        created = true;
-      } else if (
-        isType('comment.deleted', payload) &&
-        payload.commentId === commentId &&
-        created
-      ) {
-        return true;
-      }
-    }
-    return false;
+  #writableThread(thread: ThreadState) {
+    return this.#isWritable(thread)
+      ? thread
+      : this.#own(this.threads, {
+          ...thread,
+          commentIds: [...thread.commentIds],
+        });
   }
 
-  #hasComment(commentId: string) {
-    return isDefined(this.#getComment(commentId));
+  #writableComment(comment: CommentState) {
+    return this.#isWritable(comment)
+      ? comment
+      : this.#own(this.comments, {...comment});
   }
 
-  #deleteComment(commentId: string) {
-    const comment = this.comments.get(commentId);
-    if (!isDefined(comment)) {
-      const commentAlreadyDeleted = this.deletedCommentIds.has(commentId);
-      if (commentAlreadyDeleted) {
-        throw new Error(`Comment already deleted: ${commentId}`);
-      }
-      throw new Error(`Comment not found: ${commentId}`);
-    }
+  #isWritable(entity: object) {
+    return this.#owned === null || this.#owned.has(entity);
+  }
 
-    const thread = this.threads.get(comment.threadId);
-    if (!isDefined(thread)) {
-      throw new Error(`Thread not found: ${comment.threadId}`);
-    }
-
-    thread.commentIds = thread.commentIds.filter((id) => id !== commentId);
-    this.comments.delete(commentId);
-    this.deletedCommentIds.add(commentId);
+  #own<T extends {readonly id: string}>(map: Map<string, T>, entity: T) {
+    this.#owned?.add(entity);
+    map.set(entity.id, entity);
+    return entity;
   }
 }
 
@@ -573,38 +344,8 @@ function isSupersededBy(
   pending: ShareEventPayload,
   confirmed: ShareEventPayload,
 ) {
-  if (pending.$type !== confirmed.$type) {
-    return false;
-  }
-
-  switch (confirmed.$type) {
-    case 'thread.opened':
-      return (
-        isType('thread.opened', pending) &&
-        pending.threadId === confirmed.threadId
-      );
-    case 'thread.resolved':
-      return (
-        isType('thread.resolved', pending) &&
-        pending.threadId === confirmed.threadId
-      );
-    case 'comment.created':
-      return (
-        isType('comment.created', pending) &&
-        pending.commentId === confirmed.commentId
-      );
-    case 'comment.edited':
-      return (
-        isType('comment.edited', pending) &&
-        pending.commentId === confirmed.commentId
-      );
-    case 'comment.deleted':
-      return (
-        isType('comment.deleted', pending) &&
-        pending.commentId === confirmed.commentId
-      );
-    default:
-      confirmed satisfies never;
-      return false;
-  }
+  return (
+    pending.$type === confirmed.$type &&
+    subjectIdFromPayload(pending) === subjectIdFromPayload(confirmed)
+  );
 }
