@@ -1,8 +1,10 @@
 'use client';
 
 import {DEFAULT_THEMES} from '@pierre/diffs';
-import type {WorkerInitializationRenderOptions} from '@pierre/diffs/react';
-import {WorkerPoolContextProvider} from '@pierre/diffs/react';
+import {
+  WorkerPoolContextProvider,
+  type WorkerInitializationRenderOptions,
+} from '@pierre/diffs/react';
 import type {WorkerPoolOptions} from '@pierre/diffs/worker';
 
 const WORKER_POOL_OPTIONS = {

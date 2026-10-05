@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 
 import {act, renderHook} from '@testing-library/react';
-import type {Mock} from 'vitest';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi, type Mock} from 'vitest';
 
 import {isDefined} from '@/utils/is-defined';
 

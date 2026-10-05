@@ -1,5 +1,4 @@
-import type {ButtonProps} from '@heroui/react';
-import {Button} from '@heroui/react';
+import {Button, type ButtonProps} from '@heroui/react';
 import {PlusIcon} from 'lucide-react';
 
 export function GutterUtility(props: ButtonProps) {

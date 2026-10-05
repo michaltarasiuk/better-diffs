@@ -2,7 +2,6 @@
 
 import {startTransition, useEffect, useEffectEvent, useState} from 'react';
 
-import type {Key} from '@heroui/react';
 import {
   Button,
   ButtonGroup,
@@ -11,6 +10,7 @@ import {
   Select,
   ToggleButton,
   ToggleButtonGroup,
+  type Key,
 } from '@heroui/react';
 import {cn, typographyVariants} from '@heroui/styles';
 import {HistoryExtension} from '@lexical/history';
@@ -28,24 +28,22 @@ import {
   RichTextExtension,
 } from '@lexical/rich-text';
 import {$setBlocksType} from '@lexical/selection';
-import type {
-  LexicalEditor,
-  SerializedEditorState,
-  TextFormatType,
-} from 'lexical';
 import {
-  $createParagraphNode,
-  $findMatchingParent,
-  $getSelection,
-  $isRangeSelection,
-  $isRootOrShadowRoot,
   COMMAND_PRIORITY_BEFORE_EDITOR,
-  defineExtension,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
   KEY_ESCAPE_COMMAND,
   REDO_COMMAND,
   UNDO_COMMAND,
+  $createParagraphNode,
+  $findMatchingParent,
+  $getSelection,
+  $isRangeSelection,
+  $isRootOrShadowRoot,
+  defineExtension,
+  type LexicalEditor,
+  type SerializedEditorState,
+  type TextFormatType,
 } from 'lexical';
 import {
   AlignCenterIcon,

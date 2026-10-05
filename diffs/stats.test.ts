@@ -1,7 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import type {DiffStatsFile} from './stats';
-import {computeDiffStats, formatDiffStat} from './stats';
+import {computeDiffStats, formatDiffStat, type DiffStatsFile} from './stats';
 
 function createDiffStatsFile(...hunks: DiffStatsFile['hunks']): DiffStatsFile {
   return {hunks};

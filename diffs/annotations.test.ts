@@ -1,21 +1,19 @@
 import {describe, expect, expectTypeOf, it} from 'vitest';
 
 import type {ThreadState} from '@/events/state';
-import {createActor, createAnchor, CREATED_AT} from '@/testing/events';
+import {CREATED_AT, createActor, createAnchor} from '@/testing/events';
 import {uuid} from '@/testing/uuid';
 
-import type {
-  DiffAnnotation,
-  FormAnnotationMetadata,
-  FormDiffAnnotation,
-  ThreadAnnotationMetadata,
-  ThreadDiffAnnotation,
-} from './annotations';
 import {
   isFormAnnotation,
   isThreadAnnotation,
   sortAnnotations,
   toThreadAnnotation,
+  type DiffAnnotation,
+  type FormAnnotationMetadata,
+  type FormDiffAnnotation,
+  type ThreadAnnotationMetadata,
+  type ThreadDiffAnnotation,
 } from './annotations';
 
 type AnnotationPosition = Partial<Pick<DiffAnnotation, 'side' | 'lineNumber'>>;

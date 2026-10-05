@@ -6,8 +6,12 @@ import {use, useRef} from 'react';
 
 import {SearchField} from '@heroui/react';
 import type {FileTree as FileTreeModel} from '@pierre/trees';
-import type {FileTreePreloadedData} from '@pierre/trees/react';
-import {FileTree, useFileTree, useFileTreeSearch} from '@pierre/trees/react';
+import {
+  FileTree,
+  useFileTree,
+  useFileTreeSearch,
+  type FileTreePreloadedData,
+} from '@pierre/trees/react';
 
 import {useShortcut} from '@/hooks/use-shortcut';
 import type {TreeInput} from '@/trees/input';

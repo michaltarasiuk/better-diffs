@@ -1,7 +1,11 @@
 import {describe, expect, expectTypeOf, it} from 'vitest';
 
-import type {DiffLine, FileLine, HoveredLine} from './lines';
-import {isDiffLine} from './lines';
+import {
+  isDiffLine,
+  type DiffLine,
+  type FileLine,
+  type HoveredLine,
+} from './lines';
 
 function createDiffLine(overrides: Partial<DiffLine> = {}): DiffLine {
   return {

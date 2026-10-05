@@ -1,5 +1,7 @@
-import type {FileTreeOptions} from '@pierre/trees';
-import {preparePresortedFileTreeInput} from '@pierre/trees';
+import {
+  preparePresortedFileTreeInput,
+  type FileTreeOptions,
+} from '@pierre/trees';
 
 import type {TreeInput} from './input';
 import {TREES_FOCUS_RING_UNSAFE_CSS} from './unsafe-css';

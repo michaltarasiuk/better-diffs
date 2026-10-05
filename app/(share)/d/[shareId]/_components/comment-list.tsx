@@ -7,8 +7,7 @@ import {typographyVariants} from '@heroui/styles';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {LexicalExtensionComposer} from '@lexical/react/LexicalExtensionComposer';
 import {RichTextExtension} from '@lexical/rich-text';
-import type {SerializedEditorState} from 'lexical';
-import {defineExtension} from 'lexical';
+import {defineExtension, type SerializedEditorState} from 'lexical';
 
 import type {CommentState} from '@/events/state';
 import {EDITOR_THEME} from '@/lexical/editor-theme';

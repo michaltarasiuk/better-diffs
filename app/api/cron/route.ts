@@ -1,5 +1,4 @@
-import type {NextRequest} from 'next/server';
-import {NextResponse} from 'next/server';
+import {NextResponse, type NextRequest} from 'next/server';
 
 import {hasBearerToken} from '@/auth/bearer';
 import {deleteExpiredShares} from '@/db/shares';

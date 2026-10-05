@@ -1,11 +1,11 @@
 import {describe, expect, expectTypeOf, it, vi} from 'vitest';
 
 import {
+  CREATED_AT,
   createActor,
   createCommentCreated,
   createCommentDeleted,
   createCommentEdited,
-  CREATED_AT,
   createLexicalBody,
   createShareEvent,
   createThreadOpened,
@@ -14,8 +14,7 @@ import {
 import {uuid} from '@/testing/uuid';
 
 import type {CommentCreatedPayload, ShareEventPayload} from './schemas';
-import type {OptimisticEvent} from './state';
-import {foldEvents, isType, ShareState} from './state';
+import {foldEvents, isType, ShareState, type OptimisticEvent} from './state';
 
 function createShareEventLog() {
   const shareId = uuid();

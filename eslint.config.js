@@ -1,10 +1,10 @@
 import vitest from '@vitest/eslint-plugin';
-import {defineConfig, globalIgnores} from 'eslint/config';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
+import perfectionist from 'eslint-plugin-perfectionist';
 import reactCompiler from 'eslint-plugin-react-compiler';
-import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import testingLibrary from 'eslint-plugin-testing-library';
+import {defineConfig, globalIgnores} from 'eslint/config';
 
 const testingLibraryReact = testingLibrary.configs['flat/react'];
 
@@ -26,6 +26,17 @@ const DEEP_PARENT_IMPORT = {
   message: 'Parent imports beyond one level use the @/ alias',
 };
 
+const namedSpecifierOrder = (selector) => ({
+  customGroups: [
+    {
+      groupName: 'constant',
+      selector,
+      elementNamePattern: '^[A-Z][A-Z0-9_]*$',
+    },
+  ],
+  groups: ['constant', `value-${selector}`, `type-${selector}`],
+});
+
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
@@ -33,7 +44,7 @@ const eslintConfig = defineConfig([
   globalIgnores(['.next/**', 'next-env.d.ts']),
   {
     plugins: {
-      'simple-import-sort': simpleImportSort,
+      perfectionist,
     },
     rules: {
       '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
@@ -41,13 +52,12 @@ const eslintConfig = defineConfig([
         'error',
         {
           prefer: 'type-imports',
-          fixStyle: 'separate-type-imports',
+          fixStyle: 'inline-type-imports',
           disallowTypeAnnotations: false,
         },
       ],
       '@typescript-eslint/no-import-type-side-effects': 'error',
-      'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
-      'import/no-duplicates': 'error',
+      'import/no-duplicates': ['error', {'prefer-inline': true}],
       'no-restricted-imports': ['error', {patterns: [DEEP_PARENT_IMPORT]}],
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -68,19 +78,36 @@ const eslintConfig = defineConfig([
           message: 'Use the React namespace for types (e.g. React.ReactNode).',
         },
       ],
-      'simple-import-sort/exports': 'error',
-      'simple-import-sort/imports': [
+      'perfectionist/sort-imports': [
         'error',
         {
+          internalPattern: ['^@/'],
+          newlinesBetween: 1,
+          customGroups: [
+            {groupName: 'react', elementNamePattern: '^react(?:-dom)?(?:$|/)'},
+            {groupName: 'next', elementNamePattern: '^next(?:$|/)'},
+          ],
           groups: [
-            ['^\\u0000'],
-            ['^node:'],
-            ['^react(?:-dom)?(?:$|/)', '^next(?:$|/)'],
-            ['^@?\\w'],
-            ['^@/'],
-            ['^\\.'],
+            ['side-effect', 'side-effect-style'],
+            'builtin',
+            'react',
+            {newlinesBetween: 0},
+            'next',
+            'external',
+            'internal',
+            ['parent', 'sibling', 'index'],
+            'unknown',
           ],
         },
+      ],
+      'perfectionist/sort-named-imports': [
+        'error',
+        namedSpecifierOrder('import'),
+      ],
+      'perfectionist/sort-exports': 'error',
+      'perfectionist/sort-named-exports': [
+        'error',
+        namedSpecifierOrder('export'),
       ],
     },
   },

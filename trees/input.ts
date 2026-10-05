@@ -1,6 +1,5 @@
 import type {FileDiffMetadata} from '@pierre/diffs';
-import type {GitStatus} from '@pierre/trees';
-import {prepareFileTreeInput} from '@pierre/trees';
+import {prepareFileTreeInput, type GitStatus} from '@pierre/trees';
 
 export type TreeInputFile = Pick<FileDiffMetadata, 'name' | 'type'>;
 export type TreeInput = ReturnType<typeof prepareTreeInput>;
