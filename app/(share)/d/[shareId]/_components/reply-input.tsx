@@ -6,8 +6,8 @@ import {Input} from '@heroui/react';
 import type {SerializedEditorState} from 'lexical';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
+import type {Session} from '@/auth/client';
 import {SessionContext} from '@/auth/context';
-import type {Session} from '@/auth/server';
 import {useKeyDown} from '@/hooks/use-key-down';
 import {isDefined} from '@/utils/is-defined';
 
