@@ -48,7 +48,7 @@ Errors constructed as test fixtures are opaque values, not messages, so they nee
 
 ESLint (`simple-import-sort`) orders imports into blank-line-separated groups: side-effect imports, `node:` builtins, `react`/`react-dom`/`next`, other packages, `@/` aliases, then relative paths. Module paths and `{…}` specifiers sort alphabetically within each group. Run `eslint --fix` rather than ordering by hand.
 
-Import each module once. Use `import type {A}` when every specifier is a type and inline `import {type A, b}` when types and values mix. Import React types through the namespace (`React.ReactNode`).
+Import types with a top-level `import type {A}`, never inline `{type A}`. When a module provides both, use one `import type` and one value import, in that order. Import React types through the namespace (`React.ReactNode`).
 
 Use a relative path within the same top-level module (`hooks/use-shortcut.ts` imports `./use-key-down`) and within a route segment's private folders (`../_hooks/use-share-id`). Use `@/` to cross into another top-level module. Relative paths climb at most one level; reach for `@/` instead of `../../`.
 

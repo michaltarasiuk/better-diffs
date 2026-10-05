@@ -2,11 +2,11 @@
 
 import {startTransition, useEffect, useEffectEvent, useState} from 'react';
 
+import type {Key} from '@heroui/react';
 import {
   Button,
   ButtonGroup,
   Card,
-  type Key,
   ListBox,
   Select,
   ToggleButton,
@@ -28,6 +28,11 @@ import {
   RichTextExtension,
 } from '@lexical/rich-text';
 import {$setBlocksType} from '@lexical/selection';
+import type {
+  LexicalEditor,
+  SerializedEditorState,
+  TextFormatType,
+} from 'lexical';
 import {
   $createParagraphNode,
   $findMatchingParent,
@@ -39,10 +44,7 @@ import {
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
   KEY_ESCAPE_COMMAND,
-  type LexicalEditor,
   REDO_COMMAND,
-  type SerializedEditorState,
-  type TextFormatType,
   UNDO_COMMAND,
 } from 'lexical';
 import {

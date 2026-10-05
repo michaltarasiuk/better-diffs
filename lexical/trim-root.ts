@@ -1,10 +1,5 @@
-import {
-  $getRoot,
-  $isElementNode,
-  $isLineBreakNode,
-  $isTextNode,
-  type LexicalNode,
-} from 'lexical';
+import type {LexicalNode} from 'lexical';
+import {$getRoot, $isElementNode, $isLineBreakNode, $isTextNode} from 'lexical';
 
 import {isDefined} from '@/utils/is-defined';
 

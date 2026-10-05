@@ -1,6 +1,7 @@
 import 'client-only';
 
-import {type DBSchema, type IDBPDatabase, openDB} from 'idb';
+import type {DBSchema, IDBPDatabase} from 'idb';
+import {openDB} from 'idb';
 
 import {isDefined} from '@/utils/is-defined';
 

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
-import {beforeEach, describe, expect, it, type MockInstance, vi} from 'vitest';
+import type {MockInstance} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import type {StorageType} from './is-storage-available';
 

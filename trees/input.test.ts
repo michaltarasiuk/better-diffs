@@ -1,6 +1,7 @@
 import {describe, expect, it} from 'vitest';
 
-import {prepareTreeInput, sortByTree, type TreeInputFile} from './input';
+import type {TreeInputFile} from './input';
+import {prepareTreeInput, sortByTree} from './input';
 
 function createTreeInputFile(name: string): TreeInputFile {
   return {name, type: 'change'};

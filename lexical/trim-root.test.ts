@@ -1,10 +1,10 @@
+import type {LexicalNode} from 'lexical';
 import {
   $createLineBreakNode,
   $createParagraphNode,
   $createTextNode,
   $getRoot,
   createEditor,
-  type LexicalNode,
 } from 'lexical';
 import {describe, expect, it} from 'vitest';
 

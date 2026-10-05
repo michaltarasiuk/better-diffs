@@ -1,17 +1,17 @@
 import type {SerializedEditorState} from 'lexical';
 
-import {
-  type Actor,
-  type Anchor,
-  type CommentCreatedPayload,
-  type CommentDeletedPayload,
-  type CommentEditedPayload,
-  type ShareEvent,
-  type ShareEventPayload,
-  subjectIdFromPayload,
-  type ThreadOpenedPayload,
-  type ThreadResolvedPayload,
+import type {
+  Actor,
+  Anchor,
+  CommentCreatedPayload,
+  CommentDeletedPayload,
+  CommentEditedPayload,
+  ShareEvent,
+  ShareEventPayload,
+  ThreadOpenedPayload,
+  ThreadResolvedPayload,
 } from '@/events/schemas';
+import {subjectIdFromPayload} from '@/events/schemas';
 
 import {uuid} from './uuid';
 

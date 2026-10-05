@@ -14,7 +14,8 @@ import {
 import {uuid} from '@/testing/uuid';
 
 import type {CommentCreatedPayload, ShareEventPayload} from './schemas';
-import {foldEvents, isType, type OptimisticEvent, ShareState} from './state';
+import type {OptimisticEvent} from './state';
+import {foldEvents, isType, ShareState} from './state';
 
 function createShareEventLog() {
   const shareId = uuid();

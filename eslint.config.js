@@ -41,12 +41,13 @@ const eslintConfig = defineConfig([
         'error',
         {
           prefer: 'type-imports',
-          fixStyle: 'inline-type-imports',
+          fixStyle: 'separate-type-imports',
           disallowTypeAnnotations: false,
         },
       ],
       '@typescript-eslint/no-import-type-side-effects': 'error',
-      'import/no-duplicates': ['error', {'prefer-inline': true}],
+      'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
+      'import/no-duplicates': 'error',
       'no-restricted-imports': ['error', {patterns: [DEEP_PARENT_IMPORT]}],
       '@typescript-eslint/no-unused-vars': [
         'error',

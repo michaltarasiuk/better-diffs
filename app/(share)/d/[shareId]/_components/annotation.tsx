@@ -11,11 +11,8 @@ import {useFocusWithin} from 'react-aria/useFocusWithin';
 import {authClient} from '@/auth/client';
 import {SessionContext} from '@/auth/context';
 import {GitHubIcon} from '@/auth/github-icon';
-import {
-  type DiffAnnotation,
-  isFormAnnotation,
-  isThreadAnnotation,
-} from '@/diffs/annotations';
+import type {DiffAnnotation} from '@/diffs/annotations';
+import {isFormAnnotation, isThreadAnnotation} from '@/diffs/annotations';
 import {createComment, openThread} from '@/events/actions';
 import {FoldedStateContext, ShareStateContext} from '@/events/provider';
 import type {Actor, Anchor} from '@/events/schemas';

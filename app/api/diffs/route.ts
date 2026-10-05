@@ -1,6 +1,8 @@
-import {type NextRequest, NextResponse} from 'next/server';
+import type {NextRequest} from 'next/server';
+import {NextResponse} from 'next/server';
 
-import {type FileDiffMetadata, parsePatchFiles} from '@pierre/diffs';
+import type {FileDiffMetadata} from '@pierre/diffs';
+import {parsePatchFiles} from '@pierre/diffs';
 import {z} from 'zod';
 
 import {createShare} from '@/db/shares';
