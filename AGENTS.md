@@ -44,14 +44,6 @@ API responses use the same casing as a noun phrase describing the rejected input
 
 Errors constructed as test fixtures are opaque values, not messages, so they need none of this.
 
-## Imports
-
-ESLint (`perfectionist`) orders imports into blank-line-separated groups: side-effect imports, `node:` builtins, `react`/`react-dom` then `next`, other packages, `@/` aliases, then relative paths. Module paths sort alphabetically within each group. Inside `{…}`, `UPPER_CASE` constants come first, then other values, then types, each alphabetical. Run `eslint --fix` rather than ordering by hand.
-
-Import each module once. Use `import type {A}` when every specifier is a type and inline `import {b, type A}` when types and values mix. Import React types through the namespace (`React.ReactNode`).
-
-Use a relative path within the same top-level module (`hooks/use-shortcut.ts` imports `./use-key-down`) and within a route segment's private folders (`../_hooks/use-share-id`). Use `@/` to cross into another top-level module. Relative paths climb at most one level; reach for `@/` instead of `../../`.
-
 ## React state
 
 Name functional `setState` updater parameters from the state variable:
