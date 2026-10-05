@@ -18,6 +18,7 @@ type CodeViewRef = React.RefObject<Handle | null>;
 
 interface FileState {
   readonly commentForms: readonly FormDiffAnnotation[];
+  readonly replyDrafts: Readonly<Record<string, SerializedEditorState>>;
   readonly collapsed: boolean;
   readonly viewed: boolean;
   readonly version: number;
@@ -25,12 +26,15 @@ interface FileState {
 
 type CommentForms = FileState['commentForms'];
 
+type ReplyDrafts = FileState['replyDrafts'];
+
 type FileStatePatch = Partial<Omit<FileState, 'version'>>;
 
 type ReviewState = ReturnType<typeof useReviewState>;
 
 const DEFAULT_FILE_STATE: FileState = {
   commentForms: [],
+  replyDrafts: {},
   collapsed: false,
   viewed: false,
   version: 0,
@@ -101,6 +105,15 @@ function useReviewState() {
     }));
   }
 
+  function patchReplyDrafts(
+    fileId: string,
+    patch: (replyDrafts: ReplyDrafts) => ReplyDrafts,
+  ) {
+    patchFileState(fileId, (state) => ({
+      replyDrafts: patch(state.replyDrafts),
+    }));
+  }
+
   return {
     getFileState(fileId: string) {
       return {...DEFAULT_FILE_STATE, ...fileStates.get(fileId)};
@@ -156,6 +169,25 @@ function useReviewState() {
       patchCommentForms(fileId, (commentForms) =>
         commentForms.filter(
           (commentForm) => commentForm.metadata.formId !== formId,
+        ),
+      );
+    },
+
+    setReplyDraft(
+      fileId: string,
+      threadId: string,
+      draft: SerializedEditorState,
+    ) {
+      patchReplyDrafts(fileId, (replyDrafts) => ({
+        ...replyDrafts,
+        [threadId]: draft,
+      }));
+    },
+
+    clearReplyDraft(fileId: string, threadId: string) {
+      patchReplyDrafts(fileId, (replyDrafts) =>
+        Object.fromEntries(
+          Object.entries(replyDrafts).filter(([id]) => id !== threadId),
         ),
       );
     },

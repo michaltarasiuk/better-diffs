@@ -314,13 +314,19 @@ function ThreadAnnotation() {
   const shareId = useShareId();
   const folded = use(FoldedStateContext);
 
-  const thread = folded.threads.get(annotation.metadata.threadId);
+  const {threadId} = annotation.metadata;
+
+  const thread = folded.threads.get(threadId);
   if (!isDefined(thread)) {
-    throw new Error(`Thread not found: ${annotation.metadata.threadId}`);
+    throw new Error(`Thread not found: ${threadId}`);
   }
 
   const state = use(ShareStateContext);
+  const file = use(FileContext);
+  const {getFileState, setReplyDraft, clearReplyDraft} =
+    use(ReviewStateContext);
 
+  const replyDraft = getFileState(file.id).replyDrafts[threadId];
   const comments = thread.commentIds
     .map((commentId) => folded.comments.get(commentId))
     .filter((comment) => isDefined(comment));
@@ -334,6 +340,7 @@ function ThreadAnnotation() {
       </div>
 
       <ReplyInput
+        initialState={replyDraft}
         signIn={({onDismiss}) => (
           <SignInCard variant="secondary" onDismiss={onDismiss} />
         )}
@@ -346,8 +353,6 @@ function ThreadAnnotation() {
 
           const commentId = newId();
           const createdAt = new Date().toISOString();
-
-          const threadId = annotation.metadata.threadId;
 
           const pendingId = state.optimistic({
             actorId,
@@ -368,9 +373,13 @@ function ThreadAnnotation() {
               commentId,
               body,
             });
+            clearReplyDraft(file.id, threadId);
           } catch {
             state.reject(pendingId);
           }
+        }}
+        onChange={(draft) => {
+          setReplyDraft(file.id, threadId, draft);
         }}
       />
     </Card>

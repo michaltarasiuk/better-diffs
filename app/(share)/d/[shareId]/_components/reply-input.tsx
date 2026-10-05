@@ -13,13 +13,20 @@ import {Editor} from './editor';
 
 interface ReplyInputProps {
   readonly signIn: (props: {onDismiss: () => void}) => React.ReactNode;
+  readonly initialState?: SerializedEditorState;
   readonly onReply?: (
     body: SerializedEditorState,
     session: Session,
   ) => void | Promise<unknown>;
+  readonly onChange?: (draft: SerializedEditorState) => void;
 }
 
-export function ReplyInput({signIn, onReply}: ReplyInputProps) {
+export function ReplyInput({
+  signIn,
+  initialState,
+  onReply,
+  onChange,
+}: ReplyInputProps) {
   const [isEditing, setIsEditing] = useState(false);
 
   const [isFocusWithin, setIsFocusWithin] = useState(false);
@@ -61,9 +68,11 @@ export function ReplyInput({signIn, onReply}: ReplyInputProps) {
         <Editor
           placeholder="Write a reply…"
           autoFocus
+          initialState={initialState}
           variant="secondary"
           className="rounded-b-xl"
           onComment={(body) => onReply?.(body, session)}
+          onChange={onChange}
           onDismiss={onDismiss}
         />
       ) : (
