@@ -13,8 +13,12 @@ import {
 } from '@/testing/events';
 import {uuid} from '@/testing/uuid';
 
-import type {CommentCreatedPayload, ShareEventPayload} from './schemas';
-import {foldEvents, isType, ShareState, type OptimisticEvent} from './state';
+import type {
+  CommentCreatedPayload,
+  ShareEvent,
+  ShareEventPayload,
+} from './schemas';
+import {isType, ShareState, type OptimisticEvent} from './state';
 
 function createShareEventLog() {
   const shareId = uuid();
@@ -1038,6 +1042,12 @@ describe('isType', () => {
     expect(payload.commentId).toEqual(expect.any(String));
   });
 });
+
+function foldEvents(events: readonly ShareEvent[]) {
+  const state = new ShareState();
+  state.ingest(events);
+  return state.getSnapshot();
+}
 
 describe('foldEvents', () => {
   it('folds thread state from a log in one call', () => {

@@ -12,23 +12,15 @@ import {
   EditCommentInput,
   OpenThreadInput,
   ResolveThreadInput,
+  type Actor,
 } from './schemas';
 
-async function getActorId() {
-  const session = await getSession();
-  if (!isDefined(session)) {
-    unauthorized();
-  }
-  return session.user.id;
-}
-
 export async function openThread(input: OpenThreadInput) {
-  const actorId = await getActorId();
-
   if (!OpenThreadInput.validate(input)) {
     throw new TypeError('Invalid open thread input');
   }
 
+  const {actorId} = await getActor();
   const {shareId, threadId, commentId, body, anchor} = input;
 
   if (anchor.shareId !== shareId) {
@@ -42,24 +34,22 @@ export async function openThread(input: OpenThreadInput) {
 }
 
 export async function resolveThread(input: ResolveThreadInput) {
-  const actorId = await getActorId();
-
   if (!ResolveThreadInput.validate(input)) {
     throw new TypeError('Invalid resolve thread input');
   }
 
+  const {actorId} = await getActor();
   const {shareId, threadId} = input;
 
   return appendEvents(shareId, actorId, [{$type: 'thread.resolved', threadId}]);
 }
 
 export async function createComment(input: CreateCommentInput) {
-  const actorId = await getActorId();
-
   if (!CreateCommentInput.validate(input)) {
     throw new TypeError('Invalid create comment input');
   }
 
+  const {actorId} = await getActor();
   const {shareId, threadId, commentId, body} = input;
 
   return appendEvents(shareId, actorId, [
@@ -68,12 +58,11 @@ export async function createComment(input: CreateCommentInput) {
 }
 
 export async function editComment(input: EditCommentInput) {
-  const actorId = await getActorId();
-
   if (!EditCommentInput.validate(input)) {
     throw new TypeError('Invalid edit comment input');
   }
 
+  const {actorId} = await getActor();
   const {shareId, commentId, body} = input;
 
   return appendEvents(shareId, actorId, [
@@ -82,15 +71,29 @@ export async function editComment(input: EditCommentInput) {
 }
 
 export async function deleteComment(input: DeleteCommentInput) {
-  const actorId = await getActorId();
-
   if (!DeleteCommentInput.validate(input)) {
     throw new TypeError('Invalid delete comment input');
   }
 
+  const {actorId} = await getActor();
   const {shareId, commentId} = input;
 
   return appendEvents(shareId, actorId, [
     {$type: 'comment.deleted', commentId},
   ]);
+}
+
+async function getActor() {
+  const session = await getSession();
+  if (!isDefined(session)) {
+    unauthorized();
+  }
+  const {user} = session;
+  return {
+    actorId: user.id,
+    actor: {
+      name: user.name,
+      image: user.image ?? null,
+    } satisfies Actor,
+  };
 }

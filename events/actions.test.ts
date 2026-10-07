@@ -39,6 +39,8 @@ vi.mock('@/auth/server', () => ({getSession}));
 vi.mock('@/db/events', () => ({appendEvents}));
 vi.mock('next/navigation', () => ({unauthorized}));
 
+let session: Session;
+
 function createSession() {
   return {user: {id: uuid()}} as Session;
 }
@@ -102,53 +104,54 @@ function createDeleteCommentInput(
 }
 
 beforeEach(() => {
-  getSession.mockResolvedValue(createSession());
+  session = createSession();
+  getSession.mockResolvedValue(session);
   appendEvents.mockResolvedValue([]);
 });
 
 describe.each([
   {
     name: 'openThread',
-    call: (overrides?: {shareId: string}) =>
+    action: (overrides?: {shareId: string}) =>
       openThread(createOpenThreadInput(overrides)),
     message: 'Invalid open thread input',
   },
   {
     name: 'resolveThread',
-    call: (overrides?: {shareId: string}) =>
+    action: (overrides?: {shareId: string}) =>
       resolveThread(createResolveThreadInput(overrides)),
     message: 'Invalid resolve thread input',
   },
   {
     name: 'createComment',
-    call: (overrides?: {shareId: string}) =>
+    action: (overrides?: {shareId: string}) =>
       createComment(createCreateCommentInput(overrides)),
     message: 'Invalid create comment input',
   },
   {
     name: 'editComment',
-    call: (overrides?: {shareId: string}) =>
+    action: (overrides?: {shareId: string}) =>
       editComment(createEditCommentInput(overrides)),
     message: 'Invalid edit comment input',
   },
   {
     name: 'deleteComment',
-    call: (overrides?: {shareId: string}) =>
+    action: (overrides?: {shareId: string}) =>
       deleteComment(createDeleteCommentInput(overrides)),
     message: 'Invalid delete comment input',
   },
-])('$name', ({call, message}) => {
+])('$name', ({action, message}) => {
   it('rejects unauthenticated callers', async () => {
     getSession.mockResolvedValue(null);
 
-    await expect(call()).rejects.toThrow('Unauthorized');
+    await expect(action()).rejects.toThrow('Unauthorized');
 
     expect(unauthorized).toHaveBeenCalledOnce();
     expect(appendEvents).not.toHaveBeenCalled();
   });
 
   it('rejects invalid input', async () => {
-    await expect(call({shareId: 'not-a-uuid'})).rejects.toMatchObject({
+    await expect(action({shareId: 'not-a-uuid'})).rejects.toMatchObject({
       name: 'TypeError',
       message,
     });
@@ -176,8 +179,6 @@ describe('openThread', () => {
   });
 
   it('appends thread and comment events for the signed-in user', async () => {
-    const session = createSession();
-    getSession.mockResolvedValue(session);
     const input = createOpenThreadInput();
 
     await openThread(input);
@@ -186,7 +187,10 @@ describe('openThread', () => {
       input.shareId,
       session.user.id,
       [
-        createThreadOpened({threadId: input.threadId, anchor: input.anchor}),
+        createThreadOpened({
+          threadId: input.threadId,
+          anchor: input.anchor,
+        }),
         createCommentCreated({
           threadId: input.threadId,
           commentId: input.commentId,
@@ -199,8 +203,6 @@ describe('openThread', () => {
 
 describe('resolveThread', () => {
   it('appends a thread.resolved event for the signed-in user', async () => {
-    const session = createSession();
-    getSession.mockResolvedValue(session);
     const input = createResolveThreadInput();
 
     await resolveThread(input);
@@ -215,8 +217,6 @@ describe('resolveThread', () => {
 
 describe('createComment', () => {
   it('appends a comment.created event for the signed-in user', async () => {
-    const session = createSession();
-    getSession.mockResolvedValue(session);
     const input = createCreateCommentInput();
 
     await createComment(input);
@@ -237,8 +237,6 @@ describe('createComment', () => {
 
 describe('editComment', () => {
   it('appends a comment.edited event for the signed-in user', async () => {
-    const session = createSession();
-    getSession.mockResolvedValue(session);
     const input = createEditCommentInput();
 
     await editComment(input);
@@ -258,8 +256,6 @@ describe('editComment', () => {
 
 describe('deleteComment', () => {
   it('appends a comment.deleted event for the signed-in user', async () => {
-    const session = createSession();
-    getSession.mockResolvedValue(session);
     const input = createDeleteCommentInput();
 
     await deleteComment(input);

@@ -53,12 +53,6 @@ export const EMPTY_FOLDED_STATE: FoldedState = {
   version: 0,
 };
 
-export function foldEvents(events: readonly ShareEvent[]) {
-  const state = new ShareState();
-  state.ingest(events);
-  return state.getSnapshot();
-}
-
 export class ShareState {
   readonly threads = new Map<string, ThreadState>();
   readonly comments = new Map<string, CommentState>();
@@ -78,7 +72,7 @@ export class ShareState {
     };
   };
 
-  getSnapshot = (): FoldedState => {
+  getSnapshot = () => {
     this.#snapshot ??= this.#fold();
     return this.#snapshot;
   };
@@ -189,7 +183,7 @@ interface Entities {
   readonly deletedCommentIds: Set<string>;
 }
 
-class Draft implements Entities {
+export class Draft implements Entities {
   readonly threads: Map<string, ThreadState>;
   readonly comments: Map<string, CommentState>;
   readonly deletedCommentIds: Set<string>;
