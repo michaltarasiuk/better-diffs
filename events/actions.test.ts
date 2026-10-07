@@ -2,11 +2,13 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import type {Session} from '@/auth/server';
 import {
+  createActor,
   createAnchor,
   createCommentCreated,
   createCommentDeleted,
   createCommentEdited,
   createLexicalBody,
+  createShareEvent,
   createThreadOpened,
   createThreadResolved,
 } from '@/testing/events';
@@ -25,19 +27,21 @@ import type {
   EditCommentInput,
   OpenThreadInput,
   ResolveThreadInput,
+  ShareEventPayload,
 } from './schemas';
 
-const {appendEvents, getSession, unauthorized} = vi.hoisted(() => ({
-  appendEvents: vi.fn<typeof import('@/db/events').appendEvents>(),
+const {getSession, unauthorized, getEvents, appendEvents} = vi.hoisted(() => ({
   getSession: vi.fn<typeof import('@/auth/server').getSession>(),
   unauthorized: vi.fn<typeof import('next/navigation').unauthorized>(() => {
     throw new Error('Unauthorized');
   }),
+  getEvents: vi.fn<typeof import('@/db/events').getEvents>(),
+  appendEvents: vi.fn<typeof import('@/db/events').appendEvents>(),
 }));
 
 vi.mock('@/auth/server', () => ({getSession}));
-vi.mock('@/db/events', () => ({appendEvents}));
 vi.mock('next/navigation', () => ({unauthorized}));
+vi.mock('@/db/events', () => ({getEvents, appendEvents}));
 
 let session: Session;
 
@@ -103,9 +107,21 @@ function createDeleteCommentInput(
   };
 }
 
+function createShareEventLog(shareId: string) {
+  const actorId = uuid();
+  const actor = createActor();
+  let seq = 0;
+
+  return (...payloads: readonly ShareEventPayload[]) =>
+    payloads.map((payload) =>
+      createShareEvent(payload, {seq: ++seq, shareId, actorId, actor}),
+    );
+}
+
 beforeEach(() => {
   session = createSession();
   getSession.mockResolvedValue(session);
+  getEvents.mockResolvedValue([]);
   appendEvents.mockResolvedValue([]);
 });
 
@@ -147,6 +163,7 @@ describe.each([
     await expect(action()).rejects.toThrow('Unauthorized');
 
     expect(unauthorized).toHaveBeenCalledOnce();
+    expect(getEvents).not.toHaveBeenCalled();
     expect(appendEvents).not.toHaveBeenCalled();
   });
 
@@ -156,6 +173,7 @@ describe.each([
       message,
     });
 
+    expect(getEvents).not.toHaveBeenCalled();
     expect(appendEvents).not.toHaveBeenCalled();
   });
 });
@@ -167,13 +185,31 @@ describe('openThread', () => {
     await expect(
       openThread(
         createOpenThreadInput({
-          anchor: createAnchor({
-            shareId: otherShareId,
-            line: 3,
-          }),
+          anchor: createAnchor({shareId: otherShareId, line: 3}),
         }),
       ),
     ).rejects.toThrow(`Invalid anchor share id: ${otherShareId}`);
+
+    expect(getEvents).not.toHaveBeenCalled();
+    expect(appendEvents).not.toHaveBeenCalled();
+  });
+
+  it('rejects opening a thread that already exists', async () => {
+    const input = createOpenThreadInput();
+    const log = createShareEventLog(input.shareId);
+
+    getEvents.mockResolvedValue(
+      log(
+        createThreadOpened({
+          threadId: input.threadId,
+          anchor: input.anchor,
+        }),
+      ),
+    );
+
+    await expect(openThread(input)).rejects.toThrow(
+      `Thread already exists: ${input.threadId}`,
+    );
 
     expect(appendEvents).not.toHaveBeenCalled();
   });
@@ -183,6 +219,7 @@ describe('openThread', () => {
 
     await openThread(input);
 
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(input.shareId);
     expect(appendEvents).toHaveBeenCalledExactlyOnceWith(
       input.shareId,
       session.user.id,
@@ -202,25 +239,96 @@ describe('openThread', () => {
 });
 
 describe('resolveThread', () => {
+  it('rejects resolving a missing thread', async () => {
+    const input = createResolveThreadInput();
+
+    await expect(resolveThread(input)).rejects.toThrow(
+      `Thread not found: ${input.threadId}`,
+    );
+
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(input.shareId);
+    expect(appendEvents).not.toHaveBeenCalled();
+  });
+
+  it('rejects resolving an already resolved thread', async () => {
+    const input = createResolveThreadInput();
+    const log = createShareEventLog(input.shareId);
+
+    getEvents.mockResolvedValue(
+      log(
+        createThreadOpened({
+          threadId: input.threadId,
+          anchor: createAnchor({shareId: input.shareId}),
+        }),
+        createThreadResolved({
+          threadId: input.threadId,
+        }),
+      ),
+    );
+
+    await expect(resolveThread(input)).rejects.toThrow(
+      `Thread already resolved: ${input.threadId}`,
+    );
+
+    expect(appendEvents).not.toHaveBeenCalled();
+  });
+
   it('appends a thread.resolved event for the signed-in user', async () => {
     const input = createResolveThreadInput();
+    const log = createShareEventLog(input.shareId);
+
+    getEvents.mockResolvedValue(
+      log(
+        createThreadOpened({
+          threadId: input.threadId,
+          anchor: createAnchor({shareId: input.shareId}),
+        }),
+      ),
+    );
 
     await resolveThread(input);
 
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(input.shareId);
     expect(appendEvents).toHaveBeenCalledExactlyOnceWith(
       input.shareId,
       session.user.id,
-      [createThreadResolved({threadId: input.threadId})],
+      [
+        createThreadResolved({
+          threadId: input.threadId,
+        }),
+      ],
     );
   });
 });
 
 describe('createComment', () => {
+  it('rejects creating a comment on a missing thread', async () => {
+    const input = createCreateCommentInput();
+
+    await expect(createComment(input)).rejects.toThrow(
+      `Thread not found: ${input.threadId}`,
+    );
+
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(input.shareId);
+    expect(appendEvents).not.toHaveBeenCalled();
+  });
+
   it('appends a comment.created event for the signed-in user', async () => {
     const input = createCreateCommentInput();
+    const log = createShareEventLog(input.shareId);
+
+    getEvents.mockResolvedValue(
+      log(
+        createThreadOpened({
+          threadId: input.threadId,
+          anchor: createAnchor({shareId: input.shareId}),
+        }),
+      ),
+    );
 
     await createComment(input);
 
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(input.shareId);
     expect(appendEvents).toHaveBeenCalledExactlyOnceWith(
       input.shareId,
       session.user.id,
@@ -236,11 +344,39 @@ describe('createComment', () => {
 });
 
 describe('editComment', () => {
-  it('appends a comment.edited event for the signed-in user', async () => {
+  it('rejects editing a missing comment', async () => {
     const input = createEditCommentInput();
+
+    await expect(editComment(input)).rejects.toThrow(
+      `Comment not found: ${input.commentId}`,
+    );
+
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(input.shareId);
+    expect(appendEvents).not.toHaveBeenCalled();
+  });
+
+  it('appends a comment.edited event for the signed-in user', async () => {
+    const threadId = uuid();
+    const input = createEditCommentInput();
+    const log = createShareEventLog(input.shareId);
+
+    getEvents.mockResolvedValue(
+      log(
+        createThreadOpened({
+          threadId,
+          anchor: createAnchor({shareId: input.shareId}),
+        }),
+        createCommentCreated({
+          threadId,
+          commentId: input.commentId,
+          body: createLexicalBody('original'),
+        }),
+      ),
+    );
 
     await editComment(input);
 
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(input.shareId);
     expect(appendEvents).toHaveBeenCalledExactlyOnceWith(
       input.shareId,
       session.user.id,
@@ -255,15 +391,46 @@ describe('editComment', () => {
 });
 
 describe('deleteComment', () => {
-  it('appends a comment.deleted event for the signed-in user', async () => {
+  it('rejects deleting a missing comment', async () => {
     const input = createDeleteCommentInput();
+
+    await expect(deleteComment(input)).rejects.toThrow(
+      `Comment not found: ${input.commentId}`,
+    );
+
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(input.shareId);
+    expect(appendEvents).not.toHaveBeenCalled();
+  });
+
+  it('appends a comment.deleted event for the signed-in user', async () => {
+    const threadId = uuid();
+    const input = createDeleteCommentInput();
+    const log = createShareEventLog(input.shareId);
+
+    getEvents.mockResolvedValue(
+      log(
+        createThreadOpened({
+          threadId,
+          anchor: createAnchor({shareId: input.shareId}),
+        }),
+        createCommentCreated({
+          threadId,
+          commentId: input.commentId,
+        }),
+      ),
+    );
 
     await deleteComment(input);
 
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(input.shareId);
     expect(appendEvents).toHaveBeenCalledExactlyOnceWith(
       input.shareId,
       session.user.id,
-      [createCommentDeleted({commentId: input.commentId})],
+      [
+        createCommentDeleted({
+          commentId: input.commentId,
+        }),
+      ],
     );
   });
 });

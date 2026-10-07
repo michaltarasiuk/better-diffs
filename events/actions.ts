@@ -3,7 +3,7 @@
 import {unauthorized} from 'next/navigation';
 
 import {getSession} from '@/auth/server';
-import {appendEvents} from '@/db/events';
+import {appendEvents, getEvents} from '@/db/events';
 import {isDefined} from '@/utils/is-defined';
 
 import {
@@ -13,24 +13,29 @@ import {
   OpenThreadInput,
   ResolveThreadInput,
   type Actor,
+  type CommentCreatedPayload,
+  type CommentDeletedPayload,
+  type CommentEditedPayload,
+  type ShareEventPayload,
+  type ThreadOpenedPayload,
+  type ThreadResolvedPayload,
 } from './schemas';
+import {Draft, ShareState} from './state';
 
 export async function openThread(input: OpenThreadInput) {
   if (!OpenThreadInput.validate(input)) {
     throw new TypeError('Invalid open thread input');
   }
 
-  const {actorId} = await getActor();
-  const {shareId, threadId, commentId, body, anchor} = input;
-
-  if (anchor.shareId !== shareId) {
-    throw new TypeError(`Invalid anchor share id: ${anchor.shareId}`);
+  if (input.anchor.shareId !== input.shareId) {
+    throw new TypeError(`Invalid anchor share id: ${input.anchor.shareId}`);
   }
 
-  return appendEvents(shareId, actorId, [
+  const {shareId, threadId, commentId, body, anchor} = input;
+  return appendValidatedEvents(shareId, [
     {$type: 'thread.opened', threadId, anchor},
     {$type: 'comment.created', threadId, commentId, body},
-  ]);
+  ] satisfies [ThreadOpenedPayload, CommentCreatedPayload]);
 }
 
 export async function resolveThread(input: ResolveThreadInput) {
@@ -38,10 +43,10 @@ export async function resolveThread(input: ResolveThreadInput) {
     throw new TypeError('Invalid resolve thread input');
   }
 
-  const {actorId} = await getActor();
   const {shareId, threadId} = input;
-
-  return appendEvents(shareId, actorId, [{$type: 'thread.resolved', threadId}]);
+  return appendValidatedEvents(shareId, [
+    {$type: 'thread.resolved', threadId},
+  ] satisfies [ThreadResolvedPayload]);
 }
 
 export async function createComment(input: CreateCommentInput) {
@@ -49,12 +54,10 @@ export async function createComment(input: CreateCommentInput) {
     throw new TypeError('Invalid create comment input');
   }
 
-  const {actorId} = await getActor();
   const {shareId, threadId, commentId, body} = input;
-
-  return appendEvents(shareId, actorId, [
+  return appendValidatedEvents(shareId, [
     {$type: 'comment.created', threadId, commentId, body},
-  ]);
+  ] satisfies [CommentCreatedPayload]);
 }
 
 export async function editComment(input: EditCommentInput) {
@@ -62,12 +65,10 @@ export async function editComment(input: EditCommentInput) {
     throw new TypeError('Invalid edit comment input');
   }
 
-  const {actorId} = await getActor();
   const {shareId, commentId, body} = input;
-
-  return appendEvents(shareId, actorId, [
+  return appendValidatedEvents(shareId, [
     {$type: 'comment.edited', commentId, body},
-  ]);
+  ] satisfies [CommentEditedPayload]);
 }
 
 export async function deleteComment(input: DeleteCommentInput) {
@@ -75,12 +76,10 @@ export async function deleteComment(input: DeleteCommentInput) {
     throw new TypeError('Invalid delete comment input');
   }
 
-  const {actorId} = await getActor();
   const {shareId, commentId} = input;
-
-  return appendEvents(shareId, actorId, [
+  return appendValidatedEvents(shareId, [
     {$type: 'comment.deleted', commentId},
-  ]);
+  ] satisfies [CommentDeletedPayload]);
 }
 
 async function getActor() {
@@ -96,4 +95,28 @@ async function getActor() {
       image: user.image ?? null,
     } satisfies Actor,
   };
+}
+
+async function appendValidatedEvents(
+  shareId: string,
+  payloads: readonly ShareEventPayload[],
+) {
+  const {actorId, actor} = await getActor();
+
+  const state = new ShareState();
+  state.ingest(await getEvents(shareId));
+
+  const fork = Draft.fork(state);
+  const createdAt = new Date().toISOString();
+
+  for (const payload of payloads) {
+    fork.apply({
+      actorId,
+      actor,
+      createdAt,
+      payload,
+    });
+  }
+
+  return appendEvents(shareId, actorId, payloads);
 }
