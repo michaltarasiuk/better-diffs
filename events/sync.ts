@@ -8,11 +8,6 @@ import {ShareEvent} from './schemas';
 const ACTIVE_POLL_INTERVAL = 3_000;
 const BACKGROUND_POLL_INTERVAL = 30_000;
 
-const OkResponse = z.instanceof(Response).properties({
-  ok: z.literal(true),
-  status: z.number().min(200).max(299),
-});
-
 const EventsResponse = z.discriminatedUnion('ok', [
   z.object({
     ok: z.literal(true),
@@ -28,11 +23,9 @@ async function fetchEvents(shareId: string, afterSeq: number | null) {
   const searchParams = isDefined(afterSeq)
     ? `?${new URLSearchParams({afterSeq: String(afterSeq)})}`
     : '';
-  const response = OkResponse.parse(
-    await fetch(`/api/shares/${shareId}/events${searchParams}`, {
-      cache: 'no-store',
-    }),
-  );
+  const response = await fetch(`/api/shares/${shareId}/events${searchParams}`, {
+    cache: 'no-store',
+  });
   const data = EventsResponse.parse(await response.json());
 
   if (!data.ok) {

@@ -7,11 +7,13 @@ import {createShareEvent, createThreadResolved} from '@/testing/events';
 
 import {GET} from './route';
 
-const {getEvents} = vi.hoisted(() => ({
+const {getEvents, shareExists} = vi.hoisted(() => ({
   getEvents: vi.fn<typeof import('@/db/events').getEvents>(),
+  shareExists: vi.fn<typeof import('@/db/shares').shareExists>(),
 }));
 
 vi.mock('@/db/events', () => ({getEvents}));
+vi.mock('@/db/shares', () => ({shareExists}));
 
 const event = createShareEvent(createThreadResolved(), {seq: 4});
 const shareId = event.shareId;
@@ -27,6 +29,7 @@ function context() {
 }
 
 beforeEach(() => {
+  shareExists.mockResolvedValue(true);
   getEvents.mockResolvedValue([event]);
 });
 
@@ -82,5 +85,18 @@ describe('GET', () => {
       ok: true,
       events: [],
     });
+  });
+
+  it('returns 404 when the share does not exist', async () => {
+    shareExists.mockResolvedValue(false);
+
+    const response = await GET(request(), context());
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({
+      ok: false,
+      error: `Share not found: ${shareId}`,
+    });
+    expect(getEvents).not.toHaveBeenCalled();
   });
 });

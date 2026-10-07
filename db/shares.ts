@@ -13,6 +13,16 @@ import {
   shares as sharesTable,
 } from './schema';
 
+export async function shareExists(id: string) {
+  const [share] = await db
+    .select({id: sharesTable.id})
+    .from(sharesTable)
+    .where(eq(sharesTable.id, id))
+    .limit(1);
+
+  return isDefined(share);
+}
+
 export async function openShare(id: string) {
   return db.transaction(async (tx) => {
     const [share] = await tx
