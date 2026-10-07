@@ -1,6 +1,6 @@
 'use client';
 
-import {createContext, use, useEffect, useRef, useState} from 'react';
+import {use, useEffect, useRef, useState} from 'react';
 import dynamic from 'next/dynamic';
 
 import {Button, Card, Separator, Spinner} from '@heroui/react';
@@ -11,11 +11,7 @@ import {useFocusWithin} from 'react-aria/useFocusWithin';
 import {authClient} from '@/auth/client';
 import {SessionContext} from '@/auth/context';
 import {GitHubIcon} from '@/auth/github-icon';
-import {
-  isFormAnnotation,
-  isThreadAnnotation,
-  type DiffAnnotation,
-} from '@/diffs/annotations';
+import type {DiffAnnotation, FormAnnotationMetadata} from '@/diffs/annotations';
 import {createComment, openThread} from '@/events/actions';
 import {FoldedStateContext, ShareStateContext} from '@/events/provider';
 import type {Actor, Anchor} from '@/events/schemas';
@@ -29,10 +25,7 @@ import {EditorSkeleton} from './editor-skeleton';
 import {ReviewStateContext} from './provider';
 import {ReplyInputSkeleton} from './reply-input-skeleton';
 
-interface File {
-  readonly id: string;
-  readonly path: string;
-}
+type AnnotationLine = Omit<DiffAnnotation, 'metadata'>;
 
 const Editor = dynamic(
   () => import('./editor').then((module) => module.Editor),
@@ -44,10 +37,6 @@ const ReplyInput = dynamic(
   {loading: () => <ReplyInputSkeleton />},
 );
 
-const FileContext = createContext<File>(null as never);
-
-const AnnotationContext = createContext<DiffAnnotation>(null as never);
-
 interface AnnotationProps {
   readonly annotation: DiffAnnotation;
   readonly fileId: string;
@@ -55,21 +44,6 @@ interface AnnotationProps {
 }
 
 export function Annotation({annotation, fileId, filePath}: AnnotationProps) {
-  return (
-    <FileContext
-      value={{
-        id: fileId,
-        path: filePath,
-      }}
-    >
-      <AnnotationContext value={annotation}>
-        <AnnotationBody />
-      </AnnotationContext>
-    </FileContext>
-  );
-}
-
-function AnnotationBody() {
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const {focusWithinProps} = useFocusWithin({
     onFocusWithinChange(isFocusWithin) {
@@ -77,13 +51,14 @@ function AnnotationBody() {
     },
   });
 
-  const annotation = use(AnnotationContext);
-  const file = use(FileContext);
   const {removeCommentForm} = use(ReviewStateContext);
 
-  const onDismiss = isFormAnnotation(annotation)
-    ? () => removeCommentForm(file.id, annotation.metadata.formId)
-    : undefined;
+  const {metadata, ...line} = annotation;
+
+  const onDismiss =
+    metadata.type === 'form'
+      ? () => removeCommentForm(fileId, metadata.formId)
+      : undefined;
 
   useKeyDown((event) => {
     if (event.key === 'Escape' && isFocusWithin) {
@@ -92,15 +67,29 @@ function AnnotationBody() {
   });
 
   let body: React.ReactNode;
-  switch (annotation.metadata.type) {
+  switch (metadata.type) {
     case 'form':
-      body = <CommentForm onDismiss={onDismiss} />;
+      body = (
+        <CommentForm
+          line={line}
+          form={metadata}
+          fileId={fileId}
+          filePath={filePath}
+          onDismiss={onDismiss}
+        />
+      );
       break;
     case 'thread':
-      body = <ThreadAnnotation />;
+      body = (
+        <ThreadAnnotation
+          line={line}
+          threadId={metadata.threadId}
+          fileId={fileId}
+        />
+      );
       break;
     default:
-      annotation.metadata satisfies never;
+      metadata satisfies never;
   }
 
   return (
@@ -114,34 +103,38 @@ function AnnotationBody() {
 }
 
 interface CommentFormProps {
+  readonly line: AnnotationLine;
+  readonly form: FormAnnotationMetadata;
+  readonly fileId: string;
+  readonly filePath: string;
   readonly onDismiss?: () => void;
 }
 
-function CommentForm({onDismiss}: CommentFormProps) {
+function CommentForm({
+  line,
+  form,
+  fileId,
+  filePath,
+  onDismiss,
+}: CommentFormProps) {
   const shareId = useShareId();
 
   const session = use(SessionContext);
   if (!isDefined(session)) {
     return (
-      <div className="m-2 mbs-1">
-        <SignInCard onDismiss={onDismiss} />
-      </div>
+      <Card variant="secondary" className="m-2 mbs-1 p-0">
+        <SignInPrompt action="comment" line={line} onDismiss={onDismiss} />
+      </Card>
     );
   }
 
-  const annotation = use(AnnotationContext);
-  if (!isFormAnnotation(annotation)) {
-    throw new TypeError('Annotation is not a form');
-  }
-
   const state = use(ShareStateContext);
-  const file = use(FileContext);
   const {setCommentFormDraft} = use(ReviewStateContext);
 
   return (
     <Editor
       placeholder="Leave a comment…"
-      initialState={annotation.metadata.draft}
+      initialState={form.draft}
       onComment={async (body) => {
         const threadId = newId();
         const commentId = newId();
@@ -156,9 +149,9 @@ function CommentForm({onDismiss}: CommentFormProps) {
 
         const anchor: Anchor = {
           shareId,
-          filePath: file.path,
-          side: annotation.side,
-          line: annotation.lineNumber,
+          filePath,
+          side: line.side,
+          line: line.lineNumber,
         };
 
         const pendingIds = state.optimisticAll([
@@ -198,7 +191,7 @@ function CommentForm({onDismiss}: CommentFormProps) {
         }
       }}
       onChange={(state) => {
-        setCommentFormDraft(file.id, annotation.metadata.formId, state);
+        setCommentFormDraft(fileId, form.formId, state);
       }}
       onDismiss={onDismiss}
       className="m-2 mbs-1"
@@ -206,37 +199,35 @@ function CommentForm({onDismiss}: CommentFormProps) {
   );
 }
 
-interface SignInCardProps {
-  readonly variant?: 'primary' | 'secondary';
+interface SignInPromptProps {
+  readonly action: 'comment' | 'reply';
+  readonly line: AnnotationLine;
   readonly onDismiss?: () => void;
 }
 
-function SignInCard({variant = 'primary', onDismiss}: SignInCardProps) {
-  const prompt = (
+function SignInPrompt({action, line, onDismiss}: SignInPromptProps) {
+  return (
     <div className="flex flex-wrap items-center justify-between gap-2 p-3">
       <p
         className={typographyVariants({type: 'body-sm'}).base({
           className: 'text-muted',
         })}
       >
-        Sign in to {variant === 'primary' ? 'comment' : 'reply'}
+        Sign in to {action}
       </p>
       <div className="flex items-center gap-2">
-        <SignInActions onDismiss={onDismiss} />
+        <SignInActions line={line} onDismiss={onDismiss} />
       </div>
     </div>
   );
-
-  return variant === 'primary' ? (
-    <Card variant="secondary" className="p-0">
-      {prompt}
-    </Card>
-  ) : (
-    prompt
-  );
 }
 
-function SignInActions({onDismiss}: {readonly onDismiss?: () => void}) {
+interface SignInActionsProps {
+  readonly line: AnnotationLine;
+  readonly onDismiss?: () => void;
+}
+
+function SignInActions({line, onDismiss}: SignInActionsProps) {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const signInRef = useRef<AbortController>(null);
 
@@ -244,12 +235,7 @@ function SignInActions({onDismiss}: {readonly onDismiss?: () => void}) {
     return () => signInRef.current?.abort();
   }, []);
 
-  const annotation = use(AnnotationContext);
-
-  const annotationName = getLineAnnotationName({
-    side: annotation.side,
-    lineNumber: annotation.lineNumber,
-  });
+  const annotationName = getLineAnnotationName(line);
 
   return (
     <>
@@ -307,16 +293,15 @@ function SignInActions({onDismiss}: {readonly onDismiss?: () => void}) {
   );
 }
 
-function ThreadAnnotation() {
-  const annotation = use(AnnotationContext);
-  if (!isThreadAnnotation(annotation)) {
-    throw new TypeError('Annotation is not a thread');
-  }
+interface ThreadAnnotationProps {
+  readonly line: AnnotationLine;
+  readonly threadId: string;
+  readonly fileId: string;
+}
 
+function ThreadAnnotation({line, threadId, fileId}: ThreadAnnotationProps) {
   const shareId = useShareId();
   const folded = use(FoldedStateContext);
-
-  const {threadId} = annotation.metadata;
 
   const thread = folded.threads.get(threadId);
   if (!isDefined(thread)) {
@@ -324,11 +309,10 @@ function ThreadAnnotation() {
   }
 
   const state = use(ShareStateContext);
-  const file = use(FileContext);
   const {getFileState, setReplyDraft, clearReplyDraft} =
     use(ReviewStateContext);
 
-  const replyDraft = getFileState(file.id).replyDrafts[threadId];
+  const replyDraft = getFileState(fileId).replyDrafts[threadId];
   const comments = thread.commentIds
     .map((commentId) => folded.comments.get(commentId))
     .filter((comment) => isDefined(comment));
@@ -344,7 +328,7 @@ function ThreadAnnotation() {
       <ReplyInput
         initialState={replyDraft}
         signIn={({onDismiss}) => (
-          <SignInCard variant="secondary" onDismiss={onDismiss} />
+          <SignInPrompt action="reply" line={line} onDismiss={onDismiss} />
         )}
         onReply={async (body, session) => {
           const actorId = session.user.id;
@@ -375,13 +359,13 @@ function ThreadAnnotation() {
               commentId,
               body,
             });
-            clearReplyDraft(file.id, threadId);
+            clearReplyDraft(fileId, threadId);
           } catch {
             state.reject(pendingId);
           }
         }}
         onChange={(draft) => {
-          setReplyDraft(file.id, threadId, draft);
+          setReplyDraft(fileId, threadId, draft);
         }}
       />
     </Card>
