@@ -41,7 +41,7 @@ interface CommentProps {
   readonly comment: CommentState;
 }
 
-export function Comment({comment}: CommentProps) {
+function Comment({comment}: CommentProps) {
   return (
     <div className="flex gap-3 p-3">
       <Avatar size="sm">

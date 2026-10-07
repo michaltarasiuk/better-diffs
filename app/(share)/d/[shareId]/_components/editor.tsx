@@ -10,6 +10,7 @@ import {
   Select,
   ToggleButton,
   ToggleButtonGroup,
+  type CardProps,
   type Key,
 } from '@heroui/react';
 import {cn, typographyVariants} from '@heroui/styles';
@@ -114,7 +115,7 @@ interface EditorProps {
   readonly placeholder: string;
   readonly initialState?: SerializedEditorState;
   readonly autoFocus?: boolean;
-  readonly variant?: 'primary' | 'secondary';
+  readonly variant?: CardProps['variant'];
   readonly className?: string;
   readonly onComment?: OnComment;
   readonly onChange?: (state: SerializedEditorState) => void;
@@ -125,7 +126,7 @@ export function Editor({
   placeholder,
   initialState,
   autoFocus = false,
-  variant = 'primary',
+  variant = 'secondary',
   className,
   onComment,
   onChange,
@@ -148,10 +149,7 @@ export function Editor({
 
   return (
     <LexicalExtensionComposer extension={extension} contentEditable={null}>
-      <Card
-        variant={variant === 'primary' ? 'secondary' : 'transparent'}
-        className={cn('@container', className)}
-      >
+      <Card variant={variant} className={cn('@container', className)}>
         <Card.Header>
           <RichTextToolbarPlugin />
         </Card.Header>

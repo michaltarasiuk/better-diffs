@@ -71,7 +71,7 @@ export function ReplyInput({
           placeholder="Write a reply…"
           autoFocus
           initialState={initialState}
-          variant="secondary"
+          variant="transparent"
           className="rounded-b-xl"
           onComment={(body) => onReply?.(body, session)}
           onChange={onChange}
