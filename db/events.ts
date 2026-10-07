@@ -1,6 +1,6 @@
 import 'server-only';
 
-import {and, asc, eq, gt, max} from 'drizzle-orm';
+import {and, asc, eq, gt, sql} from 'drizzle-orm';
 
 import {subjectIdFromPayload, type ShareEventPayload} from '@/events/schemas';
 import {isDefined} from '@/utils/is-defined';
@@ -46,17 +46,18 @@ export async function appendEvents(
 ) {
   return db.transaction(async (tx) => {
     const [share] = await tx
-      .select({lastSeq: max(eventsTable.seq)})
-      .from(sharesTable)
-      .leftJoin(eventsTable, eq(eventsTable.shareId, sharesTable.id))
+      .update(sharesTable)
+      .set({
+        lastEventSeq: sql`${sharesTable.lastEventSeq} + ${payloads.length}`,
+      })
       .where(eq(sharesTable.id, shareId))
-      .groupBy(sharesTable.id);
+      .returning({lastEventSeq: sharesTable.lastEventSeq});
 
     if (!isDefined(share)) {
       throw new Error(`Share not found: ${shareId}`);
     }
 
-    const lastSeq = share.lastSeq ?? 0;
+    const firstSeq = share.lastEventSeq - payloads.length;
     const createdAt = new Date().toISOString();
 
     return tx
@@ -64,7 +65,7 @@ export async function appendEvents(
       .values(
         payloads.map((payload, index) => ({
           shareId,
-          seq: lastSeq + index + 1,
+          seq: firstSeq + (index + 1),
           type: payload.$type,
           subjectId: subjectIdFromPayload(payload),
           actorId,

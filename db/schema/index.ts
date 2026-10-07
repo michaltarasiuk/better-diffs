@@ -1,6 +1,12 @@
 import type {FileDiffMetadata} from '@pierre/diffs';
 import {relations, sql} from 'drizzle-orm';
-import {index, integer, sqliteTable, text} from 'drizzle-orm/sqlite-core';
+import {
+  index,
+  integer,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from 'drizzle-orm/sqlite-core';
 
 import {EVENT_TYPES, type ShareEventPayload} from '@/events/schemas';
 import {newId} from '@/utils/new-id';
@@ -13,6 +19,7 @@ export const shares = sqliteTable(
   'shares',
   {
     id: text('id').primaryKey().$defaultFn(newId),
+    lastEventSeq: integer('last_event_seq').notNull().default(0),
     createdAt: text('created_at')
       .notNull()
       .default(sql`(datetime('now'))`),
@@ -85,7 +92,7 @@ export const events = sqliteTable(
       .notNull()
       .default(sql`(datetime('now'))`),
   },
-  (t) => [index('events_shareId_seq_idx').on(t.shareId, t.seq)],
+  (t) => [uniqueIndex('events_shareId_seq_unique').on(t.shareId, t.seq)],
 );
 
 export const eventsRelations = relations(events, ({one}) => ({
