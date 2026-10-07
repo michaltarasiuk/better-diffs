@@ -44,6 +44,9 @@ export async function appendEvents(
   actorId: string,
   payloads: readonly ShareEventPayload[],
 ) {
+  if (payloads.length === 0) {
+    return [];
+  }
   return db.transaction(async (tx) => {
     const [share] = await tx
       .update(sharesTable)
