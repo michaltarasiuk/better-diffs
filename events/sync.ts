@@ -50,7 +50,10 @@ export class ShareEventsSync {
   }
 
   async hydrate() {
-    await this.#pull();
+    const events = await this.#fetchNewEvents();
+    if (events.length > 0) {
+      await putEvents(events);
+    }
     return getEvents(this.#shareId);
   }
 
@@ -70,9 +73,10 @@ export class ShareEventsSync {
       this.#isPulling = true;
 
       try {
-        const events = await this.#pull();
+        const events = await this.#fetchNewEvents();
         if (events.length > 0) {
           onBatch(events);
+          await putEvents(events);
         }
       } catch {
         /* Retried on the next interval */
@@ -108,14 +112,9 @@ export class ShareEventsSync {
     };
   }
 
-  async #pull() {
+  async #fetchNewEvents() {
     const lastSeq = await getLastSeq(this.#shareId);
-    const events = await fetchEvents(this.#shareId, lastSeq);
-
-    if (events.length > 0) {
-      await putEvents(events);
-    }
-    return events;
+    return fetchEvents(this.#shareId, lastSeq);
   }
 }
 
