@@ -22,10 +22,11 @@ export function sortByTree<T extends {readonly name: string}>(
   files: readonly T[],
   {paths}: TreeInput,
 ) {
-  const rankByPath = new Map(paths.map((path, rank) => [path, rank]));
-  const rankOf = ({name}: T) => rankByPath.get(name) ?? Number.MAX_SAFE_INTEGER;
+  const indexByPath = new Map(paths.map((path, index) => [path, index]));
+  const indexOf = ({name}: T) =>
+    indexByPath.get(name) ?? Number.MAX_SAFE_INTEGER;
 
-  return files.toSorted((a, b) => rankOf(a) - rankOf(b));
+  return files.toSorted((a, b) => indexOf(a) - indexOf(b));
 }
 
 function toGitStatus(type: FileDiffMetadata['type']): GitStatus {

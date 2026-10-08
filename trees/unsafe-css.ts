@@ -1,10 +1,5 @@
 import dedent from 'dedent';
 
-/**
- * @pierre/trees scroll containers clip focus rings drawn outside each row.
- * Paint the ring inset on ::before so focused rows match HeroUI's 2px ring
- * and offset gap.
- */
 export const TREES_FOCUS_RING_UNSAFE_CSS = dedent`
   [data-type="item"] {
     --trees-ring-width: 2px;
