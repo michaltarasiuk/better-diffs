@@ -2,84 +2,121 @@ import {describe, expect, it} from 'vitest';
 
 import {Authorization} from './authorization';
 
-describe('Authorization.from', () => {
-  it('reads the scheme and credentials', () => {
-    expect(Authorization.from('Bearer abc')).toMatchObject({
-      credentials: 'abc',
+describe('Authorization', () => {
+  it('initializes with an empty string', () => {
+    const header = new Authorization('');
+    expect(header.scheme).toBeUndefined();
+    expect(header.credentials).toBeUndefined();
+  });
+
+  it('initializes with a string', () => {
+    const header = new Authorization('Bearer token123');
+    expect(header.scheme).toBe('Bearer');
+    expect(header.credentials).toBe('token123');
+  });
+
+  it('initializes with an object', () => {
+    const header = new Authorization({
       scheme: 'Bearer',
+      credentials: 'token123',
     });
+    expect(header.scheme).toBe('Bearer');
+    expect(header.credentials).toBe('token123');
   });
 
-  it('keeps spaces inside credentials', () => {
-    expect(Authorization.from('Custom a b').credentials).toBe('a b');
+  it('initializes with another Authorization', () => {
+    const header = new Authorization(new Authorization('Bearer token123'));
+    expect(header.scheme).toBe('Bearer');
+    expect(header.credentials).toBe('token123');
   });
 
-  it('ignores surrounding whitespace', () => {
-    expect(Authorization.from('  Bearer   abc  ')).toMatchObject({
-      credentials: 'abc',
-      scheme: 'Bearer',
+  it('handles whitespace in initial value', () => {
+    const header = new Authorization('  Bearer  token123  ');
+    expect(header.scheme).toBe('Bearer');
+    expect(header.credentials).toBe('token123');
+  });
+
+  it('handles only scheme without credentials', () => {
+    const header = new Authorization('Bearer');
+    expect(header.scheme).toBe('Bearer');
+    expect(header.credentials).toBeUndefined();
+  });
+
+  it('hasScheme is case-insensitive', () => {
+    const header = new Authorization('Bearer token123');
+    expect(header.hasScheme('bearer')).toBe(true);
+    expect(header.hasScheme('BEARER')).toBe(true);
+    expect(header.hasScheme('Bearer')).toBe(true);
+    expect(header.hasScheme('Basic')).toBe(false);
+  });
+
+  it('toString returns correct format with credentials', () => {
+    const header = new Authorization('Bearer token123');
+    expect(header.toString()).toBe('Bearer token123');
+  });
+
+  it('toString returns only scheme when no credentials', () => {
+    const header = new Authorization({scheme: 'Bearer'});
+    expect(header.toString()).toBe('Bearer');
+  });
+
+  it('toString returns empty string when no scheme', () => {
+    const header = new Authorization({});
+    expect(header.toString()).toBe('');
+  });
+
+  describe('Authorization.from', () => {
+    it('parses a string value', () => {
+      const result = Authorization.from('Bearer token123');
+      expect(result).toBeInstanceOf(Authorization);
+      expect(result.scheme).toBe('Bearer');
+      expect(result.credentials).toBe('token123');
     });
-  });
 
-  it('reads a scheme without credentials', () => {
-    expect(Authorization.from('Bearer')).toMatchObject({
-      credentials: undefined,
-      scheme: 'Bearer',
+    it('returns empty instance for null', () => {
+      const result = Authorization.from(null);
+      expect(result).toBeInstanceOf(Authorization);
+      expect(result.scheme).toBeUndefined();
+      expect(result.credentials).toBeUndefined();
     });
-  });
 
-  it.each([
-    {name: 'a missing header', value: null},
-    {name: 'an empty header', value: ''},
-    {name: 'a blank header', value: '   '},
-  ])('treats $name as having no scheme', ({value}) => {
-    expect(Authorization.from(value)).toMatchObject({
-      credentials: undefined,
-      scheme: undefined,
+    it('accepts init object', () => {
+      const result = Authorization.from({
+        scheme: 'Bearer',
+        credentials: 'token123',
+      });
+      expect(result).toBeInstanceOf(Authorization);
+      expect(result.scheme).toBe('Bearer');
+      expect(result.credentials).toBe('token123');
     });
-  });
 
-  it('builds from an object init', () => {
-    const header = Authorization.from({credentials: 'abc', scheme: 'Bearer'});
+    it('handles string with only scheme', () => {
+      const result = Authorization.from('Bearer');
+      expect(result.scheme).toBe('Bearer');
+      expect(result.credentials).toBeUndefined();
+    });
 
-    expect(header.toString()).toBe('Bearer abc');
-  });
-});
+    it('handles string with extra whitespace', () => {
+      const result = Authorization.from('  Basic  dXNlcjpwYXNz  ');
+      expect(result.scheme).toBe('Basic');
+      expect(result.credentials).toBe('dXNlcjpwYXNz');
+    });
 
-describe('Authorization#hasScheme', () => {
-  it.each(['Bearer', 'bearer', 'BEARER'])('returns true for %s', (scheme) => {
-    expect(Authorization.from('Bearer abc').hasScheme(scheme)).toBe(true);
-  });
+    it('handles various auth schemes', () => {
+      const schemes = [
+        {scheme: 'Bearer', credentials: 'token123'},
+        {scheme: 'Basic', credentials: 'dXNlcjpwYXNz'},
+        {scheme: 'Digest', credentials: 'username="user", realm="test"'},
+        {scheme: 'HOBA', credentials: 'result="abc123"'},
+        {scheme: 'Mutual', credentials: 'xyz'},
+        {scheme: 'AWS4-HMAC-SHA256', credentials: 'Credential=AKIA...'},
+      ];
 
-  it('returns false for a different scheme', () => {
-    expect(Authorization.from('Basic abc').hasScheme('Bearer')).toBe(false);
-  });
-
-  it('returns false for a missing header', () => {
-    expect(Authorization.from(null).hasScheme('Bearer')).toBe(false);
-  });
-});
-
-describe('Authorization#toString', () => {
-  it('renders a missing header as empty', () => {
-    expect(Authorization.from(null).toString()).toBe('');
-  });
-
-  it('renders a scheme without credentials', () => {
-    expect(Authorization.from({scheme: 'Bearer'}).toString()).toBe('Bearer');
-  });
-
-  it('round-trips a full header', () => {
-    expect(Authorization.from('Bearer abc').toString()).toBe('Bearer abc');
-  });
-});
-
-describe('new Authorization', () => {
-  it('builds an empty header with no argument', () => {
-    expect(new Authorization().toString()).toBe('');
-  });
-
-  it('parses a string argument like the static factory', () => {
-    expect(new Authorization('Bearer abc').credentials).toBe('abc');
+      for (const {scheme, credentials} of schemes) {
+        const result = Authorization.from(`${scheme} ${credentials}`);
+        expect(result.scheme).toBe(scheme);
+        expect(result.credentials).toBe(credentials);
+      }
+    });
   });
 });

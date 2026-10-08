@@ -23,7 +23,7 @@ import {useShortcut} from '@/hooks/use-shortcut';
 import {isDefined} from '@/utils/is-defined';
 
 import {useLines} from '../_hooks/use-lines';
-import {activeFileId} from '../_lib/active-file-id';
+import {getActiveFileId} from '../_lib/active-file-id';
 import {scrollToFile} from '../_lib/scroll-to-file';
 import {Annotation} from './annotation';
 import {GutterUtility} from './gutter-utility';
@@ -58,7 +58,7 @@ export function CodeView({files}: CodeViewProps) {
 
   useShortcut('v', function toggleViewed() {
     const codeView = codeViewRef.current?.getInstance();
-    const fileId = isDefined(codeView) ? activeFileId(codeView) : null;
+    const fileId = isDefined(codeView) ? getActiveFileId(codeView) : null;
     if (!isDefined(codeView) || !isDefined(fileId)) {
       return;
     }

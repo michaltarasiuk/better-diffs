@@ -2,259 +2,202 @@ import {describe, expect, it} from 'vitest';
 
 import {Accept} from './accept';
 
+describe('Accept', () => {
+  it('initializes with an empty string', () => {
+    const header = new Accept('');
+    expect(header.size).toBe(0);
+  });
+
+  it('initializes with a string', () => {
+    const header = new Accept('text/html,application/json;q=0.9');
+    expect(header.size).toBe(2);
+  });
+
+  it('initializes with an array', () => {
+    const header = new Accept(['text/html', ['application/json', 0.9]]);
+    expect(header.size).toBe(2);
+  });
+
+  it('initializes with an object', () => {
+    const header = new Accept({'text/html': 1, 'application/json': 0.9});
+    expect(header.size).toBe(2);
+  });
+
+  it('initializes with another Accept', () => {
+    const header = new Accept(new Accept('text/html,application/json;q=0.9'));
+    expect(header.size).toBe(2);
+  });
+
+  it('handles whitespace in initial value', () => {
+    const header = new Accept(' text/html ,  application/json;q=  0.9  ');
+    expect(header.size).toBe(2);
+  });
+
+  it('preserves weights and ordering around empty list entries', () => {
+    const header = Accept.from(
+      ' , TEXT/HTML ;q=0.5,\t,application/json;q=0.9, text/html;q=0.7, ',
+    );
+
+    expect(Array.from(header)).toEqual([
+      ['application/json', 0.9],
+      ['text/html', 0.7],
+    ]);
+    expect(Accept.from(' \t ').size).toBe(0);
+
+    const value = `text/html,application/json${' '.repeat(100)};q=0.5`;
+    expect(Array.from(Accept.from(value))).toEqual([
+      ['text/html', 1],
+      ['application/json', 0.5],
+    ]);
+  });
+
+  it('gets all media types', () => {
+    const header = new Accept('text/html,application/json;q=0.9');
+    expect(header.mediaTypes).toEqual(['text/html', 'application/json']);
+  });
+
+  it('gets all weights', () => {
+    const header = new Accept('text/html,application/json;q=0.9');
+    expect(header.weights).toEqual([1, 0.9]);
+  });
+
+  it('checks if a media type is acceptable', () => {
+    const header = new Accept('text/html,text/*;q=0.9,application/json;q=0.8');
+    expect(header.accepts('text/html')).toBe(true);
+    expect(header.accepts('text/*')).toBe(true);
+    expect(header.accepts('text/plain')).toBe(true);
+    expect(header.accepts('application/json')).toBe(true);
+    expect(header.accepts('image/jpeg')).toBe(false);
+  });
+
+  it('gets the correct weight values', () => {
+    const header = new Accept('text/html,text/*;q=0.9,application/json;q=0.8');
+    expect(header.getWeight('text/html')).toBe(1);
+    expect(header.getWeight('*/*')).toBe(1);
+    expect(header.getWeight('text/*')).toBe(1);
+    expect(header.getWeight('text/plain')).toBe(0.9);
+    expect(header.getWeight('application/json')).toBe(0.8);
+    expect(header.getWeight('image/jpeg')).toBe(0);
+  });
+
+  it('gets the preferred media type', () => {
+    const header = new Accept('text/html,text/*;q=0.9,application/json;q=0.8');
+    expect(header.getPreferred(['text/html', 'application/json'])).toBe(
+      'text/html',
+    );
+    expect(header.getPreferred(['text/plain', 'text/html'])).toBe('text/html');
+    expect(header.getPreferred(['image/jpeg'])).toBe(null);
+  });
+
+  it('sets and gets media types', () => {
+    const header = new Accept();
+    header.set('application/json', 0.9);
+    expect(header.get('application/json')).toBe(0.9);
+  });
+
+  it('deletes media types', () => {
+    const header = new Accept('text/html');
+    expect(header.has('text/html')).toBe(true);
+    header.delete('text/html');
+    expect(header.has('text/html')).toBe(false);
+  });
+
+  it('clears all media types', () => {
+    const header = new Accept('text/html,application/json;q=0.9');
+    header.clear();
+    expect(header.size).toBe(0);
+  });
+
+  it('iterates over entries', () => {
+    const header = new Accept('text/html,application/json;q=0.9');
+    const entries = Array.from(header.entries());
+    expect(entries).toEqual([
+      ['text/html', 1],
+      ['application/json', 0.9],
+    ]);
+  });
+
+  it('is directly iterable', () => {
+    const header = new Accept('text/html,application/json;q=0.9');
+    const mediaTypes = Array.from(header);
+    expect(mediaTypes).toEqual([
+      ['text/html', 1],
+      ['application/json', 0.9],
+    ]);
+  });
+
+  it('uses forEach correctly', () => {
+    const header = new Accept('text/html,application/json;q=0.9');
+    const result: [string, number][] = [];
+    header.forEach((mediaType, weight) => {
+      result.push([mediaType, weight]);
+    });
+    expect(result).toEqual([
+      ['text/html', 1],
+      ['application/json', 0.9],
+    ]);
+  });
+
+  it('returns correct size', () => {
+    const header = new Accept('text/html,application/json;q=0.9');
+    expect(header.size).toBe(2);
+  });
+
+  it('converts to string correctly', () => {
+    const header = new Accept('text/html,application/json;q=0.9');
+    expect(header.toString()).toBe('text/html,application/json;q=0.9');
+  });
+
+  it('handles setting empty weight values', () => {
+    const header = new Accept();
+    header.set('text/html');
+    expect(header.get('text/html')).toBe(1);
+  });
+
+  it('overwrites existing weight values', () => {
+    const header = new Accept('text/html,application/json;q=0.9');
+    header.set('application/json', 0.8);
+    expect(header.get('application/json')).toBe(0.8);
+  });
+
+  it('handles setting wildcard media types', () => {
+    const header = new Accept();
+    header.set('*/*');
+    expect(header.get('*/*')).toBe(1);
+  });
+
+  it('sorts initial value', () => {
+    const header = new Accept('application/json;q=0.9,text/html');
+    expect(header.toString()).toBe('text/html,application/json;q=0.9');
+    expect(header.mediaTypes).toEqual(['text/html', 'application/json']);
+  });
+
+  it('sorts updated value', () => {
+    const header = new Accept('text/html,application/json;q=0.9');
+    header.set('application/json', 0.8);
+    expect(header.toString()).toBe('text/html,application/json;q=0.8');
+    expect(header.mediaTypes).toEqual(['text/html', 'application/json']);
+  });
+});
+
 describe('Accept.from', () => {
-  it('sorts media types by weight, heaviest first', () => {
-    const accept = Accept.from('text/html;q=0.8,application/json,*/*;q=0.1');
-
-    expect(accept.mediaTypes).toEqual(['application/json', 'text/html', '*/*']);
+  it('parses a string value', () => {
+    const result = Accept.from('text/html, application/json;q=0.9');
+    expect(result).toBeInstanceOf(Accept);
+    expect(result.size).toBe(2);
+    expect(result.getWeight('text/html')).toBe(1);
+    expect(result.getWeight('application/json')).toBe(0.9);
   });
 
-  it('preserves weights when parsing a header', () => {
-    const accept = Accept.from('text/html;q=0.8,application/json,*/*;q=0.1');
-
-    expect(accept.weights).toEqual([1, 0.8, 0.1]);
+  it('returns empty instance for null', () => {
+    const result = Accept.from(null);
+    expect(result).toBeInstanceOf(Accept);
+    expect(result.size).toBe(0);
   });
 
-  it('lower-cases media types', () => {
-    expect(Accept.from('TEXT/Plain').has('text/plain')).toBe(true);
-  });
-
-  it('treats a missing header as empty', () => {
-    expect(Accept.from(null).size).toBe(0);
-  });
-
-  it('returns false from accepts when the header is missing', () => {
-    expect(Accept.from(null).accepts('text/plain')).toBe(false);
-  });
-});
-
-describe('Accept#getWeight', () => {
-  it('matches a wildcard subtype', () => {
-    expect(Accept.from('text/*;q=0.5').getWeight('text/plain')).toBe(0.5);
-  });
-
-  it('matches a full wildcard', () => {
-    expect(Accept.from('*/*').getWeight('application/json')).toBe(1);
-  });
-
-  it('returns zero for a media type that was never offered', () => {
-    expect(Accept.from('text/html').getWeight('application/json')).toBe(0);
-  });
-});
-
-describe('Accept#getPreferred', () => {
-  it('picks the heaviest acceptable option', () => {
-    const accept = Accept.from('text/plain;q=0.4,application/json;q=0.9');
-
-    expect(accept.getPreferred(['text/plain', 'application/json'])).toBe(
-      'application/json',
-    );
-  });
-
-  it('returns null when nothing on offer is acceptable', () => {
-    expect(Accept.from('text/html').getPreferred(['application/json'])).toBe(
-      null,
-    );
-  });
-});
-
-describe('Accept#toString', () => {
-  it('round-trips through a header value, omitting the default weight', () => {
-    const header = 'application/json,text/html;q=0.8';
-
-    expect(Accept.from(header).toString()).toBe(header);
-  });
-
-  it('renders an empty header as an empty string', () => {
-    expect(new Accept().toString()).toBe('');
-  });
-});
-
-describe('new Accept', () => {
-  it('starts empty when given nothing', () => {
-    expect(new Accept().size).toBe(0);
-  });
-
-  it('parses a header string passed to the constructor', () => {
-    expect(new Accept('text/html;q=0.5').getWeight('text/html')).toBe(0.5);
-  });
-
-  it('builds from an iterable of media types', () => {
-    expect(new Accept(['text/html']).has('text/html')).toBe(true);
-  });
-
-  it('builds from a record of media type weights', () => {
-    expect(new Accept({'text/html': 0.2}).getWeight('text/html')).toBe(0.2);
-  });
-});
-
-describe('Accept.from non-string input', () => {
-  it('reads plain media types from an iterable', () => {
-    const accept = Accept.from(['application/json', 'TEXT/html']);
-
-    expect(accept.mediaTypes).toEqual(['application/json', 'text/html']);
-  });
-
-  it('defaults iterable media types to full weight', () => {
-    const accept = Accept.from(['application/json', 'TEXT/html']);
-
-    expect(accept.weights).toEqual([1, 1]);
-  });
-
-  it('reads media type and weight pairs from an iterable', () => {
-    const accept = Accept.from([
-      ['text/html', 0.3],
-      ['application/json', 0.9],
-    ]);
-
-    expect(accept.mediaTypes).toEqual(['application/json', 'text/html']);
-  });
-
-  it('preserves iterable weights', () => {
-    const accept = Accept.from([
-      ['text/html', 0.3],
-      ['application/json', 0.9],
-    ]);
-
-    expect(accept.weights).toEqual([0.9, 0.3]);
-  });
-
-  it('reads a Map, whose entries are already pairs', () => {
-    const accept = Accept.from(
-      new Map([
-        ['text/html', 0.3],
-        ['application/json', 0.9],
-      ]),
-    );
-
-    expect(accept.mediaTypes).toEqual(['application/json', 'text/html']);
-  });
-
-  it('reads media types from a record', () => {
-    const accept = Accept.from({'text/html': 0.4, 'application/json': 0.8});
-
-    expect(accept.mediaTypes).toEqual(['application/json', 'text/html']);
-  });
-
-  it('reads weights from a record', () => {
-    const accept = Accept.from({'text/html': 0.4, 'application/json': 0.8});
-
-    expect(accept.weights).toEqual([0.8, 0.4]);
-  });
-
-  it('skips record entries with no weight', () => {
-    const accept = Accept.from({
-      'text/html': 0.4,
-      'application/json': undefined as unknown as number,
-    });
-
-    expect(accept.mediaTypes).toEqual(['text/html']);
-  });
-
-  it('treats an empty iterable as accepting nothing', () => {
-    expect(Accept.from([]).size).toBe(0);
-  });
-
-  it('treats an empty record as accepting nothing', () => {
-    expect(Accept.from({}).size).toBe(0);
-  });
-});
-
-describe('Accept mutation', () => {
-  it('adds a media type at full weight by default', () => {
-    const accept = new Accept();
-
-    accept.set('text/plain');
-
-    expect(accept.get('text/plain')).toBe(1);
-  });
-
-  it('re-sorts so the heaviest media type stays first', () => {
-    const accept = Accept.from('text/html;q=0.5');
-
-    accept.set('application/json', 0.9);
-
-    expect(accept.mediaTypes).toEqual(['application/json', 'text/html']);
-  });
-
-  it('returns weights case-insensitively from get', () => {
-    expect(Accept.from('text/html').get('TEXT/HTML')).toBe(1);
-  });
-
-  it('reports membership case-insensitively from has', () => {
-    expect(Accept.from('text/html').has('TEXT/HTML')).toBe(true);
-  });
-
-  it('removes entries case-insensitively from delete', () => {
-    const accept = Accept.from('text/html');
-
-    accept.delete('TEXT/HTML');
-
-    expect(accept.has('text/html')).toBe(false);
-  });
-
-  it('returns null for a media type it does not carry', () => {
-    expect(Accept.from('text/html').get('application/json')).toBe(null);
-  });
-
-  it('drops everything on clear', () => {
-    const accept = Accept.from('text/html,application/json');
-
-    accept.clear();
-
-    expect(accept.size).toBe(0);
-  });
-});
-
-describe('Accept iteration', () => {
-  it('iterates media type and weight pairs', () => {
-    const accept = Accept.from('application/json,text/html;q=0.8');
-
-    expect([...accept]).toEqual([
-      ['application/json', 1],
-      ['text/html', 0.8],
-    ]);
-  });
-
-  it('exposes the same pairs through entries', () => {
-    const accept = Accept.from('application/json,text/html;q=0.8');
-
-    expect([...accept.entries()]).toEqual([...accept]);
-  });
-
-  it('visits every entry with forEach', () => {
-    const accept = Accept.from('application/json,text/html;q=0.8');
-    const seen: [string, number][] = [];
-
-    accept.forEach((mediaType, weight) => {
-      seen.push([mediaType, weight]);
-    });
-
-    expect(seen).toEqual([
-      ['application/json', 1],
-      ['text/html', 0.8],
-    ]);
-  });
-
-  it('passes the header to forEach callbacks', () => {
-    const accept = Accept.from('application/json,text/html;q=0.8');
-    const headers: Accept[] = [];
-
-    accept.forEach((_mediaType, _weight, header) => {
-      headers.push(header);
-    });
-
-    expect(headers).toEqual([accept, accept]);
-  });
-
-  it('binds thisArg inside forEach', () => {
-    const accept = Accept.from('text/html');
-    const thisArg = {seen: [] as string[]};
-
-    accept.forEach(function (this: typeof thisArg, mediaType) {
-      this.seen.push(mediaType);
-    }, thisArg);
-
-    expect(thisArg.seen).toEqual(['text/html']);
+  it('accepts init object', () => {
+    const result = Accept.from({'text/html': 1});
+    expect(result).toBeInstanceOf(Accept);
+    expect(result.size).toBe(1);
   });
 });

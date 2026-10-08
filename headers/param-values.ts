@@ -1,23 +1,38 @@
-import {isDefined} from '@/utils/is-defined';
-
 export function parseParams(input: string, delimiter: ';' | ',' = ';') {
   const parser =
     delimiter === ';'
-      ? /(?:^|;)\s*([^=;\s]+)(\s*=\s*(?:"((?:[^"\\]|\\.)*)"|((?:[^;]|\\\;)+))?)?/g
-      : /(?:^|,)\s*([^=,\s]+)(\s*=\s*(?:"((?:[^"\\]|\\.)*)"|((?:[^,]|\\\,)+))?)?/g;
+      ? /(?:^|;)\s*([^=;\s]+)(\s*=\s*)?/g
+      : /(?:^|,)\s*([^=,\s]+)(\s*=\s*)?/g;
 
   const params: [string, string | undefined][] = [];
 
   let match: RegExpExecArray | null;
   while ((match = parser.exec(input)) !== null) {
-    const keyMatch = match[1];
-    if (!isDefined(keyMatch)) continue;
-
-    const key = keyMatch.trim();
+    const key = match[1]!.trim();
 
     let value: string | undefined;
     if (match[2]) {
-      value = (match[3] || match[4] || '').replace(/\\(.)/g, '$1').trim();
+      let position = parser.lastIndex;
+      if (input[position] === '"') {
+        value = '';
+        position++;
+        // An unterminated quote consumes the rest of the input as its value.
+        while (position < input.length) {
+          const char = input[position++];
+          if (char === '"') break;
+          if (char === '\\' && position < input.length) {
+            value += input[position++];
+          } else {
+            value += char;
+          }
+        }
+      } else {
+        let end = input.indexOf(delimiter, position);
+        if (end === -1) end = input.length;
+        value = input.slice(position, end).replace(/\\(.)/g, '$1').trim();
+        position = end;
+      }
+      parser.lastIndex = position;
     }
 
     params.push([key, value]);

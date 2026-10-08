@@ -146,9 +146,7 @@ export class ShareState {
     const {threads, comments, deletedCommentIds} =
       this.#pending.size > 0 ? this.#draftWithPending() : this;
     const pendingIds = new Set(
-      Array.from(this.#pending.values(), ({payload}) =>
-        subjectIdFromPayload(payload),
-      ),
+      this.#pending.values().map(({payload}) => subjectIdFromPayload(payload)),
     );
 
     return {
@@ -198,7 +196,7 @@ export class Draft implements Entities {
   }
 
   static live(entities: Entities) {
-    return new Draft(entities, /* owned= */ null);
+    return new Draft(entities, null);
   }
 
   static fork(base: Entities) {
@@ -215,7 +213,8 @@ export class Draft implements Entities {
   apply({actorId, actor, createdAt, payload}: OptimisticEvent) {
     switch (payload.$type) {
       case 'thread.opened': {
-        if (this.threads.has(payload.threadId)) {
+        const threadAlreadyExists = this.threads.has(payload.threadId);
+        if (threadAlreadyExists) {
           throw new Error(`Thread already exists: ${payload.threadId}`);
         }
 
@@ -232,21 +231,17 @@ export class Draft implements Entities {
       }
       case 'thread.resolved': {
         const thread = this.#getThread(payload.threadId);
-        if (thread.resolved) {
-          throw new Error(`Thread already resolved: ${payload.threadId}`);
-        }
+        this.#assertOwner(thread, actorId);
 
         this.#writableThread(thread).resolved = true;
         break;
       }
       case 'comment.created': {
+        const comment = this.#getComment(payload.commentId);
+        this.#assertOwner(comment, actorId);
+
         const thread = this.#getThread(payload.threadId);
-        if (
-          this.comments.has(payload.commentId) ||
-          this.deletedCommentIds.has(payload.commentId)
-        ) {
-          throw new Error(`Comment already exists: ${payload.commentId}`);
-        }
+        this.#writableThread(thread).commentIds.push(payload.commentId);
 
         this.#own(this.comments, {
           id: payload.commentId,
@@ -256,11 +251,11 @@ export class Draft implements Entities {
           body: payload.body,
           createdAt,
         });
-        this.#writableThread(thread).commentIds.push(payload.commentId);
         break;
       }
       case 'comment.edited': {
         const comment = this.#getComment(payload.commentId);
+        this.#assertOwner(comment, actorId);
 
         this.#writableComment(comment).body = payload.body;
         break;
@@ -285,12 +280,15 @@ export class Draft implements Entities {
     const thread = this.threads.get(threadId);
     if (!isDefined(thread)) {
       throw new Error(`Thread not found: ${threadId}`);
+    } else if (thread.resolved) {
+      throw new Error(`Thread already resolved: ${threadId}`);
     }
     return thread;
   }
 
   #getComment(commentId: string) {
-    if (this.deletedCommentIds.has(commentId)) {
+    const commentAlreadyDeleted = this.deletedCommentIds.has(commentId);
+    if (commentAlreadyDeleted) {
       throw new Error(`Comment already deleted: ${commentId}`);
     }
 
@@ -299,6 +297,24 @@ export class Draft implements Entities {
       throw new Error(`Comment not found: ${commentId}`);
     }
     return comment;
+  }
+
+  #assertOwner(entity: {id: string; actorId: string}, actorId: string) {
+    if (entity.actorId !== actorId) {
+      throw new Error(`${entity.id} not owned by actor: ${actorId}`);
+    }
+  }
+
+  #isWritable(entity: object) {
+    return !isDefined(this.#owned) || this.#owned.has(entity);
+  }
+
+  #own<T extends {readonly id: string}>(entityMap: Map<string, T>, entity: T) {
+    if (isDefined(this.#owned)) {
+      this.#owned.add(entity);
+      entityMap.set(entity.id, entity);
+    }
+    return entity;
   }
 
   #writableThread(thread: ThreadState) {
@@ -314,16 +330,6 @@ export class Draft implements Entities {
     return this.#isWritable(comment)
       ? comment
       : this.#own(this.comments, {...comment});
-  }
-
-  #isWritable(entity: object) {
-    return this.#owned === null || this.#owned.has(entity);
-  }
-
-  #own<T extends {readonly id: string}>(map: Map<string, T>, entity: T) {
-    this.#owned?.add(entity);
-    map.set(entity.id, entity);
-    return entity;
   }
 }
 

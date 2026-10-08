@@ -44,15 +44,15 @@ export class ContentType implements ContentTypeInit {
 
     if (isDefined(value)) {
       if (typeof value === 'string') {
-        const params = parseParams(value);
-        const first = params[0];
-        if (isDefined(first)) {
-          header.mediaType = first[0];
+        const params = parseParams(value.trim());
+        if (params.length > 0) {
+          header.mediaType = params[0]![0];
           for (const [name, val] of params.slice(1)) {
-            if (name === 'boundary') {
-              header.boundary = val;
-            } else if (name === 'charset') {
-              header.charset = val;
+            const lowerName = name.toLowerCase();
+            if (lowerName === 'boundary') {
+              header.boundary ??= val;
+            } else if (lowerName === 'charset') {
+              header.charset ??= val;
             }
           }
         }

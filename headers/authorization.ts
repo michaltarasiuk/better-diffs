@@ -1,7 +1,5 @@
 import {isDefined} from '@/utils/is-defined';
 
-const AUTHORIZATION_PATTERN = /^\s*(\S+)(?:\s+(.*?))?\s*$/s;
-
 export interface AuthorizationInit {
   credentials?: string;
   scheme?: string;
@@ -41,10 +39,15 @@ export class Authorization implements AuthorizationInit {
 
     if (isDefined(value)) {
       if (typeof value === 'string') {
-        const match = AUTHORIZATION_PATTERN.exec(value);
-        if (isDefined(match)) {
-          authorization.scheme = match[1];
-          authorization.credentials = match[2] || undefined;
+        const trimmed = value.trim();
+        if (trimmed !== '') {
+          const spaceIndex = trimmed.indexOf(' ');
+          if (spaceIndex === -1) {
+            authorization.scheme = trimmed;
+          } else {
+            authorization.scheme = trimmed.slice(0, spaceIndex);
+            authorization.credentials = trimmed.slice(spaceIndex + 1).trim();
+          }
         }
       } else {
         authorization.credentials = value.credentials;
