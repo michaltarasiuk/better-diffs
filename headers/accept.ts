@@ -7,8 +7,6 @@ export type AcceptInit =
   Iterable<string | [string, number]> | Record<string, number>;
 
 /**
- * The value of a `Accept` HTTP header.
- *
  * [MDN `Accept` Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept)
  *
  * [HTTP/1.1 Specification](https://datatracker.ietf.org/doc/html/rfc7231#section-5.3.2)

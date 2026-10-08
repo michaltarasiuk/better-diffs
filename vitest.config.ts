@@ -1,5 +1,9 @@
 import {resolve} from 'node:path';
 
+/*
+ * @next/env ships a bundled CommonJS file whose exports Node cannot detect,
+ * so a named import fails when Vite loads this config.
+ */
 import nextEnv from '@next/env';
 import {playwright} from '@vitest/browser-playwright';
 import {defaultExclude, defineConfig} from 'vitest/config';
@@ -24,6 +28,10 @@ export default defineConfig({
     clearMocks: true,
     restoreMocks: true,
     unstubGlobals: true,
+    /*
+     * Vite's loadEnv would merge .env.local into tests. Next.js skips it when
+     * NODE_ENV is test, which Vitest sets before loading this config.
+     */
     env: nextEnv.loadEnvConfig(dirname).combinedEnv,
     exclude: IGNORED_GLOBS,
     projects: [

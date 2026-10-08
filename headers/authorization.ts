@@ -8,8 +8,6 @@ export interface AuthorizationInit {
 }
 
 /**
- * The value of an `Authorization` HTTP header.
- *
  * [MDN `Authorization` Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization)
  *
  * [HTTP Semantics Specification](https://datatracker.ietf.org/doc/html/rfc9110#section-11.6.2)
