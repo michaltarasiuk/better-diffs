@@ -16,7 +16,7 @@ interface CommandProps {
 
 type CopyFeedback = 'idle' | 'copied' | 'selected';
 
-function selectNodeContents(node: HTMLElement): boolean {
+function selectNodeContents(node: HTMLElement) {
   const selection = window.getSelection();
   if (!isDefined(selection)) {
     return false;
