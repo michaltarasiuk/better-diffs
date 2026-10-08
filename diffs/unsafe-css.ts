@@ -1,11 +1,5 @@
 import dedent from 'dedent';
 
-/**
- * Added and removed files keep a single full-width column even when the
- * CodeView uses split style. Expose one-pane annotation width as half the
- * file minus the line-number column, matching a split content pane rather
- * than 50% of the already-guttered content area.
- */
 export const DIFFS_SINGLE_COLUMN_ANNOTATION_UNSAFE_CSS = dedent`
   [data-diff-type="single"] {
     container-type: inline-size;
@@ -25,11 +19,6 @@ export const DIFFS_SINGLE_COLUMN_ANNOTATION_UNSAFE_CSS = dedent`
   }
 `;
 
-/**
- * @pierre/diffs pads the bottom of every code block to make room for the
- * horizontal scrollbar. That strip shares the next file's header background,
- * so it reads as extra header height with the filename pushed below center.
- */
 export const DIFFS_CODE_BOTTOM_PADDING_UNSAFE_CSS = dedent`
   [data-code] {
     padding-bottom: 0;
@@ -38,11 +27,6 @@ export const DIFFS_CODE_BOTTOM_PADDING_UNSAFE_CSS = dedent`
 
 export const EMPTY_DIFF_ATTRIBUTE = 'data-empty-diff';
 
-/**
- * @pierre/diffs always prints `-0 +0` for a diff without hunks and offers no
- * per-item option to drop it, so hide the counts on hosts flagged with
- * EMPTY_DIFF_ATTRIBUTE.
- */
 export const DIFFS_EMPTY_DIFF_UNSAFE_CSS = dedent`
   :host([${EMPTY_DIFF_ATTRIBUTE}]) [data-deletions-count],
   :host([${EMPTY_DIFF_ATTRIBUTE}]) [data-additions-count] {
