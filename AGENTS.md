@@ -55,7 +55,9 @@ https://react.dev/learn/queueing-a-series-of-state-updates#naming-conventions
 
 Only comment to record a constraint the code cannot show: an upstream quirk, a browser difference, a non-obvious ordering requirement. Never narrate what the code does, and never explain a change you just made.
 
-Always use block form: `/** … */` on an exported symbol so the note surfaces on hover at call sites, `/* … */` everywhere else. Open and close on their own lines, align a leading asterisk under the first one on every continuation line, wrap at 80 columns, and write full sentences. Lead with the external constraint, then the workaround it forces.
+Use `/** JSDoc */` on an exported symbol so the note surfaces on hover at call sites. Open and close on their own lines, align a leading asterisk under the first one on every continuation line, wrap at 80 columns, and write full sentences. Lead with the external constraint, then the workaround it forces.
+
+Use `//` for implementation comments, including multi-line notes at the same indent as the surrounding code. Do not use block `/* … */` for implementation comments.
 
 When a positional argument’s meaning is unclear from the callee name and value alone (especially bare booleans, nulls, or numbers), label it with an inline parameter-name comment before the value: `/* shouldRender= */ true`. Prefer refactoring the callee to take a named options object instead when that is practical. Match a file’s existing legacy style (`true /* shouldRender */`) only for consistency within that file.
 

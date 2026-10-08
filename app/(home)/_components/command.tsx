@@ -64,11 +64,9 @@ export function Command({label, command}: CommandProps) {
             await navigator.clipboard.writeText(command);
             setFeedback('copied');
           } catch {
-            /*
-             * Clipboard API rejects outside secure contexts. Select the
-             * command in the DOM and surface a toast so the user can copy
-             * manually.
-             */
+            // Clipboard API rejects outside secure contexts. Select the
+            // command in the DOM and surface a toast so the user can copy
+            // manually.
             const commandNode = commandRef.current;
             const selected =
               isDefined(commandNode) && selectNodeContents(commandNode);

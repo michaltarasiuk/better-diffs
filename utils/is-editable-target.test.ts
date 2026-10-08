@@ -22,7 +22,7 @@ describe('isEditableTarget', () => {
 
   it('accepts a contenteditable element', () => {
     const element = document.createElement('div');
-    /* jsdom does not implement HTMLElement.isContentEditable */
+    // jsdom does not implement HTMLElement.isContentEditable
     Object.defineProperty(element, 'isContentEditable', {value: true});
 
     expect(isEditableTarget(element)).toBe(true);

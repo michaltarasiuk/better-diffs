@@ -267,10 +267,8 @@ function SignInActions({line, onDismiss}: SignInActionsProps) {
             if (!isDefined(url)) {
               throw new Error('Sign-in response has no redirect URL');
             }
-            /*
-             * The page stays interactive until GitHub responds, so a dismiss
-             * after this point has to cancel the pending navigation.
-             */
+            // The page stays interactive until GitHub responds, so a dismiss
+            // after this point has to cancel the pending navigation.
             controller.signal.addEventListener('abort', () => window.stop());
             window.location.assign(url);
           } catch {

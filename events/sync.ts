@@ -72,7 +72,7 @@ export class ShareEventsSync {
           await putEvents(events);
         }
       } catch {
-        /* Retried on the next interval */
+        // Retried on the next interval
       } finally {
         this.#isPulling = false;
       }

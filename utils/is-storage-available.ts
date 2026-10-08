@@ -34,10 +34,8 @@ function probeStorage(type: StorageType) {
     return (
       error instanceof DOMException &&
       error.name === 'QuotaExceededError' &&
-      /*
-       * Some browsers throw QuotaExceededError when storage is disabled, so
-       * the error only means "full" when something is already stored.
-       */
+      // Some browsers throw QuotaExceededError when storage is disabled, so
+      // the error only means "full" when something is already stored.
       isDefined(storage) &&
       storage.length !== 0
     );
