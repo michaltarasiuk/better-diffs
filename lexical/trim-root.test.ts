@@ -36,9 +36,7 @@ function trim(...blocks: (() => LexicalNode[])[]) {
 
 describe('$trimRoot', () => {
   it('trims whitespace around the text', () => {
-    expect(trim(() => [$createTextNode('  hello world \t')])).toEqual([
-      'hello world',
-    ]);
+    expect(trim(() => [$createTextNode('  value \t')])).toEqual(['value']);
   });
 
   it('removes blank leading and trailing paragraphs', () => {

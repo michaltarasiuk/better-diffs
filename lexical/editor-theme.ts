@@ -14,6 +14,6 @@ export const EDITOR_THEME = {
     italic: cn('italic'),
     underline: cn('underline'),
     strikethrough: cn('line-through'),
-    underlineStrikethrough: cn('underline-strikethroug'),
+    underlineStrikethrough: cn('underline-strikethrough'),
   },
 } satisfies EditorThemeClasses;
