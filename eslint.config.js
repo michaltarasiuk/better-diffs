@@ -5,8 +5,6 @@ import reactCompiler from 'eslint-plugin-react-compiler';
 import testingLibrary from 'eslint-plugin-testing-library';
 import {defineConfig, globalIgnores} from 'eslint/config';
 
-const testingLibraryReact = testingLibrary.configs['flat/react'];
-
 export default defineConfig([
   ...nextVitals,
   ...nextTs,
@@ -26,14 +24,16 @@ export default defineConfig([
     files: ['**/*.{test,browser.test}.{ts,tsx}'],
     plugins: {
       vitest,
-      ...testingLibraryReact.plugins,
+      ...testingLibrary.configs['flat/react'].plugins,
     },
     languageOptions: {
-      globals: {...vitest.environments.env.globals},
+      globals: {
+        ...vitest.environments.env.globals,
+      },
     },
     rules: {
       ...vitest.configs.recommended.rules,
-      ...testingLibraryReact.rules,
+      ...testingLibrary.configs['flat/react'].rules,
     },
   },
 ]);

@@ -43,7 +43,7 @@ export class ShareEventsSync {
   }
 
   async hydrate() {
-    const events = await this.#fetchNewEvents();
+    const events = await this.#pull();
     if (events.length > 0) {
       await putEvents(events);
     }
@@ -66,7 +66,7 @@ export class ShareEventsSync {
       this.#isPulling = true;
 
       try {
-        const events = await this.#fetchNewEvents();
+        const events = await this.#pull();
         if (events.length > 0) {
           onBatch(events);
           await putEvents(events);
@@ -105,7 +105,7 @@ export class ShareEventsSync {
     };
   }
 
-  async #fetchNewEvents() {
+  async #pull() {
     const lastSeq = await getLastSeq(this.#shareId);
     return fetchEvents(this.#shareId, lastSeq);
   }

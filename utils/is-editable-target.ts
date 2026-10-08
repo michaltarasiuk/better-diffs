@@ -1,4 +1,4 @@
-export function isEditableTarget(target: EventTarget | null) {
+export function isEditableTarget(target: EventTarget) {
   if (!(target instanceof HTMLElement)) {
     return false;
   }
