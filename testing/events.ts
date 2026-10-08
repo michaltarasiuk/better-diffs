@@ -17,96 +17,96 @@ import {newId} from '@/utils/new-id';
 
 export const CREATED_AT = new Date(0).toISOString();
 
-export function createActor(overrides: Partial<Actor> = {}): Actor {
+export function createActor(overrides?: Partial<Actor>) {
   return {
     name: 'Name',
     image: null,
     ...overrides,
-  };
+  } satisfies Actor;
 }
 
-export function createAnchor(overrides: Partial<Anchor> = {}): Anchor {
+export function createAnchor(overrides?: Partial<Anchor>) {
   return {
     shareId: newId(),
     filePath: 'file.txt',
     side: 'additions',
     line: 1,
     ...overrides,
-  };
+  } satisfies Anchor;
 }
 
-export function createLexicalBody(text = 'text') {
+export function createLexicalBody(text = 'value') {
   return {text} as unknown as SerializedEditorState;
 }
 
 export function createThreadOpened(
   overrides: Partial<ThreadOpenedPayload> = {},
-): ThreadOpenedPayload {
+) {
   return {
     $type: 'thread.opened',
-    threadId: newId(),
     anchor: createAnchor(),
+    threadId: newId(),
     ...overrides,
-  };
+  } satisfies ThreadOpenedPayload;
 }
 
 export function createThreadResolved(
   overrides: Partial<ThreadResolvedPayload> = {},
-): ThreadResolvedPayload {
+) {
   return {
     $type: 'thread.resolved',
     threadId: newId(),
     ...overrides,
-  };
+  } satisfies ThreadResolvedPayload;
 }
 
 export function createCommentCreated(
   overrides: Partial<CommentCreatedPayload> = {},
-): CommentCreatedPayload {
+) {
   return {
     $type: 'comment.created',
-    threadId: newId(),
-    commentId: newId(),
     body: createLexicalBody(),
+    commentId: newId(),
+    threadId: newId(),
     ...overrides,
-  };
+  } satisfies CommentCreatedPayload;
 }
 
 export function createCommentEdited(
   overrides: Partial<CommentEditedPayload> = {},
-): CommentEditedPayload {
+) {
   return {
     $type: 'comment.edited',
-    commentId: newId(),
     body: createLexicalBody(),
+    commentId: newId(),
     ...overrides,
-  };
+  } satisfies CommentEditedPayload;
 }
 
 export function createCommentDeleted(
   overrides: Partial<CommentDeletedPayload> = {},
-): CommentDeletedPayload {
+) {
   return {
     $type: 'comment.deleted',
     commentId: newId(),
     ...overrides,
-  };
+  } satisfies CommentDeletedPayload;
 }
 
 export function createShareEvent(
   payload: ShareEventPayload,
-  overrides: Partial<Omit<ShareEvent, 'payload' | 'type' | 'subjectId'>> = {},
-): ShareEvent {
+  overrides: Partial<Omit<ShareEvent, 'type' | 'subjectId' | 'payload'>> = {},
+) {
   return {
     id: newId(),
     shareId: newId(),
     seq: 1,
-    actorId: newId(),
-    actor: createActor(),
-    createdAt: CREATED_AT,
-    ...overrides,
     type: payload.$type,
     subjectId: subjectIdFromPayload(payload),
+    actorId: newId(),
+    actor: createActor(),
     payload,
-  };
+    createdAt: CREATED_AT,
+    ...overrides,
+  } satisfies ShareEvent;
 }
