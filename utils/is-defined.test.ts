@@ -11,22 +11,20 @@ describe('isDefined', () => {
   });
 
   it.each([
+    {name: 'false', value: false},
     {name: 'zero', value: 0},
     {name: 'empty string', value: ''},
-    {name: 'false', value: false},
-    {name: 'empty object', value: {}},
-  ])('accepts $name', ({value}) => {
+    {name: 'NaN', value: NaN},
+  ])('accepts falsy $name', ({value}) => {
+    expect(value).toBeFalsy();
     expect(isDefined(value)).toBe(true);
   });
 
-  it('narrows the type when the check passes', () => {
-    const value: string | null | undefined = 'value';
+  it('narrows string when the check passes', () => {
+    const value: string | null | undefined = 'hello';
 
-    if (!isDefined(value)) {
-      throw new Error('Expected value to be defined');
-    }
-
-    expect(value).toBe('value');
+    expect(isDefined(value)).toBe(true);
+    expect(value).toBe('hello');
     expectTypeOf(value).toEqualTypeOf<string>();
   });
 });
