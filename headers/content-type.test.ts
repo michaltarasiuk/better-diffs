@@ -52,7 +52,7 @@ describe('ContentType.from', () => {
     expect(ContentType.from(null).toString()).toBe('');
   });
 
-  it('accepts an object instead of a string', () => {
+  it('builds from an object init', () => {
     const header = ContentType.from({
       charset: 'utf-8',
       mediaType: 'text/html',

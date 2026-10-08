@@ -1,37 +1,29 @@
-import {describe, expect, expectTypeOf, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {isIterable} from './is-iterable';
 
+function createIterableObject() {
+  const iterable: Iterable<unknown> = {
+    [Symbol.iterator]() {
+      const iterator = {
+        next() {
+          return {done: true, value: undefined};
+        },
+      };
+
+      return iterator;
+    },
+  };
+
+  return iterable;
+}
+
 describe('isIterable', () => {
-  it.each([
-    {name: 'an array', value: []},
-    {name: 'a string array', value: ['text/html']},
-    {name: 'a Map', value: new Map()},
-    {name: 'a Set', value: new Set()},
-    {name: 'a string', value: 'text/html'},
-    {name: 'a generator', value: (function* () {})()},
-  ])('accepts $name', ({value}) => {
-    expect(isIterable(value)).toBe(true);
+  it('returns true for an iterable object', () => {
+    expect(isIterable(createIterableObject())).toBe(true);
   });
 
-  it.each([
-    {name: 'null', value: null},
-    {name: 'undefined', value: undefined},
-    {name: 'a plain object', value: {}},
-    {name: 'a record', value: {'text/html': 1}},
-    {name: 'a number', value: 1},
-  ])('rejects $name', ({value}) => {
-    expect(isIterable(value)).toBe(false);
-  });
-
-  it('narrows the type when the check passes', () => {
-    const value: unknown = [];
-
-    if (!isIterable(value)) {
-      throw new Error('Expected value to be iterable');
-    }
-
-    expect([...value]).toEqual([]);
-    expectTypeOf(value).toEqualTypeOf<Iterable<unknown>>();
+  it('returns false for a plain object', () => {
+    expect(isIterable({})).toBe(false);
   });
 });

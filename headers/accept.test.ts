@@ -23,7 +23,7 @@ describe('Accept.from', () => {
     expect(Accept.from(null).size).toBe(0);
   });
 
-  it('accepts nothing when the header is missing', () => {
+  it('returns false from accepts when the header is missing', () => {
     expect(Accept.from(null).accepts('text/plain')).toBe(false);
   });
 });
@@ -79,11 +79,11 @@ describe('new Accept', () => {
     expect(new Accept('text/html;q=0.5').getWeight('text/html')).toBe(0.5);
   });
 
-  it('accepts an iterable of media types', () => {
+  it('builds from an iterable of media types', () => {
     expect(new Accept(['text/html']).has('text/html')).toBe(true);
   });
 
-  it('accepts a record of media type weights', () => {
+  it('builds from a record of media type weights', () => {
     expect(new Accept({'text/html': 0.2}).getWeight('text/html')).toBe(0.2);
   });
 });

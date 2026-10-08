@@ -6,7 +6,7 @@ describe('isDefined', () => {
   it.each([
     {name: 'null', value: null},
     {name: 'undefined', value: undefined},
-  ])('rejects $name', ({value}) => {
+  ])('returns false for $name', ({value}) => {
     expect(isDefined(value)).toBe(false);
   });
 
@@ -15,16 +15,15 @@ describe('isDefined', () => {
     {name: 'zero', value: 0},
     {name: 'empty string', value: ''},
     {name: 'NaN', value: NaN},
-  ])('accepts falsy $name', ({value}) => {
+  ])('returns true for falsy $name', ({value}) => {
     expect(value).toBeFalsy();
     expect(isDefined(value)).toBe(true);
   });
 
-  it('narrows string when the check passes', () => {
-    const value: string | null | undefined = 'hello';
+  it('narrows values to string', () => {
+    const value: string | null | undefined = 'defined';
 
     expect(isDefined(value)).toBe(true);
-    expect(value).toBe('hello');
     expectTypeOf(value).toEqualTypeOf<string>();
   });
 });

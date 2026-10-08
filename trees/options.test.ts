@@ -15,14 +15,14 @@ describe('getFileTreeOptions', () => {
     expect(preparedInput.paths).toEqual(treeInput.paths);
   });
 
-  it('passes git status through', () => {
+  it('returns the git status from the input', () => {
     const {gitStatus} = getFileTreeOptions(treeInput, {searchQuery: null});
 
     expect(gitStatus).toBe(treeInput.gitStatus);
   });
 
   it.each([null, 'query'])(
-    'passes searchQuery %j through as initialSearchQuery',
+    'returns %j as initialSearchQuery',
     (searchQuery) => {
       const {initialSearchQuery} = getFileTreeOptions(treeInput, {searchQuery});
 

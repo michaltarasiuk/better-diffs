@@ -31,7 +31,7 @@ describe('isDiffLine', () => {
     expect(isDiffLine(createFileLine())).toBe(false);
   });
 
-  it('narrows the type when the check passes', () => {
+  it('narrows values to DiffLine', () => {
     const line: HoveredLine = createDiffLine({side: 'deletions'});
 
     if (!isDiffLine(line)) {

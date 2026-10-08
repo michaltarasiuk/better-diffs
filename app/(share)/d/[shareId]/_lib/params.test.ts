@@ -25,7 +25,7 @@ describe('loadParams', () => {
   });
 
   describe('q', () => {
-    it('passes through the value', () => {
+    it('returns the query string', () => {
       expect(loadParams({q: QUERY}).q).toBe(QUERY);
     });
 

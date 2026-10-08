@@ -21,13 +21,21 @@ function pressKey(
 }
 
 describe('useShortcut', () => {
-  it('runs the handler and prevents the default action', () => {
+  it('runs the handler for the bound key', () => {
+    const onShortcut = vi.fn();
+    renderHook(() => useShortcut('v', onShortcut));
+
+    pressKey(document.body, 'v');
+
+    expect(onShortcut).toHaveBeenCalledOnce();
+  });
+
+  it('prevents the default action for the bound key', () => {
     const onShortcut = vi.fn();
     renderHook(() => useShortcut('v', onShortcut));
 
     const event = pressKey(document.body, 'v');
 
-    expect(onShortcut).toHaveBeenCalledOnce();
     expect(event.defaultPrevented).toBe(true);
   });
 

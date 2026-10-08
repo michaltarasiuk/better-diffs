@@ -39,7 +39,7 @@ describe('Authorization.from', () => {
     });
   });
 
-  it('accepts an object instead of a string', () => {
+  it('builds from an object init', () => {
     const header = Authorization.from({credentials: 'abc', scheme: 'Bearer'});
 
     expect(header.toString()).toBe('Bearer abc');
@@ -47,15 +47,15 @@ describe('Authorization.from', () => {
 });
 
 describe('Authorization#hasScheme', () => {
-  it.each(['Bearer', 'bearer', 'BEARER'])('matches %s', (scheme) => {
+  it.each(['Bearer', 'bearer', 'BEARER'])('returns true for %s', (scheme) => {
     expect(Authorization.from('Bearer abc').hasScheme(scheme)).toBe(true);
   });
 
-  it('rejects a different scheme', () => {
+  it('returns false for a different scheme', () => {
     expect(Authorization.from('Basic abc').hasScheme('Bearer')).toBe(false);
   });
 
-  it('rejects a missing header', () => {
+  it('returns false for a missing header', () => {
     expect(Authorization.from(null).hasScheme('Bearer')).toBe(false);
   });
 });

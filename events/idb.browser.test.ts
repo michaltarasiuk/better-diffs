@@ -42,7 +42,7 @@ describe('putEvents', () => {
     ]);
   });
 
-  it('accepts an empty batch', async () => {
+  it('resolves for an empty batch', async () => {
     await expect(putEvents([])).resolves.toBeUndefined();
   });
 

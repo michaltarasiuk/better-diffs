@@ -55,7 +55,7 @@ describe('isFormAnnotation', () => {
     expect(isFormAnnotation(createThreadAnnotation())).toBe(false);
   });
 
-  it('narrows the type when the check passes', () => {
+  it('narrows values to FormDiffAnnotation', () => {
     const value: DiffAnnotation = createFormAnnotation();
 
     if (!isFormAnnotation(value)) {
@@ -76,7 +76,7 @@ describe('isThreadAnnotation', () => {
     expect(isThreadAnnotation(createFormAnnotation())).toBe(false);
   });
 
-  it('narrows the type when the check passes', () => {
+  it('narrows values to ThreadDiffAnnotation', () => {
     const value: DiffAnnotation = createThreadAnnotation();
 
     if (!isThreadAnnotation(value)) {

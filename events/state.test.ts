@@ -213,7 +213,7 @@ describe('ingest invariants', () => {
       },
       error: /Thread already resolved/,
     },
-  ])('rejects $name', ({payloads, error}) => {
+  ])('throws for $name', ({payloads, error}) => {
     const log = createShareEventLog();
     const state = new ShareState();
 
@@ -348,7 +348,7 @@ describe('optimistic', () => {
     expect(state.threads.has(opened.threadId)).toBe(false);
   });
 
-  it('accepts a follow-up pending event on an optimistic thread', () => {
+  it('allows a follow-up pending event on an optimistic thread', () => {
     const state = new ShareState();
     const t = thread();
     state.optimistic(createOptimisticEvent(t.opened));
@@ -370,7 +370,7 @@ describe('optimistic', () => {
     });
   });
 
-  it('rejects reopening an optimistic thread', () => {
+  it('throws when reopening an optimistic thread', () => {
     const state = new ShareState();
     const opened = createThreadOpened();
     state.optimistic(createOptimisticEvent(opened));
@@ -382,7 +382,7 @@ describe('optimistic', () => {
     ).toThrow(/Thread already exists/);
   });
 
-  it('rejects a comment on an unknown optimistic thread', () => {
+  it('throws for a comment on an unknown optimistic thread', () => {
     const state = new ShareState();
     state.optimistic(createOptimisticEvent(createThreadOpened()));
 
@@ -754,7 +754,7 @@ describe('optimistic events building on pending ones', () => {
         }),
       error: /Thread not found/,
     },
-  ])('rejects $name', ({payload, error}) => {
+  ])('throws for $name', ({payload, error}) => {
     const state = new ShareState();
 
     expect(() => state.optimistic(createOptimisticEvent(payload()))).toThrow(
@@ -1021,7 +1021,7 @@ describe('isType', () => {
     expect(isType('thread.opened', payload)).toBe(false);
   });
 
-  it('narrows a matching payload to the requested variant', () => {
+  it('narrows values to the requested variant', () => {
     const payload: ShareEventPayload = createCommentCreated();
 
     if (!isType('comment.created', payload)) {

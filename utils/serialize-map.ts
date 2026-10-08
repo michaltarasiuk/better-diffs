@@ -12,6 +12,6 @@ export function deserializeMap<K, V>(text: string) {
   return new Map(parsed as [K, V][]);
 }
 
-function isEntry(value: unknown) {
+function isEntry<K, V>(value: unknown): value is [K, V] {
   return Array.isArray(value) && value.length === 2;
 }

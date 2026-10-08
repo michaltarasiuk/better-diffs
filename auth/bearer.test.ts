@@ -14,15 +14,15 @@ function request(authorization?: string) {
 }
 
 describe('hasBearerToken', () => {
-  it('accepts a matching bearer token', () => {
+  it('returns true for a matching bearer token', () => {
     expect(hasBearerToken(request(`Bearer ${SECRET}`), SECRET)).toBe(true);
   });
 
-  it('accepts a lowercase bearer scheme', () => {
+  it('returns true for a lowercase bearer scheme', () => {
     expect(hasBearerToken(request(`bearer ${SECRET}`), SECRET)).toBe(true);
   });
 
-  it('rejects any token when none is expected', () => {
+  it('returns false when no token is expected', () => {
     expect(hasBearerToken(request(`Bearer ${SECRET}`), undefined)).toBe(false);
   });
 
@@ -47,7 +47,7 @@ describe('hasBearerToken', () => {
       name: 'wrong scheme',
       authorization: `Basic ${SECRET}`,
     },
-  ])('rejects $name', ({authorization}) => {
+  ])('returns false for $name', ({authorization}) => {
     expect(hasBearerToken(request(authorization), SECRET)).toBe(false);
   });
 });
