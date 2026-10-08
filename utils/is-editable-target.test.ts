@@ -6,7 +6,8 @@ import {isEditableTarget} from './is-editable-target';
 
 describe('isEditableTarget', () => {
   it('returns false for a non-element EventTarget', () => {
-    expect(isEditableTarget(new EventTarget())).toBe(false);
+    const eventTarget = new EventTarget();
+    expect(isEditableTarget(eventTarget)).toBe(false);
   });
 
   it.each(['div', 'button'] as const)(
