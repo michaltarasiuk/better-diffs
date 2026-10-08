@@ -13,9 +13,9 @@ import {
   type ThreadResolvedPayload,
 } from '@/events/schemas';
 
-import {uuid} from './uuid';
+import {newId} from '@/utils/new-id';
 
-export const CREATED_AT = '1970-01-01T00:00:00.000Z';
+export const CREATED_AT = new Date(0).toISOString();
 
 export function createActor(overrides: Partial<Actor> = {}): Actor {
   return {
@@ -27,7 +27,7 @@ export function createActor(overrides: Partial<Actor> = {}): Actor {
 
 export function createAnchor(overrides: Partial<Anchor> = {}): Anchor {
   return {
-    shareId: uuid(),
+    shareId: newId(),
     filePath: 'file.txt',
     side: 'additions',
     line: 1,
@@ -44,7 +44,7 @@ export function createThreadOpened(
 ): ThreadOpenedPayload {
   return {
     $type: 'thread.opened',
-    threadId: uuid(),
+    threadId: newId(),
     anchor: createAnchor(),
     ...overrides,
   };
@@ -55,7 +55,7 @@ export function createThreadResolved(
 ): ThreadResolvedPayload {
   return {
     $type: 'thread.resolved',
-    threadId: uuid(),
+    threadId: newId(),
     ...overrides,
   };
 }
@@ -65,8 +65,8 @@ export function createCommentCreated(
 ): CommentCreatedPayload {
   return {
     $type: 'comment.created',
-    threadId: uuid(),
-    commentId: uuid(),
+    threadId: newId(),
+    commentId: newId(),
     body: createLexicalBody(),
     ...overrides,
   };
@@ -77,7 +77,7 @@ export function createCommentEdited(
 ): CommentEditedPayload {
   return {
     $type: 'comment.edited',
-    commentId: uuid(),
+    commentId: newId(),
     body: createLexicalBody(),
     ...overrides,
   };
@@ -88,7 +88,7 @@ export function createCommentDeleted(
 ): CommentDeletedPayload {
   return {
     $type: 'comment.deleted',
-    commentId: uuid(),
+    commentId: newId(),
     ...overrides,
   };
 }
@@ -98,10 +98,10 @@ export function createShareEvent(
   overrides: Partial<Omit<ShareEvent, 'payload' | 'type' | 'subjectId'>> = {},
 ): ShareEvent {
   return {
-    id: uuid(),
-    shareId: uuid(),
+    id: newId(),
+    shareId: newId(),
     seq: 1,
-    actorId: uuid(),
+    actorId: newId(),
     actor: createActor(),
     createdAt: CREATED_AT,
     ...overrides,

@@ -6,7 +6,7 @@ import {
   createShareEvent,
   createThreadResolved,
 } from '@/testing/events';
-import {uuid} from '@/testing/uuid';
+import {newId} from '@/utils/new-id';
 
 import {
   clearEvents,
@@ -18,7 +18,7 @@ import {
 import type {ShareEvent} from './schemas';
 
 const body = createLexicalBody();
-const shareId = uuid();
+const shareId = newId();
 
 function createEventAt(seq: number, overrides: Partial<ShareEvent> = {}) {
   return createShareEvent(createThreadResolved(), {
@@ -83,13 +83,13 @@ describe('getEvents', () => {
   });
 
   it('returns only one event for the requested share', async () => {
-    await putEvents([createEventAt(1), createEventAt(1, {shareId: uuid()})]);
+    await putEvents([createEventAt(1), createEventAt(1, {shareId: newId()})]);
 
     expect(await getEvents(shareId)).toHaveLength(1);
   });
 
   it('scopes results to the requested share', async () => {
-    await putEvents([createEventAt(1), createEventAt(1, {shareId: uuid()})]);
+    await putEvents([createEventAt(1), createEventAt(1, {shareId: newId()})]);
 
     expect((await getEvents(shareId))[0]?.shareId).toBe(shareId);
   });
@@ -131,13 +131,13 @@ describe('getLastSeq', () => {
   });
 
   it('ignores the sequences of other shares', async () => {
-    await putEvents([createEventAt(1), createEventAt(9, {shareId: uuid()})]);
+    await putEvents([createEventAt(1), createEventAt(9, {shareId: newId()})]);
 
     await expect(getLastSeq(shareId)).resolves.toBe(1);
   });
 
   it('returns null when only other shares have events', async () => {
-    await putEvents([createEventAt(9, {shareId: uuid()})]);
+    await putEvents([createEventAt(9, {shareId: newId()})]);
 
     await expect(getLastSeq(shareId)).resolves.toBe(null);
   });

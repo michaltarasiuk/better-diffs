@@ -4,9 +4,9 @@ import dedent from 'dedent';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {env} from '@/env';
-import {uuid} from '@/testing/uuid';
 
 import {OPTIONS, POST} from './route';
+import {newId} from '@/utils/new-id';
 
 const DIFF_TEXT = dedent`
   diff --git a/file.txt b/file.txt
@@ -19,7 +19,7 @@ const DIFF_TEXT = dedent`
    context
 `;
 
-const shareId = uuid();
+const shareId = newId();
 
 const {createShare} = vi.hoisted(() => ({
   createShare: vi.fn<typeof import('@/db/shares').createShare>(),

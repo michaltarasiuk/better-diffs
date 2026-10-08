@@ -12,7 +12,7 @@ import {
   createThreadOpened,
   createThreadResolved,
 } from '@/testing/events';
-import {uuid} from '@/testing/uuid';
+import {newId} from '@/utils/new-id';
 
 import {
   createComment,
@@ -46,18 +46,18 @@ vi.mock('@/db/events', () => ({getEvents, appendEvents}));
 let session: Session;
 
 function createSession() {
-  return {user: {id: uuid()}} as Session;
+  return {user: {id: newId()}} as Session;
 }
 
 function createOpenThreadInput(
   overrides: Partial<OpenThreadInput> = {},
 ): OpenThreadInput {
-  const shareId = overrides.shareId ?? uuid();
+  const shareId = overrides.shareId ?? newId();
 
   return {
     shareId,
-    threadId: uuid(),
-    commentId: uuid(),
+    threadId: newId(),
+    commentId: newId(),
     body: createLexicalBody(),
     anchor: createAnchor({shareId}),
     ...overrides,
@@ -68,8 +68,8 @@ function createResolveThreadInput(
   overrides: Partial<ResolveThreadInput> = {},
 ): ResolveThreadInput {
   return {
-    shareId: uuid(),
-    threadId: uuid(),
+    shareId: newId(),
+    threadId: newId(),
     ...overrides,
   };
 }
@@ -78,9 +78,9 @@ function createCreateCommentInput(
   overrides: Partial<CreateCommentInput> = {},
 ): CreateCommentInput {
   return {
-    shareId: uuid(),
-    threadId: uuid(),
-    commentId: uuid(),
+    shareId: newId(),
+    threadId: newId(),
+    commentId: newId(),
     body: createLexicalBody(),
     ...overrides,
   };
@@ -90,8 +90,8 @@ function createEditCommentInput(
   overrides: Partial<EditCommentInput> = {},
 ): EditCommentInput {
   return {
-    shareId: uuid(),
-    commentId: uuid(),
+    shareId: newId(),
+    commentId: newId(),
     body: createLexicalBody(),
     ...overrides,
   };
@@ -101,20 +101,25 @@ function createDeleteCommentInput(
   overrides: Partial<DeleteCommentInput> = {},
 ): DeleteCommentInput {
   return {
-    shareId: uuid(),
-    commentId: uuid(),
+    shareId: newId(),
+    commentId: newId(),
     ...overrides,
   };
 }
 
 function createShareEventLog(shareId: string) {
-  const actorId = uuid();
+  const actorId = newId();
   const actor = createActor();
   let seq = 0;
 
   return (...payloads: readonly ShareEventPayload[]) =>
     payloads.map((payload) =>
-      createShareEvent(payload, {seq: ++seq, shareId, actorId, actor}),
+      createShareEvent(payload, {
+        seq: ++seq,
+        shareId,
+        actorId,
+        actor,
+      }),
     );
 }
 
@@ -180,7 +185,7 @@ describe.each([
 
 describe('openThread', () => {
   it('rejects anchors that belong to another share', async () => {
-    const otherShareId = uuid();
+    const otherShareId = newId();
 
     await expect(
       openThread(
@@ -356,7 +361,7 @@ describe('editComment', () => {
   });
 
   it('appends a comment.edited event for the signed-in user', async () => {
-    const threadId = uuid();
+    const threadId = newId();
     const input = createEditCommentInput();
     const log = createShareEventLog(input.shareId);
 
@@ -403,7 +408,7 @@ describe('deleteComment', () => {
   });
 
   it('appends a comment.deleted event for the signed-in user', async () => {
-    const threadId = uuid();
+    const threadId = newId();
     const input = createDeleteCommentInput();
     const log = createShareEventLog(input.shareId);
 

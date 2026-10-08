@@ -11,7 +11,7 @@ import {
   createThreadOpened,
   createThreadResolved,
 } from '@/testing/events';
-import {uuid} from '@/testing/uuid';
+import {newId} from '@/utils/new-id';
 
 import type {
   CommentCreatedPayload,
@@ -21,8 +21,8 @@ import type {
 import {isType, ShareState, type OptimisticEvent} from './state';
 
 function createShareEventLog() {
-  const shareId = uuid();
-  const actorId = uuid();
+  const shareId = newId();
+  const actorId = newId();
   const actor = createActor();
   let seq = 0;
 
@@ -34,7 +34,7 @@ function createShareEventLog() {
 
 function createOptimisticEvent(payload: ShareEventPayload): OptimisticEvent {
   return {
-    actorId: uuid(),
+    actorId: newId(),
     actor: createActor(),
     createdAt: CREATED_AT,
     payload,
@@ -388,7 +388,7 @@ describe('optimistic', () => {
 
     expect(() =>
       state.optimistic(
-        createOptimisticEvent(createCommentCreated({threadId: uuid()})),
+        createOptimisticEvent(createCommentCreated({threadId: newId()})),
       ),
     ).toThrow(/Thread not found/);
   });
@@ -733,7 +733,7 @@ describe('optimistic events building on pending ones', () => {
       name: 'editing an unknown comment',
       payload: () =>
         createCommentEdited({
-          commentId: uuid(),
+          commentId: newId(),
           body: createLexicalBody('text'),
         }),
       error: /Comment not found/,
@@ -742,7 +742,7 @@ describe('optimistic events building on pending ones', () => {
       name: 'deleting an unknown comment',
       payload: () =>
         createCommentDeleted({
-          commentId: uuid(),
+          commentId: newId(),
         }),
       error: /Comment not found/,
     },
@@ -750,7 +750,7 @@ describe('optimistic events building on pending ones', () => {
       name: 'resolving an unknown thread',
       payload: () =>
         createThreadResolved({
-          threadId: uuid(),
+          threadId: newId(),
         }),
       error: /Thread not found/,
     },

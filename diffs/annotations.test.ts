@@ -2,7 +2,7 @@ import {describe, expect, expectTypeOf, it} from 'vitest';
 
 import type {ThreadState} from '@/events/state';
 import {CREATED_AT, createActor, createAnchor} from '@/testing/events';
-import {uuid} from '@/testing/uuid';
+import {newId} from '@/utils/new-id';
 
 import {
   isFormAnnotation,
@@ -26,7 +26,7 @@ function createFormAnnotation(
     lineNumber: 1,
     metadata: {
       type: 'form',
-      formId: uuid(),
+      formId: newId(),
     },
     ...position,
   };
@@ -40,7 +40,7 @@ function createThreadAnnotation(
     lineNumber: 1,
     metadata: {
       type: 'thread',
-      threadId: uuid(),
+      threadId: newId(),
     },
     ...position,
   };
@@ -91,9 +91,9 @@ describe('isThreadAnnotation', () => {
 describe('toThreadAnnotation', () => {
   it('maps thread anchor and id to a diff annotation', () => {
     const thread: ThreadState = {
-      id: uuid(),
+      id: newId(),
       anchor: createAnchor({side: 'deletions', line: 12}),
-      actorId: uuid(),
+      actorId: newId(),
       actor: createActor(),
       resolved: false,
       commentIds: [],
