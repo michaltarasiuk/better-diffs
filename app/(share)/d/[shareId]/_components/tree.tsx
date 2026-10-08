@@ -49,7 +49,7 @@ export function Tree({input, preloaded, fileIdByPath, children}: TreeProps) {
 
       const fileId = fileIdByPath[selectedPath];
       if (!isDefined(fileId)) {
-        throw new Error(`File id not found: ${selectedPath}`);
+        throw new Error(`File not found: ${selectedPath}`);
       }
 
       scrollToFile(codeView, fileId);
@@ -79,7 +79,7 @@ function TreeSearch({model}: {readonly model: FileTreeModel}) {
   useShortcut('/', function focusSearch() {
     const input = inputRef.current;
     if (!isDefined(input)) {
-      throw new Error('Search input missing');
+      throw new Error('Invalid search input');
     }
     input.focus();
     input.select();

@@ -28,7 +28,7 @@ export async function openThread(input: OpenThreadInput) {
   }
 
   if (input.anchor.shareId !== input.shareId) {
-    throw new Error(`Invalid anchor share id: ${input.anchor.shareId}`);
+    throw new Error(`Invalid share id: ${input.anchor.shareId}`);
   }
 
   const {shareId, threadId, commentId, body, anchor} = input;

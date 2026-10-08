@@ -51,7 +51,7 @@ export function useLocalStorage<T>(
     setItem((i) => {
       const newItem =
         typeof setItemAction === 'function'
-          ? (setItemAction as (prevState: T) => T)(i)
+          ? (setItemAction as (i: T) => T)(i)
           : setItemAction;
 
       if (isStorageAvailable('localStorage')) {

@@ -188,7 +188,7 @@ describe('openThread', () => {
           anchor: createAnchor({shareId: otherShareId, line: 3}),
         }),
       ),
-    ).rejects.toThrow(`Invalid anchor share id: ${otherShareId}`);
+    ).rejects.toThrow(`Invalid share id: ${otherShareId}`);
 
     expect(getEvents).not.toHaveBeenCalled();
     expect(appendEvents).not.toHaveBeenCalled();
