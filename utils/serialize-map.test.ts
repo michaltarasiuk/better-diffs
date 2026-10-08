@@ -61,7 +61,7 @@ describe('deserializeMap', () => {
     {name: 'an array with a long entry', text: '[["a",1,2]]'},
   ])('throws when stored text is $name', ({text}) => {
     expect(() => deserializeMap(text)).toThrow(
-      new TypeError('Invalid map entries'),
+      new Error('Invalid map entries'),
     );
   });
 });

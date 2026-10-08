@@ -6,7 +6,7 @@ export function deserializeMap<K, V>(text: string) {
   const parsed: unknown = JSON.parse(text);
 
   if (!Array.isArray(parsed) || !parsed.every(isEntry)) {
-    throw new TypeError('Invalid map entries');
+    throw new Error('Invalid map entries');
   }
 
   return new Map(parsed as [K, V][]);

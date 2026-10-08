@@ -169,7 +169,7 @@ describe.each([
 
   it('rejects invalid input', async () => {
     await expect(action({shareId: 'not-a-uuid'})).rejects.toMatchObject({
-      name: 'TypeError',
+      name: 'Error',
       message,
     });
 
