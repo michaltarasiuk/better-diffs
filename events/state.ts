@@ -198,7 +198,7 @@ export class Draft implements Entities {
   }
 
   static live(entities: Entities) {
-    return new Draft(entities, null);
+    return new Draft(entities, /* owned= */ null);
   }
 
   static fork(base: Entities) {

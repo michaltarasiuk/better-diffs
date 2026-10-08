@@ -202,7 +202,7 @@ interface SubmitCommentButtonProps {
 
 function SubmitCommentButton({onComment, onDismiss}: SubmitCommentButtonProps) {
   const [editor] = useLexicalComposerContext();
-  const isEmpty = useLexicalIsTextContentEmpty(editor, true);
+  const isEmpty = useLexicalIsTextContentEmpty(editor, /* trim= */ true);
 
   return (
     <Button

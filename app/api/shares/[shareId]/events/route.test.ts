@@ -58,13 +58,19 @@ describe('GET', () => {
   it('starts from the beginning when no cursor is given', async () => {
     await GET(request(), context());
 
-    expect(getEvents).toHaveBeenCalledExactlyOnceWith(shareId, 0);
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(
+      shareId,
+      /* afterSeq= */ 0,
+    );
   });
 
   it('forwards the afterSeq cursor', async () => {
     await GET(request('?afterSeq=7'), context());
 
-    expect(getEvents).toHaveBeenCalledExactlyOnceWith(shareId, 7);
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(
+      shareId,
+      /* afterSeq= */ 7,
+    );
   });
 
   it.each([
@@ -73,7 +79,10 @@ describe('GET', () => {
   ])('falls back to the beginning for $name', async ({search}) => {
     await GET(request(search), context());
 
-    expect(getEvents).toHaveBeenCalledExactlyOnceWith(shareId, 0);
+    expect(getEvents).toHaveBeenCalledExactlyOnceWith(
+      shareId,
+      /* afterSeq= */ 0,
+    );
   });
 
   it('returns an empty event list', async () => {

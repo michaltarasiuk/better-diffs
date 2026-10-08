@@ -57,4 +57,6 @@ Only comment to record a constraint the code cannot show: an upstream quirk, a b
 
 Always use block form: `/** … */` on an exported symbol so the note surfaces on hover at call sites, `/* … */` everywhere else. Open and close on their own lines, align a leading asterisk under the first one on every continuation line, wrap at 80 columns, and write full sentences. Lead with the external constraint, then the workaround it forces.
 
+When a positional argument’s meaning is unclear from the callee name and value alone (especially bare booleans, nulls, or numbers), label it with an inline parameter-name comment before the value: `/* shouldRender= */ true`. Prefer refactoring the callee to take a named options object instead when that is practical. Match a file’s existing legacy style (`true /* shouldRender */`) only for consistency within that file.
+
 Tool directives (`@type`, `@__PURE__`, `/// <reference>`) are exempt; leave them in whatever form the tool requires.
