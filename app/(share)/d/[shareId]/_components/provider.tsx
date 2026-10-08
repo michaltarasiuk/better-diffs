@@ -10,7 +10,7 @@ import type {DiffLine} from '@/diffs/lines';
 import {DiffProvider} from '@/diffs/provider';
 import {useLocalStorage} from '@/hooks/use-local-storage';
 import {newId} from '@/utils/new-id';
-import {deserializeMap, serializeMap} from '@/utils/serialize-map';
+import {jsonToMap, mapToJson} from '@/utils/map';
 
 import {useShareId} from '../_hooks/use-share-id';
 
@@ -78,8 +78,8 @@ function useReviewState() {
     `share:v1:${shareId}`,
     () => new Map<string, FileState>(),
     {
-      serialize: serializeMap<string, FileState>,
-      deserialize: deserializeMap<string, FileState>,
+      serialize: mapToJson<string, FileState>,
+      deserialize: jsonToMap<string, FileState>,
     },
   );
 
