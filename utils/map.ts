@@ -10,7 +10,7 @@ export function mapToJson<K, V>(map: ReadonlyMap<K, V>) {
 export function jsonToMap<K, V>(text: string) {
   let entries: [K, V][] | null = null;
   try {
-    const parsed: unknown = Entries.parse(JSON.parse(text));
+    const parsed = Entries.parse(JSON.parse(text));
     entries = parsed as [K, V][];
   } catch {}
 
