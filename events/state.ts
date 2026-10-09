@@ -170,8 +170,6 @@ export class ShareState {
     return draft;
   }
 
-  // A confirmed event (e.g. another actor resolving the thread) can make a
-  // pending event invalid; skip it until the server rejects it.
   #draftWithApplicablePending() {
     const draft = Draft.fork(this);
     for (const event of this.#pending.values()) {
