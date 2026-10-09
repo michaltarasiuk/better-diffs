@@ -227,22 +227,20 @@ export class Draft implements Entities {
           commentIds: [],
           createdAt,
         });
+
         break;
       }
       case 'thread.resolved': {
         const thread = this.#getThread(payload.threadId);
-        this.#assertOwner(thread, actorId);
 
+        this.#assertOwner(thread, actorId);
         this.#writableThread(thread).resolved = true;
         break;
       }
       case 'comment.created': {
-        const comment = this.#getComment(payload.commentId);
-        this.#assertOwner(comment, actorId);
-
         const thread = this.#getThread(payload.threadId);
-        this.#writableThread(thread).commentIds.push(payload.commentId);
 
+        this.#writableThread(thread).commentIds.push(payload.commentId);
         this.#own(this.comments, {
           id: payload.commentId,
           threadId: payload.threadId,
@@ -255,8 +253,8 @@ export class Draft implements Entities {
       }
       case 'comment.edited': {
         const comment = this.#getComment(payload.commentId);
-        this.#assertOwner(comment, actorId);
 
+        this.#assertOwner(comment, actorId);
         this.#writableComment(comment).body = payload.body;
         break;
       }
@@ -310,10 +308,8 @@ export class Draft implements Entities {
   }
 
   #own<T extends {readonly id: string}>(entityMap: Map<string, T>, entity: T) {
-    if (isDefined(this.#owned)) {
-      this.#owned.add(entity);
-      entityMap.set(entity.id, entity);
-    }
+    this.#owned?.add(entity);
+    entityMap.set(entity.id, entity);
     return entity;
   }
 
