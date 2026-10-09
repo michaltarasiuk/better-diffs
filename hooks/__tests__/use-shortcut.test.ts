@@ -3,7 +3,7 @@
 import {renderHook} from '@testing-library/react';
 import {describe, expect, it, onTestFinished, vi} from 'vitest';
 
-import {useShortcut} from './use-shortcut';
+import {useShortcut} from '../use-shortcut';
 
 function pressKey(
   target: EventTarget,

@@ -2,7 +2,7 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {isEditableTarget} from './is-editable-target';
+import {isEditableTarget} from '../is-editable-target';
 
 describe('isEditableTarget', () => {
   it('returns false for a non-element EventTarget', () => {

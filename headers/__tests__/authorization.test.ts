@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import {Authorization} from './authorization';
+import {Authorization} from '../authorization';
 
 describe('Authorization', () => {
   it('initializes with an empty string', () => {

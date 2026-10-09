@@ -14,8 +14,8 @@ import {
 
 import {isDefined} from '@/utils/is-defined';
 
-import {COMMAND} from '../_lib/command';
-import {FEEDBACK_MS, Command} from './command';
+import {COMMAND} from '../../_lib/command';
+import {Command, FEEDBACK_MS} from '../command';
 
 const writeText = vi.fn<(text: string) => Promise<void>>();
 

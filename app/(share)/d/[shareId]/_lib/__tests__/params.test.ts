@@ -2,7 +2,7 @@ import {describe, expect, it} from 'vitest';
 
 import type {SelectedLines} from '@/diffs/schemas';
 
-import {loadParams} from './params';
+import {loadParams} from '../params';
 
 const QUERY = 'query with spaces';
 

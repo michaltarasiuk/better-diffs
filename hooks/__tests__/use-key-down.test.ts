@@ -3,7 +3,7 @@
 import {renderHook} from '@testing-library/react';
 import {describe, expect, it, vi} from 'vitest';
 
-import {useKeyDown} from './use-key-down';
+import {useKeyDown} from '../use-key-down';
 
 function pressKey(key: string) {
   document.dispatchEvent(new KeyboardEvent('keydown', {key}));

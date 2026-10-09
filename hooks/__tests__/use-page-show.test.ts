@@ -3,7 +3,7 @@
 import {renderHook} from '@testing-library/react';
 import {describe, expect, it, vi} from 'vitest';
 
-import {usePageShow} from './use-page-show';
+import {usePageShow} from '../use-page-show';
 
 function showPage(persisted = false) {
   window.dispatchEvent(new PageTransitionEvent('pageshow', {persisted}));

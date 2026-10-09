@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import {parseParams, quote} from './param-values';
+import {parseParams, quote} from '../param-values';
 
 describe('parseParams', () => {
   it('correctly parses a string of parameters for a Content-Type header', () => {

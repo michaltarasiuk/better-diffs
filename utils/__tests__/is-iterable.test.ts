@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import {isIterable} from './is-iterable';
+import {isIterable} from '../is-iterable';
 
 function createIterableObject() {
   const iterable: Iterable<unknown> = {

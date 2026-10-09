@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
-import {beforeEach, describe, expect, it, vi, type MockInstance} from 'vitest';
+import {beforeEach, describe, expect, it, type MockInstance, vi} from 'vitest';
 
-import type {StorageType} from './is-storage-available';
+import type {StorageType} from '../is-storage-available';
 
 const STORAGE_TYPES = [
   'localStorage',
@@ -10,7 +10,7 @@ const STORAGE_TYPES = [
 ] as const satisfies StorageType[];
 
 async function importIsStorageAvailable() {
-  const {isStorageAvailable} = await import('./is-storage-available');
+  const {isStorageAvailable} = await import('../is-storage-available');
   return isStorageAvailable;
 }
 

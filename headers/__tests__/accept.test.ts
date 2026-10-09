@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import {Accept} from './accept';
+import {Accept} from '../accept';
 
 describe('Accept', () => {
   it('initializes with an empty string', () => {

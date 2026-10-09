@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import {ContentType} from './content-type';
+import {ContentType} from '../content-type';
 
 describe('ContentType', () => {
   it('initializes with an empty string', () => {

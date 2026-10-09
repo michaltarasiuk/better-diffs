@@ -8,7 +8,7 @@ import {
 } from 'lexical';
 import {describe, expect, it} from 'vitest';
 
-import {$trimRoot} from './trim-root';
+import {$trimRoot} from '../trim-root';
 
 function trim(...blocks: (() => LexicalNode[])[]) {
   const editor = createEditor({

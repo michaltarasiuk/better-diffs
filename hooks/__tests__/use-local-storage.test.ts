@@ -3,7 +3,7 @@
 import {act, renderHook} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-import {useLocalStorage} from './use-local-storage';
+import {useLocalStorage} from '../use-local-storage';
 
 const {isStorageAvailable} = vi.hoisted(() => ({
   isStorageAvailable:

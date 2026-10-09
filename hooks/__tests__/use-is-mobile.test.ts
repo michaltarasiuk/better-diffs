@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import {act, renderHook} from '@testing-library/react';
-import {beforeEach, describe, expect, it, vi, type Mock} from 'vitest';
+import {beforeEach, describe, expect, it, type Mock, vi} from 'vitest';
 
 import {isDefined} from '@/utils/is-defined';
 
@@ -24,7 +24,7 @@ function listFor(query: string) {
 }
 
 async function importUseIsMobile() {
-  const {useIsMobile} = await import('./use-is-mobile');
+  const {useIsMobile} = await import('../use-is-mobile');
   return useIsMobile;
 }
 

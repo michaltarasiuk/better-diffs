@@ -2,7 +2,7 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {isUnmodifiedKey} from './is-unmodified-key';
+import {isUnmodifiedKey} from '../is-unmodified-key';
 
 describe('isUnmodifiedKey', () => {
   it('returns true when Escape key is pressed without modifiers', () => {
