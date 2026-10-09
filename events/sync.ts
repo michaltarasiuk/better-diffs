@@ -1,5 +1,6 @@
 import {z} from 'zod';
 
+import {fetchJson} from '@/api/fetch';
 import {isDefined} from '@/utils/is-defined';
 
 import {getEvents, getLastSeq, putEvents} from './idb';
@@ -8,30 +9,20 @@ import {ShareEvent} from './schemas';
 const ACTIVE_POLL_INTERVAL = 3_000;
 const BACKGROUND_POLL_INTERVAL = 30_000;
 
-const EventsResponse = z.discriminatedUnion('ok', [
-  z.object({
-    ok: z.literal(true),
-    events: z.array(ShareEvent),
-  }),
-  z.object({
-    ok: z.literal(false),
-    error: z.string(),
-  }),
-]);
+const EventsResponse = z.object({
+  events: z.array(ShareEvent),
+});
 
 async function fetchEvents(shareId: string, afterSeq: number | null) {
   const searchParams = isDefined(afterSeq)
     ? `?${new URLSearchParams({afterSeq: String(afterSeq)})}`
     : '';
-  const response = await fetch(`/api/shares/${shareId}/events${searchParams}`, {
-    cache: 'no-store',
-  });
-  const data = EventsResponse.parse(await response.json());
-
-  if (!data.ok) {
-    throw new Error(data.error);
-  }
-  return data.events;
+  const {events} = await fetchJson(
+    `/api/shares/${shareId}/events${searchParams}`,
+    EventsResponse,
+    {cache: 'no-store'},
+  );
+  return events;
 }
 
 export class ShareEventsSync {

@@ -1,18 +1,21 @@
-import {NextResponse, type NextRequest} from 'next/server';
-import {unauthorized} from 'next/navigation';
-
+import {ApiError} from '@/api/error';
+import {route} from '@/api/route';
 import {hasBearerToken} from '@/auth/bearer';
 import {deleteExpiredShares} from '@/db/shares';
 import {env} from '@/env';
 
 const SHARE_MAX_AGE_HOURS = 24;
 
-export async function GET(request: NextRequest) {
+export const GET = route(async (request) => {
   if (!hasBearerToken(request, env.CRON_SECRET)) {
-    unauthorized();
+    throw new ApiError('UNAUTHENTICATED', 'Missing or invalid bearer token.', {
+      reason: 'INVALID_BEARER_TOKEN',
+    });
   }
 
-  const changes = await deleteExpiredShares({maxAgeHours: SHARE_MAX_AGE_HOURS});
+  const deletedCount = await deleteExpiredShares({
+    maxAgeHours: SHARE_MAX_AGE_HOURS,
+  });
 
-  return NextResponse.json({ok: true, changes});
-}
+  return Response.json({deletedCount});
+});

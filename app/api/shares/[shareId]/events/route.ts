@@ -1,30 +1,29 @@
-import {NextResponse, type NextRequest} from 'next/server';
+import {z} from 'zod';
 
+import {ApiError} from '@/api/error';
+import {parseSearchParams, route} from '@/api/route';
 import {getEvents} from '@/db/events';
 import {shareExists} from '@/db/shares';
 
-import {loadEventsSearchParams} from './_lib/params';
+const SearchParams = z.object({
+  afterSeq: z.coerce.number().int().nonnegative().default(0),
+});
 
-export async function GET(
-  request: NextRequest,
-  {params}: RouteContext<'/api/shares/[shareId]/events'>,
-) {
-  const [{shareId}, {afterSeq}] = await Promise.all([
-    params,
-    loadEventsSearchParams(request),
-  ]);
+export const GET = route(
+  async (request, {params}: RouteContext<'/api/shares/[shareId]/events'>) => {
+    const {shareId} = await params;
+    const {afterSeq} = parseSearchParams(SearchParams, request);
 
-  if (!(await shareExists(shareId))) {
-    return NextResponse.json(
-      {ok: false, error: `Share not found: ${shareId}`},
-      {status: 404},
-    );
-  }
+    if (!(await shareExists(shareId))) {
+      throw new ApiError('NOT_FOUND', `Share "${shareId}" not found.`, {
+        reason: 'SHARE_NOT_FOUND',
+        metadata: {shareId},
+      });
+    }
 
-  const events = await getEvents(shareId, afterSeq);
+    const events = await getEvents(shareId, afterSeq);
 
-  return NextResponse.json(
-    {ok: true, events},
-    {headers: {'Cache-Control': 'no-store'}},
-  );
-}
+    return Response.json({events});
+  },
+  {headers: {'Cache-Control': 'no-store'}},
+);
