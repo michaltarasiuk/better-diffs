@@ -80,6 +80,15 @@ describe('Accept', () => {
     expect(header.getWeight('image/jpeg')).toBe(0);
   });
 
+  it('uses the most specific matching range', () => {
+    const header = new Accept('text/plain;q=0, */*');
+    expect(header.getWeight('text/plain')).toBe(0);
+    expect(header.getWeight('application/json')).toBe(1);
+    expect(header.getPreferred(['application/json', 'text/plain'])).toBe(
+      'application/json',
+    );
+  });
+
   it('gets the preferred media type', () => {
     const header = new Accept('text/html,text/*;q=0.9,application/json;q=0.8');
     expect(header.getPreferred(['text/html', 'application/json'])).toBe(

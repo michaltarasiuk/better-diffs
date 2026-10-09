@@ -42,17 +42,26 @@ export class Accept implements Iterable<[string, number]> {
   getWeight(mediaType: string) {
     const [type, subtype] = mediaType.toLowerCase().split('/');
 
+    // The most specific matching range wins (RFC 9110 §12.5.1), so
+    // `text/plain;q=0, */*` must not accept `text/plain`.
+    let weight = 0;
+    let specificity = -1;
+
     for (const [key, value] of this) {
       const [t, s] = key.split('/');
       if (
         (t === type || t === '*' || type === '*') &&
         (s === subtype || s === '*' || subtype === '*')
       ) {
-        return value;
+        const keySpecificity = (t === '*' ? 0 : 1) + (s === '*' ? 0 : 1);
+        if (keySpecificity > specificity) {
+          weight = value;
+          specificity = keySpecificity;
+        }
       }
     }
 
-    return 0;
+    return weight;
   }
 
   getPreferred<mediaType extends string>(mediaTypes: readonly mediaType[]) {
