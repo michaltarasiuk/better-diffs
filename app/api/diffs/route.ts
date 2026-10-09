@@ -14,8 +14,20 @@ const CORS_HEADERS = {
   'Access-Control-Expose-Headers': 'Location',
 };
 
+const FileDiffShape = z.looseObject({
+  name: z.string().min(1),
+  hunks: z.array(
+    z.looseObject({additionLines: z.int(), deletionLines: z.int()}),
+  ),
+});
+
+const FileDiff = z.custom<FileDiffMetadata>(
+  (value) => FileDiffShape.safeParse(value).success,
+  'Invalid file diff.',
+);
+
 const Body = z.object({
-  patches: z.array(z.array(z.custom<FileDiffMetadata>())).min(1),
+  patches: z.array(z.array(FileDiff)).min(1),
 });
 
 type Patches = readonly (readonly FileDiffMetadata[])[];
@@ -33,7 +45,7 @@ export const POST = route(
       request.headers.get('Content-Type'),
     ).mediaType;
 
-    const patches = mediaType?.startsWith('text/')
+    const patches = mediaType?.toLowerCase().startsWith('text/')
       ? await readPatchText(request)
       : await readPatchJson(request);
 

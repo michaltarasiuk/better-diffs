@@ -113,6 +113,8 @@ describe('POST', () => {
     ['no patches', {patches: []}],
     ['a missing patches field', {}],
     ['a non-array patch', {patches: ['a.ts']}],
+    ['a file without a name', {patches: [[{hunks: []}]]}],
+    ['a file without hunks', {patches: [[{name: 'a.ts'}]]}],
   ])('rejects JSON with %s', async (_name, body) => {
     const response = await postJson(body);
 
