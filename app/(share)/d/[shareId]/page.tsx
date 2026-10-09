@@ -8,7 +8,7 @@ import {preloadFileTree} from '@pierre/trees/ssr';
 import {SessionProvider} from '@/auth/provider';
 import {openShare} from '@/db/shares';
 import {computeDiffStats} from '@/diffs/stats';
-import {ShareEventsProvider} from '@/events/provider';
+import {EventsProvider} from '@/events/provider';
 import {prepareTreeInput, sortByTree} from '@/trees/input';
 import {getFileTreeOptions} from '@/trees/options';
 import {isDefined} from '@/utils/is-defined';
@@ -72,11 +72,11 @@ export default async function DiffPage({
         <main aria-label="Diff" className="min-h-0 min-w-0 flex-1">
           <SessionProvider>
             <Suspense fallback={codeViewSpinner}>
-              <ReviewStateProvider>
-                <ShareEventsProvider shareId={shareId}>
+              <EventsProvider shareId={shareId}>
+                <ReviewStateProvider>
                   <CodeView files={sortedFiles} />
-                </ShareEventsProvider>
-              </ReviewStateProvider>
+                </ReviewStateProvider>
+              </EventsProvider>
             </Suspense>
           </SessionProvider>
         </main>

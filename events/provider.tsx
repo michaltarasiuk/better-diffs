@@ -19,7 +19,7 @@ export const ShareStateContext = createContext<ShareState>(null as never);
 
 export const FoldedStateContext = createContext<FoldedState>(null as never);
 
-export function ShareEventsProvider({
+export function EventsProvider({
   shareId,
   children,
 }: {
@@ -32,14 +32,14 @@ export function ShareEventsProvider({
 
   return (
     <ErrorBoundary resetKeys={[shareId, hydratePromise]} fallback={null}>
-      <HydratedShareEvents hydratePromise={hydratePromise}>
+      <HydratedEvents hydratePromise={hydratePromise}>
         {children}
-      </HydratedShareEvents>
+      </HydratedEvents>
     </ErrorBoundary>
   );
 }
 
-function HydratedShareEvents({
+function HydratedEvents({
   hydratePromise,
   children,
 }: {
@@ -48,13 +48,13 @@ function HydratedShareEvents({
 }) {
   const {events, sync} = use(hydratePromise);
   return (
-    <ShareStateProvider events={events} sync={sync}>
+    <StateProvider events={events} sync={sync}>
       {children}
-    </ShareStateProvider>
+    </StateProvider>
   );
 }
 
-function ShareStateProvider({
+function StateProvider({
   events,
   sync,
   children,
