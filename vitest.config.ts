@@ -1,6 +1,7 @@
 import {resolve} from 'node:path';
 
 import nextEnv from '@next/env';
+import {playwright} from '@vitest/browser-playwright';
 import {defaultExclude, defineConfig} from 'vitest/config';
 
 const dirname = import.meta.dirname;
@@ -28,7 +29,21 @@ export default defineConfig({
         test: {
           name: 'unit',
           environment: 'node',
+          exclude: [...defaultExclude, '.next/**', '**/*.browser.test.*'],
           setupFiles: ['./vitest.setup.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'browser',
+          include: ['**/*.browser.test.{ts,tsx}'],
+          browser: {
+            enabled: true,
+            headless: true,
+            provider: playwright(),
+            instances: [{browser: 'chromium'}],
+          },
         },
       },
     ],
