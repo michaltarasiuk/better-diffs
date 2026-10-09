@@ -4,7 +4,7 @@ import {render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {describe, expect, it} from 'vitest';
 
-import {Sidebar} from '../sidebar';
+import {FilesSidebar} from '../files-sidebar';
 
 function separator() {
   return screen.getByRole('separator', {name: 'Resize sidebar'});
@@ -22,9 +22,9 @@ async function pressKey(key: string, times = 1) {
   }
 }
 
-describe('Sidebar', () => {
+describe('FilesSidebar', () => {
   it('renders its children at the default width', () => {
-    render(<Sidebar>Tree</Sidebar>);
+    render(<FilesSidebar>Tree</FilesSidebar>);
 
     expect(screen.getByText('Tree')).toBeInTheDocument();
     expect(sidebarWidth()).toBe('320px');
@@ -32,7 +32,7 @@ describe('Sidebar', () => {
   });
 
   it('resizes with the arrow keys', async () => {
-    render(<Sidebar>Tree</Sidebar>);
+    render(<FilesSidebar>Tree</FilesSidebar>);
 
     await pressKey('ArrowRight');
     expect(sidebarWidth()).toBe('336px');
@@ -42,7 +42,7 @@ describe('Sidebar', () => {
   });
 
   it('clamps the width', async () => {
-    render(<Sidebar>Tree</Sidebar>);
+    render(<FilesSidebar>Tree</FilesSidebar>);
 
     await pressKey('ArrowRight', 20);
     expect(separator()).toHaveAttribute('aria-valuenow', '480');

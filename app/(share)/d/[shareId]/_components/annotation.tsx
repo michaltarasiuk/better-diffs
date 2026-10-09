@@ -19,16 +19,16 @@ import {isDefined} from '@/utils/is-defined';
 import {newId} from '@/utils/new-id';
 
 import {useShareId} from '../_hooks/use-share-id';
+import {CommentEditorSkeleton} from './comment-editor-skeleton';
 import {CommentList} from './comment-list';
-import {EditorSkeleton} from './editor-skeleton';
-import {ReviewStateContext} from './provider';
 import {ReplyInputSkeleton} from './reply-input-skeleton';
+import {ReviewStateContext} from './review-state-provider';
 
 type AnnotationLine = Omit<DiffAnnotation, 'metadata'>;
 
-const Editor = dynamic(
-  () => import('./editor').then((module) => module.Editor),
-  {loading: () => <EditorSkeleton />},
+const CommentEditor = dynamic(
+  () => import('./comment-editor').then((module) => module.CommentEditor),
+  {loading: () => <CommentEditorSkeleton />},
 );
 
 const ReplyInput = dynamic(
@@ -80,7 +80,7 @@ export function Annotation({annotation, fileId, filePath}: AnnotationProps) {
       break;
     case 'thread':
       body = (
-        <ThreadAnnotation
+        <CommentThread
           line={line}
           threadId={metadata.threadId}
           fileId={fileId}
@@ -131,10 +131,10 @@ function CommentForm({
   const {setCommentFormDraft} = use(ReviewStateContext);
 
   return (
-    <Editor
+    <CommentEditor
       placeholder="Leave a comment…"
       initialState={form.draft}
-      onComment={async (body) => {
+      onSubmit={async (body) => {
         const threadId = newId();
         const commentId = newId();
 
@@ -290,13 +290,13 @@ function SignInActions({line, onDismiss}: SignInActionsProps) {
   );
 }
 
-interface ThreadAnnotationProps {
+interface CommentThreadProps {
   readonly line: AnnotationLine;
   readonly threadId: string;
   readonly fileId: string;
 }
 
-function ThreadAnnotation({line, threadId, fileId}: ThreadAnnotationProps) {
+function CommentThread({line, threadId, fileId}: CommentThreadProps) {
   const shareId = useShareId();
   const folded = use(FoldedStateContext);
 
@@ -324,7 +324,7 @@ function ThreadAnnotation({line, threadId, fileId}: ThreadAnnotationProps) {
 
       <ReplyInput
         initialState={replyDraft}
-        signIn={({onDismiss}) => (
+        renderSignIn={({onDismiss}) => (
           <SignInPrompt action="reply" line={line} onDismiss={onDismiss} />
         )}
         onReply={async (body, session) => {

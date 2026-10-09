@@ -108,33 +108,33 @@ function isBlockType(value: string): value is BlockType {
   return BLOCK_TYPES.some((blockType) => blockType.value === value);
 }
 
-type OnComment = (body: SerializedEditorState) => void | Promise<unknown>;
+type OnSubmit = (body: SerializedEditorState) => void | Promise<unknown>;
 
-interface EditorProps {
+interface CommentEditorProps {
   readonly placeholder: string;
   readonly initialState?: SerializedEditorState;
   readonly autoFocus?: boolean;
   readonly variant?: CardProps['variant'];
   readonly className?: string;
-  readonly onComment?: OnComment;
+  readonly onSubmit?: OnSubmit;
   readonly onChange?: (state: SerializedEditorState) => void;
   readonly onDismiss?: () => void;
 }
 
-export function Editor({
+export function CommentEditor({
   placeholder,
   initialState,
   autoFocus = false,
   variant = 'secondary',
   className,
-  onComment,
+  onSubmit,
   onChange,
   onDismiss,
-}: EditorProps) {
+}: CommentEditorProps) {
   const [extension] = useState(() =>
     defineExtension({
-      name: '@better-diffs/editor',
-      namespace: 'Editor',
+      name: '@better-diffs/comment-editor',
+      namespace: 'CommentEditor',
       theme: EDITOR_THEME,
       dependencies: [RichTextExtension, HistoryExtension],
       $initialEditorState: isDefined(initialState)
@@ -179,7 +179,7 @@ export function Editor({
           <Button variant="ghost" size="sm" onPress={() => onDismiss?.()}>
             Cancel
           </Button>
-          <SubmitCommentButton onComment={onComment} onDismiss={onDismiss} />
+          <SubmitCommentButton onSubmit={onSubmit} onDismiss={onDismiss} />
         </Card.Footer>
       </Card>
 
@@ -195,11 +195,11 @@ export function Editor({
 }
 
 interface SubmitCommentButtonProps {
-  readonly onComment?: OnComment;
+  readonly onSubmit?: OnSubmit;
   readonly onDismiss?: () => void;
 }
 
-function SubmitCommentButton({onComment, onDismiss}: SubmitCommentButtonProps) {
+function SubmitCommentButton({onSubmit, onDismiss}: SubmitCommentButtonProps) {
   const [editor] = useLexicalComposerContext();
   const isEmpty = useLexicalIsTextContentEmpty(editor, true);
 
@@ -212,7 +212,7 @@ function SubmitCommentButton({onComment, onDismiss}: SubmitCommentButtonProps) {
         const body = editor.getEditorState().toJSON();
         onDismiss?.();
         startTransition(() => {
-          void onComment?.(body);
+          void onSubmit?.(body);
         });
       }}
     >

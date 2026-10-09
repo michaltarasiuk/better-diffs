@@ -8,7 +8,7 @@ import {isDefined} from '@/utils/is-defined';
 
 export const FEEDBACK_MS = 2_000;
 
-interface CommandProps {
+interface CommandSnippetProps {
   readonly label: string;
   readonly command: string;
 }
@@ -28,7 +28,7 @@ function selectNodeContents(node: HTMLElement) {
   return true;
 }
 
-export function Command({label, command}: CommandProps) {
+export function CommandSnippet({label, command}: CommandSnippetProps) {
   const [feedback, setFeedback] = useState<CopyFeedback>('idle');
   const commandRef = useRef<React.ComponentRef<'code'>>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);

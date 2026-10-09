@@ -7,8 +7,8 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {newId} from '@/utils/new-id';
 
 import {
-  EventsProvider,
   FoldedStateContext,
+  ShareEventsProvider,
   ShareStateContext,
 } from '../provider';
 import type {ShareEvent, ShareEventPayload} from '../schemas';
@@ -84,7 +84,7 @@ function ThreadCount() {
 function renderProvider(children: React.ReactNode = <ThreadCount />) {
   return render(
     <Suspense fallback="Loading">
-      <EventsProvider shareId={SHARE_ID}>{children}</EventsProvider>
+      <ShareEventsProvider shareId={SHARE_ID}>{children}</ShareEventsProvider>
     </Suspense>,
   );
 }
@@ -93,7 +93,7 @@ beforeEach(() => {
   hydrateWith([]);
 });
 
-describe('EventsProvider', () => {
+describe('ShareEventsProvider', () => {
   it('hydrates events for the share', async () => {
     hydrateWith([opened(1), opened(2)]);
 

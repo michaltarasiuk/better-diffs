@@ -14,8 +14,8 @@ import {
 
 import {isDefined} from '@/utils/is-defined';
 
-import {COMMAND} from '../../_lib/command';
-import {Command, FEEDBACK_MS} from '../command';
+import {INSTALL_COMMAND} from '../../_lib/install-command';
+import {CommandSnippet, FEEDBACK_MS} from '../command-snippet';
 
 const writeText = vi.fn<(text: string) => Promise<void>>();
 
@@ -41,7 +41,7 @@ function command() {
 }
 
 function renderCommand() {
-  render(<Command label="Copy command" command={COMMAND} />);
+  render(<CommandSnippet label="Copy command" command={INSTALL_COMMAND} />);
 }
 
 const REACT_ARIA_KEYBOARD_ACTIVATION = {detail: 0} as const;
@@ -69,11 +69,11 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('Command', () => {
+describe('CommandSnippet', () => {
   it('renders the install command', () => {
     renderCommand();
 
-    expect(command().textContent).toBe(COMMAND);
+    expect(command().textContent).toBe(INSTALL_COMMAND);
   });
 
   it('labels the copy button for assistive tech', () => {
@@ -86,7 +86,7 @@ describe('Command', () => {
     renderCommand();
     await copy();
 
-    expect(writeText).toHaveBeenCalledExactlyOnceWith(COMMAND);
+    expect(writeText).toHaveBeenCalledExactlyOnceWith(INSTALL_COMMAND);
   });
 
   it('confirms the copy', async () => {
@@ -141,7 +141,7 @@ describe('Command', () => {
     if (!isDefined(selection)) {
       throw new Error('Selection missing');
     }
-    expect(selection.toString()).toBe(COMMAND);
+    expect(selection.toString()).toBe(INSTALL_COMMAND);
   });
 
   it('labels the button Selected when the clipboard is unavailable', async () => {

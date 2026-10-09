@@ -1,7 +1,7 @@
 import {Button, type ButtonProps} from '@heroui/react';
 import {PlusIcon} from 'lucide-react';
 
-export function GutterUtility(props: ButtonProps) {
+export function AddCommentButton(props: ButtonProps) {
   return (
     <Button
       id="gutter-utility"
@@ -18,5 +18,5 @@ export function GutterUtility(props: ButtonProps) {
 }
 
 function preloadEditor() {
-  void import('./editor');
+  void import('./comment-editor');
 }

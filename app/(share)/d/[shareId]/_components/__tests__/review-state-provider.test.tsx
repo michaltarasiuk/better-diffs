@@ -9,7 +9,10 @@ import type {DiffLine} from '@/diffs/lines';
 import {jsonToMap} from '@/utils/map';
 import {newId} from '@/utils/new-id';
 
-import {ReviewStateContext, ReviewStateProvider} from '../provider';
+import {
+  ReviewStateContext,
+  ReviewStateProvider,
+} from '../review-state-provider';
 
 vi.mock('next/navigation', () => ({
   useParams: () => ({shareId}),

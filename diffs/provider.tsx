@@ -21,11 +21,13 @@ const WORKER_HIGHLIGHTER_OPTIONS = {
   theme: DEFAULT_THEMES,
 } satisfies WorkerInitializationRenderOptions;
 
-interface DiffProviderProps {
+interface DiffWorkerPoolProviderProps {
   readonly children: React.ReactNode;
 }
 
-export function DiffProvider({children}: DiffProviderProps) {
+export function DiffWorkerPoolProvider({
+  children,
+}: DiffWorkerPoolProviderProps) {
   return (
     <WorkerPoolContextProvider
       poolOptions={WORKER_POOL_OPTIONS}

@@ -8,8 +8,8 @@ import dedent from 'dedent';
 
 import {PATCH_DIFF_OPTIONS} from '@/diffs/options';
 
-import {Command} from './_components/command';
-import {COMMAND} from './_lib/command';
+import {CommandSnippet} from './_components/command-snippet';
+import {INSTALL_COMMAND} from './_lib/install-command';
 
 const HOME_PATCH = dedent`
   diff --git a/share.sh b/share.sh
@@ -62,7 +62,10 @@ export default async function HomePage() {
         </Typography.Heading>
 
         <div className="space-y-2">
-          <Command label="Copy install command" command={COMMAND} />
+          <CommandSnippet
+            label="Copy install command"
+            command={INSTALL_COMMAND}
+          />
 
           <Typography.Paragraph size="xs" color="muted">
             Downloads a prebuilt binary for macOS or Linux into{' '}

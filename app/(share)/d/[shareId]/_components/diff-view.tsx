@@ -4,7 +4,7 @@ import '@/diffs/diffs.css';
 
 import {Button, Checkbox, cn, Focusable, Kbd, Tooltip} from '@heroui/react';
 import {type FileDiffMetadata, isDiffAnnotation} from '@pierre/diffs';
-import {CodeView as DiffCodeView} from '@pierre/diffs/react';
+import {CodeView} from '@pierre/diffs/react';
 import {ChevronDownIcon} from 'lucide-react';
 import {use} from 'react';
 
@@ -21,21 +21,22 @@ import {useIsMobile} from '@/hooks/use-is-mobile';
 import {useShortcut} from '@/hooks/use-shortcut';
 import {isDefined} from '@/utils/is-defined';
 
-import {useLines} from '../_hooks/use-lines';
+import {useSelectedLines} from '../_hooks/use-selected-lines';
 import {getViewportFileId} from '../_lib/get-viewport-file-id';
 import {scrollToFile} from '../_lib/scroll-to-file';
+import {AddCommentButton} from './add-comment-button';
 import {Annotation} from './annotation';
-import {GutterUtility} from './gutter-utility';
-import {CodeViewRefContext, ReviewStateContext} from './provider';
+import {CodeViewRefContext} from './code-view-provider';
+import {ReviewStateContext} from './review-state-provider';
 
-interface CodeViewProps {
+interface DiffViewProps {
   readonly files: readonly {
     readonly id: string;
     readonly metadata: FileDiffMetadata;
   }[];
 }
 
-export function CodeView({files}: CodeViewProps) {
+export function DiffView({files}: DiffViewProps) {
   const {
     getFileState,
     toggleFileCollapsed,
@@ -43,7 +44,7 @@ export function CodeView({files}: CodeViewProps) {
     toggleFileViewed,
     addCommentForm,
   } = use(ReviewStateContext);
-  const {selectedLines, setSelectedLines} = useLines();
+  const {selectedLines, setSelectedLines} = useSelectedLines();
 
   const isMobile = useIsMobile();
 
@@ -67,7 +68,7 @@ export function CodeView({files}: CodeViewProps) {
   });
 
   return (
-    <DiffCodeView
+    <CodeView
       ref={codeViewRef}
       items={files.map((file) => {
         const {commentForms, collapsed, version} = getFileState(file.id);
@@ -109,7 +110,7 @@ export function CodeView({files}: CodeViewProps) {
         />
       )}
       renderGutterUtility={(getHoveredLine, item) => (
-        <GutterUtility
+        <AddCommentButton
           onPress={() => {
             const line = getHoveredLine();
             if (!isDefined(line) || !isDiffLine(line)) {

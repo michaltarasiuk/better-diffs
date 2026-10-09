@@ -14,7 +14,7 @@ import {ShareState} from '@/events/state';
 import {newId} from '@/utils/new-id';
 
 import {Annotation} from '../annotation';
-import {ReviewStateContext} from '../provider';
+import {ReviewStateContext} from '../review-state-provider';
 
 const {openThread, createComment} = vi.hoisted(() => ({
   openThread: vi.fn<typeof import('@/events/actions').openThread>(),
@@ -44,27 +44,27 @@ vi.mock('next/dynamic', () => ({
   },
 }));
 
-vi.mock('../editor', () => ({
-  Editor: ({
+vi.mock('../comment-editor', () => ({
+  CommentEditor: ({
     placeholder,
-    onComment,
+    onSubmit,
   }: {
     placeholder: string;
-    onComment: (body: SerializedEditorState) => Promise<void>;
-  }) => <button onClick={() => onComment(BODY)}>{placeholder}</button>,
+    onSubmit: (body: SerializedEditorState) => Promise<void>;
+  }) => <button onClick={() => onSubmit(BODY)}>{placeholder}</button>,
 }));
 
 vi.mock('../reply-input', () => ({
   ReplyInput: ({
-    signIn,
+    renderSignIn,
     onReply,
   }: {
-    signIn: (props: {onDismiss: () => void}) => React.ReactNode;
+    renderSignIn: (props: {onDismiss: () => void}) => React.ReactNode;
     onReply: (body: SerializedEditorState, session: Session) => Promise<void>;
   }) => (
     <>
       <button onClick={() => onReply(BODY, SESSION)}>Reply</button>
-      {signIn({onDismiss: () => {}})}
+      {renderSignIn({onDismiss: () => {}})}
     </>
   ),
 }));

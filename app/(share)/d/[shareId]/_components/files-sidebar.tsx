@@ -9,7 +9,7 @@ const DEFAULT_WIDTH = 320;
 
 const KEYBOARD_STEP = 16;
 
-export function Sidebar({children}: {readonly children: React.ReactNode}) {
+export function FilesSidebar({children}: {readonly children: React.ReactNode}) {
   const [width, setWidth] = useState(DEFAULT_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
   const {moveProps} = useMove({

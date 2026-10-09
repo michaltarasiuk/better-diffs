@@ -10,10 +10,10 @@ import {SessionContext} from '@/auth/context';
 import {useKeyDown} from '@/hooks/use-key-down';
 import {isDefined} from '@/utils/is-defined';
 
-import {Editor} from './editor';
+import {CommentEditor} from './comment-editor';
 
 interface ReplyInputProps {
-  readonly signIn: (props: {onDismiss: () => void}) => React.ReactNode;
+  readonly renderSignIn: (props: {onDismiss: () => void}) => React.ReactNode;
   readonly initialState?: SerializedEditorState;
   readonly onReply?: (
     body: SerializedEditorState,
@@ -23,7 +23,7 @@ interface ReplyInputProps {
 }
 
 export function ReplyInput({
-  signIn,
+  renderSignIn,
   initialState,
   onReply,
   onChange,
@@ -66,18 +66,18 @@ export function ReplyInput({
   return (
     <div {...focusWithinProps}>
       {isDefined(session) ? (
-        <Editor
+        <CommentEditor
           placeholder="Write a reply…"
           autoFocus
           initialState={initialState}
           variant="transparent"
           className="rounded-b-xl"
-          onComment={(body) => onReply?.(body, session)}
+          onSubmit={(body) => onReply?.(body, session)}
           onChange={onChange}
           onDismiss={onDismiss}
         />
       ) : (
-        signIn({onDismiss})
+        renderSignIn({onDismiss})
       )}
     </div>
   );

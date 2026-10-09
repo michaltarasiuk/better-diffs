@@ -17,19 +17,24 @@ import type {TreeInput} from '@/trees/input';
 import {getFileTreeOptions} from '@/trees/options';
 import {isDefined} from '@/utils/is-defined';
 
-import {useQuery} from '../_hooks/use-query';
+import {useSearchQuery} from '../_hooks/use-search-query';
 import {scrollToFile} from '../_lib/scroll-to-file';
-import {CodeViewRefContext} from './provider';
+import {CodeViewRefContext} from './code-view-provider';
 
-interface TreeProps {
+interface FileTreePanelProps {
   readonly input: TreeInput;
   readonly preloaded: FileTreePreloadedData;
   readonly fileIdByPath: Readonly<Record<string, string>>;
   readonly children: React.ReactNode;
 }
 
-export function Tree({input, preloaded, fileIdByPath, children}: TreeProps) {
-  const {searchQuery, setSearchQuery} = useQuery();
+export function FileTreePanel({
+  input,
+  preloaded,
+  fileIdByPath,
+  children,
+}: FileTreePanelProps) {
+  const {searchQuery, setSearchQuery} = useSearchQuery();
   const codeViewRef = use(CodeViewRefContext);
   const {model} = useFileTree({
     ...getFileTreeOptions(input, {searchQuery}),
@@ -57,7 +62,7 @@ export function Tree({input, preloaded, fileIdByPath, children}: TreeProps) {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <TreeSearch model={model} />
+      <FileTreeSearch model={model} />
 
       <FileTree
         aria-label="Changed files"
@@ -71,7 +76,7 @@ export function Tree({input, preloaded, fileIdByPath, children}: TreeProps) {
   );
 }
 
-function TreeSearch({model}: {readonly model: FileTreeModel}) {
+function FileTreeSearch({model}: {readonly model: FileTreeModel}) {
   const search = useFileTreeSearch(model);
   const inputRef = useRef<HTMLInputElement>(null);
 

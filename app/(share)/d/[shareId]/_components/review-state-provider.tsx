@@ -1,21 +1,15 @@
 'use client';
 
-import type {CodeViewHandle} from '@pierre/diffs/react';
 import type {SerializedEditorState} from 'lexical';
-import {createContext, useRef} from 'react';
+import {createContext} from 'react';
 
-import type {AnnotationMetadata, FormDiffAnnotation} from '@/diffs/annotations';
+import type {FormDiffAnnotation} from '@/diffs/annotations';
 import type {DiffLine} from '@/diffs/lines';
-import {DiffProvider} from '@/diffs/provider';
 import {useLocalStorage} from '@/hooks/use-local-storage';
 import {jsonToMap, mapToJson} from '@/utils/map';
 import {newId} from '@/utils/new-id';
 
 import {useShareId} from '../_hooks/use-share-id';
-
-type Handle = CodeViewHandle<AnnotationMetadata, null>;
-
-type CodeViewRef = React.RefObject<Handle | null>;
 
 interface FileState {
   readonly commentForms: readonly FormDiffAnnotation[];
@@ -41,23 +35,7 @@ const DEFAULT_FILE_STATE: FileState = {
   version: 0,
 };
 
-export const CodeViewRefContext = createContext<CodeViewRef>(null as never);
-
 export const ReviewStateContext = createContext<ReviewState>(null as never);
-
-export function CodeViewProvider({
-  children,
-}: {
-  readonly children: React.ReactNode;
-}) {
-  const codeViewRef = useRef<Handle>(null);
-
-  return (
-    <DiffProvider>
-      <CodeViewRefContext value={codeViewRef}>{children}</CodeViewRefContext>
-    </DiffProvider>
-  );
-}
 
 export function ReviewStateProvider({
   children,

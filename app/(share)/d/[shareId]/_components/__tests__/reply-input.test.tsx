@@ -10,11 +10,11 @@ import type {Session} from '@/auth/server';
 
 import {ReplyInput} from '../reply-input';
 
-const {Editor} = vi.hoisted(() => ({
-  Editor: vi.fn<typeof import('../editor').Editor>(),
+const {CommentEditor} = vi.hoisted(() => ({
+  CommentEditor: vi.fn<typeof import('../comment-editor').CommentEditor>(),
 }));
 
-vi.mock('../editor', () => ({Editor}));
+vi.mock('../comment-editor', () => ({CommentEditor}));
 
 const SESSION = {
   user: {id: 'alice', name: 'Alice', image: null},
@@ -28,16 +28,16 @@ function renderReplyInput({
   session?: Session | null;
   onReply?: React.ComponentProps<typeof ReplyInput>['onReply'];
 } = {}) {
-  Editor.mockImplementation(({onComment, onDismiss}) => (
+  CommentEditor.mockImplementation(({onSubmit, onDismiss}) => (
     <div role="dialog" aria-label="Editor">
-      <button onClick={() => onComment?.(BODY)}>Comment</button>
+      <button onClick={() => onSubmit?.(BODY)}>Comment</button>
       <button onClick={() => onDismiss?.()}>Dismiss</button>
     </div>
   ));
   render(
     <SessionContext value={session}>
       <ReplyInput
-        signIn={({onDismiss}) => (
+        renderSignIn={({onDismiss}) => (
           <button onClick={onDismiss}>Sign in to reply</button>
         )}
         onReply={onReply}

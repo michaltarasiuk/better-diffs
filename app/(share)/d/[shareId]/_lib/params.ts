@@ -12,4 +12,4 @@ export const searchParsers = {
   lines: parseAsJson(SelectedLines),
 };
 
-export const loadParams = createLoader(searchParsers);
+export const loadSearchParams = createLoader(searchParsers);

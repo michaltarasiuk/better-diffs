@@ -7,18 +7,19 @@ import {Suspense} from 'react';
 import {SessionProvider} from '@/auth/provider';
 import {openShare} from '@/db/shares';
 import {computeDiffStats} from '@/diffs/stats';
-import {EventsProvider} from '@/events/provider';
+import {ShareEventsProvider} from '@/events/provider';
 import {prepareTreeInput, sortByTree} from '@/trees/input';
 import {getFileTreeOptions} from '@/trees/options';
 import {isDefined} from '@/utils/is-defined';
 
-import {CodeView} from './_components/code-view';
-import {Drawer} from './_components/drawer';
-import {CodeViewProvider, ReviewStateProvider} from './_components/provider';
-import {Sidebar} from './_components/sidebar';
+import {CodeViewProvider} from './_components/code-view-provider';
+import {DiffView} from './_components/diff-view';
+import {FileTreePanel} from './_components/file-tree-panel';
+import {FilesDrawer} from './_components/files-drawer';
+import {FilesSidebar} from './_components/files-sidebar';
+import {ReviewStateProvider} from './_components/review-state-provider';
 import {Stats} from './_components/stats';
-import {Tree} from './_components/tree';
-import {loadParams} from './_lib/params';
+import {loadSearchParams} from './_lib/params';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,13 +30,13 @@ export async function generateMetadata({
   return {title: `Diff ${shareId}`};
 }
 
-export default async function DiffPage({
+export default async function SharePage({
   params,
   searchParams,
 }: PageProps<'/d/[shareId]'>) {
   const [{shareId}, {q: searchQuery}] = await Promise.all([
     params,
-    loadParams(searchParams),
+    loadSearchParams(searchParams),
   ]);
 
   const files = await openShare(shareId);
@@ -54,41 +55,41 @@ export default async function DiffPage({
   );
 
   const tree = (
-    <Tree
+    <FileTreePanel
       input={treeInput}
       preloaded={preloadFileTree(getFileTreeOptions(treeInput, {searchQuery}))}
       fileIdByPath={fileIdByPath}
     >
       <Stats stats={stats} />
-    </Tree>
+    </FileTreePanel>
   );
 
   return (
     <div className="flex h-full">
       <CodeViewProvider>
-        <Sidebar>{tree}</Sidebar>
+        <FilesSidebar>{tree}</FilesSidebar>
 
         <main aria-label="Diff" className="min-h-0 min-w-0 flex-1">
           <SessionProvider>
-            <Suspense fallback={codeViewSpinner}>
-              <EventsProvider shareId={shareId}>
+            <Suspense fallback={diffViewSpinner}>
+              <ShareEventsProvider shareId={shareId}>
                 <ReviewStateProvider key={shareId}>
-                  <CodeView files={sortedFiles} />
+                  <DiffView files={sortedFiles} />
                 </ReviewStateProvider>
-              </EventsProvider>
+              </ShareEventsProvider>
             </Suspense>
           </SessionProvider>
         </main>
 
         <div aria-label="Files" className="md:hidden">
-          <Drawer>{tree}</Drawer>
+          <FilesDrawer>{tree}</FilesDrawer>
         </div>
       </CodeViewProvider>
     </div>
   );
 }
 
-const codeViewSpinner = (
+const diffViewSpinner = (
   <div className="flex h-full items-center justify-center">
     <Spinner aria-label="Loading diff" />
   </div>

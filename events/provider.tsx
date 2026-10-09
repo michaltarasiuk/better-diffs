@@ -18,7 +18,7 @@ export const ShareStateContext = createContext<ShareState>(null as never);
 
 export const FoldedStateContext = createContext<FoldedState>(null as never);
 
-export function EventsProvider({
+export function ShareEventsProvider({
   shareId,
   children,
 }: {
@@ -47,13 +47,13 @@ function HydratedEvents({
 }) {
   const {events, sync} = use(hydratePromise);
   return (
-    <StateProvider events={events} sync={sync}>
+    <ShareStateProvider events={events} sync={sync}>
       {children}
-    </StateProvider>
+    </ShareStateProvider>
   );
 }
 
-function StateProvider({
+function ShareStateProvider({
   events,
   sync,
   children,
