@@ -1,6 +1,6 @@
 import {Accordion, tv, type VariantProps} from '@heroui/react';
 
-import {formatDiffStat, type DiffStats} from '@/diffs/stats';
+import {type DiffStats, formatDiffStat} from '@/diffs/stats';
 
 export function Stats({stats}: {readonly stats: DiffStats}) {
   return (

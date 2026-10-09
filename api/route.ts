@@ -1,7 +1,6 @@
 import 'server-only';
 
 import {unstable_rethrow} from 'next/navigation';
-
 import type {z} from 'zod';
 
 import {Accept} from '@/headers/accept';

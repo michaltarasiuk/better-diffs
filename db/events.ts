@@ -2,7 +2,7 @@ import 'server-only';
 
 import {and, asc, eq, gt, sql} from 'drizzle-orm';
 
-import {subjectIdFromPayload, type ShareEventPayload} from '@/events/schemas';
+import {type ShareEventPayload, subjectIdFromPayload} from '@/events/schemas';
 import {isDefined} from '@/utils/is-defined';
 
 import {db} from './db';

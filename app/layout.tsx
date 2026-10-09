@@ -1,9 +1,8 @@
 import './globals.css';
 
+import {cn} from '@heroui/styles';
 import type {Metadata, Viewport} from 'next';
 import Script from 'next/script';
-
-import {cn} from '@heroui/styles';
 import {NuqsAdapter} from 'nuqs/adapters/next/app';
 
 import {env} from '@/env';

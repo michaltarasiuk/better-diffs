@@ -1,16 +1,15 @@
 'use client';
 
-import {createContext, useRef} from 'react';
-
 import type {CodeViewHandle} from '@pierre/diffs/react';
 import type {SerializedEditorState} from 'lexical';
+import {createContext, useRef} from 'react';
 
 import type {AnnotationMetadata, FormDiffAnnotation} from '@/diffs/annotations';
 import type {DiffLine} from '@/diffs/lines';
 import {DiffProvider} from '@/diffs/provider';
 import {useLocalStorage} from '@/hooks/use-local-storage';
-import {newId} from '@/utils/new-id';
 import {jsonToMap, mapToJson} from '@/utils/map';
+import {newId} from '@/utils/new-id';
 
 import {useShareId} from '../_hooks/use-share-id';
 

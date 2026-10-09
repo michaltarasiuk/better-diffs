@@ -1,9 +1,8 @@
-import {Suspense} from 'react';
-import type {Metadata} from 'next';
-import {notFound} from 'next/navigation';
-
 import {Spinner} from '@heroui/react';
 import {preloadFileTree} from '@pierre/trees/ssr';
+import type {Metadata} from 'next';
+import {notFound} from 'next/navigation';
+import {Suspense} from 'react';
 
 import {SessionProvider} from '@/auth/provider';
 import {openShare} from '@/db/shares';

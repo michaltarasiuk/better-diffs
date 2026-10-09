@@ -1,17 +1,15 @@
 'use client';
 
-import {startTransition, useEffect, useEffectEvent, useState} from 'react';
-
 import {
   Button,
   ButtonGroup,
   Card,
+  type CardProps,
+  type Key,
   ListBox,
   Select,
   ToggleButton,
   ToggleButtonGroup,
-  type CardProps,
-  type Key,
 } from '@heroui/react';
 import {cn, typographyVariants} from '@heroui/styles';
 import {HistoryExtension} from '@lexical/history';
@@ -30,21 +28,21 @@ import {
 } from '@lexical/rich-text';
 import {$setBlocksType} from '@lexical/selection';
 import {
-  COMMAND_PRIORITY_BEFORE_EDITOR,
-  FORMAT_ELEMENT_COMMAND,
-  FORMAT_TEXT_COMMAND,
-  KEY_ESCAPE_COMMAND,
-  REDO_COMMAND,
-  UNDO_COMMAND,
   $createParagraphNode,
   $findMatchingParent,
   $getSelection,
   $isRangeSelection,
   $isRootOrShadowRoot,
+  COMMAND_PRIORITY_BEFORE_EDITOR,
   defineExtension,
+  FORMAT_ELEMENT_COMMAND,
+  FORMAT_TEXT_COMMAND,
+  KEY_ESCAPE_COMMAND,
   type LexicalEditor,
+  REDO_COMMAND,
   type SerializedEditorState,
   type TextFormatType,
+  UNDO_COMMAND,
 } from 'lexical';
 import {
   AlignCenterIcon,
@@ -57,6 +55,7 @@ import {
   UnderlineIcon,
   Undo2Icon,
 } from 'lucide-react';
+import {startTransition, useEffect, useEffectEvent, useState} from 'react';
 
 import {EDITOR_THEME} from '@/lexical/editor-theme';
 import {$trimRoot} from '@/lexical/trim-root';

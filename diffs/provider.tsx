@@ -2,8 +2,8 @@
 
 import {DEFAULT_THEMES} from '@pierre/diffs';
 import {
-  WorkerPoolContextProvider,
   type WorkerInitializationRenderOptions,
+  WorkerPoolContextProvider,
 } from '@pierre/diffs/react';
 import type {WorkerPoolOptions} from '@pierre/diffs/worker';
 

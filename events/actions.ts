@@ -7,15 +7,15 @@ import {appendEvents, getEvents} from '@/db/events';
 import {isDefined} from '@/utils/is-defined';
 
 import {
+  type Actor,
+  type CommentCreatedPayload,
+  type CommentDeletedPayload,
+  type CommentEditedPayload,
   CreateCommentInput,
   DeleteCommentInput,
   EditCommentInput,
   OpenThreadInput,
   ResolveThreadInput,
-  type Actor,
-  type CommentCreatedPayload,
-  type CommentDeletedPayload,
-  type CommentEditedPayload,
   type ShareEventPayload,
   type ThreadOpenedPayload,
   type ThreadResolvedPayload,

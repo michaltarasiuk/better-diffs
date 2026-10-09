@@ -1,6 +1,6 @@
 import {
-  preparePresortedFileTreeInput,
   type FileTreeOptions,
+  preparePresortedFileTreeInput,
 } from '@pierre/trees';
 
 import type {TreeInput} from './input';

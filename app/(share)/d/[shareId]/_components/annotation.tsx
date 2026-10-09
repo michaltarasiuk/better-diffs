@@ -1,11 +1,10 @@
 'use client';
 
-import {use, useEffect, useRef, useState} from 'react';
-import dynamic from 'next/dynamic';
-
 import {Button, Card, Separator, Spinner} from '@heroui/react';
 import {typographyVariants} from '@heroui/styles';
 import {getLineAnnotationName} from '@pierre/diffs';
+import dynamic from 'next/dynamic';
+import {use, useEffect, useRef, useState} from 'react';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
 import {authClient} from '@/auth/client';

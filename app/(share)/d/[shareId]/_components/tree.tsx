@@ -2,16 +2,15 @@
 
 import '@/trees/trees.css';
 
-import {use, useRef} from 'react';
-
 import {SearchField} from '@heroui/react';
 import type {FileTree as FileTreeModel} from '@pierre/trees';
 import {
   FileTree,
+  type FileTreePreloadedData,
   useFileTree,
   useFileTreeSearch,
-  type FileTreePreloadedData,
 } from '@pierre/trees/react';
+import {use, useRef} from 'react';
 
 import {useShortcut} from '@/hooks/use-shortcut';
 import type {TreeInput} from '@/trees/input';

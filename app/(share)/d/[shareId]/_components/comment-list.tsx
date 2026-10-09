@@ -1,13 +1,12 @@
 'use client';
 
-import {Fragment, useState} from 'react';
-
 import {Avatar, Separator} from '@heroui/react';
 import {typographyVariants} from '@heroui/styles';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {LexicalExtensionComposer} from '@lexical/react/LexicalExtensionComposer';
 import {RichTextExtension} from '@lexical/rich-text';
 import {defineExtension, type SerializedEditorState} from 'lexical';
+import {Fragment, useState} from 'react';
 
 import type {CommentState} from '@/events/state';
 import {EDITOR_THEME} from '@/lexical/editor-theme';

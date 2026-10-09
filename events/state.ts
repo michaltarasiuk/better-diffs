@@ -4,11 +4,11 @@ import {isDefined} from '@/utils/is-defined';
 import {newId} from '@/utils/new-id';
 
 import {
-  subjectIdFromPayload,
   type Actor,
   type Anchor,
   type ShareEvent,
   type ShareEventPayload,
+  subjectIdFromPayload,
 } from './schemas';
 
 export interface ThreadState {

@@ -1,4 +1,4 @@
-import {parsePatchFiles, type FileDiffMetadata} from '@pierre/diffs';
+import {type FileDiffMetadata, parsePatchFiles} from '@pierre/diffs';
 import {z} from 'zod';
 
 import {ApiError} from '@/api/error';
