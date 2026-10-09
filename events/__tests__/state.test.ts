@@ -389,6 +389,17 @@ describe('ShareState', () => {
       expect(state.getSnapshot().pendingIds.size).toBe(0);
     });
 
+    it('hides pending events invalidated by a confirmed event', () => {
+      const state = stateWith(opened);
+
+      state.optimistic(optimistic(created(), BOB));
+      state.ingest([confirmed(resolved)]);
+
+      const {threads, comments} = state.getSnapshot();
+      expect(threads.get(THREAD_ID)?.resolved).toBe(true);
+      expect(comments.has(COMMENT_ID)).toBe(false);
+    });
+
     it('validates a batch atomically', () => {
       const state = new ShareState();
 

@@ -3,7 +3,7 @@
 import {unauthorized} from 'next/navigation';
 
 import {getSession} from '@/auth/server';
-import {appendEvents, getEvents} from '@/db/events';
+import {appendEvents} from '@/db/events';
 import {isDefined} from '@/utils/is-defined';
 
 import {
@@ -103,20 +103,20 @@ async function appendValidatedEvents(
 ) {
   const {actorId, actor} = await getActor();
 
-  const state = new ShareState();
-  state.ingest(await getEvents(shareId));
+  return appendEvents(shareId, actorId, payloads, (events) => {
+    const state = new ShareState();
+    state.ingest(events);
 
-  const fork = Draft.fork(state);
-  const createdAt = new Date().toISOString();
+    const fork = Draft.fork(state);
+    const createdAt = new Date().toISOString();
 
-  for (const payload of payloads) {
-    fork.apply({
-      actorId,
-      actor,
-      createdAt,
-      payload,
-    });
-  }
-
-  return appendEvents(shareId, actorId, payloads);
+    for (const payload of payloads) {
+      fork.apply({
+        actorId,
+        actor,
+        createdAt,
+        payload,
+      });
+    }
+  });
 }

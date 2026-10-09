@@ -72,6 +72,10 @@ export class ShareState {
     };
   };
 
+  get latestSeq() {
+    return this.#latestSeq;
+  }
+
   getSnapshot = () => {
     this.#snapshot ??= this.#fold();
     return this.#snapshot;
@@ -144,7 +148,7 @@ export class ShareState {
 
   #fold(): FoldedState {
     const {threads, comments, deletedCommentIds} =
-      this.#pending.size > 0 ? this.#draftWithPending() : this;
+      this.#pending.size > 0 ? this.#draftWithApplicablePending() : this;
     const pendingIds = new Set(
       this.#pending.values().map(({payload}) => subjectIdFromPayload(payload)),
     );
@@ -162,6 +166,18 @@ export class ShareState {
     const draft = Draft.fork(this);
     for (const event of this.#pending.values()) {
       draft.apply(event);
+    }
+    return draft;
+  }
+
+  // A confirmed event (e.g. another actor resolving the thread) can make a
+  // pending event invalid; skip it until the server rejects it.
+  #draftWithApplicablePending() {
+    const draft = Draft.fork(this);
+    for (const event of this.#pending.values()) {
+      try {
+        draft.apply(event);
+      } catch {}
     }
     return draft;
   }
@@ -240,6 +256,13 @@ export class Draft implements Entities {
       case 'comment.created': {
         const thread = this.#getThread(payload.threadId);
 
+        const commentAlreadyExists =
+          this.comments.has(payload.commentId) ||
+          this.deletedCommentIds.has(payload.commentId);
+        if (commentAlreadyExists) {
+          throw new Error(`Comment already exists: ${payload.commentId}`);
+        }
+
         this.#writableThread(thread).commentIds.push(payload.commentId);
         this.#own(this.comments, {
           id: payload.commentId,
@@ -260,6 +283,8 @@ export class Draft implements Entities {
       }
       case 'comment.deleted': {
         const comment = this.#getComment(payload.commentId);
+
+        this.#assertOwner(comment, actorId);
         const thread = this.#writableThread(this.#getThread(comment.threadId));
 
         thread.commentIds = thread.commentIds.filter(

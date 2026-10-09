@@ -24,9 +24,9 @@ const SHARE_ID = newId();
 
 type StartPolling = ShareEventsSync['startPolling'];
 
-let onBatch: Parameters<StartPolling>[0];
+let onBatch: Parameters<StartPolling>[1];
 const stopPolling = vi.fn<ReturnType<StartPolling>>();
-const startPolling = vi.fn<StartPolling>((callback) => {
+const startPolling = vi.fn<StartPolling>((_afterSeq, callback) => {
   onBatch = callback;
   return stopPolling;
 });

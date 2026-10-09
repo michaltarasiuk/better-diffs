@@ -189,6 +189,16 @@ describe('createComment', () => {
     ).rejects.toThrow(`Thread already resolved: ${threadId}`);
   });
 
+  it('rejects reusing an existing comment id', async () => {
+    const {commentId} = await openAliceThread();
+    const {threadId} = await openAliceThread();
+    signIn(bob);
+
+    await expect(
+      createComment({shareId, threadId, commentId, body: BODY}),
+    ).rejects.toThrow(`Comment already exists: ${commentId}`);
+  });
+
   it('rejects replying to an unknown thread', async () => {
     const threadId = newId();
 
@@ -224,6 +234,15 @@ describe('deleteComment', () => {
     await deleteComment({shareId, commentId});
 
     await expect(storedTypes()).resolves.toContain('comment.deleted');
+  });
+
+  it("rejects deleting another user's comment", async () => {
+    const {commentId} = await openAliceThread();
+    signIn(bob);
+
+    await expect(deleteComment({shareId, commentId})).rejects.toThrow(
+      `${commentId} not owned by actor: ${bob}`,
+    );
   });
 
   it('rejects deleting a comment twice', async () => {

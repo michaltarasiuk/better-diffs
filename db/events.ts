@@ -12,13 +12,19 @@ import {
   user as userTable,
 } from './schema';
 
-export function getEvents(shareId: string, afterSeq = 0) {
+type Executor = Pick<typeof db, 'select'>;
+
+export function getEvents(
+  shareId: string,
+  afterSeq = 0,
+  executor: Executor = db,
+) {
   const where = and(
     eq(eventsTable.shareId, shareId),
     gt(eventsTable.seq, afterSeq).if(afterSeq > 0),
   );
 
-  return db
+  return executor
     .select({
       id: eventsTable.id,
       shareId: eventsTable.shareId,
@@ -43,6 +49,7 @@ export async function appendEvents(
   shareId: string,
   actorId: string,
   payloads: readonly ShareEventPayload[],
+  validate?: (events: Awaited<ReturnType<typeof getEvents>>) => void,
 ) {
   if (payloads.length === 0) {
     return [];
@@ -60,6 +67,8 @@ export async function appendEvents(
     if (!isDefined(share)) {
       throw new Error(`Share not found: ${shareId}`);
     }
+
+    validate?.(await getEvents(shareId, 0, tx));
 
     const firstSeq = share.lastEventSeq - payloads.length;
     const createdAt = new Date().toISOString();

@@ -34,14 +34,20 @@ export class ShareEventsSync {
   }
 
   async hydrate() {
-    const events = await this.#pull();
+    const events = await fetchEvents(
+      this.#shareId,
+      await getLastSeq(this.#shareId),
+    );
     if (events.length > 0) {
       await putEvents(events);
     }
     return getEvents(this.#shareId);
   }
 
-  startPolling(onBatch: (events: readonly ShareEvent[]) => void) {
+  startPolling(
+    afterSeq: () => number,
+    onBatch: (events: readonly ShareEvent[]) => void,
+  ) {
     let intervalId: ReturnType<typeof setInterval> | null = null;
 
     const getInterval = () =>
@@ -57,7 +63,7 @@ export class ShareEventsSync {
       this.#isPulling = true;
 
       try {
-        const events = await this.#pull();
+        const events = await fetchEvents(this.#shareId, afterSeq());
         if (events.length > 0) {
           onBatch(events);
           await putEvents(events);
@@ -94,11 +100,6 @@ export class ShareEventsSync {
       }
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
-  }
-
-  async #pull() {
-    const lastSeq = await getLastSeq(this.#shareId);
-    return fetchEvents(this.#shareId, lastSeq);
   }
 }
 

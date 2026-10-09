@@ -129,7 +129,7 @@ describe('ShareEventsSync', () => {
 
     it('polls immediately and then on the active interval', async () => {
       const fetch = stubFetch();
-      const stop = new ShareEventsSync(shareId).startPolling(vi.fn());
+      const stop = new ShareEventsSync(shareId).startPolling(() => 0, vi.fn());
 
       await vi.advanceTimersByTimeAsync(0);
       expect(fetch).toHaveBeenCalledTimes(1);
@@ -140,11 +140,25 @@ describe('ShareEventsSync', () => {
       stop();
     });
 
+    it("polls after the caller's seq, not the shared IndexedDB cursor", async () => {
+      // Another tab has already cached up to seq 9.
+      getLastSeq.mockResolvedValue(9);
+      const fetch = stubFetch();
+      const stop = new ShareEventsSync(shareId).startPolling(() => 4, vi.fn());
+
+      await vi.advanceTimersByTimeAsync(0);
+      expect(requestedUrls(fetch)).toEqual([
+        `/api/shares/${shareId}/events?afterSeq=4`,
+      ]);
+
+      stop();
+    });
+
     it('delivers and caches new batches', async () => {
       const batch = [shareEvent(1)];
       stubFetch([], batch);
       const onBatch = vi.fn();
-      const stop = new ShareEventsSync(shareId).startPolling(onBatch);
+      const stop = new ShareEventsSync(shareId).startPolling(() => 0, onBatch);
 
       await vi.advanceTimersByTimeAsync(0);
       expect(onBatch).not.toHaveBeenCalled();
@@ -163,7 +177,7 @@ describe('ShareEventsSync', () => {
         .mockResolvedValue(Response.json({events: [shareEvent(1)]}));
       vi.stubGlobal('fetch', fetch);
       const onBatch = vi.fn();
-      const stop = new ShareEventsSync(shareId).startPolling(onBatch);
+      const stop = new ShareEventsSync(shareId).startPolling(() => 0, onBatch);
 
       await vi.advanceTimersByTimeAsync(ACTIVE_POLL_INTERVAL);
 
@@ -182,7 +196,7 @@ describe('ShareEventsSync', () => {
           }),
       );
       vi.stubGlobal('fetch', fetch);
-      const stop = new ShareEventsSync(shareId).startPolling(vi.fn());
+      const stop = new ShareEventsSync(shareId).startPolling(() => 0, vi.fn());
 
       await vi.advanceTimersByTimeAsync(ACTIVE_POLL_INTERVAL * 2);
       expect(fetch).toHaveBeenCalledTimes(1);
@@ -196,7 +210,7 @@ describe('ShareEventsSync', () => {
 
     it('slows down in the background and catches up when visible', async () => {
       const fetch = stubFetch();
-      const stop = new ShareEventsSync(shareId).startPolling(vi.fn());
+      const stop = new ShareEventsSync(shareId).startPolling(() => 0, vi.fn());
       await vi.advanceTimersByTimeAsync(0);
 
       setVisibility('hidden');
@@ -218,7 +232,7 @@ describe('ShareEventsSync', () => {
 
     it('stops polling and listening once stopped', async () => {
       const fetch = stubFetch();
-      const stop = new ShareEventsSync(shareId).startPolling(vi.fn());
+      const stop = new ShareEventsSync(shareId).startPolling(() => 0, vi.fn());
       await vi.advanceTimersByTimeAsync(0);
 
       stop();

@@ -31,7 +31,7 @@ export function EventsProvider({
 
   return (
     <ErrorBoundary resetKeys={[shareId, hydratePromise]} fallback={null}>
-      <HydratedEvents hydratePromise={hydratePromise}>
+      <HydratedEvents key={shareId} hydratePromise={hydratePromise}>
         {children}
       </HydratedEvents>
     </ErrorBoundary>
@@ -69,9 +69,12 @@ function StateProvider({
   });
 
   useEffect(() => {
-    return sync.startPolling((batch) => {
-      state.ingest(batch);
-    });
+    return sync.startPolling(
+      () => state.latestSeq,
+      (batch) => {
+        state.ingest(batch);
+      },
+    );
   }, [state, sync]);
 
   const snapshot = useSyncExternalStore(

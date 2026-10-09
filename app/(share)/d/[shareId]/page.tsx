@@ -72,7 +72,7 @@ export default async function DiffPage({
           <SessionProvider>
             <Suspense fallback={codeViewSpinner}>
               <EventsProvider shareId={shareId}>
-                <ReviewStateProvider>
+                <ReviewStateProvider key={shareId}>
                   <CodeView files={sortedFiles} />
                 </ReviewStateProvider>
               </EventsProvider>
