@@ -47,6 +47,7 @@ export async function appendEvents(
   if (payloads.length === 0) {
     return [];
   }
+
   return db.transaction(async (tx) => {
     const [share] = await tx
       .update(sharesTable)
