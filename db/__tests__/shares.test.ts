@@ -7,12 +7,7 @@ import {newId} from '@/utils/new-id';
 import {db} from '../db';
 import {appendEvents} from '../events';
 import {events, files, patches, shares} from '../schema';
-import {
-  createShare,
-  deleteExpiredShares,
-  openShare,
-  shareExists,
-} from '../shares';
+import {createShare, deleteExpiredShares, hasShare, openShare} from '../shares';
 import {ageShare, insertUser, setupTestDb} from './setup';
 
 setupTestDb();
@@ -54,15 +49,15 @@ describe('createShare', () => {
   });
 });
 
-describe('shareExists', () => {
+describe('hasShare', () => {
   it('finds a created share', async () => {
     const id = await createShare([]);
 
-    await expect(shareExists(id)).resolves.toBe(true);
+    await expect(hasShare(id)).resolves.toBe(true);
   });
 
   it('returns false for an unknown share', async () => {
-    await expect(shareExists(newId())).resolves.toBe(false);
+    await expect(hasShare(newId())).resolves.toBe(false);
   });
 });
 
@@ -100,8 +95,8 @@ describe('deleteExpiredShares', () => {
     await ageShare(fresh, 23);
 
     await expect(deleteExpiredShares({maxAgeHours: 24})).resolves.toBe(1);
-    await expect(shareExists(expired)).resolves.toBe(false);
-    await expect(shareExists(fresh)).resolves.toBe(true);
+    await expect(hasShare(expired)).resolves.toBe(false);
+    await expect(hasShare(fresh)).resolves.toBe(true);
   });
 
   it('deletes the patches, files and events of expired shares', async () => {

@@ -13,7 +13,7 @@ import {
   shares as sharesTable,
 } from './schema';
 
-export async function shareExists(id: string) {
+export async function hasShare(id: string) {
   const [share] = await db
     .select({id: sharesTable.id})
     .from(sharesTable)

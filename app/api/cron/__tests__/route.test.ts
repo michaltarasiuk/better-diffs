@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 
 import {ageShare, setupTestDb} from '@/db/__tests__/setup';
-import {createShare, shareExists} from '@/db/shares';
+import {createShare, hasShare} from '@/db/shares';
 import {env} from '@/env';
 
 import {GET} from '../route';
@@ -22,8 +22,8 @@ describe('GET', () => {
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({deletedCount: 1});
-    await expect(shareExists(expired)).resolves.toBe(false);
-    await expect(shareExists(fresh)).resolves.toBe(true);
+    await expect(hasShare(expired)).resolves.toBe(false);
+    await expect(hasShare(fresh)).resolves.toBe(true);
   });
 
   it.each([
@@ -37,6 +37,6 @@ describe('GET', () => {
 
     expect(response.status).toBe(401);
     expect(response.headers.get('WWW-Authenticate')).toBe('Bearer');
-    await expect(shareExists(expired)).resolves.toBe(true);
+    await expect(hasShare(expired)).resolves.toBe(true);
   });
 });
