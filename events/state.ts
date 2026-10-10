@@ -148,7 +148,7 @@ export class ShareState {
 
   #fold(): FoldedState {
     const {threads, comments, deletedCommentIds} =
-      this.#pending.size > 0 ? this.#draftWithApplicablePending() : this;
+      this.#pending.size > 0 ? this.#draftWithPending() : this;
     const pendingIds = new Set(
       this.#pending.values().map(({payload}) => subjectIdFromPayload(payload)),
     );
@@ -166,16 +166,6 @@ export class ShareState {
     const draft = Draft.fork(this);
     for (const event of this.#pending.values()) {
       draft.apply(event);
-    }
-    return draft;
-  }
-
-  #draftWithApplicablePending() {
-    const draft = Draft.fork(this);
-    for (const event of this.#pending.values()) {
-      try {
-        draft.apply(event);
-      } catch {}
     }
     return draft;
   }
