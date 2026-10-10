@@ -3,7 +3,11 @@
 import '@/diffs/diffs.css';
 
 import {Button, Checkbox, cn, Focusable, Kbd, Tooltip} from '@heroui/react';
-import {type FileDiffMetadata, isDiffAnnotation} from '@pierre/diffs';
+import {
+  type CodeViewItem,
+  type FileDiffMetadata,
+  isDiffAnnotation,
+} from '@pierre/diffs';
 import {CodeView} from '@pierre/diffs/react';
 import {ChevronDownIcon} from 'lucide-react';
 import {use} from 'react';
@@ -44,12 +48,10 @@ export function DiffView({files}: DiffViewProps) {
     toggleFileViewed,
     addCommentForm,
   } = use(ReviewStateContext);
-  const {selectedLines, setSelectedLines} = useSelectedLines();
-
-  const isMobile = useIsMobile();
-
   const folded = use(FoldedStateContext);
   const codeViewRef = use(CodeViewRefContext);
+  const {selectedLines, setSelectedLines} = useSelectedLines();
+  const isMobile = useIsMobile();
 
   const threadsByFilePath = Map.groupBy(
     folded.threads.values(),
@@ -58,8 +60,12 @@ export function DiffView({files}: DiffViewProps) {
 
   useShortcut('v', function toggleViewed() {
     const codeView = codeViewRef.current?.getInstance();
-    const fileId = isDefined(codeView) ? getViewportFileId(codeView) : null;
-    if (!isDefined(codeView) || !isDefined(fileId)) {
+    if (!isDefined(codeView)) {
+      return;
+    }
+
+    const fileId = getViewportFileId(codeView);
+    if (!isDefined(fileId)) {
       return;
     }
 
@@ -89,7 +95,7 @@ export function DiffView({files}: DiffViewProps) {
       selectedLines={selectedLines}
       onSelectedLinesChange={setSelectedLines}
       renderHeaderPrefix={(item) =>
-        item.type === 'diff' && isEmptyDiff(item.fileDiff) ? (
+        isEmptyDiffItem(item) ? (
           <span aria-hidden className="block size-8 shrink-0" />
         ) : (
           <CollapseButton
@@ -99,7 +105,7 @@ export function DiffView({files}: DiffViewProps) {
         )
       }
       renderHeaderFilenameSuffix={(item) =>
-        item.type === 'diff' && isEmptyDiff(item.fileDiff) ? (
+        isEmptyDiffItem(item) ? (
           <span className="text-xs text-muted">No text changes</span>
         ) : null
       }
@@ -120,19 +126,16 @@ export function DiffView({files}: DiffViewProps) {
           }}
         />
       )}
-      renderAnnotation={(annotation, item) => {
-        const isDiff =
-          item.type === 'diff' &&
-          isDiffAnnotation<AnnotationMetadata>(annotation);
-
-        return isDiff ? (
+      renderAnnotation={(annotation, item) =>
+        item.type === 'diff' &&
+        isDiffAnnotation<AnnotationMetadata>(annotation) ? (
           <Annotation
             annotation={annotation}
             fileId={item.id}
             filePath={item.fileDiff.name}
           />
-        ) : null;
-      }}
+        ) : null
+      }
       options={{
         ...CODE_VIEW_OPTIONS,
         diffStyle: isMobile ? 'unified' : 'split',
@@ -144,6 +147,10 @@ export function DiffView({files}: DiffViewProps) {
       className="outline-none"
     />
   );
+}
+
+function isEmptyDiffItem(item: CodeViewItem<AnnotationMetadata>) {
+  return item.type === 'diff' && isEmptyDiff(item.fileDiff);
 }
 
 interface CollapseButtonProps {
