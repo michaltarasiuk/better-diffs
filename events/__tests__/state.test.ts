@@ -135,12 +135,12 @@ describe('Draft', () => {
     expect(draft.threads.get(THREAD_ID)?.resolved).toBe(true);
   });
 
-  it('rejects resolving a thread owned by another actor', () => {
+  it('resolves a thread owned by another actor', () => {
     const draft = draftWith(opened);
 
-    expect(() => draft.apply(optimistic(resolved, BOB))).toThrow(
-      `${THREAD_ID} not owned by actor: ${BOB}`,
-    );
+    draft.apply(optimistic(resolved, BOB));
+
+    expect(draft.threads.get(THREAD_ID)?.resolved).toBe(true);
   });
 
   it('rejects resolving a missing thread', () => {

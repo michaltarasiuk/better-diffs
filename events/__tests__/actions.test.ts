@@ -145,13 +145,17 @@ describe('resolveThread', () => {
     ]);
   });
 
-  it("rejects resolving another user's thread", async () => {
+  it("resolves another user's thread", async () => {
     const {threadId} = await openAliceThread();
     signIn(bob);
 
-    await expect(resolveThread({shareId, threadId})).rejects.toThrow(
-      `${threadId} not owned by actor: ${bob}`,
-    );
+    await resolveThread({shareId, threadId});
+
+    await expect(storedTypes()).resolves.toEqual([
+      'thread.opened',
+      'comment.created',
+      'thread.resolved',
+    ]);
   });
 
   it('rejects resolving a thread twice', async () => {

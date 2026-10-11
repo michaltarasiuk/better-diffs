@@ -255,7 +255,6 @@ export class Draft implements Entities {
       case 'thread.resolved': {
         const thread = this.#getOpenThread(payload.threadId);
 
-        this.#assertOwner(thread, actorId);
         this.#writableThread(thread).resolved = true;
         break;
       }
