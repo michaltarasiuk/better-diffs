@@ -1,6 +1,6 @@
 'use client';
 
-import {Avatar, Separator} from '@heroui/react';
+import {Avatar} from '@heroui/react';
 import {typographyVariants} from '@heroui/styles';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {LexicalExtensionComposer} from '@lexical/react/LexicalExtensionComposer';
@@ -10,6 +10,8 @@ import {Fragment, useState} from 'react';
 import type {CommentState} from '@/events/state';
 import {defineCommentExtension} from '@/lexical/define-comment-extension';
 import {isDefined} from '@/utils/is-defined';
+
+import {InsetSeparator} from './inset-separator';
 
 interface CommentListProps {
   readonly comments: readonly CommentState[];
@@ -24,11 +26,7 @@ export function CommentList({comments}: CommentListProps) {
         <Fragment key={comment.id}>
           <Comment comment={comment} />
 
-          {index < lastIndex && (
-            <div className="mx-3">
-              <Separator />
-            </div>
-          )}
+          {index < lastIndex && <InsetSeparator />}
         </Fragment>
       ))}
     </div>
