@@ -58,6 +58,14 @@ export async function insertUser(
   return user!;
 }
 
+export async function hasShare(shareId: string) {
+  const [share] = await db
+    .select({id: schema.shares.id})
+    .from(schema.shares)
+    .where(eq(schema.shares.id, shareId));
+  return isDefined(share);
+}
+
 export async function ageShare(shareId: string, hours: number) {
   await db
     .update(schema.shares)

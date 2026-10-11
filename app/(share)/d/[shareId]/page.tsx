@@ -5,12 +5,11 @@ import {notFound} from 'next/navigation';
 import {Suspense} from 'react';
 
 import {SessionProvider} from '@/auth/provider';
-import {openShare} from '@/db/shares';
+import {getShareFiles, touchShare} from '@/db/shares';
 import {computeDiffStats} from '@/diffs/stats';
 import {ShareEventsProvider} from '@/events/provider';
 import {prepareTreeInput, sortByTree} from '@/trees/input';
 import {getFileTreeOptions} from '@/trees/options';
-import {isDefined} from '@/utils/is-defined';
 
 import {CodeViewProvider} from './_components/code-view-provider';
 import {DiffView} from './_components/diff-view';
@@ -39,11 +38,11 @@ export default async function SharePage({
     loadSearchParams(searchParams),
   ]);
 
-  const files = await openShare(shareId);
-  if (!isDefined(files)) {
+  if (!(await touchShare(shareId))) {
     notFound();
   }
 
+  const files = await getShareFiles(shareId);
   const fileDiffs = files.map(({metadata}) => metadata);
 
   const treeInput = prepareTreeInput(fileDiffs);

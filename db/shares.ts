@@ -13,39 +13,27 @@ import {
   shares as sharesTable,
 } from './schema';
 
-export async function hasShare(id: string) {
+export async function touchShare(id: string) {
   const [share] = await db
-    .select({id: sharesTable.id})
-    .from(sharesTable)
+    .update(sharesTable)
+    .set({lastVisitedAt: sql`datetime('now')`})
     .where(eq(sharesTable.id, id))
-    .limit(1);
+    .returning({id: sharesTable.id});
 
   return isDefined(share);
 }
 
-export async function openShare(id: string) {
-  return db.transaction(async (tx) => {
-    const [share] = await tx
-      .update(sharesTable)
-      .set({lastVisitedAt: sql`datetime('now')`})
-      .where(eq(sharesTable.id, id))
-      .returning({id: sharesTable.id});
-
-    if (!isDefined(share)) {
-      return null;
-    }
-
-    return tx
-      .select({
-        id: filesTable.id,
-        name: filesTable.name,
-        metadata: filesTable.metadata,
-      })
-      .from(filesTable)
-      .innerJoin(patchesTable, eq(filesTable.patchId, patchesTable.id))
-      .where(eq(patchesTable.shareId, id))
-      .orderBy(asc(patchesTable.order), asc(filesTable.order));
-  });
+export async function getShareFiles(id: string) {
+  return db
+    .select({
+      id: filesTable.id,
+      name: filesTable.name,
+      metadata: filesTable.metadata,
+    })
+    .from(filesTable)
+    .innerJoin(patchesTable, eq(filesTable.patchId, patchesTable.id))
+    .where(eq(patchesTable.shareId, id))
+    .orderBy(asc(patchesTable.order), asc(filesTable.order));
 }
 
 export async function createShare(

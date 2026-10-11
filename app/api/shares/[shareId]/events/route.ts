@@ -3,7 +3,7 @@ import {z} from 'zod';
 import {ApiError} from '@/api/error';
 import {parseSearchParams, route} from '@/api/route';
 import {getEvents} from '@/db/events';
-import {hasShare} from '@/db/shares';
+import {touchShare} from '@/db/shares';
 
 const SearchParams = z.object({
   afterSeq: z.coerce.number().int().nonnegative().default(0),
@@ -14,7 +14,7 @@ export const GET = route(
     const {shareId} = await params;
     const {afterSeq} = parseSearchParams(SearchParams, request);
 
-    if (!(await hasShare(shareId))) {
+    if (!(await touchShare(shareId))) {
       throw new ApiError('NOT_FOUND', `Share "${shareId}" not found.`, {
         reason: 'SHARE_NOT_FOUND',
         metadata: {shareId},

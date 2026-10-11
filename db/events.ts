@@ -60,6 +60,7 @@ export async function appendEvents(
       .update(sharesTable)
       .set({
         lastEventSeq: sql`${sharesTable.lastEventSeq} + ${payloads.length}`,
+        lastVisitedAt: sql`datetime('now')`,
       })
       .where(eq(sharesTable.id, shareId))
       .returning({lastEventSeq: sharesTable.lastEventSeq});
@@ -68,7 +69,8 @@ export async function appendEvents(
       throw new Error(`Share not found: ${shareId}`);
     }
 
-    validate?.(await getEvents(shareId, 0, tx));
+    const events = await getEvents(shareId, 0, tx);
+    validate?.(events);
 
     const firstSeq = share.lastEventSeq - payloads.length;
     const createdAt = new Date().toISOString();

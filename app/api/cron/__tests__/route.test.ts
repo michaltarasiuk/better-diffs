@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 
-import {ageShare, setupTestDb} from '@/db/__tests__/setup';
-import {createShare, hasShare} from '@/db/shares';
+import {ageShare, hasShare, setupTestDb} from '@/db/__tests__/setup';
+import {createShare} from '@/db/shares';
 import {env} from '@/env';
 
 import {GET} from '../route';

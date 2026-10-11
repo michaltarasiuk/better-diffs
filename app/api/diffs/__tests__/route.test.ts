@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 
 import {setupTestDb} from '@/db/__tests__/setup';
-import {openShare} from '@/db/shares';
+import {getShareFiles} from '@/db/shares';
 import {fileDiffs, gitPatch} from '@/diffs/__tests__/patches';
 import {env} from '@/env';
 
@@ -37,8 +37,8 @@ function shareIdFrom(url: string | null) {
 
 async function openedNames(response: Response) {
   const shareId = shareIdFrom(response.headers.get('Location'));
-  const files = await openShare(shareId!);
-  return files?.map(({name}) => name);
+  const files = await getShareFiles(shareId!);
+  return files.map(({name}) => name);
 }
 
 describe('OPTIONS', () => {
