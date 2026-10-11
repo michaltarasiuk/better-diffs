@@ -1,5 +1,6 @@
 'use client';
 
+import {catchError} from 'next/error';
 import {
   createContext,
   use,
@@ -8,11 +9,12 @@ import {
   useSyncExternalStore,
 } from 'react';
 import {browser} from 'react-dom';
-import {ErrorBoundary} from 'react-error-boundary';
 
 import type {ShareEvent} from './schemas';
 import {EMPTY_FOLDED_STATE, type FoldedState, ShareState} from './state';
 import {hydrateShareEvents, type ShareEventsSync} from './sync';
+
+const HydrationBoundary = catchError(() => null);
 
 export const ShareStateContext = createContext<ShareState>(null as never);
 
@@ -30,11 +32,11 @@ export function ShareEventsProvider({
   const hydratePromise = hydrateShareEvents(shareId);
 
   return (
-    <ErrorBoundary resetKeys={[shareId, hydratePromise]} fallback={null}>
-      <HydratedEvents key={shareId} hydratePromise={hydratePromise}>
+    <HydrationBoundary key={shareId}>
+      <HydratedEvents hydratePromise={hydratePromise}>
         {children}
       </HydratedEvents>
-    </ErrorBoundary>
+    </HydrationBoundary>
   );
 }
 
