@@ -99,8 +99,8 @@ function emptyEntities() {
 }
 
 describe('Draft', () => {
-  function liveDraft(...payloads: ShareEventPayload[]) {
-    const draft = Draft.live(emptyEntities());
+  function draftWith(...payloads: ShareEventPayload[]) {
+    const draft = Draft.fork(emptyEntities());
     for (const payload of payloads) {
       draft.apply(optimistic(payload));
     }
@@ -108,7 +108,7 @@ describe('Draft', () => {
   }
 
   it('opens a thread', () => {
-    const draft = liveDraft(opened);
+    const draft = draftWith(opened);
 
     expect(draft.threads.get(THREAD_ID)).toEqual({
       id: THREAD_ID,
@@ -122,7 +122,7 @@ describe('Draft', () => {
   });
 
   it('rejects opening a thread twice', () => {
-    const draft = liveDraft(opened);
+    const draft = draftWith(opened);
 
     expect(() => draft.apply(optimistic(opened))).toThrow(
       `Thread already exists: ${THREAD_ID}`,
@@ -130,13 +130,13 @@ describe('Draft', () => {
   });
 
   it('resolves a thread owned by the actor', () => {
-    const draft = liveDraft(opened, resolved);
+    const draft = draftWith(opened, resolved);
 
     expect(draft.threads.get(THREAD_ID)?.resolved).toBe(true);
   });
 
   it('rejects resolving a thread owned by another actor', () => {
-    const draft = liveDraft(opened);
+    const draft = draftWith(opened);
 
     expect(() => draft.apply(optimistic(resolved, BOB))).toThrow(
       `${THREAD_ID} not owned by actor: ${BOB}`,
@@ -144,7 +144,7 @@ describe('Draft', () => {
   });
 
   it('rejects resolving a missing thread', () => {
-    const draft = liveDraft();
+    const draft = draftWith();
 
     expect(() => draft.apply(optimistic(resolved))).toThrow(
       `Thread not found: ${THREAD_ID}`,
@@ -152,7 +152,7 @@ describe('Draft', () => {
   });
 
   it('rejects changes to a resolved thread', () => {
-    const draft = liveDraft(opened, resolved);
+    const draft = draftWith(opened, resolved);
 
     expect(() => draft.apply(optimistic(resolved))).toThrow(
       `Thread already resolved: ${THREAD_ID}`,
@@ -162,8 +162,15 @@ describe('Draft', () => {
     );
   });
 
+  it('deletes a comment in a resolved thread', () => {
+    const draft = draftWith(opened, created(), resolved, deleted());
+
+    expect(draft.comments.has(COMMENT_ID)).toBe(false);
+    expect(draft.threads.get(THREAD_ID)?.commentIds).toEqual([]);
+  });
+
   it('creates comments in order', () => {
-    const draft = Draft.live(emptyEntities());
+    const draft = Draft.fork(emptyEntities());
     draft.apply(optimistic(opened));
     draft.apply(optimistic(created(COMMENT_ID, 'first')));
     draft.apply(optimistic(created(OTHER_COMMENT_ID, 'second'), BOB));
@@ -183,13 +190,13 @@ describe('Draft', () => {
   });
 
   it('edits a comment owned by the actor', () => {
-    const draft = liveDraft(opened, created(), edited());
+    const draft = draftWith(opened, created(), edited());
 
     expect(draft.comments.get(COMMENT_ID)?.body).toEqual(body('edited'));
   });
 
   it('rejects editing a comment owned by another actor', () => {
-    const draft = liveDraft(opened, created());
+    const draft = draftWith(opened, created());
 
     expect(() => draft.apply(optimistic(edited(), BOB))).toThrow(
       `${COMMENT_ID} not owned by actor: ${BOB}`,
@@ -197,7 +204,7 @@ describe('Draft', () => {
   });
 
   it('rejects editing a missing comment', () => {
-    const draft = liveDraft(opened);
+    const draft = draftWith(opened);
 
     expect(() => draft.apply(optimistic(edited()))).toThrow(
       `Comment not found: ${COMMENT_ID}`,
@@ -205,7 +212,7 @@ describe('Draft', () => {
   });
 
   it('deletes a comment and remembers it', () => {
-    const draft = liveDraft(opened, created(), deleted());
+    const draft = draftWith(opened, created(), deleted());
 
     expect(draft.comments.has(COMMENT_ID)).toBe(false);
     expect(draft.threads.get(THREAD_ID)?.commentIds).toEqual([]);
@@ -213,7 +220,7 @@ describe('Draft', () => {
   });
 
   it('rejects changes to a deleted comment', () => {
-    const draft = liveDraft(opened, created(), deleted());
+    const draft = draftWith(opened, created(), deleted());
 
     expect(() => draft.apply(optimistic(edited()))).toThrow(
       `Comment already deleted: ${COMMENT_ID}`,
@@ -225,7 +232,7 @@ describe('Draft', () => {
 
   describe('fork', () => {
     it('leaves the base untouched', () => {
-      const base = liveDraft(opened, created());
+      const base = draftWith(opened, created());
       const thread = base.threads.get(THREAD_ID)!;
       const comment = base.comments.get(COMMENT_ID)!;
 
@@ -249,7 +256,7 @@ describe('Draft', () => {
     });
 
     it('copies an entity once and then mutates its own copy', () => {
-      const base = liveDraft(opened, created());
+      const base = draftWith(opened, created());
       const fork = Draft.fork(base);
 
       fork.apply(optimistic(edited(COMMENT_ID, 'one')));
@@ -296,6 +303,24 @@ describe('ShareState', () => {
       expect(threads.get(THREAD_ID)?.commentIds).toEqual([COMMENT_ID]);
       expect(comments.get(COMMENT_ID)?.body).toEqual(body('hello'));
       expect(pendingIds.size).toBe(0);
+    });
+
+    it('leaves earlier snapshots untouched', () => {
+      const state = stateWith(opened, created());
+      const before = state.getSnapshot();
+      const thread = before.threads.get(THREAD_ID)!;
+
+      state.ingest([confirmed(created(OTHER_COMMENT_ID)), confirmed(resolved)]);
+      const after = state.getSnapshot();
+
+      expect(thread.commentIds).toEqual([COMMENT_ID]);
+      expect(thread.resolved).toBe(false);
+      expect(before.comments.has(OTHER_COMMENT_ID)).toBe(false);
+      expect(after.threads.get(THREAD_ID)).not.toBe(thread);
+      expect(after.comments).not.toBe(before.comments);
+      expect(after.comments.get(COMMENT_ID)).toBe(
+        before.comments.get(COMMENT_ID),
+      );
     });
 
     it('returns false and skips notifying for an empty batch', () => {
@@ -440,6 +465,44 @@ describe('ShareState', () => {
       state.ingest([confirmed(opened)]);
 
       expect(state.getSnapshot().pendingIds).toEqual(new Set([COMMENT_ID]));
+    });
+
+    it('settles one pending event per confirmed event', () => {
+      const state = stateWith(opened, created());
+      state.optimisticAll([
+        optimistic(edited(COMMENT_ID, 'first')),
+        optimistic(edited(COMMENT_ID, 'second')),
+      ]);
+
+      state.ingest([confirmed(edited(COMMENT_ID, 'first'))]);
+
+      expect(state.getSnapshot().comments.get(COMMENT_ID)?.body).toEqual(
+        body('second'),
+      );
+    });
+
+    it('drops pending events that no longer apply', () => {
+      const state = stateWith(opened, created());
+      state.optimistic(optimistic(edited()));
+
+      state.ingest([confirmed(deleted())]);
+      const {pendingIds, comments} = state.getSnapshot();
+
+      expect(pendingIds.size).toBe(0);
+      expect(comments.has(COMMENT_ID)).toBe(false);
+    });
+
+    it('notifies about the events applied before a failing one', () => {
+      const state = new ShareState();
+      const subscriber = vi.fn();
+      state.subscribe(subscriber);
+
+      expect(() =>
+        state.ingest([confirmed(opened), confirmed(opened)]),
+      ).toThrow();
+
+      expect(subscriber).toHaveBeenCalledOnce();
+      expect(state.getSnapshot().threads.has(THREAD_ID)).toBe(true);
     });
 
     it('only reconciles events of the same type', () => {

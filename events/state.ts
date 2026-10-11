@@ -53,12 +53,12 @@ export const EMPTY_FOLDED_STATE: FoldedState = {
   version: 0,
 };
 
-export class ShareState {
-  readonly threads = new Map<string, ThreadState>();
-  readonly comments = new Map<string, CommentState>();
-  readonly deletedCommentIds = new Set<string>();
-
-  #confirmed = Draft.live(this);
+export class ShareState implements Entities {
+  #confirmed: Entities = {
+    threads: new Map(),
+    comments: new Map(),
+    deletedCommentIds: new Set(),
+  };
   #snapshot: FoldedState | null = null;
   #pending = new Map<string, OptimisticEvent>();
   #version = 0;
@@ -72,6 +72,18 @@ export class ShareState {
     };
   };
 
+  get threads() {
+    return this.#confirmed.threads;
+  }
+
+  get comments() {
+    return this.#confirmed.comments;
+  }
+
+  get deletedCommentIds() {
+    return this.#confirmed.deletedCommentIds;
+  }
+
   get latestSeq() {
     return this.#latestSeq;
   }
@@ -82,20 +94,26 @@ export class ShareState {
   };
 
   ingest(events: readonly ShareEvent[]) {
-    for (const event of events) {
-      if (event.seq <= this.#latestSeq) {
-        throw new Error(`Invalid event seq: ${event.seq}`);
-      }
-      this.#latestSeq = event.seq;
-
-      this.#confirmed.apply(event);
-      this.#reconcilePending(event.payload);
-    }
-
     if (events.length === 0) {
       return false;
     }
-    this.#commit();
+
+    const draft = Draft.fork(this.#confirmed);
+    try {
+      for (const event of events) {
+        if (event.seq <= this.#latestSeq) {
+          throw new Error(`Invalid event seq: ${event.seq}`);
+        }
+        this.#latestSeq = event.seq;
+
+        draft.apply(event);
+        this.#reconcilePending(event.payload);
+      }
+    } finally {
+      this.#confirmed = draft;
+      this.#dropStalePending();
+      this.#commit();
+    }
     return true;
   }
 
@@ -148,7 +166,7 @@ export class ShareState {
 
   #fold(): FoldedState {
     const {threads, comments, deletedCommentIds} =
-      this.#pending.size > 0 ? this.#draftWithPending() : this;
+      this.#pending.size > 0 ? this.#draftWithPending() : this.#confirmed;
     const pendingIds = new Set(
       this.#pending.values().map(({payload}) => subjectIdFromPayload(payload)),
     );
@@ -163,7 +181,7 @@ export class ShareState {
   }
 
   #draftWithPending() {
-    const draft = Draft.fork(this);
+    const draft = Draft.fork(this.#confirmed);
     for (const event of this.#pending.values()) {
       draft.apply(event);
     }
@@ -173,6 +191,18 @@ export class ShareState {
   #reconcilePending(confirmed: ShareEventPayload) {
     for (const [pendingId, {payload}] of this.#pending) {
       if (isSupersededBy(payload, confirmed)) {
+        this.#pending.delete(pendingId);
+        break;
+      }
+    }
+  }
+
+  #dropStalePending() {
+    const draft = Draft.fork(this.#confirmed);
+    for (const [pendingId, event] of this.#pending) {
+      try {
+        draft.apply(event);
+      } catch {
         this.#pending.delete(pendingId);
       }
     }
@@ -190,28 +220,16 @@ export class Draft implements Entities {
   readonly comments: Map<string, CommentState>;
   readonly deletedCommentIds: Set<string>;
 
-  readonly #owned: WeakSet<object> | null;
+  readonly #owned = new WeakSet<object>();
 
-  private constructor(entities: Entities, owned: WeakSet<object> | null) {
-    this.threads = entities.threads;
-    this.comments = entities.comments;
-    this.deletedCommentIds = entities.deletedCommentIds;
-    this.#owned = owned;
-  }
-
-  static live(entities: Entities) {
-    return new Draft(entities, null);
+  private constructor(base: Entities) {
+    this.threads = new Map(base.threads);
+    this.comments = new Map(base.comments);
+    this.deletedCommentIds = new Set(base.deletedCommentIds);
   }
 
   static fork(base: Entities) {
-    return new Draft(
-      {
-        threads: new Map(base.threads),
-        comments: new Map(base.comments),
-        deletedCommentIds: new Set(base.deletedCommentIds),
-      },
-      new WeakSet(),
-    );
+    return new Draft(base);
   }
 
   apply({actorId, actor, createdAt, payload}: OptimisticEvent) {
@@ -235,14 +253,14 @@ export class Draft implements Entities {
         break;
       }
       case 'thread.resolved': {
-        const thread = this.#getThread(payload.threadId);
+        const thread = this.#getOpenThread(payload.threadId);
 
         this.#assertOwner(thread, actorId);
         this.#writableThread(thread).resolved = true;
         break;
       }
       case 'comment.created': {
-        const thread = this.#getThread(payload.threadId);
+        const thread = this.#getOpenThread(payload.threadId);
 
         const commentAlreadyExists =
           this.comments.has(payload.commentId) ||
@@ -291,7 +309,13 @@ export class Draft implements Entities {
     const thread = this.threads.get(threadId);
     if (!isDefined(thread)) {
       throw new Error(`Thread not found: ${threadId}`);
-    } else if (thread.resolved) {
+    }
+    return thread;
+  }
+
+  #getOpenThread(threadId: string) {
+    const thread = this.#getThread(threadId);
+    if (thread.resolved) {
       throw new Error(`Thread already resolved: ${threadId}`);
     }
     return thread;
@@ -317,11 +341,11 @@ export class Draft implements Entities {
   }
 
   #isWritable(entity: object) {
-    return !isDefined(this.#owned) || this.#owned.has(entity);
+    return this.#owned.has(entity);
   }
 
   #own<T extends {readonly id: string}>(entityMap: Map<string, T>, entity: T) {
-    this.#owned?.add(entity);
+    this.#owned.add(entity);
     entityMap.set(entity.id, entity);
     return entity;
   }
