@@ -2,7 +2,7 @@
 
 import '@/diffs/diffs.css';
 
-import {Button, Checkbox, cn, Focusable, Kbd, Tooltip} from '@heroui/react';
+import {Button, Checkbox, cn, Kbd, Tooltip} from '@heroui/react';
 import {
   type CodeViewItem,
   type FileDiffMetadata,
@@ -187,7 +187,7 @@ interface ViewedCheckboxProps {
 function ViewedCheckbox({viewed, onViewedChange}: ViewedCheckboxProps) {
   return (
     <Tooltip>
-      <Focusable>
+      <Tooltip.Trigger>
         <Checkbox
           aria-keyshortcuts="v"
           variant="secondary"
@@ -202,7 +202,7 @@ function ViewedCheckbox({viewed, onViewedChange}: ViewedCheckboxProps) {
             Viewed
           </Checkbox.Content>
         </Checkbox>
-      </Focusable>
+      </Tooltip.Trigger>
       <Tooltip.Content placement="left" className="flex items-center gap-2">
         Viewed by me
         <Kbd>
