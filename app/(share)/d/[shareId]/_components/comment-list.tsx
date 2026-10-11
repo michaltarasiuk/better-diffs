@@ -4,12 +4,11 @@ import {Avatar, Separator} from '@heroui/react';
 import {typographyVariants} from '@heroui/styles';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {LexicalExtensionComposer} from '@lexical/react/LexicalExtensionComposer';
-import {RichTextExtension} from '@lexical/rich-text';
-import {defineExtension, type SerializedEditorState} from 'lexical';
+import type {SerializedEditorState} from 'lexical';
 import {Fragment, useState} from 'react';
 
 import type {CommentState} from '@/events/state';
-import {EDITOR_THEME} from '@/lexical/editor-theme';
+import {defineCommentExtension} from '@/lexical/define-comment-extension';
 import {isDefined} from '@/utils/is-defined';
 
 interface CommentListProps {
@@ -70,16 +69,10 @@ interface CommentBodyProps {
 
 function CommentBody({initialState}: CommentBodyProps) {
   const [extension] = useState(() =>
-    defineExtension({
-      name: '@better-diffs/comment-body',
-      namespace: 'CommentBody',
-      theme: EDITOR_THEME,
-      dependencies: [RichTextExtension],
+    defineCommentExtension({
+      name: 'CommentBody',
+      initialState,
       editable: false,
-      $initialEditorState: JSON.stringify(initialState),
-      onError(error) {
-        console.error(error);
-      },
     }),
   );
 

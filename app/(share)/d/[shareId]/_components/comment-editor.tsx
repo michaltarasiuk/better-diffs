@@ -24,7 +24,6 @@ import {
   $createHeadingNode,
   $createQuoteNode,
   $isHeadingNode,
-  RichTextExtension,
 } from '@lexical/rich-text';
 import {$setBlocksType} from '@lexical/selection';
 import {
@@ -34,7 +33,6 @@ import {
   $isRangeSelection,
   $isRootOrShadowRoot,
   COMMAND_PRIORITY_BEFORE_EDITOR,
-  defineExtension,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
   KEY_ESCAPE_COMMAND,
@@ -57,7 +55,7 @@ import {
 } from 'lucide-react';
 import {startTransition, useEffect, useEffectEvent, useState} from 'react';
 
-import {EDITOR_THEME} from '@/lexical/editor-theme';
+import {defineCommentExtension} from '@/lexical/define-comment-extension';
 import {$trimRoot} from '@/lexical/trim-root';
 import {isDefined} from '@/utils/is-defined';
 
@@ -132,17 +130,9 @@ export function CommentEditor({
   onDismiss,
 }: CommentEditorProps) {
   const [extension] = useState(() =>
-    defineExtension({
-      name: '@better-diffs/comment-editor',
-      namespace: 'CommentEditor',
-      theme: EDITOR_THEME,
-      dependencies: [RichTextExtension, HistoryExtension],
-      $initialEditorState: isDefined(initialState)
-        ? JSON.stringify(initialState)
-        : undefined,
-      onError(error) {
-        console.error(error);
-      },
+    defineCommentExtension({
+      name: 'CommentEditor',
+      initialState,
     }),
   );
 
