@@ -21,12 +21,12 @@ export function SignIn({line, onDismiss}: SignInProps) {
   const annotationName = getLineAnnotationName(line);
 
   return (
-    <div className="flex flex-col gap-2 overflow-auto p-3 sm:flex-row">
+    <div className="flex flex-col gap-2 overflow-auto p-3 sm:flex-row-reverse">
       <Button
         id={`${annotationName}-sign-in-github`}
         isPending={isSigningIn}
         size="sm"
-        fullWidth
+        className="w-full sm:w-auto"
         onPress={signIn}
       >
         {isSigningIn ? (
@@ -41,7 +41,7 @@ export function SignIn({line, onDismiss}: SignInProps) {
         id={`${annotationName}-sign-in-cancel`}
         variant="ghost"
         size="sm"
-        fullWidth
+        className="w-full sm:w-auto"
         onPress={onDismiss}
       >
         Cancel
