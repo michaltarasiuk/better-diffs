@@ -2,7 +2,7 @@
 
 import {Button, toast} from '@heroui/react';
 import {CheckIcon, CopyIcon} from 'lucide-react';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 import {isDefined} from '@/utils/is-defined';
 
@@ -14,6 +14,19 @@ interface CommandSnippetProps {
 }
 
 type CopyFeedback = 'idle' | 'copied' | 'selected';
+
+const FEEDBACK_LABELS: Record<Exclude<CopyFeedback, 'idle'>, string> = {
+  copied: 'Copied',
+  selected: 'Selected',
+};
+
+function clearPendingTimeout(
+  timeoutRef: React.RefObject<ReturnType<typeof setTimeout> | null>,
+) {
+  if (isDefined(timeoutRef.current)) {
+    clearTimeout(timeoutRef.current);
+  }
+}
 
 function selectNodeContents(node: HTMLElement) {
   const selection = window.getSelection();
@@ -33,12 +46,39 @@ export function CommandSnippet({label, command}: CommandSnippetProps) {
   const commandRef = useRef<React.ComponentRef<'code'>>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
-  const buttonLabel =
-    feedback === 'copied'
-      ? 'Copied'
-      : feedback === 'selected'
-        ? 'Selected'
-        : label;
+  useEffect(() => () => clearPendingTimeout(timeoutRef), []);
+
+  function showFeedback(next: Exclude<CopyFeedback, 'idle'>) {
+    clearPendingTimeout(timeoutRef);
+    setFeedback(next);
+    timeoutRef.current = setTimeout(() => setFeedback('idle'), FEEDBACK_MS);
+  }
+
+  function selectCommand() {
+    const commandNode = commandRef.current;
+    const selected = isDefined(commandNode) && selectNodeContents(commandNode);
+
+    if (selected) {
+      showFeedback('selected');
+    }
+
+    toast.warning('Clipboard unavailable', {
+      description: selected
+        ? 'Command selected. Press ⌘C or Ctrl+C to copy'
+        : 'Copy the command manually',
+    });
+  }
+
+  async function copyCommand() {
+    try {
+      await navigator.clipboard.writeText(command);
+      showFeedback('copied');
+    } catch {
+      selectCommand();
+    }
+  }
+
+  const buttonLabel = feedback === 'idle' ? label : FEEDBACK_LABELS[feedback];
 
   return (
     <div className="flex items-start gap-2 rounded-field border border-border bg-surface-secondary p-2 ps-3">
@@ -54,38 +94,7 @@ export function CommandSnippet({label, command}: CommandSnippetProps) {
         variant="ghost"
         size="sm"
         isIconOnly
-        onPress={async () => {
-          if (isDefined(timeoutRef.current)) {
-            clearTimeout(timeoutRef.current);
-          }
-
-          try {
-            await navigator.clipboard.writeText(command);
-            setFeedback('copied');
-          } catch {
-            // Clipboard API rejects outside secure contexts. Select the
-            // command in the DOM and surface a toast so the user can copy
-            // manually.
-            const commandNode = commandRef.current;
-            const selected =
-              isDefined(commandNode) && selectNodeContents(commandNode);
-
-            if (selected) {
-              setFeedback('selected');
-            }
-
-            toast.warning('Clipboard unavailable', {
-              description: selected
-                ? 'Command selected. Press ⌘C or Ctrl+C to copy'
-                : 'Copy the command manually',
-            });
-          } finally {
-            timeoutRef.current = setTimeout(
-              () => setFeedback('idle'),
-              FEEDBACK_MS,
-            );
-          }
-        }}
+        onPress={copyCommand}
       >
         {feedback === 'copied' ? (
           <CheckIcon aria-hidden className="size-4 text-success" />

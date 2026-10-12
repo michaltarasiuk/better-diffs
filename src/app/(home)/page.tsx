@@ -29,9 +29,31 @@ const heroTitleClass = typographyClass({
   type: 'h2',
   className: 'font-mono tracking-tight',
 });
-const sectionTitleClass = typographyClass({
-  type: 'h6',
-});
+const sectionTitleClass = typographyClass({type: 'h6'});
+
+interface SectionProps {
+  readonly id: string;
+  readonly title: string;
+  readonly children: React.ReactNode;
+}
+
+function Section({id, title, children}: SectionProps) {
+  return (
+    <section aria-labelledby={id} className="space-y-3">
+      <Typography.Heading id={id} level={2} className={sectionTitleClass}>
+        {title}
+      </Typography.Heading>
+
+      {children}
+    </section>
+  );
+}
+
+function InlineCode({children}: {readonly children: React.ReactNode}) {
+  return (
+    <Typography.Code className="text-xs leading-5">{children}</Typography.Code>
+  );
+}
 
 export default async function HomePage() {
   const preloaded = await preloadPatchDiff({
@@ -52,15 +74,7 @@ export default async function HomePage() {
         </Typography.Paragraph>
       </header>
 
-      <section aria-labelledby="install" className="space-y-3">
-        <Typography.Heading
-          id="install"
-          level={2}
-          className={sectionTitleClass}
-        >
-          Install
-        </Typography.Heading>
-
+      <Section id="install" title="Install">
         <div className="space-y-2">
           <CommandSnippet
             label="Copy install command"
@@ -69,23 +83,15 @@ export default async function HomePage() {
 
           <Typography.Paragraph size="xs" color="muted">
             Downloads a prebuilt binary for macOS or Linux into{' '}
-            <Typography.Code className="text-xs leading-5">
-              ~/.local/bin
-            </Typography.Code>{' '}
-            and points it at this instance. Needs{' '}
-            <Typography.Code className="text-xs leading-5">git</Typography.Code>{' '}
-            to run.
+            <InlineCode>~/.local/bin</InlineCode> and points it at this
+            instance. Needs <InlineCode>git</InlineCode> to run.
           </Typography.Paragraph>
         </div>
-      </section>
+      </Section>
 
-      <section aria-labelledby="usage" className="space-y-3">
-        <Typography.Heading id="usage" level={2} className={sectionTitleClass}>
-          Usage
-        </Typography.Heading>
-
+      <Section id="usage" title="Usage">
         <PatchDiff {...preloaded} className="w-full" />
-      </section>
+      </Section>
     </main>
   );
 }

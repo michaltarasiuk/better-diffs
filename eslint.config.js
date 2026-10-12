@@ -57,7 +57,8 @@ const FRAMEWORK = {
   ],
   allowTypeImports: true,
   message:
-    'Pure module: no React, Next.js, storage or network. Keep that in the caller and pass plain values in.',
+    'Pure module: no React, Next.js, storage or network. ' +
+    'Keep that in the caller and pass plain values in.',
 };
 
 const DB_DEPENDENCIES = [
