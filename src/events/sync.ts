@@ -1,6 +1,6 @@
 import {z} from 'zod';
 
-import {fetchJson} from '@/api/fetch';
+import {fetchJson} from '@/http/fetch';
 import {isDefined} from '@/utils/is-defined';
 
 import {getEvents, getLastSeq, putEvents} from './idb';

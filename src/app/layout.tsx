@@ -6,9 +6,9 @@ import Script from 'next/script';
 import {NuqsAdapter} from 'nuqs/adapters/next/app';
 
 import {env} from '@/env';
-import {fontMono, fontSans} from '@/fonts';
 
 import {ToastProvider} from './_components/toast-provider';
+import {fontMono, fontSans} from './_lib/fonts';
 
 export const metadata: Metadata = {
   title: 'Better Diffs',

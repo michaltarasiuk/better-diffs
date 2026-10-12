@@ -1,8 +1,8 @@
-import {ApiError} from '@/api/error';
-import {route} from '@/api/route';
 import {hasBearerToken} from '@/auth/bearer';
 import {deleteExpiredShares} from '@/db/shares';
 import {env} from '@/env';
+import {ApiError} from '@/http/error';
+import {route} from '@/http/route';
 
 const SHARE_MAX_AGE_HOURS = 24;
 

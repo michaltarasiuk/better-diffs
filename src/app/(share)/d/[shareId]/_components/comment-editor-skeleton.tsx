@@ -5,6 +5,7 @@ export function CommentEditorSkeleton() {
     <Card
       aria-label="Loading comment editor"
       aria-busy="true"
+      variant="transparent"
       className="@container"
     >
       <Card.Header>

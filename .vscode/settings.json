@@ -1,4 +1,4 @@
 {
-  "tailwindCSS.experimental.configFile": "app/globals.css",
+  "tailwindCSS.experimental.configFile": "src/app/globals.css",
   "tailwindCSS.classFunctions": ["cn", "tv"]
 }

@@ -1,9 +1,9 @@
 import {z} from 'zod';
 
-import {ApiError} from '@/api/error';
-import {parseSearchParams, route} from '@/api/route';
 import {getEvents} from '@/db/events';
 import {touchShare} from '@/db/shares';
+import {ApiError} from '@/http/error';
+import {parseSearchParams, route} from '@/http/route';
 
 const SearchParams = z.object({
   afterSeq: z.coerce.number().int().nonnegative().default(0),

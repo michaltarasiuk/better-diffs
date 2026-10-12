@@ -3,9 +3,8 @@ import 'server-only';
 import {unstable_rethrow} from 'next/navigation';
 import type {z} from 'zod';
 
-import {Accept} from '@/headers/accept';
-
 import {ApiError} from './error';
+import {Accept} from './headers/accept';
 
 export interface RouteOptions {
   readonly headers?: HeadersInit;

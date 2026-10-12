@@ -1,11 +1,11 @@
 import {type FileDiffMetadata, parsePatchFiles} from '@pierre/diffs';
 import {z} from 'zod';
 
-import {ApiError} from '@/api/error';
-import {parse, prefersText, readJson, route} from '@/api/route';
 import {createShare} from '@/db/shares';
 import {env} from '@/env';
-import {ContentType} from '@/headers/content-type';
+import {ApiError} from '@/http/error';
+import {ContentType} from '@/http/headers/content-type';
+import {parse, prefersText, readJson, route} from '@/http/route';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',

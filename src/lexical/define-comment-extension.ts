@@ -2,8 +2,9 @@ import {HistoryExtension} from '@lexical/history';
 import {RichTextExtension} from '@lexical/rich-text';
 import {defineExtension, type SerializedEditorState} from 'lexical';
 
-import {EDITOR_THEME} from '@/lexical/editor-theme';
 import {isDefined} from '@/utils/is-defined';
+
+import {EDITOR_THEME} from './editor-theme';
 
 interface CommentExtensionOptions {
   readonly name: string;

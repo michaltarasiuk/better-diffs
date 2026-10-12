@@ -6,8 +6,8 @@ import {getSession} from '@/auth/server';
 import {appendEvents} from '@/db/events';
 import {isDefined} from '@/utils/is-defined';
 
+import {toEventActor} from './actor';
 import {
-  type Actor,
   type CommentCreatedPayload,
   type CommentDeletedPayload,
   type CommentEditedPayload,
@@ -87,14 +87,7 @@ async function getActor() {
   if (!isDefined(session)) {
     unauthorized();
   }
-  const {user} = session;
-  return {
-    actorId: user.id,
-    actor: {
-      name: user.name,
-      image: user.image ?? null,
-    } satisfies Actor,
-  };
+  return toEventActor(session);
 }
 
 async function appendValidatedEvents(

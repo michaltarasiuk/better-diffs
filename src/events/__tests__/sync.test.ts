@@ -2,7 +2,7 @@
 
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-import {ApiError} from '@/api/error';
+import {ApiError} from '@/http/error';
 import {newId} from '@/utils/new-id';
 
 import type {ShareEvent} from '../schemas';

@@ -2,7 +2,7 @@ import 'server-only';
 
 import {timingSafeEqual} from 'node:crypto';
 
-import {Authorization} from '@/headers/authorization';
+import {Authorization} from '@/http/headers/authorization';
 import {isDefined} from '@/utils/is-defined';
 
 export function hasBearerToken(request: Request, secret: string | undefined) {
