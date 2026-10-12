@@ -1,5 +1,6 @@
 {
   "type": "module",
+  "repository": "michaltarasiuk/better-diffs",
   "scripts": {
     "prepare": "husky",
     "dev": "next dev",

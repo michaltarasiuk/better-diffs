@@ -2,7 +2,7 @@ import dedent from 'dedent';
 
 import {env} from '@/env';
 
-const REPO = 'michaltarasiuk/better-diffs';
+import {repository} from '../../../package.json';
 
 export function GET() {
   const script = dedent`
@@ -20,7 +20,7 @@ export function GET() {
 
     set -eu
 
-    REPO='${REPO}'
+    REPO='${repository}'
     BASE_URL='${env.BASE_URL}'
     BIN_DIR="\${BETTER_DIFFS_BIN:-$HOME/.local/bin}"
     CONFIG_DIR="\${XDG_CONFIG_HOME:-$HOME/.config}/better-diffs"
