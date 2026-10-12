@@ -3,6 +3,7 @@ import type {SerializedEditorState} from 'lexical';
 import {isDefined} from '@/utils/is-defined';
 import {newId} from '@/utils/new-id';
 
+import {EventError, isEventError} from './errors';
 import {
   type Actor,
   type Anchor,
@@ -101,8 +102,12 @@ export class ShareState implements Entities {
     const draft = Draft.fork(this.#confirmed);
     try {
       for (const event of events) {
-        if (event.seq <= this.#latestSeq) {
-          throw new Error(`Invalid event seq: ${event.seq}`);
+        const expectedSeq = this.#latestSeq + 1;
+        if (event.seq !== expectedSeq) {
+          throw new EventError(
+            'UNEXPECTED_SEQ',
+            `Expected event seq ${expectedSeq}, got ${event.seq}`,
+          );
         }
         this.#latestSeq = event.seq;
 
@@ -118,8 +123,11 @@ export class ShareState implements Entities {
   }
 
   optimistic(event: OptimisticEvent) {
-    const [pendingId] = this.optimisticAll([event]);
-    return pendingId!;
+    this.#draftWithPending().apply(event);
+
+    const pendingId = this.#addPending(event);
+    this.#commit();
+    return pendingId;
   }
 
   optimisticAll(events: readonly OptimisticEvent[]) {
@@ -132,13 +140,15 @@ export class ShareState implements Entities {
       draft.apply(event);
     }
 
-    const pendingIds = events.map((event) => {
-      const pendingId = newId();
-      this.#pending.set(pendingId, event);
-      return pendingId;
-    });
+    const pendingIds = events.map((event) => this.#addPending(event));
     this.#commit();
     return pendingIds;
+  }
+
+  #addPending(event: OptimisticEvent) {
+    const pendingId = newId();
+    this.#pending.set(pendingId, event);
+    return pendingId;
   }
 
   reject(pendingId: string) {
@@ -202,7 +212,10 @@ export class ShareState implements Entities {
     for (const [pendingId, event] of this.#pending) {
       try {
         draft.apply(event);
-      } catch {
+      } catch (error) {
+        if (!isEventError(error)) {
+          throw error;
+        }
         this.#pending.delete(pendingId);
       }
     }
@@ -237,7 +250,10 @@ export class Draft implements Entities {
       case 'thread.opened': {
         const threadAlreadyExists = this.threads.has(payload.threadId);
         if (threadAlreadyExists) {
-          throw new Error(`Thread already exists: ${payload.threadId}`);
+          throw new EventError(
+            'THREAD_ALREADY_EXISTS',
+            `Thread already exists: ${payload.threadId}`,
+          );
         }
 
         this.#own(this.threads, {
@@ -265,7 +281,10 @@ export class Draft implements Entities {
           this.comments.has(payload.commentId) ||
           this.deletedCommentIds.has(payload.commentId);
         if (commentAlreadyExists) {
-          throw new Error(`Comment already exists: ${payload.commentId}`);
+          throw new EventError(
+            'COMMENT_ALREADY_EXISTS',
+            `Comment already exists: ${payload.commentId}`,
+          );
         }
 
         this.#writableThread(thread).commentIds.push(payload.commentId);
@@ -307,7 +326,7 @@ export class Draft implements Entities {
   #getThread(threadId: string) {
     const thread = this.threads.get(threadId);
     if (!isDefined(thread)) {
-      throw new Error(`Thread not found: ${threadId}`);
+      throw new EventError('THREAD_NOT_FOUND', `Thread not found: ${threadId}`);
     }
     return thread;
   }
@@ -315,7 +334,10 @@ export class Draft implements Entities {
   #getOpenThread(threadId: string) {
     const thread = this.#getThread(threadId);
     if (thread.resolved) {
-      throw new Error(`Thread already resolved: ${threadId}`);
+      throw new EventError(
+        'THREAD_RESOLVED',
+        `Thread already resolved: ${threadId}`,
+      );
     }
     return thread;
   }
@@ -323,19 +345,28 @@ export class Draft implements Entities {
   #getComment(commentId: string) {
     const commentAlreadyDeleted = this.deletedCommentIds.has(commentId);
     if (commentAlreadyDeleted) {
-      throw new Error(`Comment already deleted: ${commentId}`);
+      throw new EventError(
+        'COMMENT_DELETED',
+        `Comment already deleted: ${commentId}`,
+      );
     }
 
     const comment = this.comments.get(commentId);
     if (!isDefined(comment)) {
-      throw new Error(`Comment not found: ${commentId}`);
+      throw new EventError(
+        'COMMENT_NOT_FOUND',
+        `Comment not found: ${commentId}`,
+      );
     }
     return comment;
   }
 
   #assertOwner(entity: {id: string; actorId: string}, actorId: string) {
     if (entity.actorId !== actorId) {
-      throw new Error(`${entity.id} not owned by actor: ${actorId}`);
+      throw new EventError(
+        'NOT_OWNER',
+        `${entity.id} not owned by actor: ${actorId}`,
+      );
     }
   }
 

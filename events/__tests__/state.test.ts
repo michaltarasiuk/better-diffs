@@ -1,8 +1,9 @@
 import type {SerializedEditorState} from 'lexical';
-import {describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {newId} from '@/utils/new-id';
 
+import type {EventErrorReason} from '../errors';
 import type {Actor, Anchor, ShareEvent, ShareEventPayload} from '../schemas';
 import {
   Draft,
@@ -230,6 +231,25 @@ describe('Draft', () => {
     );
   });
 
+  it.each([
+    ['THREAD_ALREADY_EXISTS', [opened], optimistic(opened)],
+    ['THREAD_NOT_FOUND', [], optimistic(resolved)],
+    ['THREAD_RESOLVED', [opened, resolved], optimistic(created())],
+    ['COMMENT_ALREADY_EXISTS', [opened, created()], optimistic(created())],
+    ['COMMENT_NOT_FOUND', [opened], optimistic(edited())],
+    ['COMMENT_DELETED', [opened, created(), deleted()], optimistic(edited())],
+    ['NOT_OWNER', [opened, created()], optimistic(edited(), BOB)],
+  ] satisfies [EventErrorReason, ShareEventPayload[], OptimisticEvent][])(
+    'refuses with %s',
+    (reason, base, event) => {
+      const draft = draftWith(...base);
+
+      expect(() => draft.apply(event)).toThrow(
+        expect.objectContaining({name: 'EventError', reason}),
+      );
+    },
+  );
+
   describe('fork', () => {
     it('leaves the base untouched', () => {
       const base = draftWith(opened, created());
@@ -271,6 +291,10 @@ describe('Draft', () => {
 });
 
 describe('ShareState', () => {
+  beforeEach(() => {
+    nextSeq = 0;
+  });
+
   function stateWith(...payloads: ShareEventPayload[]) {
     const state = new ShareState();
     state.ingest(payloads.map((payload) => confirmed(payload)));
@@ -358,24 +382,29 @@ describe('ShareState', () => {
     it.each([
       ['repeated', 1],
       ['older', 0],
-    ])('rejects a %s seq', (_name, seq) => {
+      ['gapped', 3],
+    ])('rejects a %s seq without consuming it', (_name, seq) => {
       const state = new ShareState();
       state.ingest([confirmed(opened, {seq: 1})]);
 
       expect(() => state.ingest([confirmed(created(), {seq})])).toThrow(
-        `Invalid event seq: ${seq}`,
+        expect.objectContaining({reason: 'UNEXPECTED_SEQ'}),
       );
+      expect(state.latestSeq).toBe(1);
     });
 
-    it('accepts gaps in seq', () => {
+    it('keeps the events before a gap', () => {
       const state = new ShareState();
 
       expect(() =>
         state.ingest([
           confirmed(opened, {seq: 1}),
-          confirmed(created(), {seq: 5}),
+          confirmed(created(), {seq: 3}),
         ]),
-      ).not.toThrow();
+      ).toThrow(`Expected event seq 2, got 3`);
+      expect(state.latestSeq).toBe(1);
+      expect(state.threads.has(THREAD_ID)).toBe(true);
+      expect(state.comments.has(COMMENT_ID)).toBe(false);
     });
   });
 

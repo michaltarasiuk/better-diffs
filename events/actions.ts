@@ -7,6 +7,7 @@ import {appendEvents} from '@/db/events';
 import {isDefined} from '@/utils/is-defined';
 
 import {toEventActor} from './actor';
+import {EventError} from './errors';
 import {
   type CommentCreatedPayload,
   type CommentDeletedPayload,
@@ -24,7 +25,7 @@ import {Draft, ShareState} from './state';
 
 export async function openThread(input: OpenThreadInput) {
   if (!OpenThreadInput.validate(input)) {
-    throw new Error('Invalid open thread input');
+    throw new EventError('INVALID_INPUT', 'Invalid open thread input');
   }
 
   const {shareId, threadId, commentId, body, anchor} = input;
@@ -36,7 +37,7 @@ export async function openThread(input: OpenThreadInput) {
 
 export async function resolveThread(input: ResolveThreadInput) {
   if (!ResolveThreadInput.validate(input)) {
-    throw new Error('Invalid resolve thread input');
+    throw new EventError('INVALID_INPUT', 'Invalid resolve thread input');
   }
 
   const {shareId, threadId} = input;
@@ -47,7 +48,7 @@ export async function resolveThread(input: ResolveThreadInput) {
 
 export async function createComment(input: CreateCommentInput) {
   if (!CreateCommentInput.validate(input)) {
-    throw new Error('Invalid create comment input');
+    throw new EventError('INVALID_INPUT', 'Invalid create comment input');
   }
 
   const {shareId, threadId, commentId, body} = input;
@@ -58,7 +59,7 @@ export async function createComment(input: CreateCommentInput) {
 
 export async function editComment(input: EditCommentInput) {
   if (!EditCommentInput.validate(input)) {
-    throw new Error('Invalid edit comment input');
+    throw new EventError('INVALID_INPUT', 'Invalid edit comment input');
   }
 
   const {shareId, commentId, body} = input;
@@ -69,7 +70,7 @@ export async function editComment(input: EditCommentInput) {
 
 export async function deleteComment(input: DeleteCommentInput) {
   if (!DeleteCommentInput.validate(input)) {
-    throw new Error('Invalid delete comment input');
+    throw new EventError('INVALID_INPUT', 'Invalid delete comment input');
   }
 
   const {shareId, commentId} = input;

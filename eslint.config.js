@@ -24,7 +24,7 @@ const PURE_FILES = [
   'http/headers/**',
   'utils/**',
   'diffs/{annotations,empty,lines,schemas,stats}.ts',
-  'events/{actor,schemas,state}.ts',
+  'events/{actor,errors,schemas,state}.ts',
   'trees/input.ts',
 ];
 
