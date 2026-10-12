@@ -34,10 +34,8 @@ export class ShareEventsSync {
   }
 
   async hydrate() {
-    const events = await fetchEvents(
-      this.#shareId,
-      await getLastSeq(this.#shareId),
-    );
+    const lastSeq = await getLastSeq(this.#shareId);
+    const events = await fetchEvents(this.#shareId, lastSeq);
     if (events.length > 0) {
       await putEvents(events);
     }

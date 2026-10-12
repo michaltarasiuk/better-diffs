@@ -43,12 +43,12 @@ export async function createShare(
   const patchValues: (typeof patchesTable.$inferInsert)[] = [];
   const fileValues: (typeof filesTable.$inferInsert)[] = [];
 
-  for (const [order, patchFiles] of patches.entries()) {
+  for (const [patchOrder, patchFiles] of patches.entries()) {
     const patchId = newId();
     patchValues.push({
       id: patchId,
       shareId,
-      order,
+      order: patchOrder,
     });
 
     for (const [fileOrder, metadata] of patchFiles.entries()) {
