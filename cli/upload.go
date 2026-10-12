@@ -47,10 +47,8 @@ func shareURL(baseURL string, resp *http.Response) (string, error) {
 	msg := strings.TrimSpace(string(body))
 
 	if resp.StatusCode != http.StatusCreated {
-		/*
-		 * Proxies and size limits answer with HTML pages, which are noise on
-		 * a terminal. Only the API's own plain-text errors are worth showing.
-		 */
+		// Proxies and size limits answer with HTML pages, which are noise on
+		// a terminal. Only the API's own plain-text errors are worth showing.
 		if msg == "" || !plainText(resp.Header.Get("Content-Type")) {
 			return "", fmt.Errorf("Upload failed with status %s", resp.Status)
 		}
@@ -60,8 +58,8 @@ func shareURL(baseURL string, resp *http.Response) (string, error) {
 	if msg == "" {
 		return "", errors.New("Empty share URL")
 	}
-	if u, err := url.Parse(msg); err != nil || (u.Scheme != "http" && u.Scheme != "https") {
-		return "", fmt.Errorf("Invalid share URL: %q", msg)
+	if err := checkHTTPURL(msg); err != nil {
+		return "", fmt.Errorf("Invalid share URL %q: %w", msg, err)
 	}
 	return msg, nil
 }

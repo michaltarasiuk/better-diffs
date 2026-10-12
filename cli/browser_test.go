@@ -1,48 +1,32 @@
 package main
 
 import (
+	"reflect"
 	"runtime"
 	"testing"
 )
 
-func TestBrowsers(t *testing.T) {
-	tests := []struct {
-		name    string
-		browser string
-		display string
-		want    []string
-	}{
-		{
-			name:    "browser env wins",
-			browser: "/usr/bin/my-browser",
-			want:    []string{"/usr/bin/my-browser"},
-		},
-		{
-			name: "darwin default",
-			want: []string{"/usr/bin/open"},
-		},
+func TestBrowsersPrefersBrowserEnv(t *testing.T) {
+	t.Setenv("BROWSER", "/usr/bin/my-browser")
+	if got, want := browsers()[0], []string{"/usr/bin/my-browser"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("browsers()[0] = %v; want %v", got, want)
 	}
+}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			if tc.name == "darwin default" && runtime.GOOS != "darwin" {
-				t.Skip("darwin only")
-			}
-			t.Setenv("BROWSER", tc.browser)
-			if tc.display != "" {
-				t.Setenv("DISPLAY", tc.display)
-			} else {
-				t.Setenv("DISPLAY", "")
-			}
+func TestBrowsersDefault(t *testing.T) {
+	t.Setenv("BROWSER", "")
+	t.Setenv("DISPLAY", ":0")
 
-			cmds := browsers()
-			if len(cmds) == 0 {
-				t.Fatal("browsers() = empty; want commands")
-			}
-			if got := cmds[0]; len(got) != len(tc.want) || got[0] != tc.want[0] {
-				t.Fatalf("browsers()[0] = %v; want %v", got, tc.want)
-			}
-		})
+	want := map[string][]string{
+		"darwin":  {"/usr/bin/open"},
+		"windows": {"rundll32", "url.dll,FileProtocolHandler"},
+		"linux":   {"xdg-open"},
+	}[runtime.GOOS]
+	if want == nil {
+		t.Skipf("no default browser command on %s", runtime.GOOS)
+	}
+	if got := browsers()[0]; !reflect.DeepEqual(got, want) {
+		t.Fatalf("browsers()[0] = %v; want %v", got, want)
 	}
 }
 

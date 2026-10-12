@@ -11,11 +11,9 @@ import (
 	"unicode/utf8"
 )
 
-/*
- * User config such as diff.noprefix, diff.external, or color.diff=always
- * changes the patch format, and the server only parses plain unified diffs
- * with a/ and b/ prefixes.
- */
+// patchFlags pin the patch format. User config such as diff.noprefix,
+// diff.external, or color.diff=always changes it, and the server only parses
+// plain unified diffs with a/ and b/ prefixes.
 var patchFlags = []string{
 	"--no-color",
 	"--no-ext-diff",
@@ -25,10 +23,8 @@ var patchFlags = []string{
 }
 
 func diff(base string, staged bool, paths []string) ([]byte, error) {
-	/*
-	 * Outside a repository git diff falls back to --no-index and prints its
-	 * whole usage text, so check for a work tree first.
-	 */
+	// Outside a repository git diff falls back to --no-index and prints its
+	// whole usage text, so check for a work tree first.
 	root, err := git("", "rev-parse", "--show-toplevel")
 	if err != nil {
 		return nil, err
@@ -64,11 +60,9 @@ func diffArgs(base string, staged bool, paths []string) []string {
 	return append(append(args, "--"), paths...)
 }
 
-/*
- * git diff skips untracked files. Each one is diffed against /dev/null from
- * the repository root so its headers use root-relative paths like the tracked
- * changes do. Git maps /dev/null to NUL on Windows.
- */
+// untrackedDiff covers the files git diff skips. Each one is diffed against
+// /dev/null from the repository root so its headers use root-relative paths
+// like the tracked changes do. Git maps /dev/null to NUL on Windows.
 func untrackedDiff(root string, paths []string) ([]byte, error) {
 	args := []string{"ls-files", "--others", "--exclude-standard", "--full-name", "-z", "--"}
 	out, err := git("", append(args, paths...)...)
@@ -92,13 +86,9 @@ func untrackedDiff(root string, paths []string) ([]byte, error) {
 
 func diffNewFile(root, name string) ([]byte, error) {
 	args := append([]string{"diff", "--no-index"}, patchFlags...)
-	cmd := exec.Command("git", append(args, "--", "/dev/null", name)...)
-	cmd.Dir = root
-	out, err := cmd.Output()
+	out, err := gitOutput(root, append(args, "--", "/dev/null", name)...)
 
-	/*
-	 * --no-index implies --exit-code, so a file with content exits 1.
-	 */
+	// --no-index implies --exit-code, so a file with content exits 1.
 	var exitErr *exec.ExitError
 	if errors.As(err, &exitErr) && exitErr.ExitCode() == 1 {
 		return out, nil
@@ -109,14 +99,20 @@ func diffNewFile(root, name string) ([]byte, error) {
 	return out, nil
 }
 
+// git runs git in dir, or the working directory when dir is empty, and
+// returns its stdout.
 func git(dir string, args ...string) ([]byte, error) {
-	cmd := exec.Command("git", args...)
-	cmd.Dir = dir
-	out, err := cmd.Output()
+	out, err := gitOutput(dir, args...)
 	if err != nil {
 		return nil, gitErr(err)
 	}
 	return out, nil
+}
+
+func gitOutput(dir string, args ...string) ([]byte, error) {
+	cmd := exec.Command("git", args...)
+	cmd.Dir = dir
+	return cmd.Output()
 }
 
 func gitErr(err error) error {
@@ -128,15 +124,14 @@ func gitErr(err error) error {
 		if msg := gitMessage(exitErr.Stderr); msg != "" {
 			return errors.New(msg)
 		}
-		return fmt.Errorf("Git exited with %v", exitErr.ProcessState)
+		return fmt.Errorf("Git failed: %v", exitErr)
 	}
 	return fmt.Errorf("Run git: %w", err)
 }
 
-/*
- * Git prints lowercase "fatal: " and "error: " lines, sometimes after hints
- * and warnings. Only that line is useful after the "better-diffs: " prefix.
- */
+// gitMessage picks the useful line from git's stderr. Git prints lowercase
+// "fatal: " and "error: " lines, sometimes after hints and warnings, and only
+// that line reads well after the "better-diffs: " prefix.
 func gitMessage(stderr []byte) string {
 	scanner := bufio.NewScanner(bytes.NewReader(stderr))
 	for scanner.Scan() {

@@ -79,7 +79,7 @@ func TestPick(t *testing.T) {
 	}
 }
 
-func TestCheckURL(t *testing.T) {
+func TestCheckHTTPURL(t *testing.T) {
 	tests := []struct {
 		name        string
 		raw         string
@@ -97,34 +97,31 @@ func TestCheckURL(t *testing.T) {
 		{
 			name:        "missing scheme",
 			raw:         "127.0.0.1:3000",
-			wantErrLike: `Invalid instance URL "127.0.0.1:3000":`,
+			wantErrLike: "first path segment in URL cannot contain colon",
 		},
 		{
 			name:    "unsupported scheme",
 			raw:     "ftp://example.com",
-			wantErr: `Invalid instance URL "ftp://example.com": missing http(s) scheme`,
+			wantErr: "missing http(s) scheme",
 		},
 		{
 			name:    "missing host",
 			raw:     "http://",
-			wantErr: `Invalid instance URL "http://": missing host`,
+			wantErr: "missing host",
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			err := checkURL(tc.raw)
-			if tc.wantErr == "" && tc.wantErrLike == "" {
-				if err != nil {
-					t.Fatalf("checkURL(%q) = %v; want nil err", tc.raw, err)
-				}
-				return
-			}
-			if tc.wantErr != "" {
+			err := checkHTTPURL(tc.raw)
+			switch {
+			case tc.wantErr != "":
 				assertError(t, err, tc.wantErr)
-				return
+			case tc.wantErrLike != "":
+				assertErrorContains(t, err, tc.wantErrLike)
+			case err != nil:
+				t.Fatalf("checkHTTPURL(%q) = %v; want nil err", tc.raw, err)
 			}
-			assertErrorContains(t, err, tc.wantErrLike)
 		})
 	}
 }
@@ -233,7 +230,6 @@ func TestReadConfig(t *testing.T) {
 		contents string
 		write    bool
 		want     string
-		wantErr  bool
 	}{
 		{
 			name:     "finds url with comment and blank lines",
@@ -275,12 +271,6 @@ func TestReadConfig(t *testing.T) {
 			}
 
 			got, err := readConfig(path)
-			if tc.wantErr {
-				if err == nil {
-					t.Fatal("readConfig() = nil err; want err")
-				}
-				return
-			}
 			if err != nil {
 				t.Fatalf("readConfig(%q) = %v; want nil err", path, err)
 			}

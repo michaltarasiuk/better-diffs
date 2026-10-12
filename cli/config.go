@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io/fs"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -23,8 +24,8 @@ func instance(flagURL string) (string, error) {
 	if !ok {
 		return "", errors.New("No instance configured")
 	}
-	if err := checkURL(raw); err != nil {
-		return "", err
+	if err := checkHTTPURL(raw); err != nil {
+		return "", fmt.Errorf("Invalid instance URL %q: %w", raw, err)
 	}
 	return raw, nil
 }
@@ -48,26 +49,26 @@ func pick(candidates ...string) (string, bool) {
 	return "", false
 }
 
-func checkURL(raw string) error {
+// checkHTTPURL reports why raw is not an absolute http(s) URL. Both the
+// instance and the share URL the server returns must be one.
+func checkHTTPURL(raw string) error {
 	u, err := url.Parse(raw)
 	if err != nil {
-		return fmt.Errorf("Invalid instance URL %q: %w", raw, err)
+		return err
 	}
 	if u.Scheme != "http" && u.Scheme != "https" {
-		return fmt.Errorf("Invalid instance URL %q: missing http(s) scheme", raw)
+		return errors.New("missing http(s) scheme")
 	}
 	if u.Host == "" {
-		return fmt.Errorf("Invalid instance URL %q: missing host", raw)
+		return errors.New("missing host")
 	}
 	return nil
 }
 
-/*
- * configPath is resolved by hand rather than through a platform config
- * directory, which on macOS would be ~/Library/Application Support. The
- * installer writes the config from POSIX shell, so both sides agree on the
- * XDG location.
- */
+// configPath is resolved by hand rather than through a platform config
+// directory, which on macOS would be ~/Library/Application Support. The
+// installer writes the config from POSIX shell, so both sides agree on the
+// XDG location.
 func configPath() (string, bool) {
 	if dir := os.Getenv("XDG_CONFIG_HOME"); dir != "" {
 		return filepath.Join(dir, "better-diffs", "config"), true
@@ -88,7 +89,7 @@ func configPath() (string, bool) {
 func readConfig(path string) (string, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, fs.ErrNotExist) {
 			return "", nil
 		}
 		return "", fmt.Errorf("Read %s: %w", path, err)

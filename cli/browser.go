@@ -8,12 +8,14 @@ import (
 	"time"
 )
 
-/*
- * browsers returns commands to try when opening a URL, in order, based on
- * cmd/internal/browser in the Go toolchain. That uses "cmd /c start", where
- * cmd.exe splits the URL at "&" and treats a quoted first argument as a
- * window title, so Windows goes through rundll32 instead.
- */
+// browserWait is how long a browser command may run before it counts as
+// started. Commands like xdg-open exit quickly; a browser binary keeps running.
+const browserWait = 3 * time.Second
+
+// browsers returns commands to try when opening a URL, in order, based on
+// cmd/internal/browser in the Go toolchain. That uses "cmd /c start", where
+// cmd.exe splits the URL at "&" and treats a quoted first argument as a
+// window title, so Windows goes through rundll32 instead.
 func browsers() [][]string {
 	var cmds [][]string
 	if exe := os.Getenv("BROWSER"); exe != "" {
@@ -44,17 +46,15 @@ func browse(url string) error {
 		if err := cmd.Start(); err != nil {
 			continue
 		}
-		if started(cmd, 3*time.Second) {
+		if started(cmd, browserWait) {
 			return nil
 		}
 	}
 	return errors.New("Cannot open browser")
 }
 
-/*
- * started reports whether the browser command likely worked. If the command
- * runs longer than timeout, it is treated as success.
- */
+// started reports whether the browser command likely worked. If the command
+// runs longer than timeout, it is treated as success.
 func started(cmd *exec.Cmd, timeout time.Duration) bool {
 	errc := make(chan error, 1)
 	go func() {

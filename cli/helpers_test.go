@@ -43,41 +43,6 @@ func assertErrorContains(t *testing.T, err error, substr string) {
 	}
 }
 
-func assertCommandEqual(t *testing.T, got, want command) {
-	t.Helper()
-	if got.help != want.help {
-		t.Fatalf("help = %v; want %v", got.help, want.help)
-	}
-	if got.version != want.version {
-		t.Fatalf("version = %v; want %v", got.version, want.version)
-	}
-	assertOptionsEqual(t, got.options, want.options)
-}
-
-func assertOptionsEqual(t *testing.T, got, want options) {
-	t.Helper()
-	if got.staged != want.staged {
-		t.Fatalf("staged = %v; want %v", got.staged, want.staged)
-	}
-	if got.base != want.base {
-		t.Fatalf("base = %q; want %q", got.base, want.base)
-	}
-	if got.url != want.url {
-		t.Fatalf("url = %q; want %q", got.url, want.url)
-	}
-	if got.open != want.open {
-		t.Fatalf("open = %v; want %v", got.open, want.open)
-	}
-	if len(got.paths) != len(want.paths) {
-		t.Fatalf("paths = %v; want %v", got.paths, want.paths)
-	}
-	for i := range got.paths {
-		if got.paths[i] != want.paths[i] {
-			t.Fatalf("paths[%d] = %q; want %q", i, got.paths[i], want.paths[i])
-		}
-	}
-}
-
 func writeConfig(t *testing.T, dir, contents string) {
 	t.Helper()
 	configDir := filepath.Join(dir, "better-diffs")
@@ -139,4 +104,22 @@ func chdir(t *testing.T, dir string) {
 			t.Errorf("restore working directory: %v", err)
 		}
 	})
+}
+
+func commitFile(t *testing.T, dir, name, contents string) {
+	t.Helper()
+	writeFile(t, dir, name, contents)
+	runGit(t, dir, "add", name)
+	runGit(t, dir, "commit", "-m", "init")
+}
+
+func writeFile(t *testing.T, dir, name, contents string) {
+	t.Helper()
+	path := filepath.Join(dir, name)
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte(contents), 0o644); err != nil {
+		t.Fatal(err)
+	}
 }

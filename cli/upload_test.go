@@ -4,7 +4,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 )
 
@@ -76,7 +75,7 @@ func TestUploadErrors(t *testing.T) {
 			name:    "success body that is not a url",
 			status:  http.StatusCreated,
 			body:    "ok",
-			wantErr: `Invalid share URL: "ok"`,
+			wantErr: `Invalid share URL "ok": missing http(s) scheme`,
 		},
 		{
 			name:    "bad request body",
@@ -117,10 +116,5 @@ func TestUploadErrors(t *testing.T) {
 
 func TestUploadInvalidBaseURL(t *testing.T) {
 	_, err := upload("://bad-url", Version, []byte(samplePatch))
-	if err == nil {
-		t.Fatal("upload(invalid URL) = nil err; want err")
-	}
-	if !strings.Contains(err.Error(), "Invalid instance URL") {
-		t.Fatalf("upload(invalid URL) = %q; want Invalid instance URL", err.Error())
-	}
+	assertErrorContains(t, err, "Invalid instance URL")
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -216,23 +215,5 @@ func TestGitMessage(t *testing.T) {
 				t.Fatalf("gitMessage(%q) = %q; want %q", tc.stderr, got, tc.want)
 			}
 		})
-	}
-}
-
-func commitFile(t *testing.T, dir, name, contents string) {
-	t.Helper()
-	writeFile(t, dir, name, contents)
-	runGit(t, dir, "add", name)
-	runGit(t, dir, "commit", "-m", "init")
-}
-
-func writeFile(t *testing.T, dir, name, contents string) {
-	t.Helper()
-	path := filepath.Join(dir, name)
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(path, []byte(contents), 0o644); err != nil {
-		t.Fatal(err)
 	}
 }

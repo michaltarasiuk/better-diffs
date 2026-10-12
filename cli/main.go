@@ -1,22 +1,17 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
 	"runtime"
 )
 
-/**
- * Version is set at link time with -ldflags "-X main.Version=...".
- */
+// Version is set at link time with -ldflags "-X main.Version=...".
 var Version = "0.1.3"
 
-/**
- * DefaultURL is the fallback instance when no flag, env, or config is set.
- * Set at link time with -ldflags "-X main.DefaultURL=...".
- */
+// DefaultURL is the fallback instance when no flag, env, or config is set.
+// Set at link time with -ldflags "-X main.DefaultURL=...".
 var DefaultURL = ""
 
 const usageLine = "better-diffs [options] [--] [<path>...]"
@@ -53,11 +48,7 @@ EXAMPLES
 
 func main() {
 	if err := run(os.Args[1:], os.Stdout); err != nil {
-		var u usageError
-		if errors.As(err, &u) {
-			dieUsage(err)
-		}
-		die(err)
+		os.Exit(report(os.Stderr, err))
 	}
 }
 
@@ -67,10 +58,11 @@ func run(args []string, stdout io.Writer) error {
 		return err
 	}
 	if cmd.help {
-		return writeUsage(stdout)
+		_, err := io.WriteString(stdout, usage)
+		return err
 	}
 	if cmd.version {
-		_, err := fmt.Fprint(stdout, versionLine())
+		_, err := io.WriteString(stdout, versionLine())
 		return err
 	}
 
@@ -100,9 +92,4 @@ func run(args []string, stdout io.Writer) error {
 
 func versionLine() string {
 	return fmt.Sprintf("better-diffs version %s %s/%s\n", Version, runtime.GOOS, runtime.GOARCH)
-}
-
-func writeUsage(w io.Writer) error {
-	_, err := io.WriteString(w, usage)
-	return err
 }

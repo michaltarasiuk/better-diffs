@@ -1,8 +1,6 @@
 package main
 
-import (
-	"strings"
-)
+import "strings"
 
 type command struct {
 	help    bool
@@ -19,82 +17,63 @@ type options struct {
 }
 
 func parse(args []string) (command, error) {
-	opts := options{}
-	i := 0
-	for i < len(args) {
+	var cmd command
+	opts := &cmd.options
+	for i := 0; i < len(args); i++ {
 		arg := args[i]
-		i++
 
-		/*
-		 * Paths start at "--", a lone "-", or the first non-flag so a file
-		 * named like an option still reaches git.
-		 */
+		// Paths start at "--", a lone "-", or the first non-flag so a file
+		// named like an option still reaches git.
 		if arg == "--" || arg == "-" {
-			opts.paths = append(opts.paths, args[i:]...)
+			opts.paths = append(opts.paths, args[i+1:]...)
 			break
 		}
-		if !flag(arg) {
-			opts.paths = append(opts.paths, args[i-1:]...)
+		if !isFlag(arg) {
+			opts.paths = append(opts.paths, args[i:]...)
 			break
 		}
 
 		name, value, inline := strings.Cut(arg, "=")
 		switch name {
-		case "--staged":
+		case "--help", "-h", "--version", "--staged", "--open", "-o":
 			if inline {
 				return command{}, usagef("Option takes no value: %s", arg)
 			}
-			opts.staged = true
-		case "--open", "-o":
-			if inline {
-				return command{}, usagef("Option takes no value: %s", arg)
+		case "--base", "--url":
+			if !inline && i+1 < len(args) {
+				i++
+				value = args[i]
 			}
-			opts.open = true
-		case "--base":
-			v, err := need(name, value, inline, args, &i)
-			if err != nil {
-				return command{}, err
+			if value == "" {
+				return command{}, usagef("Missing value for %s", name)
 			}
-			/*
-			 * git diff reads a leading dash as an option, and options like
-			 * --output write files.
-			 */
-			if strings.HasPrefix(v, "-") {
-				return command{}, usagef("Invalid base: %s", v)
-			}
-			opts.base = v
-		case "--url":
-			v, err := need(name, value, inline, args, &i)
-			if err != nil {
-				return command{}, err
-			}
-			opts.url = v
+		default:
+			return command{}, usagef("Unknown option: %s", arg)
+		}
+
+		switch name {
 		case "--help", "-h":
 			return command{help: true}, nil
 		case "--version":
 			return command{version: true}, nil
-		default:
-			return command{}, usagef("Unknown option: %s", arg)
+		case "--staged":
+			opts.staged = true
+		case "--open", "-o":
+			opts.open = true
+		case "--base":
+			// git diff reads a leading dash as an option, and options like
+			// --output write files.
+			if strings.HasPrefix(value, "-") {
+				return command{}, usagef("Invalid base: %s", value)
+			}
+			opts.base = value
+		case "--url":
+			opts.url = value
 		}
 	}
-
-	return command{options: opts}, nil
+	return cmd, nil
 }
 
-func flag(arg string) bool {
+func isFlag(arg string) bool {
 	return len(arg) > 1 && arg[0] == '-'
-}
-
-func need(name, value string, inline bool, args []string, i *int) (string, error) {
-	if !inline {
-		if *i >= len(args) {
-			return "", usagef("Missing value for %s", name)
-		}
-		value = args[*i]
-		*i++
-	}
-	if value == "" {
-		return "", usagef("Missing value for %s", name)
-	}
-	return value, nil
 }

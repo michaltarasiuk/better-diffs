@@ -1,11 +1,11 @@
 package main
 
 import (
-	"bytes"
+	"reflect"
 	"testing"
 )
 
-func TestFlag(t *testing.T) {
+func TestIsFlag(t *testing.T) {
 	tests := []struct {
 		arg  string
 		want bool
@@ -34,8 +34,8 @@ func TestFlag(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.arg, func(t *testing.T) {
-			if got := flag(tc.arg); got != tc.want {
-				t.Fatalf("flag(%q) = %v; want %v", tc.arg, got, tc.want)
+			if got := isFlag(tc.arg); got != tc.want {
+				t.Fatalf("isFlag(%q) = %v; want %v", tc.arg, got, tc.want)
 			}
 		})
 	}
@@ -107,6 +107,16 @@ func TestParse(t *testing.T) {
 			err:  "Option takes no value: --open=1",
 		},
 		{
+			name: "help with value rejected",
+			args: []string{"--help=1"},
+			err:  "Option takes no value: --help=1",
+		},
+		{
+			name: "version with value rejected",
+			args: []string{"--version=1"},
+			err:  "Option takes no value: --version=1",
+		},
+		{
 			name: "unknown option",
 			args: []string{"--bogus"},
 			err:  "Unknown option: --bogus",
@@ -158,42 +168,9 @@ func TestParse(t *testing.T) {
 			if err != nil {
 				t.Fatalf("parse(%v) = %v; want nil err", tc.args, err)
 			}
-			assertCommandEqual(t, got, tc.want)
+			if !reflect.DeepEqual(got, tc.want) {
+				t.Fatalf("parse(%v) = %+v; want %+v", tc.args, got, tc.want)
+			}
 		})
 	}
-}
-
-func TestRunHelp(t *testing.T) {
-	var stdout bytes.Buffer
-	if err := run([]string{"--help"}, &stdout); err != nil {
-		t.Fatalf("run(--help) = %v; want nil err", err)
-	}
-	if stdout.String() != usage {
-		t.Fatalf("run(--help) wrote %q; want usage text", stdout.String())
-	}
-}
-
-func TestRunVersion(t *testing.T) {
-	var stdout bytes.Buffer
-	if err := run([]string{"--version"}, &stdout); err != nil {
-		t.Fatalf("run(--version) = %v; want nil err", err)
-	}
-	if got := stdout.String(); got != versionLine() {
-		t.Fatalf("run(--version) = %q; want %q", got, versionLine())
-	}
-}
-
-func TestRunUsageError(t *testing.T) {
-	err := run([]string{"--bogus"}, &bytes.Buffer{})
-	assertUsageError(t, err, "Unknown option: --bogus")
-}
-
-func TestRunNoInstance(t *testing.T) {
-	dir := t.TempDir()
-	t.Setenv("XDG_CONFIG_HOME", dir)
-	t.Setenv("BETTER_DIFFS_URL", "")
-	withDefaultURL(t, "")
-
-	err := run(nil, &bytes.Buffer{})
-	assertError(t, err, "No instance configured")
 }
