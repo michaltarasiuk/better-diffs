@@ -96,7 +96,12 @@ function CommentForm({
     <SignedIn
       fallback={
         <Card variant="secondary" className="m-2 mbs-1 p-0">
-          <SignIn line={line} onDismiss={onDismiss} />
+          <div className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <p className="hidden text-sm text-muted sm:block">
+              Sign in to leave a comment.
+            </p>
+            <SignIn line={line} onDismiss={onDismiss} />
+          </div>
         </Card>
       }
     >
@@ -154,7 +159,13 @@ function CommentThread({line, threadId, fileId}: CommentThreadProps) {
 
       <ReplyInput>
         {({onDismiss}) => (
-          <SignedIn fallback={<SignIn line={line} onDismiss={onDismiss} />}>
+          <SignedIn
+            fallback={
+              <div className="flex min-h-15 flex-col justify-center p-3">
+                <SignIn line={line} onDismiss={onDismiss} />
+              </div>
+            }
+          >
             {(session) => (
               <CommentEditor
                 placeholder="Write a reply…"
