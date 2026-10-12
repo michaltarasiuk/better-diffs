@@ -13,16 +13,6 @@ import {
   shares as sharesTable,
 } from './schema';
 
-export async function touchShare(id: string) {
-  const [share] = await db
-    .update(sharesTable)
-    .set({lastVisitedAt: sql`datetime('now')`})
-    .where(eq(sharesTable.id, id))
-    .returning({id: sharesTable.id});
-
-  return isDefined(share);
-}
-
 export async function getShareFiles(id: string) {
   return db
     .select({
@@ -34,6 +24,16 @@ export async function getShareFiles(id: string) {
     .innerJoin(patchesTable, eq(filesTable.patchId, patchesTable.id))
     .where(eq(patchesTable.shareId, id))
     .orderBy(asc(patchesTable.order), asc(filesTable.order));
+}
+
+export async function touchShare(id: string) {
+  const [share] = await db
+    .update(sharesTable)
+    .set({lastVisitedAt: sql`datetime('now')`})
+    .where(eq(sharesTable.id, id))
+    .returning({id: sharesTable.id});
+
+  return isDefined(share);
 }
 
 export async function createShare(
