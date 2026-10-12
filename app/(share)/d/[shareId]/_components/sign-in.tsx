@@ -21,7 +21,7 @@ export function SignIn({line, onDismiss}: SignInProps) {
   const annotationName = getLineAnnotationName(line);
 
   return (
-    <div className="flex flex-col gap-2 overflow-auto p-3 sm:flex-row-reverse">
+    <div className="flex min-h-15 flex-col gap-2 overflow-auto p-3 sm:flex-row-reverse">
       <Button
         id={`${annotationName}-sign-in-github`}
         isPending={isSigningIn}
