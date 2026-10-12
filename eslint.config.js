@@ -31,14 +31,16 @@ const PURE_FILES = [
 const ROUTE_PRIVATE = {
   group: ['@/app/**'],
   message:
-    'Route code is private to its segment. Import it relatively from inside the segment, or move what is shared to a top-level folder.',
+    'Route code is private to its segment. ' +
+    'Import it relatively from inside the segment, or move what is shared to a top-level folder.',
 };
 
 const SERVER_ONLY = {
   group: ['@/db/**', '@/auth/server', '@/auth/bearer'],
   allowTypeImports: true,
   message:
-    'Server-only. Reach the database and session through a server action (events/actions.ts) or a route handler, and pass the result in.',
+    'Server-only. ' +
+    'Reach the database and session through a server action (events/actions.ts) or a route handler, and pass the result in.',
 };
 
 const FRAMEWORK = {
@@ -62,7 +64,8 @@ const DB_DEPENDENCIES = [
   {
     regex: '^@/(?!env$|utils/|events/schemas$|db/)',
     message:
-      'db/ depends only on env, utils and the event schemas. Take anything else as an argument, as appendEvents takes `validate`.',
+      'db/ depends only on env, utils and the event schemas. ' +
+      'Take anything else as an argument, as appendEvents takes `validate`.',
   },
   {
     group: ['react', 'react-dom', 'next', 'next/*'],
@@ -84,6 +87,11 @@ export default defineConfig([
   {
     plugins: {
       'simple-import-sort': simpleImportSort,
+    },
+    settings: {
+      // import/no-cycle parses every module it follows; skipping packages
+      // keeps it to our own code.
+      'import/ignore': ['node_modules'],
     },
     rules: {
       'simple-import-sort/imports': [
@@ -107,6 +115,7 @@ export default defineConfig([
       'import/first': 'error',
       'import/newline-after-import': 'error',
       'import/no-duplicates': ['error', {'prefer-inline': true}],
+      'import/no-cycle': 'error',
       'import/no-anonymous-default-export': 'off',
       'no-console': ['warn', {allow: ['warn', 'error']}],
       eqeqeq: ['error', 'smart'],
