@@ -1,7 +1,8 @@
 'use client';
 
-import {Input} from '@heroui/react';
+import {inputVariants} from '@heroui/styles';
 import {useEffect, useState} from 'react';
+import {Button} from 'react-aria-components';
 
 import {useDismissOnEscape} from '../_hooks/use-dismiss-on-escape';
 import {preloadCommentEditor} from './lazy-comment-editor';
@@ -26,13 +27,16 @@ export function ReplyInput({children}: ReplyInputProps) {
   if (!isEditing) {
     return (
       <div className="p-3">
-        <Input
-          aria-label="Write a reply"
-          placeholder="Write a reply…"
-          variant="secondary"
-          fullWidth
-          onFocus={() => setIsEditing(true)}
-        />
+        <Button
+          className={inputVariants({
+            variant: 'secondary',
+            fullWidth: true,
+            className: 'cursor-text text-start text-field-placeholder',
+          })}
+          onPress={() => setIsEditing(true)}
+        >
+          Write a reply…
+        </Button>
       </div>
     );
   }
