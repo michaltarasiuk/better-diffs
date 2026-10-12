@@ -11,6 +11,7 @@ import {
   useFileTreeSearch,
 } from '@pierre/trees/react';
 import {use, useRef} from 'react';
+import {OverlayTriggerStateContext} from 'react-aria-components/Dialog';
 
 import {useShortcut} from '@/hooks/use-shortcut';
 import type {TreeInput} from '@/trees/input';
@@ -36,6 +37,7 @@ export function FileTreePanel({
 }: FileTreePanelProps) {
   const {searchQuery, setSearchQuery} = useSearchQuery();
   const codeViewRef = use(CodeViewRefContext);
+  const overlay = use(OverlayTriggerStateContext);
   const {model} = useFileTree({
     ...getFileTreeOptions(input, {searchQuery}),
     onSearchChange(value) {
@@ -57,6 +59,7 @@ export function FileTreePanel({
       }
 
       scrollToFile(codeView, fileId);
+      overlay?.close();
     },
   });
 

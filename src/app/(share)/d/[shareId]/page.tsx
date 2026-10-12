@@ -64,7 +64,7 @@ export default async function SharePage({
   );
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full flex-col md:flex-row">
       <CodeViewProvider>
         <FilesSidebar>{tree}</FilesSidebar>
 
