@@ -92,7 +92,7 @@ describe('openThread', () => {
         body: BODY,
         anchor: anchor({shareId: otherShareId}),
       }),
-    ).rejects.toThrow(`Invalid share id: ${otherShareId}`);
+    ).rejects.toThrow('Invalid open thread input');
     await expect(storedTypes()).resolves.toEqual([]);
   });
 

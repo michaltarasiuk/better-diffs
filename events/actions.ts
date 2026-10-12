@@ -27,10 +27,6 @@ export async function openThread(input: OpenThreadInput) {
     throw new Error('Invalid open thread input');
   }
 
-  if (input.anchor.shareId !== input.shareId) {
-    throw new Error(`Invalid share id: ${input.anchor.shareId}`);
-  }
-
   const {shareId, threadId, commentId, body, anchor} = input;
   return appendValidatedEvents(shareId, [
     {$type: 'thread.opened', threadId, anchor},

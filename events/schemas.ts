@@ -78,13 +78,18 @@ export const EVENT_TYPES = [
   'comment.deleted',
 ] as const satisfies ShareEventPayload['$type'][];
 
-export const OpenThreadInput = z.object({
-  shareId: z.uuid(),
-  threadId: z.uuid(),
-  commentId: z.uuid(),
-  body: LexicalBody,
-  anchor: Anchor,
-});
+export const OpenThreadInput = z
+  .object({
+    shareId: z.uuid(),
+    threadId: z.uuid(),
+    commentId: z.uuid(),
+    body: LexicalBody,
+    anchor: Anchor,
+  })
+  .refine((input) => input.anchor.shareId === input.shareId, {
+    message: 'Anchor belongs to another share',
+    path: ['anchor', 'shareId'],
+  });
 export type OpenThreadInput = z.infer<typeof OpenThreadInput>;
 
 export const ResolveThreadInput = z.object({
