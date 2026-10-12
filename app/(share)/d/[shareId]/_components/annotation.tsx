@@ -162,7 +162,8 @@ function CommentThread({line, threadId, fileId}: CommentThreadProps) {
                 variant="transparent"
                 className="rounded-b-xl"
                 onSubmit={async (body) => {
-                  if (await reply(session, threadId, body)) {
+                  const replied = await reply(session, threadId, body);
+                  if (replied) {
                     clearReplyDraft(fileId, threadId);
                   }
                 }}
