@@ -20,6 +20,7 @@ export const shares = sqliteTable(
   {
     id: text('id').primaryKey().$defaultFn(newId),
     lastEventSeq: integer('last_event_seq').notNull().default(0),
+    pinned: integer('pinned', {mode: 'boolean'}).notNull().default(false),
     createdAt: text('created_at')
       .notNull()
       .default(sql`(datetime('now'))`),

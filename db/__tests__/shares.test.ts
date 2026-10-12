@@ -114,6 +114,15 @@ describe('deleteExpiredShares', () => {
     await expect(hasShare(fresh)).resolves.toBe(true);
   });
 
+  it('keeps pinned shares however long ago they were visited', async () => {
+    const pinned = await createShare([]);
+    await db.update(shares).set({pinned: true}).where(eq(shares.id, pinned));
+    await ageShare(pinned, 48);
+
+    await expect(deleteExpiredShares({maxAgeHours: 24})).resolves.toBe(0);
+    await expect(hasShare(pinned)).resolves.toBe(true);
+  });
+
   it('deletes the patches, files and events of expired shares', async () => {
     const {id: actorId} = await insertUser();
     const id = await createShare([fileDiffs('a.ts', 'b.ts')]);

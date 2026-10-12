@@ -1,7 +1,7 @@
 import 'server-only';
 
 import type {FileDiffMetadata} from '@pierre/diffs';
-import {asc, eq, lt, sql} from 'drizzle-orm';
+import {and, asc, eq, lt, sql} from 'drizzle-orm';
 
 import {isDefined} from '@/utils/is-defined';
 import {newId} from '@/utils/new-id';
@@ -84,9 +84,12 @@ export async function deleteExpiredShares({
   const deleted = await db
     .delete(sharesTable)
     .where(
-      lt(
-        sharesTable.lastVisitedAt,
-        sql`datetime('now', ${`-${maxAgeHours} hours`})`,
+      and(
+        eq(sharesTable.pinned, false),
+        lt(
+          sharesTable.lastVisitedAt,
+          sql`datetime('now', ${`-${maxAgeHours} hours`})`,
+        ),
       ),
     )
     .returning({id: sharesTable.id});
