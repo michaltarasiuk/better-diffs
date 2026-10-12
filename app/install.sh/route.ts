@@ -2,7 +2,7 @@ import dedent from 'dedent';
 
 import {env} from '@/env';
 
-import {repository} from '../../../package.json';
+import {repository} from '../../package.json';
 
 export function GET() {
   const script = dedent`

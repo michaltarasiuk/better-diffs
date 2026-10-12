@@ -27,9 +27,9 @@ Use these in code, routes, errors and UI. A new concept gets a line here in the 
 
 ## Where code goes
 
-Application code lives in `src/`, and `@/` resolves there; the root holds config, `cli/` and `docs/`. Folders in `src/` are grouped by what the code touches, not by feature. ESLint enforces the boundaries in `eslint.config.js`, and each diagnostic says where the code belongs instead. Paths below are relative to `src/`.
+Application code lives in top-level folders beside config, `cli/` and `docs/`; there is no `src/`, and `@/` resolves to the root. Folders are grouped by what the code touches, not by feature. ESLint enforces the boundaries in `eslint.config.js`, and each diagnostic says where the code belongs instead.
 
-- `app/` holds routes. A segment's own code lives beside it in `_components/`, `_hooks/` and `_lib/` and is imported relatively; the root layout's fonts are in `app/_lib/fonts.ts`. Nothing imports `@/app/...`; once a second segment needs something, it moves to a folder in `src/`.
+- `app/` holds routes. A segment's own code lives beside it in `_components/`, `_hooks/` and `_lib/` and is imported relatively; the root layout's fonts are in `app/_lib/fonts.ts`. Nothing imports `@/app/...`; once a second segment needs something, it moves to a top-level folder.
 - `app/api/**/route.ts` holds route handlers, each wrapped in `route()` from `http/route.ts`. Validate with `parse`, `parseSearchParams` and `readJson`; fail by throwing `ApiError` with a `reason` in SCREAMING_SNAKE_CASE. `route()` turns it into the JSON envelope, or into plain text for a client that prefers it, which is how the CLI reads errors.
 - `http/` is the HTTP toolkit both sides share: `route.ts` (server-only), `error.ts` (`ApiError` and its envelope), `fetch.ts` (`fetchJson`, which turns the envelope back into an `ApiError` in the browser), and `headers/`, parsers for `Accept`, `Authorization` and `Content-Type`. It is not `app/api/`, which holds the routes themselves.
 - `env.ts` validates the environment with t3-env. Import `env` from `@/env` rather than reading `process.env`.
@@ -42,7 +42,7 @@ Application code lives in `src/`, and `@/` resolves there; the root holds config
 
 ## Conventions
 
-- Within a folder of `src/`, import relatively (`./schemas`); across folders, use `@/`. Tests are the exception and may use `@/` throughout.
+- Within a folder, import relatively (`./schemas`); across folders, use `@/`. Tests are the exception and may use `@/` throughout.
 - zod schemas share a name with their inferred type (`export const Anchor = z.object(...)`, `export type Anchor = z.infer<typeof Anchor>`).
 - Check presence with `isDefined` from `utils/is-defined.ts`.
 - Tests sit in a `__tests__/` folder beside the code. `*.browser.test.ts(x)` runs in real Chromium; every other test runs in Node. Database tests call `setupTestDb()` from `db/__tests__/setup.ts`, which builds the schema in memory and clears it before each test.

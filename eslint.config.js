@@ -9,23 +9,23 @@ import testingLibrary from 'eslint-plugin-testing-library';
 const TEST_FILES = ['**/__tests__/**'];
 
 const CLIENT_FILES = [
-  'src/diffs/**',
-  'src/hooks/**',
-  'src/lexical/**',
-  'src/trees/**',
-  'src/events/{actor,idb,provider,sync}.{ts,tsx}',
-  'src/app/**/_components/**',
-  'src/app/**/_hooks/**',
-  'src/app/**/_lib/**',
+  'diffs/**',
+  'hooks/**',
+  'lexical/**',
+  'trees/**',
+  'events/{actor,idb,provider,sync}.{ts,tsx}',
+  'app/**/_components/**',
+  'app/**/_hooks/**',
+  'app/**/_lib/**',
 ];
 
 const PURE_FILES = [
-  'src/http/error.ts',
-  'src/http/headers/**',
-  'src/utils/**',
-  'src/diffs/{annotations,empty,lines,schemas,stats}.ts',
-  'src/events/{actor,schemas,state}.ts',
-  'src/trees/input.ts',
+  'http/error.ts',
+  'http/headers/**',
+  'utils/**',
+  'diffs/{annotations,empty,lines,schemas,stats}.ts',
+  'events/{actor,schemas,state}.ts',
+  'trees/input.ts',
 ];
 
 const ROUTE_PRIVATE = {
@@ -173,7 +173,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['src/db/**'],
+    files: ['db/**'],
     ignores: TEST_FILES,
     rules: {
       '@typescript-eslint/no-restricted-imports': [
