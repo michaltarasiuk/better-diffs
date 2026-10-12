@@ -16,7 +16,7 @@ import {InsetSeparator} from './inset-separator';
 import {LazyCommentEditor as CommentEditor} from './lazy-comment-editor';
 import {ReplyInput} from './reply-input';
 import {ReviewStateContext} from './review-state-provider';
-import {SignInPrompt} from './sign-in-prompt';
+import {SignIn} from './sign-in';
 
 type AnnotationLine = Omit<DiffAnnotation, 'metadata'>;
 
@@ -96,7 +96,7 @@ function CommentForm({
     <SignedIn
       fallback={
         <Card variant="secondary" className="m-2 mbs-1 p-0">
-          <SignInPrompt action="comment" line={line} onDismiss={onDismiss} />
+          <SignIn line={line} onDismiss={onDismiss} />
         </Card>
       }
     >
@@ -153,16 +153,12 @@ function CommentThread({line, threadId, fileId}: CommentThreadProps) {
 
       <ReplyInput>
         {({onDismiss}) => (
-          <SignedIn
-            fallback={
-              <SignInPrompt action="reply" line={line} onDismiss={onDismiss} />
-            }
-          >
+          <SignedIn fallback={<SignIn line={line} onDismiss={onDismiss} />}>
             {(session) => (
               <CommentEditor
                 placeholder="Write a reply…"
-                autoFocus
                 initialState={replyDraft}
+                autoFocus
                 variant="transparent"
                 className="rounded-b-xl"
                 onSubmit={async (body) => {
