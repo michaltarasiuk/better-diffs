@@ -101,22 +101,23 @@ function CommentForm({
       }
     >
       {(session) => (
-        <CommentEditor
-          placeholder="Leave a comment…"
-          initialState={form.draft}
-          onSubmit={(body) =>
-            openThread(
-              session,
-              {filePath, side: line.side, line: line.lineNumber},
-              body,
-            )
-          }
-          onChange={(state) => {
-            setCommentFormDraft(fileId, form.formId, state);
-          }}
-          onDismiss={onDismiss}
-          className="m-2 mbs-1"
-        />
+        <div className="m-2 mbs-1">
+          <CommentEditor
+            placeholder="Leave a comment…"
+            initialState={form.draft}
+            onSubmit={(body) =>
+              openThread(
+                session,
+                {filePath, side: line.side, line: line.lineNumber},
+                body,
+              )
+            }
+            onChange={(state) => {
+              setCommentFormDraft(fileId, form.formId, state);
+            }}
+            onDismiss={onDismiss}
+          />
+        </div>
       )}
     </SignedIn>
   );

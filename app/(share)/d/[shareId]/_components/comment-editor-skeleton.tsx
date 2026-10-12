@@ -1,28 +1,18 @@
-import {Card, type CardProps, Skeleton} from '@heroui/react';
-import {cn} from '@heroui/styles';
+import {Card, Skeleton} from '@heroui/react';
 
-interface CommentEditorSkeletonProps {
-  readonly variant?: CardProps['variant'];
-  readonly className?: string;
-}
-
-export function CommentEditorSkeleton({
-  variant = 'secondary',
-  className,
-}: CommentEditorSkeletonProps) {
+export function CommentEditorSkeleton() {
   return (
     <Card
       aria-label="Loading comment editor"
       aria-busy="true"
-      variant={variant}
-      className={cn('@container', className)}
+      className="@container"
     >
       <Card.Header>
         <div className="-m-1 flex [scrollbar-width:none] items-center gap-2 overflow-x-auto p-1">
           <Skeleton className="h-9 w-36 shrink-0 rounded-field md:h-8" />
-          <Skeleton className="ms-auto h-9 w-16 shrink-0 rounded-field md:h-8 @xl:ms-0" />
-          <Skeleton className="h-9 w-24 shrink-0 rounded-field md:h-8" />
-          <Skeleton className="h-9 w-32 shrink-0 rounded-field md:h-8" />
+          <Skeleton className="ms-auto h-9 w-18 shrink-0 rounded-field md:h-8 md:w-16 @xl:ms-0" />
+          <Skeleton className="h-9 w-27 shrink-0 rounded-field md:h-8 md:w-24" />
+          <Skeleton className="h-9 w-36 shrink-0 rounded-field md:h-8 md:w-32" />
         </div>
       </Card.Header>
 
