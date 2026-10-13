@@ -21,7 +21,7 @@ Use these in code, routes, errors and UI. A new concept gets a line here in the 
 - **File**: one file's diff inside a Patch, stored as `@pierre/diffs` `FileDiffMetadata`.
 - **Thread**: a conversation anchored to a line (`Anchor`: file path, side, line). It can be resolved, never reopened or deleted.
 - **Comment**: one Lexical rich-text body in a Thread. It can be edited and deleted.
-- **Event**: an append-only record of one change to Threads or Comments, numbered per Share by `seq`. The database stores Events, never Thread or Comment rows; state is a fold over them (`events/state.ts`).
+- **Event**: an append-only record of one change to Threads or Comments, numbered per Share by `seq`. The database stores Events, never Thread or Comment rows; state is a fold over them (`events/state.ts`). An Event is never deleted on its own, only with its Share, so deleting a user who has Events is refused.
 - **Actor**: the signed-in GitHub user behind an Event. Viewing needs no account, commenting does.
 - **Review state**: per-browser state such as viewed, collapsed and unsent drafts, kept in localStorage (`review-state-provider.tsx`). Never sent to the server.
 

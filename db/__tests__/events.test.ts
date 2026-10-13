@@ -1,9 +1,12 @@
+import {eq} from 'drizzle-orm';
 import {describe, expect, it} from 'vitest';
 
 import type {ShareEventPayload} from '@/events/schemas';
 import {newId} from '@/utils/new-id';
 
+import {db} from '../db';
 import {appendEvents, getEvents} from '../events';
+import {user as userTable} from '../schema';
 import {createShare} from '../shares';
 import {insertUser, setupTestDb} from './setup';
 
@@ -86,6 +89,17 @@ describe('appendEvents', () => {
     const [event] = await appendEvents(shareId, actorId, [resolved()]);
 
     expect(event?.seq).toBe(1);
+  });
+
+  it('refuses to delete an actor whose events would vanish', async () => {
+    const {id: actorId} = await insertUser();
+    const shareId = await createShare('', []);
+    await appendEvents(shareId, actorId, [resolved()]);
+
+    await expect(
+      db.delete(userTable).where(eq(userTable.id, actorId)),
+    ).rejects.toThrow();
+    await expect(getEvents(shareId)).resolves.toHaveLength(1);
   });
 });
 

@@ -86,7 +86,7 @@ export const events = sqliteTable(
     subjectId: text('subject_id').notNull(),
     actorId: text('actor_id')
       .notNull()
-      .references(() => user.id, {onDelete: 'cascade'}),
+      .references(() => user.id, {onDelete: 'restrict'}),
     payload: text('payload', {mode: 'json'})
       .$type<ShareEventPayload>()
       .notNull(),
