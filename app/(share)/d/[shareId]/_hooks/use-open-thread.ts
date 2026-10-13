@@ -2,7 +2,7 @@ import type {SerializedEditorState} from 'lexical';
 import {use} from 'react';
 
 import type {Session} from '@/auth/server';
-import {openThread} from '@/events/actions';
+import {openThread as openThreadAction} from '@/events/actions';
 import {toEventActor} from '@/events/actor';
 import {ShareStateContext} from '@/events/provider';
 import type {Anchor} from '@/events/schemas';
@@ -16,7 +16,7 @@ export function useOpenThread() {
   const shareId = useShareId();
   const state = use(ShareStateContext);
 
-  return async function (
+  async function openThread(
     session: Session,
     position: Position,
     body: SerializedEditorState,
@@ -41,9 +41,17 @@ export function useOpenThread() {
     ]);
 
     try {
-      await openThread({shareId, threadId, commentId, body, anchor});
+      await openThreadAction({
+        shareId,
+        threadId,
+        commentId,
+        body,
+        anchor,
+      });
     } catch {
       state.rejectAll(pendingIds);
     }
-  };
+  }
+
+  return openThread;
 }

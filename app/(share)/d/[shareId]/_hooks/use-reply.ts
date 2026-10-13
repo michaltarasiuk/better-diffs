@@ -2,7 +2,7 @@ import type {SerializedEditorState} from 'lexical';
 import {use} from 'react';
 
 import type {Session} from '@/auth/server';
-import {createComment} from '@/events/actions';
+import {createComment as replyAction} from '@/events/actions';
 import {toEventActor} from '@/events/actor';
 import {ShareStateContext} from '@/events/provider';
 import {newId} from '@/utils/new-id';
@@ -13,7 +13,7 @@ export function useReply() {
   const shareId = useShareId();
   const state = use(ShareStateContext);
 
-  return async function (
+  async function reply(
     session: Session,
     threadId: string,
     body: SerializedEditorState,
@@ -27,11 +27,18 @@ export function useReply() {
     });
 
     try {
-      await createComment({shareId, threadId, commentId, body});
+      await replyAction({
+        shareId,
+        threadId,
+        commentId,
+        body,
+      });
       return true;
     } catch {
       state.reject(pendingId);
       return false;
     }
-  };
+  }
+
+  return reply;
 }
