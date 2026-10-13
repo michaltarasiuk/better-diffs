@@ -4,7 +4,7 @@ import {env} from '@/env';
 import {ApiError} from '@/http/error';
 import {route} from '@/http/route';
 
-const SHARE_MAX_AGE_HOURS = 24;
+const SHARE_MAX_AGE_HOURS = 7 * 24;
 
 export const GET = route(async (request) => {
   if (!hasBearerToken(request, env.CRON_SECRET)) {

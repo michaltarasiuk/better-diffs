@@ -13,10 +13,11 @@ function get(headers: HeadersInit = {}) {
 }
 
 describe('GET', () => {
-  it('deletes shares not visited for a day', async () => {
+  it('deletes shares not visited for a week', async () => {
     const expired = await createShare('', []);
     const fresh = await createShare('', []);
-    await ageShare(expired, 25);
+    await ageShare(fresh, 7 * 24 - 1);
+    await ageShare(expired, 7 * 24 + 1);
 
     const response = await get({Authorization: `Bearer ${env.CRON_SECRET}`});
 
@@ -31,7 +32,7 @@ describe('GET', () => {
     ['a wrong token', {Authorization: 'Bearer wrong'}],
   ])('rejects %s', async (_name, headers) => {
     const expired = await createShare('', []);
-    await ageShare(expired, 25);
+    await ageShare(expired, 7 * 24 + 1);
 
     const response = await get(headers);
 
