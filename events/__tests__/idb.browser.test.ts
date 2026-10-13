@@ -19,7 +19,7 @@ function shareEvent(shareId: string, seq: number): ShareEvent {
     seq,
     type: 'thread.resolved',
     subjectId: threadId,
-    actorId: newId(),
+    actorId: 'alice',
     actor: {name: 'Alice', image: null},
     payload: {$type: 'thread.resolved', threadId},
     createdAt: new Date().toISOString(),

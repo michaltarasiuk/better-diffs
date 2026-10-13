@@ -40,7 +40,7 @@ function signIn(userId: string | null) {
 }
 
 function anchor(overrides: Partial<Anchor> = {}): Anchor {
-  return {shareId, filePath: 'a.ts', side: 'additions', line: 1, ...overrides};
+  return {shareId, filePath: 'a.txt', side: 'additions', line: 1, ...overrides};
 }
 
 async function openAliceThread() {

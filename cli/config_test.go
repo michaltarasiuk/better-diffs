@@ -88,7 +88,7 @@ func TestCheckHTTPURL(t *testing.T) {
 	}{
 		{
 			name: "http",
-			raw:  "http://127.0.0.1:3000",
+			raw:  testInstanceURL,
 		},
 		{
 			name: "https with path",
@@ -96,7 +96,7 @@ func TestCheckHTTPURL(t *testing.T) {
 		},
 		{
 			name:        "missing scheme",
-			raw:         "127.0.0.1:3000",
+			raw:         "127.0.0.1:8000",
 			wantErrLike: "first path segment in URL cannot contain colon",
 		},
 		{
@@ -139,23 +139,23 @@ func TestInstance(t *testing.T) {
 	}{
 		{
 			name: "flag",
-			flag: "http://127.0.0.1:3000",
-			want: "http://127.0.0.1:3000",
+			flag: "http://127.0.0.1:8001",
+			want: "http://127.0.0.1:8001",
 		},
 		{
 			name: "env",
-			env:  "http://127.0.0.1:4000",
-			want: "http://127.0.0.1:4000",
+			env:  "http://127.0.0.1:8002",
+			want: "http://127.0.0.1:8002",
 		},
 		{
 			name:   "config file",
-			config: "url=http://127.0.0.1:5000\n",
-			want:   "http://127.0.0.1:5000",
+			config: "url=http://127.0.0.1:8003\n",
+			want:   "http://127.0.0.1:8003",
 		},
 		{
 			name:       "default url",
-			defaultURL: "http://127.0.0.1:6000",
-			want:       "http://127.0.0.1:6000",
+			defaultURL: "http://127.0.0.1:8004",
+			want:       "http://127.0.0.1:8004",
 		},
 		{
 			name:    "missing",
@@ -210,12 +210,12 @@ func TestInstanceSkipsUnreadableConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, err := instance("http://127.0.0.1:3000")
+	got, err := instance(testInstanceURL)
 	if err != nil {
 		t.Fatalf("instance(...) = %v; want nil err", err)
 	}
-	if got != "http://127.0.0.1:3000" {
-		t.Fatalf("instance(...) = %q; want http://127.0.0.1:3000", got)
+	if got != testInstanceURL {
+		t.Fatalf("instance(...) = %q; want %q", got, testInstanceURL)
 	}
 
 	_, err = instance("")

@@ -23,7 +23,7 @@ func TestIsFlag(t *testing.T) {
 			want: false,
 		},
 		{
-			arg:  "src/",
+			arg:  "a/",
 			want: false,
 		},
 		{
@@ -70,31 +70,31 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name: "mixed options and paths",
-			args: []string{"--staged", "--base", "main", "-o", "--", "src/", "README.md"},
+			args: []string{"--staged", "--base", "main", "-o", "--", "a/", "b.txt"},
 			want: command{options: options{
 				staged: true,
 				base:   "main",
 				open:   true,
-				paths:  []string{"src/", "README.md"},
+				paths:  []string{"a/", "b.txt"},
 			}},
 		},
 		{
 			name: "inline values",
-			args: []string{"--base=main", "--url=http://127.0.0.1:3000"},
+			args: []string{"--base=main", "--url=" + testInstanceURL},
 			want: command{options: options{
 				base: "main",
-				url:  "http://127.0.0.1:3000",
+				url:  testInstanceURL,
 			}},
 		},
 		{
 			name: "path before flag",
-			args: []string{"src/", "--staged"},
-			want: command{options: options{paths: []string{"src/", "--staged"}}},
+			args: []string{"a/", "--staged"},
+			want: command{options: options{paths: []string{"a/", "--staged"}}},
 		},
 		{
 			name: "double dash paths",
-			args: []string{"--", "-", "src/"},
-			want: command{options: options{paths: []string{"-", "src/"}}},
+			args: []string{"--", "-", "a/"},
+			want: command{options: options{paths: []string{"-", "a/"}}},
 		},
 		{
 			name: "option with value rejected",

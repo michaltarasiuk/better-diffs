@@ -1,8 +1,11 @@
 import {describe, expect, it} from 'vitest';
 import {z} from 'zod';
 
+import {newId} from '@/utils/new-id';
+
 import {ApiError, ErrorResponse} from '../error';
 
+const SHARE_ID = newId();
 const UNKNOWN_STATUS = {code: 418, status: 'TEAPOT', reason: '', message: ''};
 
 describe('ApiError', () => {
@@ -28,7 +31,7 @@ describe('ApiError', () => {
   it('serializes to an error response', () => {
     const error = new ApiError('NOT_FOUND', 'Share not found.', {
       reason: 'SHARE_NOT_FOUND',
-      metadata: {shareId: 'abc'},
+      metadata: {shareId: SHARE_ID},
     });
 
     expect(error.toJSON()).toEqual({
@@ -37,7 +40,7 @@ describe('ApiError', () => {
         status: 'NOT_FOUND',
         reason: 'SHARE_NOT_FOUND',
         message: 'Share not found.',
-        metadata: {shareId: 'abc'},
+        metadata: {shareId: SHARE_ID},
         fieldViolations: undefined,
       },
     });

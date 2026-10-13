@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/rand"
 	"errors"
 	"os"
 	"os/exec"
@@ -8,6 +9,13 @@ import (
 	"strings"
 	"testing"
 )
+
+const (
+	testInstanceURL = "http://127.0.0.1:8000"
+	testPatch       = "diff --git a/a.txt b/a.txt\n"
+)
+
+var testShareURL = testInstanceURL + "/d/" + rand.Text()
 
 func assertUsageError(t *testing.T, err error, want string) {
 	t.Helper()
@@ -85,8 +93,8 @@ func initGitRepo(t *testing.T) string {
 
 	dir := t.TempDir()
 	runGit(t, dir, "init")
-	runGit(t, dir, "config", "user.email", "test@example.com")
-	runGit(t, dir, "config", "user.name", "test")
+	runGit(t, dir, "config", "user.email", "alice@example.com")
+	runGit(t, dir, "config", "user.name", "Alice")
 	return dir
 }
 

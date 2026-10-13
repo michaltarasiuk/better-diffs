@@ -49,7 +49,7 @@ function opened(seq: number) {
   return shareEvent(seq, {
     $type: 'thread.opened',
     threadId: newId(),
-    anchor: {shareId: SHARE_ID, filePath: 'a.ts', side: 'additions', line: 1},
+    anchor: {shareId: SHARE_ID, filePath: 'a.txt', side: 'additions', line: 1},
   });
 }
 

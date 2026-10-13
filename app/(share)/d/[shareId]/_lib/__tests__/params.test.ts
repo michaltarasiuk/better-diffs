@@ -7,7 +7,7 @@ import {loadSearchParams} from '../params';
 const QUERY = 'query with spaces';
 
 const LINES = {
-  id: 'file.txt',
+  id: 'a.txt',
   range: {
     start: 3,
     end: 9,

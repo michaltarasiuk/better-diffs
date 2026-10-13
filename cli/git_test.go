@@ -20,113 +20,113 @@ func TestDiff(t *testing.T) {
 		{
 			name: "unstaged changes",
 			setup: func(t *testing.T, dir string) options {
-				commitFile(t, dir, "file.txt", "before\n")
-				writeFile(t, dir, "file.txt", "after\n")
+				commitFile(t, dir, "a.txt", "old\n")
+				writeFile(t, dir, "a.txt", "new\n")
 				return options{}
 			},
-			want: []string{"diff --git a/file.txt b/file.txt", "+after"},
+			want: []string{"diff --git a/a.txt b/a.txt", "+new"},
 		},
 		{
 			name: "staged changes",
 			setup: func(t *testing.T, dir string) options {
-				commitFile(t, dir, "file.txt", "before\n")
-				writeFile(t, dir, "file.txt", "after\n")
-				runGit(t, dir, "add", "file.txt")
+				commitFile(t, dir, "a.txt", "old\n")
+				writeFile(t, dir, "a.txt", "new\n")
+				runGit(t, dir, "add", "a.txt")
 				return options{staged: true}
 			},
-			want: []string{"+after"},
+			want: []string{"+new"},
 		},
 		{
 			name: "path limit",
 			setup: func(t *testing.T, dir string) options {
-				writeFile(t, dir, "keep.txt", "keep\n")
-				writeFile(t, dir, "skip.txt", "skip\n")
+				writeFile(t, dir, "a.txt", "old\n")
+				writeFile(t, dir, "b.txt", "old\n")
 				runGit(t, dir, "add", ".")
 				runGit(t, dir, "commit", "-m", "init")
-				writeFile(t, dir, "keep.txt", "keep changed\n")
-				writeFile(t, dir, "skip.txt", "skip changed\n")
-				return options{paths: []string{"keep.txt"}}
+				writeFile(t, dir, "a.txt", "new\n")
+				writeFile(t, dir, "b.txt", "new\n")
+				return options{paths: []string{"a.txt"}}
 			},
-			want:    []string{"keep.txt"},
-			notWant: []string{"skip.txt"},
+			want:    []string{"+++ b/a.txt"},
+			notWant: []string{"+++ b/b.txt"},
 		},
 		{
 			name: "untracked file",
 			setup: func(t *testing.T, dir string) options {
-				commitFile(t, dir, "file.txt", "before\n")
-				writeFile(t, dir, "new.txt", "new\n")
+				commitFile(t, dir, "a.txt", "old\n")
+				writeFile(t, dir, "b.txt", "new\n")
 				return options{}
 			},
-			want: []string{"diff --git a/new.txt b/new.txt", "+++ b/new.txt", "+new"},
+			want: []string{"diff --git a/b.txt b/b.txt", "+++ b/b.txt", "+new"},
 		},
 		{
 			name: "ignored file",
 			setup: func(t *testing.T, dir string) options {
-				commitFile(t, dir, ".gitignore", "*.log\n")
-				writeFile(t, dir, "debug.log", "noise\n")
-				writeFile(t, dir, "new.txt", "new\n")
+				commitFile(t, dir, ".gitignore", "c.txt\n")
+				writeFile(t, dir, "b.txt", "new\n")
+				writeFile(t, dir, "c.txt", "new\n")
 				return options{}
 			},
-			want:    []string{"new.txt"},
-			notWant: []string{"debug.log"},
+			want:    []string{"+++ b/b.txt"},
+			notWant: []string{"+++ b/c.txt"},
 		},
 		{
 			name: "untracked path limit",
 			setup: func(t *testing.T, dir string) options {
-				commitFile(t, dir, "file.txt", "before\n")
-				writeFile(t, dir, "keep/new.txt", "keep\n")
-				writeFile(t, dir, "skip/new.txt", "skip\n")
-				return options{paths: []string{"keep/"}}
+				commitFile(t, dir, "a.txt", "old\n")
+				writeFile(t, dir, "a/c.txt", "new\n")
+				writeFile(t, dir, "b/c.txt", "new\n")
+				return options{paths: []string{"a/"}}
 			},
-			want:    []string{"keep/new.txt"},
-			notWant: []string{"skip/new.txt"},
+			want:    []string{"+++ b/a/c.txt"},
+			notWant: []string{"+++ b/b/c.txt"},
 		},
 		{
 			name: "untracked file from a subdirectory",
 			setup: func(t *testing.T, dir string) options {
-				commitFile(t, dir, "sub/file.txt", "before\n")
-				writeFile(t, dir, "sub/file.txt", "after\n")
-				writeFile(t, dir, "sub/new.txt", "new\n")
+				commitFile(t, dir, "a/a.txt", "old\n")
+				writeFile(t, dir, "a/a.txt", "new\n")
+				writeFile(t, dir, "a/b.txt", "new\n")
 				return options{}
 			},
-			cwd: "sub",
+			cwd: "a",
 			want: []string{
-				"diff --git a/sub/file.txt b/sub/file.txt",
-				"diff --git a/sub/new.txt b/sub/new.txt",
+				"diff --git a/a/a.txt b/a/a.txt",
+				"diff --git a/a/b.txt b/a/b.txt",
 			},
 		},
 		{
 			name: "staged skips untracked files",
 			setup: func(t *testing.T, dir string) options {
-				commitFile(t, dir, "file.txt", "before\n")
-				writeFile(t, dir, "file.txt", "after\n")
-				runGit(t, dir, "add", "file.txt")
-				writeFile(t, dir, "new.txt", "new\n")
+				commitFile(t, dir, "a.txt", "old\n")
+				writeFile(t, dir, "a.txt", "new\n")
+				runGit(t, dir, "add", "a.txt")
+				writeFile(t, dir, "b.txt", "new\n")
 				return options{staged: true}
 			},
-			want:    []string{"file.txt"},
-			notWant: []string{"new.txt"},
+			want:    []string{"+++ b/a.txt"},
+			notWant: []string{"+++ b/b.txt"},
 		},
 		{
 			name: "user diff config",
 			setup: func(t *testing.T, dir string) options {
 				runGit(t, dir, "config", "diff.noprefix", "true")
 				runGit(t, dir, "config", "color.diff", "always")
-				commitFile(t, dir, "file.txt", "before\n")
-				writeFile(t, dir, "file.txt", "after\n")
-				writeFile(t, dir, "new.txt", "new\n")
+				commitFile(t, dir, "a.txt", "old\n")
+				writeFile(t, dir, "a.txt", "new\n")
+				writeFile(t, dir, "b.txt", "new\n")
 				return options{}
 			},
 			want: []string{
-				"diff --git a/file.txt b/file.txt",
-				"diff --git a/new.txt b/new.txt",
+				"diff --git a/a.txt b/a.txt",
+				"diff --git a/b.txt b/b.txt",
 			},
 			notWant: []string{"\x1b["},
 		},
 		{
 			name: "unknown base",
 			setup: func(t *testing.T, dir string) options {
-				commitFile(t, dir, "file.txt", "before\n")
+				commitFile(t, dir, "a.txt", "old\n")
 				return options{base: "nope"}
 			},
 			wantErr: "Bad revision 'nope'",
@@ -134,7 +134,7 @@ func TestDiff(t *testing.T) {
 		{
 			name: "no changes",
 			setup: func(t *testing.T, dir string) options {
-				commitFile(t, dir, "file.txt", "same\n")
+				commitFile(t, dir, "a.txt", "old\n")
 				return options{}
 			},
 			wantErr: "No changes found",

@@ -29,17 +29,17 @@ async function getShare(id: string) {
 describe('createShare', () => {
   it('stores files in patch order', async () => {
     const id = await createShare([
-      fileDiffs('b.ts', 'a.ts'),
-      fileDiffs('c.ts'),
+      fileDiffs('b.txt', 'a.txt'),
+      fileDiffs('c.txt'),
     ]);
 
     const opened = await getShareFiles(id);
 
-    expect(opened.map(({name}) => name)).toEqual(['b.ts', 'a.ts', 'c.ts']);
+    expect(opened.map(({name}) => name)).toEqual(['b.txt', 'a.txt', 'c.txt']);
   });
 
   it('stores the file metadata', async () => {
-    const [file] = fileDiffs('a.ts');
+    const [file] = fileDiffs('a.txt');
     const id = await createShare([[file!]]);
 
     const [opened] = await getShareFiles(id);
@@ -77,12 +77,12 @@ describe('getShareFiles', () => {
   });
 
   it('only returns files of the opened share', async () => {
-    const id = await createShare([fileDiffs('a.ts')]);
-    await createShare([fileDiffs('other.ts')]);
+    const id = await createShare([fileDiffs('a.txt')]);
+    await createShare([fileDiffs('other.txt')]);
 
     const opened = await getShareFiles(id);
 
-    expect(opened.map(({name}) => name)).toEqual(['a.ts']);
+    expect(opened.map(({name}) => name)).toEqual(['a.txt']);
   });
 });
 
@@ -125,7 +125,7 @@ describe('deleteExpiredShares', () => {
 
   it('deletes the patches, files and events of expired shares', async () => {
     const {id: actorId} = await insertUser();
-    const id = await createShare([fileDiffs('a.ts', 'b.ts')]);
+    const id = await createShare([fileDiffs('a.txt', 'b.txt')]);
     await appendEvents(id, actorId, [
       {$type: 'thread.resolved', threadId: newId()},
     ]);

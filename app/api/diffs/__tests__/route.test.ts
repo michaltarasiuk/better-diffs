@@ -55,23 +55,23 @@ describe('OPTIONS', () => {
 
 describe('POST', () => {
   it('creates a share from patch text', async () => {
-    const response = await postText(gitPatch('a.ts', 'b.ts'));
+    const response = await postText(gitPatch('a.txt', 'b.txt'));
 
     expect(response.status).toBe(201);
-    await expect(openedNames(response)).resolves.toEqual(['a.ts', 'b.ts']);
+    await expect(openedNames(response)).resolves.toEqual(['a.txt', 'b.txt']);
   });
 
   it('creates a share from JSON patches', async () => {
     const response = await postJson({
-      patches: [fileDiffs('a.ts'), fileDiffs('b.ts')],
+      patches: [fileDiffs('a.txt'), fileDiffs('b.txt')],
     });
 
     expect(response.status).toBe(201);
-    await expect(openedNames(response)).resolves.toEqual(['a.ts', 'b.ts']);
+    await expect(openedNames(response)).resolves.toEqual(['a.txt', 'b.txt']);
   });
 
   it('responds with the share as JSON', async () => {
-    const response = await postText(gitPatch('a.ts'));
+    const response = await postText(gitPatch('a.txt'));
     const location = response.headers.get('Location');
     const shareId = shareIdFrom(location);
 
@@ -83,7 +83,7 @@ describe('POST', () => {
   });
 
   it('responds with the share URL as text when preferred', async () => {
-    const response = await postText(gitPatch('a.ts'), {Accept: 'text/plain'});
+    const response = await postText(gitPatch('a.txt'), {Accept: 'text/plain'});
 
     expect(response.status).toBe(201);
     await expect(response.text()).resolves.toBe(
@@ -92,7 +92,7 @@ describe('POST', () => {
   });
 
   it('exposes the Location header to other origins', async () => {
-    const response = await postText(gitPatch('a.ts'));
+    const response = await postText(gitPatch('a.txt'));
 
     expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
     expect(response.headers.get('Access-Control-Expose-Headers')).toBe(
@@ -112,9 +112,9 @@ describe('POST', () => {
   it.each([
     ['no patches', {patches: []}],
     ['a missing patches field', {}],
-    ['a non-array patch', {patches: ['a.ts']}],
+    ['a non-array patch', {patches: ['a.txt']}],
     ['a file without a name', {patches: [[{hunks: []}]]}],
-    ['a file without hunks', {patches: [[{name: 'a.ts'}]]}],
+    ['a file without hunks', {patches: [[{name: 'a.txt'}]]}],
   ])('rejects JSON with %s', async (_name, body) => {
     const response = await postJson(body);
 

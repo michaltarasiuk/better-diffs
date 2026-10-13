@@ -20,8 +20,8 @@ describe('mapToJson', () => {
 describe('jsonToMap', () => {
   it('round-trips a map', () => {
     const map = new Map<string, {open: boolean}>([
-      ['src/a.ts', {open: true}],
-      ['src/b.ts', {open: false}],
+      ['a.txt', {open: true}],
+      ['b.txt', {open: false}],
     ]);
 
     expect(jsonToMap(mapToJson(map))).toEqual(map);

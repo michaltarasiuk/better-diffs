@@ -7,8 +7,6 @@ import (
 	"testing"
 )
 
-const samplePatch = "diff --git a/a b/a\n"
-
 func TestUploadSuccess(t *testing.T) {
 	var (
 		gotMethod string
@@ -34,16 +32,16 @@ func TestUploadSuccess(t *testing.T) {
 			t.Errorf("read body: %v", err)
 		}
 		w.WriteHeader(http.StatusCreated)
-		_, _ = io.WriteString(w, "http://127.0.0.1/d/abc\n")
+		_, _ = io.WriteString(w, testShareURL+"\n")
 	}))
 	t.Cleanup(server.Close)
 
-	got, err := upload(server.URL, Version, []byte(samplePatch))
+	got, err := upload(server.URL, Version, []byte(testPatch))
 	if err != nil {
 		t.Fatalf("upload(...) = %v; want nil err", err)
 	}
-	if got != "http://127.0.0.1/d/abc" {
-		t.Fatalf("upload(...) = %q; want http://127.0.0.1/d/abc", got)
+	if got != testShareURL {
+		t.Fatalf("upload(...) = %q; want %q", got, testShareURL)
 	}
 	if gotMethod != http.MethodPost {
 		t.Fatalf("method = %q; want POST", gotMethod)
@@ -51,8 +49,8 @@ func TestUploadSuccess(t *testing.T) {
 	if gotPath != "/api/diffs" {
 		t.Fatalf("path = %q; want /api/diffs", gotPath)
 	}
-	if string(gotBody) != samplePatch {
-		t.Fatalf("body = %q; want %q", gotBody, samplePatch)
+	if string(gotBody) != testPatch {
+		t.Fatalf("body = %q; want %q", gotBody, testPatch)
 	}
 }
 
@@ -108,13 +106,13 @@ func TestUploadErrors(t *testing.T) {
 			}))
 			t.Cleanup(server.Close)
 
-			_, err := upload(server.URL, Version, []byte(samplePatch))
+			_, err := upload(server.URL, Version, []byte(testPatch))
 			assertError(t, err, tc.wantErr)
 		})
 	}
 }
 
 func TestUploadInvalidBaseURL(t *testing.T) {
-	_, err := upload("://bad-url", Version, []byte(samplePatch))
+	_, err := upload("://bad-url", Version, []byte(testPatch))
 	assertErrorContains(t, err, "Invalid instance URL")
 }

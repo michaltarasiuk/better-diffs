@@ -37,6 +37,6 @@ func TestBrowseMissing(t *testing.T) {
 	t.Setenv("PATH", "")
 	t.Setenv("BROWSER", "")
 	t.Setenv("DISPLAY", "")
-	err := browse("http://127.0.0.1/d/abc")
+	err := browse(testShareURL)
 	assertError(t, err, "Cannot open browser")
 }

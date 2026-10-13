@@ -46,16 +46,15 @@ func TestRunNoInstance(t *testing.T) {
 
 func TestRunUpload(t *testing.T) {
 	dir := initGitRepo(t)
-	commitFile(t, dir, "file.txt", "before\n")
-	writeFile(t, dir, "file.txt", "after\n")
+	commitFile(t, dir, "a.txt", "old\n")
+	writeFile(t, dir, "a.txt", "new\n")
 
-	const shareURL = "http://127.0.0.1/d/share-id"
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost || r.URL.Path != "/api/diffs" {
 			t.Errorf("request = %s %s; want POST /api/diffs", r.Method, r.URL.Path)
 		}
 		w.WriteHeader(http.StatusCreated)
-		_, _ = io.WriteString(w, shareURL)
+		_, _ = io.WriteString(w, testShareURL)
 	}))
 	t.Cleanup(server.Close)
 
@@ -65,8 +64,8 @@ func TestRunUpload(t *testing.T) {
 	if err := run([]string{"--url", server.URL}, &stdout); err != nil {
 		t.Fatalf("run(...) = %v; want nil err", err)
 	}
-	if got := stdout.String(); got != shareURL+"\n" {
-		t.Fatalf("stdout = %q; want %q", got, shareURL+"\n")
+	if got := stdout.String(); got != testShareURL+"\n" {
+		t.Fatalf("stdout = %q; want %q", got, testShareURL+"\n")
 	}
 }
 

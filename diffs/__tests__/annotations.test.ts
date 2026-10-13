@@ -1,6 +1,7 @@
 import {describe, expect, it} from 'vitest';
 
 import type {ThreadState} from '@/events/state';
+import {newId} from '@/utils/new-id';
 
 import {
   type DiffAnnotation,
@@ -12,16 +13,20 @@ import {
   toThreadAnnotation,
 } from '../annotations';
 
+const SHARE_ID = newId();
+const FORM_ID = newId();
+const THREAD_ID = newId();
+
 const FORM = {
   side: 'additions',
   lineNumber: 1,
-  metadata: {type: 'form', formId: 'form'},
+  metadata: {type: 'form', formId: FORM_ID},
 } satisfies FormDiffAnnotation;
 
 const THREAD = {
   side: 'additions',
   lineNumber: 1,
-  metadata: {type: 'thread', threadId: 'thread'},
+  metadata: {type: 'thread', threadId: THREAD_ID},
 } satisfies ThreadDiffAnnotation;
 
 function at(lineNumber: number, side: DiffAnnotation['side']): DiffAnnotation {
@@ -45,14 +50,19 @@ describe('isThreadAnnotation', () => {
 describe('toThreadAnnotation', () => {
   it('anchors the annotation at the thread line', () => {
     const thread = {
-      id: 'thread-1',
-      anchor: {shareId: 'share', filePath: 'a.ts', side: 'deletions', line: 7},
+      id: THREAD_ID,
+      anchor: {
+        shareId: SHARE_ID,
+        filePath: 'a.txt',
+        side: 'deletions',
+        line: 7,
+      },
     } as ThreadState;
 
     expect(toThreadAnnotation(thread)).toEqual({
       side: 'deletions',
       lineNumber: 7,
-      metadata: {type: 'thread', threadId: 'thread-1'},
+      metadata: {type: 'thread', threadId: THREAD_ID},
     });
   });
 });
