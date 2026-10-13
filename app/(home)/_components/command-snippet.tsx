@@ -15,11 +15,6 @@ interface CommandSnippetProps {
 
 type CopyFeedback = 'idle' | 'copied' | 'selected';
 
-const FEEDBACK_LABELS: Record<Exclude<CopyFeedback, 'idle'>, string> = {
-  copied: 'Copied',
-  selected: 'Selected',
-};
-
 function clearPendingTimeout(
   timeoutRef: React.RefObject<ReturnType<typeof setTimeout> | null>,
 ) {
@@ -78,8 +73,6 @@ export function CommandSnippet({label, command}: CommandSnippetProps) {
     }
   }
 
-  const buttonLabel = feedback === 'idle' ? label : FEEDBACK_LABELS[feedback];
-
   return (
     <div className="flex items-start gap-2 rounded-field border border-border bg-surface-secondary p-2 ps-3">
       <code
@@ -90,7 +83,13 @@ export function CommandSnippet({label, command}: CommandSnippetProps) {
       </code>
 
       <Button
-        aria-label={buttonLabel}
+        aria-label={
+          feedback === 'idle'
+            ? label
+            : feedback === 'copied'
+              ? 'Copied'
+              : 'Selected'
+        }
         variant="ghost"
         size="sm"
         isIconOnly

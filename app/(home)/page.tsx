@@ -2,26 +2,23 @@ import '@/diffs/diffs.css';
 
 import {Typography} from '@heroui/react';
 import {typographyVariants} from '@heroui/styles';
-import {PatchDiff} from '@pierre/diffs/react';
-import {preloadPatchDiff} from '@pierre/diffs/ssr';
-import dedent from 'dedent';
+import {MultiFileDiff} from '@pierre/diffs/react';
+import {preloadMultiFileDiff} from '@pierre/diffs/ssr';
 
+import {fileContents} from '@/diffs/contents';
 import {PATCH_DIFF_OPTIONS} from '@/diffs/options';
 
 import {CommandSnippet} from './_components/command-snippet';
 import {INSTALL_COMMAND} from './_lib/install-command';
 
-const HOME_PATCH = dedent`
-  diff --git a/share.sh b/share.sh
-  --- a/share.sh
-  +++ b/share.sh
-  @@ -1 +1,4 @@
-  -git diff
-  +better-diffs
-  +better-diffs --staged
-  +better-diffs --base main -- src/
-  +better-diffs --open
-`;
+const USAGE_OLD_FILE = fileContents('share.sh', 'git diff');
+const USAGE_NEW_FILE = fileContents(
+  'share.sh',
+  'better-diffs',
+  'better-diffs --staged',
+  'better-diffs --base main -- src/',
+  'better-diffs --open',
+);
 
 const {base: typographyClass} = typographyVariants();
 
@@ -29,35 +26,14 @@ const heroTitleClass = typographyClass({
   type: 'h2',
   className: 'font-mono tracking-tight',
 });
-const sectionTitleClass = typographyClass({type: 'h6'});
-
-interface SectionProps {
-  readonly id: string;
-  readonly title: string;
-  readonly children: React.ReactNode;
-}
-
-function Section({id, title, children}: SectionProps) {
-  return (
-    <section aria-labelledby={id} className="space-y-3">
-      <Typography.Heading id={id} level={2} className={sectionTitleClass}>
-        {title}
-      </Typography.Heading>
-
-      {children}
-    </section>
-  );
-}
-
-function InlineCode({children}: {readonly children: React.ReactNode}) {
-  return (
-    <Typography.Code className="text-xs leading-5">{children}</Typography.Code>
-  );
-}
+const sectionTitleClass = typographyClass({
+  type: 'h6',
+});
 
 export default async function HomePage() {
-  const preloaded = await preloadPatchDiff({
-    patch: HOME_PATCH,
+  const preloaded = await preloadMultiFileDiff({
+    oldFile: USAGE_OLD_FILE,
+    newFile: USAGE_NEW_FILE,
     options: PATCH_DIFF_OPTIONS,
   });
 
@@ -90,8 +66,32 @@ export default async function HomePage() {
       </Section>
 
       <Section id="usage" title="Usage">
-        <PatchDiff {...preloaded} className="w-full" />
+        <MultiFileDiff {...preloaded} className="w-full" />
       </Section>
     </main>
+  );
+}
+
+interface SectionProps {
+  readonly id: string;
+  readonly title: string;
+  readonly children: React.ReactNode;
+}
+
+function Section({id, title, children}: SectionProps) {
+  return (
+    <section aria-labelledby={id} className="space-y-3">
+      <Typography.Heading id={id} level={2} className={sectionTitleClass}>
+        {title}
+      </Typography.Heading>
+
+      {children}
+    </section>
+  );
+}
+
+function InlineCode({children}: {readonly children: React.ReactNode}) {
+  return (
+    <Typography.Code className="text-xs leading-5">{children}</Typography.Code>
   );
 }

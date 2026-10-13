@@ -36,7 +36,7 @@ Application code lives in top-level folders beside config, `cli/` and `docs/`; t
 - `events/actions.ts` holds the server actions, the only write path for Threads and Comments. Each validates its input, resolves the Actor and appends Events, replaying them through `ShareState` first so an invalid change is refused before it is stored. A refused change throws `EventError` (`events/errors.ts`) with a `reason` in SCREAMING_SNAKE_CASE.
 - `db/` holds queries, as plain async functions over Drizzle. It may import `@/env`, `@/utils/*` and `@/events/schemas` only; anything else arrives as an argument, as `appendEvents` takes `validate`.
 - `auth/` holds Better Auth: `server.ts` and `bearer.ts` are server-only, `client.ts` and the providers are client-side.
-- Pure modules take plain values and return plain values, with no React, Next.js, storage or network: `utils/`, `http/headers/`, `http/error.ts`, `events/{schemas,state,actor,errors}.ts`, `diffs/{annotations,empty,lines,schemas,stats}.ts` and `trees/input.ts`. They are where logic goes so it can be unit tested without mocks.
+- Pure modules take plain values and return plain values, with no React, Next.js, storage or network: `utils/`, `http/headers/`, `http/error.ts`, `events/{schemas,state,actor,errors}.ts`, `diffs/{annotations,contents,empty,lines,schemas,stats}.ts` and `trees/input.ts`. They are where logic goes so it can be unit tested without mocks.
 - `diffs/`, `trees/` and `lexical/` adapt `@pierre/diffs`, `@pierre/trees` and Lexical to this app; `hooks/` holds React hooks shared across segments.
 - Mark server-only files with `import 'server-only'` and browser-only ones with `import 'client-only'`. The lint rules catch a bad import before the build does and say why.
 
