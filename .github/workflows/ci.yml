@@ -6,6 +6,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -15,9 +18,11 @@ jobs:
     name: Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: jdx/mise-action@v4
+      - uses: jdx/mise-action@v5
+        with:
+          install_args: bun
 
       - run: bun install --frozen-lockfile
 
@@ -27,13 +32,26 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: jdx/mise-action@v4
+      - uses: jdx/mise-action@v5
+        with:
+          install_args: bun
 
       - run: bun install --frozen-lockfile
 
-      - run: bunx playwright install chromium --with-deps
+      - id: playwright-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+
+      - if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: bunx playwright install chromium --with-deps
+
+      # The cache holds the browser, not the system libraries it links against.
+      - if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: bunx playwright install-deps chromium
 
       - run: bun run test
 
@@ -44,9 +62,11 @@ jobs:
       run:
         working-directory: cli
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: jdx/mise-action@v4
+      - uses: jdx/mise-action@v5
+        with:
+          install_args: go
 
       - run: test -z "$(gofmt -l .)"
 
