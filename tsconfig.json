@@ -2,12 +2,14 @@
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": false,
+    "allowJs": true,
+    "checkJs": true,
     "skipLibCheck": true,
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
     "esModuleInterop": true,
@@ -31,7 +33,8 @@
     ".next/dev/types/**/*.ts",
     ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "*.config.js"
   ],
   "exclude": ["node_modules", ".agents"]
 }

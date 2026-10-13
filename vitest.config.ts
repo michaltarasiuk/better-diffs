@@ -29,7 +29,7 @@ export default defineConfig({
         test: {
           name: 'unit',
           environment: 'node',
-          exclude: [...defaultExclude, '.next/**', '**/*.browser.test.*'],
+          exclude: ['**/*.browser.test.*'],
           setupFiles: ['./vitest.setup.ts'],
         },
       },

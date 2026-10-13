@@ -2,7 +2,6 @@ import vitest from '@vitest/eslint-plugin';
 import {defineConfig, globalIgnores} from 'eslint/config';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
-import reactCompiler from 'eslint-plugin-react-compiler';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import testingLibrary from 'eslint-plugin-testing-library';
 
@@ -23,7 +22,7 @@ const PURE_FILES = [
   'http/error.ts',
   'http/headers/**',
   'utils/**',
-  'diffs/{annotations,empty,lines,schemas,stats}.ts',
+  'diffs/{annotations,contents,empty,lines,schemas,stats}.ts',
   'events/{actor,errors,schemas,state}.ts',
   'trees/input.ts',
 ];
@@ -78,7 +77,6 @@ const DB_DEPENDENCIES = [
 export default defineConfig([
   ...nextVitals,
   ...nextTs,
-  reactCompiler.configs.recommended,
   globalIgnores(['.next/**', '.agents/**', 'next-env.d.ts']),
   {
     linterOptions: {

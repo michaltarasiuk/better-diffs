@@ -1,6 +1,7 @@
 /** @type {import('lint-staged').Configuration} */
 const config = {
-  '*': ['eslint --fix --no-warn-ignored', 'prettier --ignore-unknown --write'],
+  '*.{js,ts,tsx}': 'eslint --fix',
+  '*': 'prettier --ignore-unknown --write',
   '*.go': 'gofmt -w',
 };
 
