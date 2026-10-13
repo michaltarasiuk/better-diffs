@@ -1,6 +1,18 @@
+import {loadEnvConfig} from '@next/env';
 import {defineConfig} from 'drizzle-kit';
+import {z} from 'zod';
 
-import {env} from './env';
+loadEnvConfig(process.cwd());
+
+const env = z
+  .object({
+    DATABASE_URL: z.string(),
+    DATABASE_AUTH_TOKEN: z
+      .string()
+      .optional()
+      .transform((token) => token || undefined),
+  })
+  .parse(process.env);
 
 export default defineConfig({
   dialect: 'turso',
