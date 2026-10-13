@@ -1,8 +1,8 @@
 import {describe, expect, it} from 'vitest';
 
 import {setupTestDb} from '@/db/__tests__/setup';
-import {getShareFiles} from '@/db/shares';
-import {fileDiffs, gitPatch} from '@/diffs/__tests__/patches';
+import {getShareFiles, getSharePatch} from '@/db/shares';
+import {gitPatch} from '@/diffs/__tests__/patches';
 import {env} from '@/env';
 
 import {OPTIONS, POST} from '../route';
@@ -22,13 +22,6 @@ function post(body: BodyInit, headers: HeadersInit) {
 
 function postText(text: string, headers: HeadersInit = {}) {
   return post(text, {'Content-Type': 'text/plain', ...headers});
-}
-
-function postJson(value: unknown, headers: HeadersInit = {}) {
-  return post(JSON.stringify(value), {
-    'Content-Type': 'application/json',
-    ...headers,
-  });
 }
 
 function shareIdFrom(url: string | null) {
@@ -61,13 +54,12 @@ describe('POST', () => {
     await expect(openedNames(response)).resolves.toEqual(['a.txt', 'b.txt']);
   });
 
-  it('creates a share from JSON patches', async () => {
-    const response = await postJson({
-      patches: [fileDiffs('a.txt'), fileDiffs('b.txt')],
-    });
+  it('stores the patch text', async () => {
+    const text = gitPatch('a.txt');
+    const response = await postText(text);
+    const shareId = shareIdFrom(response.headers.get('Location'));
 
-    expect(response.status).toBe(201);
-    await expect(openedNames(response)).resolves.toEqual(['a.txt', 'b.txt']);
+    await expect(getSharePatch(shareId!)).resolves.toBe(text);
   });
 
   it('responds with the share as JSON', async () => {
@@ -109,27 +101,14 @@ describe('POST', () => {
     });
   });
 
-  it.each([
-    ['no patches', {patches: []}],
-    ['a missing patches field', {}],
-    ['a non-array patch', {patches: ['a.txt']}],
-    ['a file without a name', {patches: [[{hunks: []}]]}],
-    ['a file without hunks', {patches: [[{name: 'a.txt'}]]}],
-  ])('rejects JSON with %s', async (_name, body) => {
-    const response = await postJson(body);
-
-    expect(response.status).toBe(400);
-    await expect(response.json()).resolves.toMatchObject({
-      error: {reason: 'INVALID_FIELDS'},
+  it('rejects JSON bodies', async () => {
+    const response = await post(JSON.stringify({patches: []}), {
+      'Content-Type': 'application/json',
     });
-  });
-
-  it('rejects malformed JSON', async () => {
-    const response = await post('{nope', {'Content-Type': 'application/json'});
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toMatchObject({
-      error: {reason: 'INVALID_JSON'},
+      error: {reason: 'EMPTY_PATCH'},
     });
   });
 

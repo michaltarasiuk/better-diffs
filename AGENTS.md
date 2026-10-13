@@ -16,8 +16,8 @@ Share a working-tree diff as a link, without a PR; teammates view it and leave c
 
 Use these in code, routes, errors and UI. A new concept gets a line here in the same change.
 
-- **Share**: one uploaded diff and its link, `/d/{shareId}`. Expires 24 hours after it was last visited (`app/api/cron`, `lastVisitedAt`); viewing or commenting refreshes it. A Share with `pinned` set is never deleted by the cron.
-- **Patch**: one unified-diff document inside a Share. The CLI sends one; the JSON body of `POST /api/diffs` may carry several.
+- **Share**: one uploaded diff and its link, `/d/{shareId}`; `/d/{shareId}.patch` serves the uploaded text unchanged. Expires 24 hours after it was last visited (`app/api/cron`, `lastVisitedAt`); viewing or commenting refreshes it. A Share with `pinned` set is never deleted by the cron.
+- **Patch**: one unified-diff document inside a Share. `POST /api/diffs` takes patch text only, which may hold several (as `git format-patch` output does).
 - **File**: one file's diff inside a Patch, stored as `@pierre/diffs` `FileDiffMetadata`.
 - **Thread**: a conversation anchored to a line (`Anchor`: file path, side, line). It can be resolved, never reopened or deleted.
 - **Comment**: one Lexical rich-text body in a Thread. It can be edited and deleted.

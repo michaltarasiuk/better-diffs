@@ -1,11 +1,9 @@
 import {type FileDiffMetadata, parsePatchFiles} from '@pierre/diffs';
-import {z} from 'zod';
 
 import {createShare} from '@/db/shares';
 import {env} from '@/env';
 import {ApiError} from '@/http/error';
-import {ContentType} from '@/http/headers/content-type';
-import {parse, prefersText, readJson, route} from '@/http/route';
+import {prefersText, route} from '@/http/route';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -13,22 +11,6 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Accept, Content-Type',
   'Access-Control-Expose-Headers': 'Location',
 };
-
-const FileDiffShape = z.looseObject({
-  name: z.string().min(1),
-  hunks: z.array(
-    z.looseObject({additionLines: z.int(), deletionLines: z.int()}),
-  ),
-});
-
-const FileDiff = z.custom<FileDiffMetadata>(
-  (value) => FileDiffShape.safeParse(value).success,
-  'Invalid file diff.',
-);
-
-const Body = z.object({
-  patches: z.array(z.array(FileDiff)).min(1),
-});
 
 type Patches = readonly (readonly FileDiffMetadata[])[];
 
@@ -41,15 +23,8 @@ export function OPTIONS() {
 
 export const POST = route(
   async (request) => {
-    const mediaType = ContentType.from(
-      request.headers.get('Content-Type'),
-    ).mediaType;
-
-    const patches = mediaType?.toLowerCase().startsWith('text/')
-      ? await readPatchText(request)
-      : await readPatchJson(request);
-
-    const id = await createShare(patches);
+    const text = await request.text();
+    const id = await createShare(text, parsePatchText(text));
     const url = `${env.BASE_URL}/d/${id}`;
     const headers = {Location: url};
 
@@ -61,9 +36,7 @@ export const POST = route(
   {headers: CORS_HEADERS},
 );
 
-async function readPatchText(request: Request): Promise<Patches> {
-  const text = await request.text();
-
+function parsePatchText(text: string): Patches {
   let patches: Patches;
   try {
     patches = parsePatchFiles(text)
@@ -82,8 +55,4 @@ async function readPatchText(request: Request): Promise<Patches> {
   }
 
   return patches;
-}
-
-async function readPatchJson(request: Request): Promise<Patches> {
-  return parse(Body, await readJson(request)).patches;
 }

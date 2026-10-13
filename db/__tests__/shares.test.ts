@@ -1,7 +1,7 @@
 import {eq} from 'drizzle-orm';
 import {describe, expect, it} from 'vitest';
 
-import {fileDiffs} from '@/diffs/__tests__/patches';
+import {fileDiffs, gitPatch} from '@/diffs/__tests__/patches';
 import {newId} from '@/utils/new-id';
 
 import {db} from '../db';
@@ -11,6 +11,7 @@ import {
   createShare,
   deleteExpiredShares,
   getShareFiles,
+  getSharePatch,
   touchShare,
 } from '../shares';
 import {ageShare, hasShare, insertUser, setupTestDb} from './setup';
@@ -28,7 +29,7 @@ async function getShare(id: string) {
 
 describe('createShare', () => {
   it('stores files in patch order', async () => {
-    const id = await createShare([
+    const id = await createShare('', [
       fileDiffs('b.txt', 'a.txt'),
       fileDiffs('c.txt'),
     ]);
@@ -40,7 +41,7 @@ describe('createShare', () => {
 
   it('stores the file metadata', async () => {
     const [file] = fileDiffs('a.txt');
-    const id = await createShare([[file!]]);
+    const id = await createShare('', [[file!]]);
 
     const [opened] = await getShareFiles(id);
 
@@ -48,15 +49,28 @@ describe('createShare', () => {
   });
 
   it('creates an empty share without patches', async () => {
-    const id = await createShare([]);
+    const id = await createShare('', []);
 
     await expect(getShareFiles(id)).resolves.toEqual([]);
   });
 });
 
+describe('getSharePatch', () => {
+  it('returns the uploaded patch text', async () => {
+    const text = gitPatch('a.txt');
+    const id = await createShare(text, [fileDiffs('a.txt')]);
+
+    await expect(getSharePatch(id)).resolves.toBe(text);
+  });
+
+  it('returns undefined for a missing share', async () => {
+    await expect(getSharePatch(newId())).resolves.toBeUndefined();
+  });
+});
+
 describe('touchShare', () => {
   it('refreshes the last visit', async () => {
-    const id = await createShare([]);
+    const id = await createShare('', []);
     await ageShare(id, 48);
     const before = await getShare(id);
 
@@ -77,8 +91,8 @@ describe('getShareFiles', () => {
   });
 
   it('only returns files of the opened share', async () => {
-    const id = await createShare([fileDiffs('a.txt')]);
-    await createShare([fileDiffs('other.txt')]);
+    const id = await createShare('', [fileDiffs('a.txt')]);
+    await createShare('', [fileDiffs('other.txt')]);
 
     const opened = await getShareFiles(id);
 
@@ -89,7 +103,7 @@ describe('getShareFiles', () => {
 describe('appendEvents', () => {
   it('refreshes the last visit', async () => {
     const {id: actorId} = await insertUser();
-    const id = await createShare([]);
+    const id = await createShare('', []);
     await ageShare(id, 48);
     const before = await getShare(id);
 
@@ -104,8 +118,8 @@ describe('appendEvents', () => {
 
 describe('deleteExpiredShares', () => {
   it('deletes shares not visited within the max age', async () => {
-    const expired = await createShare([]);
-    const fresh = await createShare([]);
+    const expired = await createShare('', []);
+    const fresh = await createShare('', []);
     await ageShare(expired, 25);
     await ageShare(fresh, 23);
 
@@ -115,7 +129,7 @@ describe('deleteExpiredShares', () => {
   });
 
   it('keeps pinned shares however long ago they were visited', async () => {
-    const pinned = await createShare([]);
+    const pinned = await createShare('', []);
     await db.update(shares).set({pinned: true}).where(eq(shares.id, pinned));
     await ageShare(pinned, 48);
 
@@ -125,7 +139,7 @@ describe('deleteExpiredShares', () => {
 
   it('deletes the patches, files and events of expired shares', async () => {
     const {id: actorId} = await insertUser();
-    const id = await createShare([fileDiffs('a.txt', 'b.txt')]);
+    const id = await createShare('', [fileDiffs('a.txt', 'b.txt')]);
     await appendEvents(id, actorId, [
       {$type: 'thread.resolved', threadId: newId()},
     ]);
@@ -139,7 +153,7 @@ describe('deleteExpiredShares', () => {
   });
 
   it('returns zero when nothing expired', async () => {
-    await createShare([]);
+    await createShare('', []);
 
     await expect(deleteExpiredShares({maxAgeHours: 24})).resolves.toBe(0);
   });

@@ -63,7 +63,7 @@ async function storedTypes() {
 
 beforeEach(async () => {
   vi.stubEnv('__NEXT_EXPERIMENTAL_AUTH_INTERRUPTS', 'true');
-  shareId = await createShare([]);
+  shareId = await createShare('', []);
   alice = (await insertUser()).id;
   bob = (await insertUser()).id;
   signIn(alice);

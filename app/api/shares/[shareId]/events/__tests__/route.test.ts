@@ -20,7 +20,7 @@ function get(shareId: string, search = '') {
 
 async function shareWithEvents(count: number) {
   const {id: actorId} = await insertUser();
-  const shareId = await createShare([]);
+  const shareId = await createShare('', []);
   await appendEvents(
     shareId,
     actorId,

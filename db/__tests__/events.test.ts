@@ -16,7 +16,7 @@ function resolved(threadId = newId()) {
 describe('appendEvents', () => {
   it('numbers events from one', async () => {
     const {id: actorId} = await insertUser();
-    const shareId = await createShare([]);
+    const shareId = await createShare('', []);
 
     const appended = await appendEvents(shareId, actorId, [
       resolved(),
@@ -28,7 +28,7 @@ describe('appendEvents', () => {
 
   it('keeps numbering across appends', async () => {
     const {id: actorId} = await insertUser();
-    const shareId = await createShare([]);
+    const shareId = await createShare('', []);
 
     await appendEvents(shareId, actorId, [resolved(), resolved()]);
     const appended = await appendEvents(shareId, actorId, [resolved()]);
@@ -38,8 +38,8 @@ describe('appendEvents', () => {
 
   it('numbers each share separately', async () => {
     const {id: actorId} = await insertUser();
-    const first = await createShare([]);
-    const second = await createShare([]);
+    const first = await createShare('', []);
+    const second = await createShare('', []);
 
     await appendEvents(first, actorId, [resolved()]);
     const appended = await appendEvents(second, actorId, [resolved()]);
@@ -49,7 +49,7 @@ describe('appendEvents', () => {
 
   it('derives the type and subject from the payload', async () => {
     const {id: actorId} = await insertUser();
-    const shareId = await createShare([]);
+    const shareId = await createShare('', []);
     const payload = {$type: 'comment.deleted', commentId: newId()} as const;
 
     const [event] = await appendEvents(shareId, actorId, [payload]);
@@ -77,7 +77,7 @@ describe('appendEvents', () => {
   });
 
   it('rolls back the seq when the insert fails', async () => {
-    const shareId = await createShare([]);
+    const shareId = await createShare('', []);
     const {id: actorId} = await insertUser();
 
     await expect(
@@ -92,7 +92,7 @@ describe('appendEvents', () => {
 describe('getEvents', () => {
   it('returns events in seq order with their actor', async () => {
     const user = await insertUser({name: 'Alice', image: null});
-    const shareId = await createShare([]);
+    const shareId = await createShare('', []);
     await appendEvents(shareId, user.id, [resolved(), resolved()]);
     await appendEvents(shareId, user.id, [resolved()]);
 
@@ -104,7 +104,7 @@ describe('getEvents', () => {
 
   it('returns events after the given seq', async () => {
     const {id: actorId} = await insertUser();
-    const shareId = await createShare([]);
+    const shareId = await createShare('', []);
     await appendEvents(shareId, actorId, [resolved(), resolved(), resolved()]);
 
     const events = await getEvents(shareId, 1);
@@ -114,8 +114,8 @@ describe('getEvents', () => {
 
   it('only returns events of the given share', async () => {
     const {id: actorId} = await insertUser();
-    const shareId = await createShare([]);
-    const otherShareId = await createShare([]);
+    const shareId = await createShare('', []);
+    const otherShareId = await createShare('', []);
     await appendEvents(otherShareId, actorId, [resolved()]);
 
     await expect(getEvents(shareId)).resolves.toEqual([]);

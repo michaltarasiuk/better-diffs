@@ -26,6 +26,15 @@ export async function getShareFiles(id: string) {
     .orderBy(asc(patchesTable.order), asc(filesTable.order));
 }
 
+export async function getSharePatch(id: string) {
+  const [share] = await db
+    .select({patch: sharesTable.patch})
+    .from(sharesTable)
+    .where(eq(sharesTable.id, id));
+
+  return share?.patch;
+}
+
 export async function touchShare(id: string) {
   const [share] = await db
     .update(sharesTable)
@@ -37,6 +46,7 @@ export async function touchShare(id: string) {
 }
 
 export async function createShare(
+  patch: string,
   patches: readonly (readonly FileDiffMetadata[])[],
 ) {
   const shareId = newId();
@@ -62,7 +72,7 @@ export async function createShare(
   }
 
   await db.transaction(async (tx) => {
-    await tx.insert(sharesTable).values({id: shareId});
+    await tx.insert(sharesTable).values({id: shareId, patch});
 
     if (patchValues.length > 0) {
       await tx.insert(patchesTable).values(patchValues);
