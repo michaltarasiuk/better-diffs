@@ -1,13 +1,29 @@
 'use client';
 
-import dynamic from 'next/dynamic';
+import {type ComponentProps, lazy, Suspense} from 'react';
 
 import {CommentEditorSkeleton} from './comment-editor-skeleton';
 
-export const LazyCommentEditor = dynamic(
-  () => import('./comment-editor').then((module) => module.CommentEditor),
-  {loading: () => <CommentEditorSkeleton />},
+const CommentEditor = lazy(() =>
+  import('./comment-editor').then((module) => ({
+    default: module.CommentEditor,
+  })),
 );
+
+export function LazyCommentEditor(props: ComponentProps<typeof CommentEditor>) {
+  return (
+    <Suspense
+      fallback={
+        <CommentEditorSkeleton
+          variant={props.variant}
+          className={props.className}
+        />
+      }
+    >
+      <CommentEditor {...props} />
+    </Suspense>
+  );
+}
 
 export function preloadCommentEditor() {
   void import('./comment-editor');
