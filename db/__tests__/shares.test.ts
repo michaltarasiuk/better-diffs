@@ -84,6 +84,17 @@ describe('touchShare', () => {
     expect(after!.lastVisitedAt > before!.lastVisitedAt).toBe(true);
   });
 
+  it('skips the write within an hour of the last visit', async () => {
+    const id = await createShare('', []);
+    await ageShare(id, 0.5);
+    const before = await getShare(id);
+
+    await expect(touchShare(id)).resolves.toBe(true);
+
+    const after = await getShare(id);
+    expect(after!.lastVisitedAt).toBe(before!.lastVisitedAt);
+  });
+
   it('returns false for an unknown share', async () => {
     await expect(touchShare(newId())).resolves.toBe(false);
   });

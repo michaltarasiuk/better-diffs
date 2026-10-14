@@ -13,6 +13,8 @@ import {
   shares as sharesTable,
 } from './schema';
 
+const VISIT_REFRESH_HOURS = 1;
+
 export async function getShareFiles(id: string) {
   return db
     .select({
@@ -36,13 +38,24 @@ export async function getSharePatch(id: string) {
 }
 
 export async function touchShare(id: string) {
+  const refreshBefore = sql`datetime('now', ${`-${VISIT_REFRESH_HOURS} hours`})`;
   const [share] = await db
-    .update(sharesTable)
-    .set({lastVisitedAt: sql`datetime('now')`})
-    .where(eq(sharesTable.id, id))
-    .returning({id: sharesTable.id});
+    .select({
+      isStale: lt(sharesTable.lastVisitedAt, refreshBefore).mapWith(Boolean),
+    })
+    .from(sharesTable)
+    .where(eq(sharesTable.id, id));
 
-  return isDefined(share);
+  if (!isDefined(share)) {
+    return false;
+  }
+  if (share.isStale) {
+    await db
+      .update(sharesTable)
+      .set({lastVisitedAt: sql`datetime('now')`})
+      .where(eq(sharesTable.id, id));
+  }
+  return true;
 }
 
 export async function createShare(
