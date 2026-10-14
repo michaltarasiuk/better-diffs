@@ -1,18 +1,23 @@
 export type ThreadErrorReason =
   | 'INVALID_INPUT'
+  | 'SHARE_NOT_FOUND'
   | 'THREAD_ALREADY_EXISTS'
   | 'THREAD_NOT_FOUND'
   | 'THREAD_RESOLVED'
   | 'COMMENT_ALREADY_EXISTS'
   | 'COMMENT_NOT_FOUND'
-  | 'NOT_OWNER';
+  | 'LAST_COMMENT'
+  | 'NOT_OWNER'
+  | 'SAVE_FAILED';
 
-export class ThreadError extends Error {
+export interface ThreadError {
   readonly reason: ThreadErrorReason;
+  readonly message: string;
+}
 
-  constructor(reason: ThreadErrorReason, message: string) {
-    super(message);
-    this.name = 'ThreadError';
-    this.reason = reason;
-  }
+export function threadError(
+  reason: ThreadErrorReason,
+  message: string,
+): ThreadError {
+  return {reason, message};
 }

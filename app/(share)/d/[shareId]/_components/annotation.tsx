@@ -1,6 +1,6 @@
 'use client';
 
-import {Card} from '@heroui/react';
+import {Card, toast} from '@heroui/react';
 import type {SerializedEditorState} from 'lexical';
 import {use} from 'react';
 
@@ -9,6 +9,7 @@ import {SignedIn} from '@/auth/signed-in';
 import type {DiffAnnotation, FormAnnotationMetadata} from '@/diffs/annotations';
 import {createComment, openThread} from '@/threads/actions';
 import {toActor} from '@/threads/actor';
+import type {ThreadError} from '@/threads/errors';
 import {ShareActionsContext, ShareStateContext} from '@/threads/provider';
 import type {Anchor} from '@/threads/schemas';
 import {isDefined} from '@/utils/is-defined';
@@ -16,6 +17,7 @@ import {newId} from '@/utils/new-id';
 
 import {useDismissOnEscape} from '../_hooks/use-dismiss-on-escape';
 import {useShareId} from '../_hooks/use-share-id';
+import {threadErrorMessage} from '../_lib/thread-error-message';
 import {CommentList} from './comment-list';
 import {InsetSeparator} from './inset-separator';
 import {LazyCommentEditor as CommentEditor} from './lazy-comment-editor';
@@ -84,11 +86,10 @@ function CommentForm({line, form, filePath, onDismiss}: CommentFormProps) {
   const {optimistic} = use(ShareActionsContext);
   const {getDraft, setDraft} = use(DraftsContext);
 
-  function submit(session: Session, body: SerializedEditorState) {
+  async function submit(session: Session, body: SerializedEditorState) {
     const threadId = newId();
     const commentId = newId();
     const anchor: Anchor = {
-      shareId,
       filePath,
       side: line.side,
       line: line.lineNumber,
@@ -98,15 +99,15 @@ function CommentForm({line, form, filePath, onDismiss}: CommentFormProps) {
       createdAt: new Date().toISOString(),
     };
 
-    return optimistic(
+    const error = await optimistic(
       [
         {
           ...meta,
-          change: {$type: 'thread.opened', threadId, anchor},
+          change: {type: 'openThread', threadId, anchor},
         },
         {
           ...meta,
-          change: {$type: 'comment.created', threadId, commentId, body},
+          change: {type: 'createComment', threadId, commentId, body},
         },
       ],
       () =>
@@ -118,6 +119,9 @@ function CommentForm({line, form, filePath, onDismiss}: CommentFormProps) {
           anchor,
         }),
     );
+    if (isDefined(error)) {
+      notifyNotSaved(error);
+    }
   }
 
   return (
@@ -171,12 +175,12 @@ function CommentThread({line, threadId}: CommentThreadProps) {
     const commentId = newId();
     const createdAt = new Date().toISOString();
 
-    const replied = await optimistic(
+    const error = await optimistic(
       [
         {
           ...toActor(session),
           createdAt,
-          change: {$type: 'comment.created', threadId, commentId, body},
+          change: {type: 'createComment', threadId, commentId, body},
         },
       ],
       () =>
@@ -187,7 +191,9 @@ function CommentThread({line, threadId}: CommentThreadProps) {
           body,
         }),
     );
-    if (replied) {
+    if (isDefined(error)) {
+      notifyNotSaved(error);
+    } else {
       clearDraft(threadId);
     }
   }
@@ -230,4 +236,10 @@ function CommentThread({line, threadId}: CommentThreadProps) {
       </ReplyInput>
     </Card>
   );
+}
+
+function notifyNotSaved({reason}: ThreadError) {
+  toast.danger('Comment not saved', {
+    description: threadErrorMessage(reason),
+  });
 }

@@ -11,6 +11,7 @@ import {
 
 import {isDefined} from '@/utils/is-defined';
 
+import {type ThreadError, threadError} from './errors';
 import type {ShareSnapshot} from './schemas';
 import {
   applyOptimistic,
@@ -24,8 +25,8 @@ import {fetchSnapshot, startPolling} from './sync';
 interface ShareActions {
   readonly optimistic: (
     changes: readonly OptimisticChange[],
-    save: () => Promise<unknown>,
-  ) => Promise<boolean>;
+    save: () => Promise<ThreadError | undefined>,
+  ) => Promise<ThreadError | undefined>;
 }
 
 export const ShareStateContext = createContext<ShareState>(null as never);
@@ -57,18 +58,22 @@ export function ThreadsProvider({
 
   function optimistic(
     changes: readonly OptimisticChange[],
-    save: () => Promise<unknown>,
+    save: () => Promise<ThreadError | undefined>,
   ) {
-    return new Promise<boolean>((resolve) => {
+    return new Promise<ThreadError | undefined>((resolve) => {
       startTransition(async () => {
         for (const change of changes) {
           addOptimistic(change);
         }
 
+        let error: ThreadError | undefined;
         try {
-          await save();
+          error = await save();
         } catch {
-          resolve(false);
+          error = threadError('SAVE_FAILED', 'The change could not be saved');
+        }
+        if (isDefined(error)) {
+          resolve(error);
           return;
         }
 
@@ -77,7 +82,7 @@ export function ThreadsProvider({
         } catch {
           // Shown by the next poll instead
         }
-        resolve(true);
+        resolve(undefined);
       });
     });
   }

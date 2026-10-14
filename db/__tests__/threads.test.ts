@@ -2,6 +2,7 @@ import {eq} from 'drizzle-orm';
 import type {SerializedEditorState} from 'lexical';
 import {describe, expect, it, vi} from 'vitest';
 
+import {threadError} from '@/threads/errors';
 import type {Change} from '@/threads/schemas';
 import {newId} from '@/utils/new-id';
 
@@ -17,17 +18,17 @@ function body(text: string) {
   return {root: {text}} as unknown as SerializedEditorState;
 }
 
-function opened(shareId: string, threadId = newId()) {
+function opened(threadId = newId()) {
   return {
-    $type: 'thread.opened',
+    type: 'openThread',
     threadId,
-    anchor: {shareId, filePath: 'a.txt', side: 'additions', line: 1},
+    anchor: {filePath: 'a.txt', side: 'additions', line: 1},
   } satisfies Change;
 }
 
 function created(threadId: string, commentId = newId(), text = 'hello') {
   return {
-    $type: 'comment.created',
+    type: 'createComment',
     threadId,
     commentId,
     body: body(text),
@@ -42,7 +43,7 @@ async function shareWithThread() {
   await saveChanges(
     shareId,
     actorId,
-    [opened(shareId, threadId), created(threadId, commentId)],
+    [opened(threadId), created(threadId, commentId)],
     allowAll,
   );
   return {actorId, shareId, threadId, commentId};
@@ -59,7 +60,7 @@ describe('saveChanges', () => {
       threads: [
         {
           id: threadId,
-          anchor: {shareId, filePath: 'a.txt', side: 'additions', line: 1},
+          anchor: {filePath: 'a.txt', side: 'additions', line: 1},
           actorId,
           actor: {name: 'Alice', image: null},
           resolved: false,
@@ -92,8 +93,8 @@ describe('saveChanges', () => {
       shareId,
       actorId,
       [
-        {$type: 'thread.resolved', threadId},
-        {$type: 'comment.edited', commentId, body: body('edited')},
+        {type: 'resolveThread', threadId},
+        {type: 'editComment', commentId, body: body('edited')},
       ],
       allowAll,
     );
@@ -109,7 +110,7 @@ describe('saveChanges', () => {
     await saveChanges(
       shareId,
       actorId,
-      [{$type: 'comment.deleted', commentId}],
+      [{type: 'deleteComment', commentId}],
       allowAll,
     );
 
@@ -117,32 +118,37 @@ describe('saveChanges', () => {
     expect(snapshot?.comments).toEqual([]);
   });
 
-  it('validates against the rows the changes refer to', async () => {
+  it('validates against the threads the changes refer to, with their comments', async () => {
     const {actorId, shareId, threadId, commentId} = await shareWithThread();
+    const replyId = newId();
+    await saveChanges(shareId, actorId, [created(threadId, replyId)], allowAll);
     await shareWithThread();
-    const validate = vi.fn();
+    const validate = vi.fn(allowAll);
 
     await saveChanges(
       shareId,
       actorId,
-      [{$type: 'comment.edited', commentId, body: body('edited')}],
+      [{type: 'editComment', commentId, body: body('edited')}],
       validate,
     );
 
     expect(validate).toHaveBeenCalledExactlyOnceWith({
       threads: [expect.objectContaining({id: threadId})],
-      comments: [expect.objectContaining({id: commentId})],
+      comments: [
+        expect.objectContaining({id: commentId}),
+        expect.objectContaining({id: replyId}),
+      ],
     });
   });
 
   it('stores nothing when validation fails', async () => {
     const {actorId, shareId, threadId} = await shareWithThread();
 
+    const refused = threadError('THREAD_RESOLVED', 'Refused');
+
     await expect(
-      saveChanges(shareId, actorId, [created(threadId)], () => {
-        throw new Error('Refused');
-      }),
-    ).rejects.toThrow('Refused');
+      saveChanges(shareId, actorId, [created(threadId)], () => refused),
+    ).resolves.toBe(refused);
 
     const snapshot = await getSnapshot(shareId);
     expect(snapshot?.revision).toBe(1);
@@ -155,20 +161,23 @@ describe('saveChanges', () => {
     ).resolves.toBeUndefined();
   });
 
-  it('throws for an unknown share', async () => {
+  it('refuses an unknown share', async () => {
     const {id: actorId} = await insertUser();
     const shareId = newId();
 
     await expect(
-      saveChanges(shareId, actorId, [opened(shareId)], allowAll),
-    ).rejects.toThrow(`Share not found: ${shareId}`);
+      saveChanges(shareId, actorId, [opened()], allowAll),
+    ).resolves.toEqual({
+      reason: 'SHARE_NOT_FOUND',
+      message: `Share not found: ${shareId}`,
+    });
   });
 
   it('rolls back the revision when a write fails', async () => {
     const shareId = await createShare('', []);
 
     await expect(
-      saveChanges(shareId, newId(), [opened(shareId)], allowAll),
+      saveChanges(shareId, newId(), [opened()], allowAll),
     ).rejects.toThrow();
 
     await expect(getSnapshot(shareId)).resolves.toMatchObject({revision: 0});
@@ -195,7 +204,7 @@ describe('getSnapshot', () => {
     await saveChanges(
       shareId,
       actorId,
-      [{$type: 'comment.edited', commentId, body: body('edited')}],
+      [{type: 'editComment', commentId, body: body('edited')}],
       allowAll,
     );
 

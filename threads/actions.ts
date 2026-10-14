@@ -6,7 +6,7 @@ import {getSession} from '@/auth/server';
 import {saveChanges} from '@/db/threads';
 import {isDefined} from '@/utils/is-defined';
 
-import {ThreadError} from './errors';
+import {threadError} from './errors';
 import {
   type Change,
   CreateCommentInput,
@@ -19,50 +19,50 @@ import {check} from './state';
 
 export async function openThread(input: OpenThreadInput) {
   if (!OpenThreadInput.validate(input)) {
-    throw new ThreadError('INVALID_INPUT', 'Invalid open thread input');
+    return threadError('INVALID_INPUT', 'Invalid open thread input');
   }
 
   const {shareId, threadId, commentId, body, anchor} = input;
-  await save(shareId, [
-    {$type: 'thread.opened', threadId, anchor},
-    {$type: 'comment.created', threadId, commentId, body},
+  return save(shareId, [
+    {type: 'openThread', threadId, anchor},
+    {type: 'createComment', threadId, commentId, body},
   ]);
 }
 
 export async function resolveThread(input: ResolveThreadInput) {
   if (!ResolveThreadInput.validate(input)) {
-    throw new ThreadError('INVALID_INPUT', 'Invalid resolve thread input');
+    return threadError('INVALID_INPUT', 'Invalid resolve thread input');
   }
 
   const {shareId, threadId} = input;
-  await save(shareId, [{$type: 'thread.resolved', threadId}]);
+  return save(shareId, [{type: 'resolveThread', threadId}]);
 }
 
 export async function createComment(input: CreateCommentInput) {
   if (!CreateCommentInput.validate(input)) {
-    throw new ThreadError('INVALID_INPUT', 'Invalid create comment input');
+    return threadError('INVALID_INPUT', 'Invalid create comment input');
   }
 
   const {shareId, threadId, commentId, body} = input;
-  await save(shareId, [{$type: 'comment.created', threadId, commentId, body}]);
+  return save(shareId, [{type: 'createComment', threadId, commentId, body}]);
 }
 
 export async function editComment(input: EditCommentInput) {
   if (!EditCommentInput.validate(input)) {
-    throw new ThreadError('INVALID_INPUT', 'Invalid edit comment input');
+    return threadError('INVALID_INPUT', 'Invalid edit comment input');
   }
 
   const {shareId, commentId, body} = input;
-  await save(shareId, [{$type: 'comment.edited', commentId, body}]);
+  return save(shareId, [{type: 'editComment', commentId, body}]);
 }
 
 export async function deleteComment(input: DeleteCommentInput) {
   if (!DeleteCommentInput.validate(input)) {
-    throw new ThreadError('INVALID_INPUT', 'Invalid delete comment input');
+    return threadError('INVALID_INPUT', 'Invalid delete comment input');
   }
 
   const {shareId, commentId} = input;
-  await save(shareId, [{$type: 'comment.deleted', commentId}]);
+  return save(shareId, [{type: 'deleteComment', commentId}]);
 }
 
 async function save(shareId: string, changes: readonly Change[]) {
@@ -72,7 +72,7 @@ async function save(shareId: string, changes: readonly Change[]) {
   }
 
   const actorId = session.user.id;
-  await saveChanges(shareId, actorId, changes, (rows) => {
-    check(rows, actorId, changes);
-  });
+  return saveChanges(shareId, actorId, changes, (rows) =>
+    check(rows, actorId, changes),
+  );
 }

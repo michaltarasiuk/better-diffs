@@ -14,7 +14,6 @@ import type {
 } from '../schemas';
 import {applyOptimistic, check, initialState, receive} from '../state';
 
-const SHARE_ID = newId();
 const THREAD_ID = newId();
 const COMMENT_ID = newId();
 const OTHER_COMMENT_ID = newId();
@@ -24,7 +23,6 @@ const BOB = 'bob';
 const CREATED_AT = new Date().toISOString();
 
 const ANCHOR = {
-  shareId: SHARE_ID,
   filePath: 'a.txt',
   side: 'additions',
   line: 3,
@@ -62,19 +60,19 @@ function comment(commentId = COMMENT_ID, text = 'hello'): Comment {
 }
 
 const OPENED = {
-  $type: 'thread.opened',
+  type: 'openThread',
   threadId: THREAD_ID,
   anchor: ANCHOR,
 } satisfies Change;
 
 const RESOLVED = {
-  $type: 'thread.resolved',
+  type: 'resolveThread',
   threadId: THREAD_ID,
 } satisfies Change;
 
 function created(commentId = COMMENT_ID, text = 'hello') {
   return {
-    $type: 'comment.created',
+    type: 'createComment',
     threadId: THREAD_ID,
     commentId,
     body: body(text),
@@ -83,14 +81,14 @@ function created(commentId = COMMENT_ID, text = 'hello') {
 
 function edited(commentId = COMMENT_ID, text = 'edited') {
   return {
-    $type: 'comment.edited',
+    type: 'editComment',
     commentId,
     body: body(text),
   } satisfies Change;
 }
 
 function deleted(commentId = COMMENT_ID) {
-  return {$type: 'comment.deleted', commentId} satisfies Change;
+  return {type: 'deleteComment', commentId} satisfies Change;
 }
 
 function optimistic(change: Change, actorId = ALICE) {
@@ -191,33 +189,53 @@ describe('check', () => {
   }
 
   it('accepts a new thread with its first comment', () => {
-    expect(() =>
+    expect(
       check(rows({threads: [], comments: []}), ALICE, [OPENED, created()]),
-    ).not.toThrow();
+    ).toBeUndefined();
   });
 
   it('lets anyone reply to and resolve a thread', () => {
-    expect(() =>
+    expect(
       check(rows(), BOB, [created(OTHER_COMMENT_ID), RESOLVED]),
-    ).not.toThrow();
+    ).toBeUndefined();
   });
 
   it('lets the owner edit and delete a comment in a resolved thread', () => {
-    expect(() =>
-      check(rows({threads: [thread({resolved: true})]}), ALICE, [
-        edited(),
-        deleted(),
-      ]),
-    ).not.toThrow();
+    expect(
+      check(
+        rows({
+          threads: [thread({resolved: true})],
+          comments: [comment(), comment(OTHER_COMMENT_ID)],
+        }),
+        ALICE,
+        [edited(), deleted()],
+      ),
+    ).toBeUndefined();
   });
 
   it('checks each change against the earlier ones', () => {
-    expect(() => check(rows(), ALICE, [deleted(), edited()])).toThrow(
-      `Comment not found: ${COMMENT_ID}`,
+    expect(
+      check(rows(), ALICE, [created(OTHER_COMMENT_ID), deleted(), edited()]),
+    ).toEqual({
+      reason: 'COMMENT_NOT_FOUND',
+      message: `Comment not found: ${COMMENT_ID}`,
+    });
+    expect(check(rows(), ALICE, [RESOLVED, created(OTHER_COMMENT_ID)])).toEqual(
+      {
+        reason: 'THREAD_RESOLVED',
+        message: `Thread already resolved: ${THREAD_ID}`,
+      },
     );
-    expect(() =>
-      check(rows(), ALICE, [RESOLVED, created(OTHER_COMMENT_ID)]),
-    ).toThrow(`Thread already resolved: ${THREAD_ID}`);
+    expect(
+      check(rows(), ALICE, [created(OTHER_COMMENT_ID), deleted()]),
+    ).toBeUndefined();
+    expect(
+      check(rows(), ALICE, [
+        created(OTHER_COMMENT_ID),
+        deleted(),
+        deleted(OTHER_COMMENT_ID),
+      ]),
+    ).toMatchObject({reason: 'LAST_COMMENT'});
   });
 
   it.each([
@@ -232,14 +250,13 @@ describe('check', () => {
     ['COMMENT_ALREADY_EXISTS', rows(), ALICE, created()],
     ['COMMENT_NOT_FOUND', rows({comments: []}), ALICE, edited()],
     ['COMMENT_NOT_FOUND', rows({comments: []}), ALICE, deleted()],
+    ['LAST_COMMENT', rows(), ALICE, deleted()],
     ['NOT_OWNER', rows(), BOB, edited()],
     ['NOT_OWNER', rows(), BOB, deleted()],
   ] satisfies [ThreadErrorReason, ShareRows, string, Change][])(
     'refuses with %s',
     (reason, given, actorId, refused) => {
-      expect(() => check(given, actorId, [refused])).toThrow(
-        expect.objectContaining({name: 'ThreadError', reason}),
-      );
+      expect(check(given, actorId, [refused])).toMatchObject({reason});
     },
   );
 });

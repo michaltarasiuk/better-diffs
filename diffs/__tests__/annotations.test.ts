@@ -13,7 +13,6 @@ import {
   toThreadAnnotation,
 } from '../annotations';
 
-const SHARE_ID = newId();
 const FORM_ID = newId();
 const THREAD_ID = newId();
 
@@ -52,7 +51,6 @@ describe('toThreadAnnotation', () => {
     const thread = {
       id: THREAD_ID,
       anchor: {
-        shareId: SHARE_ID,
         filePath: 'a.txt',
         side: 'deletions',
         line: 7,

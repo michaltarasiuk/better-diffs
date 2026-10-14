@@ -115,16 +115,16 @@ describe('getShareFiles', () => {
   });
 });
 
-function openThread(shareId: string) {
+function openThread() {
   const threadId = newId();
   return [
     {
-      $type: 'thread.opened',
+      type: 'openThread',
       threadId,
-      anchor: {shareId, filePath: 'a.txt', side: 'additions', line: 1},
+      anchor: {filePath: 'a.txt', side: 'additions', line: 1},
     },
     {
-      $type: 'comment.created',
+      type: 'createComment',
       threadId,
       commentId: newId(),
       body: {root: {}} as SerializedEditorState,
@@ -139,7 +139,7 @@ describe('saveChanges', () => {
     await ageShare(id, 48);
     const before = await getShare(id);
 
-    await saveChanges(id, actorId, openThread(id), allowAll);
+    await saveChanges(id, actorId, openThread(), allowAll);
 
     const after = await getShare(id);
     expect(after!.lastVisitedAt > before!.lastVisitedAt).toBe(true);
@@ -170,7 +170,7 @@ describe('deleteExpiredShares', () => {
   it('deletes the patches, files, threads and comments of expired shares', async () => {
     const {id: actorId} = await insertUser();
     const id = await createShare('', [fileDiffs('a.txt', 'b.txt')]);
-    await saveChanges(id, actorId, openThread(id), allowAll);
+    await saveChanges(id, actorId, openThread(), allowAll);
     await ageShare(id, 25);
 
     await deleteExpiredShares({maxAgeHours: 24});

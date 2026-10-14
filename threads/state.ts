@@ -1,6 +1,6 @@
 import {isDefined} from '@/utils/is-defined';
 
-import {ThreadError, type ThreadErrorReason} from './errors';
+import {threadError} from './errors';
 import type {
   Actor,
   Change,
@@ -47,8 +47,8 @@ export function applyOptimistic(
   const threads = new Map(state.threads);
   const comments = new Map(state.comments);
 
-  switch (change.$type) {
-    case 'thread.opened':
+  switch (change.type) {
+    case 'openThread':
       threads.set(change.threadId, {
         id: change.threadId,
         anchor: change.anchor,
@@ -58,14 +58,14 @@ export function applyOptimistic(
         createdAt,
       });
       break;
-    case 'thread.resolved': {
+    case 'resolveThread': {
       const thread = threads.get(change.threadId);
       if (isDefined(thread)) {
         threads.set(thread.id, {...thread, resolved: true});
       }
       break;
     }
-    case 'comment.created':
+    case 'createComment':
       comments.set(change.commentId, {
         id: change.commentId,
         threadId: change.threadId,
@@ -75,14 +75,14 @@ export function applyOptimistic(
         createdAt,
       });
       break;
-    case 'comment.edited': {
+    case 'editComment': {
       const comment = comments.get(change.commentId);
       if (isDefined(comment)) {
         comments.set(comment.id, {...comment, body: change.body});
       }
       break;
     }
-    case 'comment.deleted':
+    case 'deleteComment':
       comments.delete(change.commentId);
       break;
     default:
@@ -100,68 +100,111 @@ export function check(
   const resolvedById = new Map(
     rows.threads.map((thread) => [thread.id, thread.resolved]),
   );
-  const ownerById = new Map(
-    rows.comments.map((comment) => [comment.id, comment.actorId]),
+  const commentById = new Map(
+    rows.comments.map(({id, threadId, actorId}) => [id, {threadId, actorId}]),
   );
+  const commentCountById = new Map<string, number>();
+  for (const {threadId} of rows.comments) {
+    commentCountById.set(threadId, (commentCountById.get(threadId) ?? 0) + 1);
+  }
 
   function checkOpenThread(threadId: string) {
     const resolved = resolvedById.get(threadId);
     if (!isDefined(resolved)) {
-      refuse('THREAD_NOT_FOUND', `Thread not found: ${threadId}`);
+      return threadError('THREAD_NOT_FOUND', `Thread not found: ${threadId}`);
     }
     if (resolved) {
-      refuse('THREAD_RESOLVED', `Thread already resolved: ${threadId}`);
+      return threadError(
+        'THREAD_RESOLVED',
+        `Thread already resolved: ${threadId}`,
+      );
     }
+    return undefined;
   }
 
   function checkOwnComment(commentId: string) {
-    const ownerId = ownerById.get(commentId);
-    if (!isDefined(ownerId)) {
-      refuse('COMMENT_NOT_FOUND', `Comment not found: ${commentId}`);
+    const comment = commentById.get(commentId);
+    if (!isDefined(comment)) {
+      return threadError(
+        'COMMENT_NOT_FOUND',
+        `Comment not found: ${commentId}`,
+      );
     }
-    if (ownerId !== actorId) {
-      refuse('NOT_OWNER', `${commentId} not owned by actor: ${actorId}`);
+    if (comment.actorId !== actorId) {
+      return threadError(
+        'NOT_OWNER',
+        `${commentId} not owned by actor: ${actorId}`,
+      );
     }
+    return undefined;
   }
 
-  for (const change of changes) {
-    switch (change.$type) {
-      case 'thread.opened':
+  function checkChange(change: Change) {
+    switch (change.type) {
+      case 'openThread':
         if (resolvedById.has(change.threadId)) {
-          refuse(
+          return threadError(
             'THREAD_ALREADY_EXISTS',
             `Thread already exists: ${change.threadId}`,
           );
         }
         resolvedById.set(change.threadId, false);
-        break;
-      case 'thread.resolved':
-        checkOpenThread(change.threadId);
+        return undefined;
+      case 'resolveThread': {
+        const error = checkOpenThread(change.threadId);
+        if (isDefined(error)) {
+          return error;
+        }
         resolvedById.set(change.threadId, true);
-        break;
-      case 'comment.created':
-        checkOpenThread(change.threadId);
-        if (ownerById.has(change.commentId)) {
-          refuse(
+        return undefined;
+      }
+      case 'createComment': {
+        const error = checkOpenThread(change.threadId);
+        if (isDefined(error)) {
+          return error;
+        }
+        if (commentById.has(change.commentId)) {
+          return threadError(
             'COMMENT_ALREADY_EXISTS',
             `Comment already exists: ${change.commentId}`,
           );
         }
-        ownerById.set(change.commentId, actorId);
-        break;
-      case 'comment.edited':
-        checkOwnComment(change.commentId);
-        break;
-      case 'comment.deleted':
-        checkOwnComment(change.commentId);
-        ownerById.delete(change.commentId);
-        break;
+        commentById.set(change.commentId, {threadId: change.threadId, actorId});
+        commentCountById.set(
+          change.threadId,
+          (commentCountById.get(change.threadId) ?? 0) + 1,
+        );
+        return undefined;
+      }
+      case 'editComment':
+        return checkOwnComment(change.commentId);
+      case 'deleteComment': {
+        const error = checkOwnComment(change.commentId);
+        if (isDefined(error)) {
+          return error;
+        }
+        const {threadId} = commentById.get(change.commentId)!;
+        const commentCount = commentCountById.get(threadId) ?? 0;
+        if (commentCount <= 1) {
+          return threadError(
+            'LAST_COMMENT',
+            `Cannot delete the last comment of thread: ${threadId}`,
+          );
+        }
+        commentById.delete(change.commentId);
+        commentCountById.set(threadId, commentCount - 1);
+        return undefined;
+      }
       default:
-        change satisfies never;
+        return change satisfies never;
     }
   }
-}
 
-function refuse(reason: ThreadErrorReason, message: string): never {
-  throw new ThreadError(reason, message);
+  for (const change of changes) {
+    const error = checkChange(change);
+    if (isDefined(error)) {
+      return error;
+    }
+  }
+  return undefined;
 }

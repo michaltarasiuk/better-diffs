@@ -2,6 +2,7 @@ import 'server-only';
 
 import {and, asc, eq, gt, inArray, type SQL, sql} from 'drizzle-orm';
 
+import {type ThreadError, threadError} from '@/threads/errors';
 import type {Change, ShareRows} from '@/threads/schemas';
 import {isDefined} from '@/utils/is-defined';
 
@@ -21,7 +22,6 @@ function selectThreads(executor: Executor, where: SQL | undefined) {
     .select({
       id: threadsTable.id,
       anchor: {
-        shareId: threadsTable.shareId,
         filePath: threadsTable.filePath,
         side: threadsTable.side,
         line: threadsTable.line,
@@ -92,25 +92,36 @@ async function getRows(
   const commentIds = changes.flatMap((change) =>
     'commentId' in change ? [change.commentId] : [],
   );
+  const touched =
+    commentIds.length > 0
+      ? await tx
+          .select({threadId: commentsTable.threadId})
+          .from(commentsTable)
+          .where(
+            and(
+              eq(commentsTable.shareId, shareId),
+              inArray(commentsTable.id, commentIds),
+            ),
+          )
+      : [];
+
+  const threadIds = [
+    ...new Set([
+      ...changes.flatMap((change) =>
+        'threadId' in change ? [change.threadId] : [],
+      ),
+      ...touched.map(({threadId}) => threadId),
+    ]),
+  ];
+  const threads = await selectThreads(
+    tx,
+    and(eq(threadsTable.shareId, shareId), inArray(threadsTable.id, threadIds)),
+  );
   const comments = await selectComments(
     tx,
     and(
       eq(commentsTable.shareId, shareId),
-      inArray(commentsTable.id, commentIds),
-    ),
-  );
-
-  const threadIds = new Set([
-    ...changes.flatMap((change) =>
-      'threadId' in change ? [change.threadId] : [],
-    ),
-    ...comments.map(({threadId}) => threadId),
-  ]);
-  const threads = await selectThreads(
-    tx,
-    and(
-      eq(threadsTable.shareId, shareId),
-      inArray(threadsTable.id, [...threadIds]),
+      inArray(commentsTable.threadId, threadIds),
     ),
   );
 
@@ -130,8 +141,8 @@ async function write(
   },
   change: Change,
 ) {
-  switch (change.$type) {
-    case 'thread.opened': {
+  switch (change.type) {
+    case 'openThread': {
       const {filePath, side, line} = change.anchor;
       await tx.insert(threadsTable).values({
         id: change.threadId,
@@ -144,7 +155,7 @@ async function write(
       });
       break;
     }
-    case 'thread.resolved':
+    case 'resolveThread':
       await tx
         .update(threadsTable)
         .set({resolved: true})
@@ -155,7 +166,7 @@ async function write(
           ),
         );
       break;
-    case 'comment.created':
+    case 'createComment':
       await tx.insert(commentsTable).values({
         id: change.commentId,
         shareId,
@@ -165,7 +176,7 @@ async function write(
         createdAt,
       });
       break;
-    case 'comment.edited':
+    case 'editComment':
       await tx
         .update(commentsTable)
         .set({body: change.body})
@@ -176,7 +187,7 @@ async function write(
           ),
         );
       break;
-    case 'comment.deleted':
+    case 'deleteComment':
       await tx
         .delete(commentsTable)
         .where(
@@ -195,31 +206,38 @@ export async function saveChanges(
   shareId: string,
   actorId: string,
   changes: readonly Change[],
-  validate: (rows: ShareRows) => void,
+  validate: (rows: ShareRows) => ThreadError | undefined,
 ) {
   if (changes.length === 0) {
-    return;
+    return undefined;
   }
 
-  await db.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     const [share] = await tx
+      .select({id: sharesTable.id})
+      .from(sharesTable)
+      .where(eq(sharesTable.id, shareId));
+    if (!isDefined(share)) {
+      return threadError('SHARE_NOT_FOUND', `Share not found: ${shareId}`);
+    }
+
+    const error = validate(await getRows(tx, shareId, changes));
+    if (isDefined(error)) {
+      return error;
+    }
+
+    await tx
       .update(sharesTable)
       .set({
         revision: sql`${sharesTable.revision} + 1`,
         lastVisitedAt: sql`datetime('now')`,
       })
-      .where(eq(sharesTable.id, shareId))
-      .returning({id: sharesTable.id});
-
-    if (!isDefined(share)) {
-      throw new Error(`Share not found: ${shareId}`);
-    }
-
-    validate(await getRows(tx, shareId, changes));
+      .where(eq(sharesTable.id, shareId));
 
     const createdAt = new Date().toISOString();
     for (const change of changes) {
       await write(tx, {shareId, actorId, createdAt}, change);
     }
+    return undefined;
   });
 }

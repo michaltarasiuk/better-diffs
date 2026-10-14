@@ -75,4 +75,5 @@ export async function ageShare(shareId: string, hours: number) {
 
 export function allowAll() {
   // Rules are tested with the server actions; these tests cover storage only
+  return undefined;
 }

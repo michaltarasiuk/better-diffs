@@ -5,7 +5,6 @@ import {AnnotationSide} from '@/diffs/schemas';
 import {isDefined} from '@/utils/is-defined';
 
 export const Anchor = z.object({
-  shareId: z.uuid(),
   filePath: z.string(),
   side: AnnotationSide,
   line: z.int().positive(),
@@ -54,36 +53,31 @@ export interface ShareRows {
 
 export type Change =
   | {
-      readonly $type: 'thread.opened';
+      readonly type: 'openThread';
       readonly threadId: string;
       readonly anchor: Anchor;
     }
-  | {readonly $type: 'thread.resolved'; readonly threadId: string}
+  | {readonly type: 'resolveThread'; readonly threadId: string}
   | {
-      readonly $type: 'comment.created';
+      readonly type: 'createComment';
       readonly threadId: string;
       readonly commentId: string;
       readonly body: SerializedEditorState;
     }
   | {
-      readonly $type: 'comment.edited';
+      readonly type: 'editComment';
       readonly commentId: string;
       readonly body: SerializedEditorState;
     }
-  | {readonly $type: 'comment.deleted'; readonly commentId: string};
+  | {readonly type: 'deleteComment'; readonly commentId: string};
 
-export const OpenThreadInput = z
-  .object({
-    shareId: z.uuid(),
-    threadId: z.uuid(),
-    commentId: z.uuid(),
-    body: LexicalBody,
-    anchor: Anchor,
-  })
-  .refine((input) => input.anchor.shareId === input.shareId, {
-    message: 'Anchor belongs to another share',
-    path: ['anchor', 'shareId'],
-  });
+export const OpenThreadInput = z.object({
+  shareId: z.uuid(),
+  threadId: z.uuid(),
+  commentId: z.uuid(),
+  body: LexicalBody,
+  anchor: Anchor,
+});
 export type OpenThreadInput = z.infer<typeof OpenThreadInput>;
 
 export const ResolveThreadInput = z.object({

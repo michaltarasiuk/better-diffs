@@ -6,6 +6,7 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {newId} from '@/utils/new-id';
 
+import {type ThreadError, threadError} from '../errors';
 import {
   ShareActionsContext,
   ShareStateContext,
@@ -26,7 +27,7 @@ const SHARE_ID = newId();
 function thread(id = newId()): Thread {
   return {
     id,
-    anchor: {shareId: SHARE_ID, filePath: 'a.txt', side: 'additions', line: 1},
+    anchor: {filePath: 'a.txt', side: 'additions', line: 1},
     actorId: 'alice',
     actor: {name: 'Alice', image: null},
     resolved: false,
@@ -44,10 +45,9 @@ function openChange(threadId: string): OptimisticChange {
     actor: {name: 'Alice', image: null},
     createdAt: new Date().toISOString(),
     change: {
-      $type: 'thread.opened',
+      type: 'openThread',
       threadId,
       anchor: {
-        shareId: SHARE_ID,
         filePath: 'a.txt',
         side: 'additions',
         line: 1,
@@ -124,13 +124,13 @@ describe('ThreadsProvider', () => {
     let save!: () => void;
     fetchSnapshot.mockResolvedValueOnce(snapshot(1, [stored]));
 
-    let saved!: Promise<boolean>;
+    let saved!: Promise<ThreadError | undefined>;
     act(() => {
       saved = actions.optimistic(
         [openChange(stored.id)],
         () =>
-          new Promise<void>((resolve) => {
-            save = resolve;
+          new Promise<undefined>((resolve) => {
+            save = () => resolve(undefined);
           }),
       );
     });
@@ -144,25 +144,44 @@ describe('ThreadsProvider', () => {
       await saved;
     });
 
-    await expect(saved).resolves.toBe(true);
+    await expect(saved).resolves.toBeUndefined();
     expect(fetchSnapshot).toHaveBeenCalledExactlyOnceWith(SHARE_ID, 0);
     expect(screen.getByRole('status')).toHaveTextContent(
       '1 threads at revision 1',
     );
   });
 
-  it('drops a change that fails to save', async () => {
+  it('drops a refused change and returns its error', async () => {
     renderProvider();
+    const refused = threadError('THREAD_ALREADY_EXISTS', 'Refused');
 
-    let saved!: Promise<boolean>;
+    let saved!: Promise<ThreadError | undefined>;
     await act(async () => {
       saved = actions.optimistic([openChange(newId())], () =>
-        Promise.reject(new Error('Refused')),
+        Promise.resolve(refused),
       );
       await saved;
     });
 
-    await expect(saved).resolves.toBe(false);
+    await expect(saved).resolves.toBe(refused);
+    expect(fetchSnapshot).not.toHaveBeenCalled();
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '0 threads at revision 0',
+    );
+  });
+
+  it('drops a change that fails to save', async () => {
+    renderProvider();
+
+    let saved!: Promise<ThreadError | undefined>;
+    await act(async () => {
+      saved = actions.optimistic([openChange(newId())], () =>
+        Promise.reject(new Error('Offline')),
+      );
+      await saved;
+    });
+
+    await expect(saved).resolves.toMatchObject({reason: 'SAVE_FAILED'});
     expect(fetchSnapshot).not.toHaveBeenCalled();
     expect(screen.getByRole('status')).toHaveTextContent(
       '0 threads at revision 0',

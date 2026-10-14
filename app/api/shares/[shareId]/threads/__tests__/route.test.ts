@@ -29,12 +29,12 @@ async function shareWithThreads(count: number) {
       actorId,
       [
         {
-          $type: 'thread.opened',
+          type: 'openThread',
           threadId,
-          anchor: {shareId, filePath: 'a.txt', side: 'additions', line: 1},
+          anchor: {filePath: 'a.txt', side: 'additions', line: 1},
         },
         {
-          $type: 'comment.created',
+          type: 'createComment',
           threadId,
           commentId: newId(),
           body: {root: {}} as SerializedEditorState,
