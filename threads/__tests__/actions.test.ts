@@ -3,8 +3,8 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import type {Session} from '@/auth/server';
 import {insertUser, setupTestDb} from '@/db/__tests__/setup';
-import {getEvents} from '@/db/events';
 import {createShare} from '@/db/shares';
+import {getSnapshot} from '@/db/threads';
 import {isDefined} from '@/utils/is-defined';
 import {newId} from '@/utils/new-id';
 
@@ -56,9 +56,9 @@ async function openAliceThread() {
   return {threadId, commentId};
 }
 
-async function storedTypes() {
-  const events = await getEvents(shareId);
-  return events.map(({type}) => type);
+async function stored() {
+  const snapshot = await getSnapshot(shareId);
+  return snapshot!;
 }
 
 beforeEach(async () => {
@@ -73,12 +73,10 @@ describe('openThread', () => {
   it('stores the thread with its first comment', async () => {
     const {threadId, commentId} = await openAliceThread();
 
-    const events = await getEvents(shareId);
-
-    expect(events).toMatchObject([
-      {seq: 1, actorId: alice, subjectId: threadId, type: 'thread.opened'},
-      {seq: 2, actorId: alice, subjectId: commentId, type: 'comment.created'},
-    ]);
+    await expect(stored()).resolves.toMatchObject({
+      threads: [{id: threadId, actorId: alice, anchor: anchor()}],
+      comments: [{id: commentId, threadId, actorId: alice, body: BODY}],
+    });
   });
 
   it('rejects an anchor from another share', async () => {
@@ -93,7 +91,7 @@ describe('openThread', () => {
         anchor: anchor({shareId: otherShareId}),
       }),
     ).rejects.toThrow('Invalid open thread input');
-    await expect(storedTypes()).resolves.toEqual([]);
+    await expect(stored()).resolves.toMatchObject({threads: []});
   });
 
   it('rejects invalid input', async () => {
@@ -128,7 +126,7 @@ describe('openThread', () => {
     await expect(openAliceThread()).rejects.toMatchObject({
       digest: expect.stringMatching(/;401$/),
     });
-    await expect(storedTypes()).resolves.toEqual([]);
+    await expect(stored()).resolves.toMatchObject({threads: []});
   });
 });
 
@@ -138,11 +136,9 @@ describe('resolveThread', () => {
 
     await resolveThread({shareId, threadId});
 
-    await expect(storedTypes()).resolves.toEqual([
-      'thread.opened',
-      'comment.created',
-      'thread.resolved',
-    ]);
+    await expect(stored()).resolves.toMatchObject({
+      threads: [{id: threadId, resolved: true}],
+    });
   });
 
   it("resolves another user's thread", async () => {
@@ -151,11 +147,9 @@ describe('resolveThread', () => {
 
     await resolveThread({shareId, threadId});
 
-    await expect(storedTypes()).resolves.toEqual([
-      'thread.opened',
-      'comment.created',
-      'thread.resolved',
-    ]);
+    await expect(stored()).resolves.toMatchObject({
+      threads: [{id: threadId, resolved: true}],
+    });
   });
 
   it('rejects resolving a thread twice', async () => {
@@ -176,11 +170,11 @@ describe('createComment', () => {
 
     await createComment({shareId, threadId, commentId, body: BODY});
 
-    const events = await getEvents(shareId);
-    expect(events.at(-1)).toMatchObject({
+    const {comments} = await stored();
+    expect(comments.at(-1)).toMatchObject({
+      id: commentId,
+      threadId,
       actorId: bob,
-      subjectId: commentId,
-      type: 'comment.created',
     });
   });
 
@@ -216,9 +210,13 @@ describe('editComment', () => {
   it("edits the user's comment", async () => {
     const {commentId} = await openAliceThread();
 
-    await editComment({shareId, commentId, body: BODY});
+    const edited = {root: {edited: true}} as unknown as SerializedEditorState;
 
-    await expect(storedTypes()).resolves.toContain('comment.edited');
+    await editComment({shareId, commentId, body: edited});
+
+    await expect(stored()).resolves.toMatchObject({
+      comments: [{id: commentId, body: edited}],
+    });
   });
 
   it("rejects editing another user's comment", async () => {
@@ -237,7 +235,7 @@ describe('deleteComment', () => {
 
     await deleteComment({shareId, commentId});
 
-    await expect(storedTypes()).resolves.toContain('comment.deleted');
+    await expect(stored()).resolves.toMatchObject({comments: []});
   });
 
   it("rejects deleting another user's comment", async () => {
@@ -254,7 +252,7 @@ describe('deleteComment', () => {
     await deleteComment({shareId, commentId});
 
     await expect(deleteComment({shareId, commentId})).rejects.toThrow(
-      `Comment already deleted: ${commentId}`,
+      `Comment not found: ${commentId}`,
     );
   });
 

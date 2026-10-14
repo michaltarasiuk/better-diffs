@@ -7,10 +7,10 @@ import {use} from 'react';
 import type {Session} from '@/auth/server';
 import {SignedIn} from '@/auth/signed-in';
 import type {DiffAnnotation, FormAnnotationMetadata} from '@/diffs/annotations';
-import {createComment, openThread} from '@/events/actions';
-import {toEventActor} from '@/events/actor';
-import {ShareActionsContext, ShareStateContext} from '@/events/provider';
-import type {Anchor} from '@/events/schemas';
+import {createComment, openThread} from '@/threads/actions';
+import {toActor} from '@/threads/actor';
+import {ShareActionsContext, ShareStateContext} from '@/threads/provider';
+import type {Anchor} from '@/threads/schemas';
 import {isDefined} from '@/utils/is-defined';
 import {newId} from '@/utils/new-id';
 
@@ -94,7 +94,7 @@ function CommentForm({line, form, filePath, onDismiss}: CommentFormProps) {
       line: line.lineNumber,
     };
     const meta = {
-      ...toEventActor(session),
+      ...toActor(session),
       createdAt: new Date().toISOString(),
     };
 
@@ -102,11 +102,11 @@ function CommentForm({line, form, filePath, onDismiss}: CommentFormProps) {
       [
         {
           ...meta,
-          payload: {$type: 'thread.opened', threadId, anchor},
+          change: {$type: 'thread.opened', threadId, anchor},
         },
         {
           ...meta,
-          payload: {$type: 'comment.created', threadId, commentId, body},
+          change: {$type: 'comment.created', threadId, commentId, body},
         },
       ],
       () =>
@@ -174,9 +174,9 @@ function CommentThread({line, threadId}: CommentThreadProps) {
     const replied = await optimistic(
       [
         {
-          ...toEventActor(session),
+          ...toActor(session),
           createdAt,
-          payload: {$type: 'comment.created', threadId, commentId, body},
+          change: {$type: 'comment.created', threadId, commentId, body},
         },
       ],
       () =>
@@ -192,9 +192,9 @@ function CommentThread({line, threadId}: CommentThreadProps) {
     }
   }
 
-  const comments = thread.commentIds
-    .map((commentId) => share.comments.get(commentId))
-    .filter((comment) => isDefined(comment));
+  const comments = [...share.comments.values()].filter(
+    (comment) => comment.threadId === threadId,
+  );
 
   return (
     <Card variant="secondary" className="m-2 mbs-1 gap-0 p-0">

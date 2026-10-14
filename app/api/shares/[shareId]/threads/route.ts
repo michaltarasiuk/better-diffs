@@ -1,18 +1,18 @@
 import {z} from 'zod';
 
-import {getEvents} from '@/db/events';
 import {touchShare} from '@/db/shares';
+import {getSnapshot} from '@/db/threads';
 import {ApiError} from '@/http/error';
 import {parseSearchParams, route} from '@/http/route';
 
 const SearchParams = z.object({
-  afterSeq: z.coerce.number().int().nonnegative().default(0),
+  afterRevision: z.coerce.number().int().nonnegative().optional(),
 });
 
 export const GET = route(
-  async (request, {params}: RouteContext<'/api/shares/[shareId]/events'>) => {
+  async (request, {params}: RouteContext<'/api/shares/[shareId]/threads'>) => {
     const {shareId} = await params;
-    const {afterSeq} = parseSearchParams(SearchParams, request);
+    const {afterRevision} = parseSearchParams(SearchParams, request);
 
     if (!(await touchShare(shareId))) {
       throw new ApiError('NOT_FOUND', `Share "${shareId}" not found.`, {
@@ -21,9 +21,9 @@ export const GET = route(
       });
     }
 
-    const events = await getEvents(shareId, afterSeq);
+    const snapshot = await getSnapshot(shareId, afterRevision);
 
-    return Response.json({events});
+    return Response.json({snapshot: snapshot ?? null});
   },
   {headers: {'Cache-Control': 'no-store'}},
 );

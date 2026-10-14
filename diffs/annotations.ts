@@ -1,6 +1,6 @@
 import type {AnnotationSide, DiffLineAnnotation} from '@pierre/diffs';
 
-import type {ThreadState} from '@/events/state';
+import type {Thread} from '@/threads/schemas';
 
 export interface FormAnnotationMetadata {
   readonly type: 'form';
@@ -31,7 +31,7 @@ export function isThreadAnnotation(
   return annotation.metadata.type === 'thread';
 }
 
-export function toThreadAnnotation(thread: ThreadState): ThreadDiffAnnotation {
+export function toThreadAnnotation(thread: Thread): ThreadDiffAnnotation {
   return {
     side: thread.anchor.side,
     lineNumber: thread.anchor.line,

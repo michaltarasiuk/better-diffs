@@ -5,8 +5,8 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {ApiError} from '@/http/error';
 import {newId} from '@/utils/new-id';
 
-import type {ShareEvent} from '../schemas';
-import {fetchEvents, startPolling} from '../sync';
+import type {ShareSnapshot} from '../schemas';
+import {fetchSnapshot, startPolling} from '../sync';
 
 const ACTIVE_POLL_INTERVAL = 3_000;
 const BACKGROUND_POLL_INTERVAL = 30_000;
@@ -16,30 +16,29 @@ function setVisibility(visibilityState: DocumentVisibilityState) {
   document.dispatchEvent(new Event('visibilitychange'));
 }
 
-describe('fetchEvents', () => {
-  it('fetches the events after the given seq', async () => {
-    const shareId = newId();
-    const events: ShareEvent[] = [
-      {
-        id: newId(),
-        shareId,
-        seq: 5,
-        type: 'comment.deleted',
-        subjectId: newId(),
-        actorId: 'alice',
-        createdAt: new Date().toISOString(),
-      },
-    ];
+describe('fetchSnapshot', () => {
+  it('fetches the snapshot changed after the given revision', async () => {
+    const snapshot: ShareSnapshot = {revision: 5, threads: [], comments: []};
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
-      Response.json({events}),
+      Response.json({snapshot}),
     );
     vi.stubGlobal('fetch', fetch);
+    const shareId = newId();
 
-    await expect(fetchEvents(shareId, 4)).resolves.toEqual(events);
+    await expect(fetchSnapshot(shareId, 4)).resolves.toEqual(snapshot);
     expect(fetch).toHaveBeenCalledExactlyOnceWith(
-      `/api/shares/${shareId}/events?afterSeq=4`,
+      `/api/shares/${shareId}/threads?afterRevision=4`,
       {cache: 'no-store'},
     );
+  });
+
+  it('resolves to null when nothing changed', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>(async () => Response.json({snapshot: null})),
+    );
+
+    await expect(fetchSnapshot(newId(), 4)).resolves.toBeNull();
   });
 
   it('rejects when the server responds with an error', async () => {
@@ -53,7 +52,7 @@ describe('fetchEvents', () => {
         .mockResolvedValue(Response.json(error, {status: error.httpStatus})),
     );
 
-    await expect(fetchEvents(newId(), 0)).rejects.toMatchObject({
+    await expect(fetchSnapshot(newId(), 0)).rejects.toMatchObject({
       code: 'NOT_FOUND',
     });
   });

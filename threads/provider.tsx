@@ -9,15 +9,17 @@ import {
   useReducer,
 } from 'react';
 
+import {isDefined} from '@/utils/is-defined';
+
 import type {ShareSnapshot} from './schemas';
 import {
   applyOptimistic,
-  ingest,
   initialState,
   type OptimisticChange,
+  receive,
   type ShareState,
 } from './state';
-import {fetchEvents, startPolling} from './sync';
+import {fetchSnapshot, startPolling} from './sync';
 
 interface ShareActions {
   readonly optimistic: (
@@ -30,7 +32,7 @@ export const ShareStateContext = createContext<ShareState>(null as never);
 
 export const ShareActionsContext = createContext<ShareActions>(null as never);
 
-export function ShareEventsProvider({
+export function ThreadsProvider({
   shareId,
   snapshot,
   children,
@@ -39,11 +41,14 @@ export function ShareEventsProvider({
   readonly snapshot: ShareSnapshot;
   readonly children: React.ReactNode;
 }) {
-  const [confirmed, dispatch] = useReducer(ingest, snapshot, initialState);
+  const [confirmed, dispatch] = useReducer(receive, snapshot, initialState);
   const [state, addOptimistic] = useOptimistic(confirmed, applyOptimistic);
 
   async function refresh() {
-    dispatch(await fetchEvents(shareId, confirmed.seq));
+    const next = await fetchSnapshot(shareId, confirmed.revision);
+    if (isDefined(next)) {
+      dispatch(next);
+    }
   }
 
   const poll = useEffectEvent(refresh);

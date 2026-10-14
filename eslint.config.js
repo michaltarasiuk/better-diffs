@@ -12,7 +12,7 @@ const CLIENT_FILES = [
   'hooks/**',
   'lexical/**',
   'trees/**',
-  'events/{actor,provider,sync}.{ts,tsx}',
+  'threads/{actor,provider,sync}.{ts,tsx}',
   'app/**/_components/**',
   'app/**/_hooks/**',
   'app/**/_lib/**',
@@ -23,7 +23,7 @@ const PURE_FILES = [
   'http/headers/**',
   'utils/**',
   'diffs/{annotations,contents,empty,lines,schemas,stats}.ts',
-  'events/{actor,errors,schemas,state}.ts',
+  'threads/{actor,errors,schemas,state}.ts',
   'trees/input.ts',
 ];
 
@@ -39,7 +39,7 @@ const SERVER_ONLY = {
   allowTypeImports: true,
   message:
     'Server-only. ' +
-    'Reach the database and session through a server action (events/actions.ts) or a route handler, and pass the result in.',
+    'Reach the database and session through a server action (threads/actions.ts) or a route handler, and pass the result in.',
 };
 
 const FRAMEWORK = {
@@ -51,7 +51,7 @@ const FRAMEWORK = {
     '@/http/fetch',
     '@/http/route',
     '@/hooks/**',
-    '@/events/{actions,provider,sync}',
+    '@/threads/{actions,provider,sync}',
   ],
   allowTypeImports: true,
   message:
@@ -61,10 +61,10 @@ const FRAMEWORK = {
 
 const DB_DEPENDENCIES = [
   {
-    regex: '^@/(?!env$|utils/|events/schemas$|db/)',
+    regex: '^@/(?!env$|utils/|threads/schemas$|db/)',
     message:
-      'db/ depends only on env, utils and the event schemas. ' +
-      'Take anything else as an argument, as appendEvents takes `validate`.',
+      'db/ depends only on env, utils and the thread schemas. ' +
+      'Take anything else as an argument, as saveChanges takes `validate`.',
   },
   {
     group: ['react', 'react-dom', 'next', 'next/*'],

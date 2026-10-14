@@ -5,10 +5,10 @@ import {notFound} from 'next/navigation';
 import {Suspense} from 'react';
 
 import {SessionProvider} from '@/auth/provider';
-import {getSnapshot} from '@/db/events';
 import {getShareFiles, touchShare} from '@/db/shares';
+import {getSnapshot} from '@/db/threads';
 import {computeDiffStats} from '@/diffs/stats';
-import {ShareEventsProvider} from '@/events/provider';
+import {ThreadsProvider} from '@/threads/provider';
 import {prepareTreeInput, sortByTree} from '@/trees/input';
 import {getFileTreeOptions} from '@/trees/options';
 import {isDefined} from '@/utils/is-defined';
@@ -80,7 +80,7 @@ export default async function SharePage({
         <main aria-label="Diff" className="min-h-0 min-w-0 flex-1">
           <SessionProvider>
             <Suspense fallback={diffViewSpinner}>
-              <ShareEventsProvider
+              <ThreadsProvider
                 key={shareId}
                 shareId={shareId}
                 snapshot={snapshot}
@@ -88,7 +88,7 @@ export default async function SharePage({
                 <ReviewStateProvider key={shareId}>
                   <DiffView files={sortedFiles} />
                 </ReviewStateProvider>
-              </ShareEventsProvider>
+              </ThreadsProvider>
             </Suspense>
           </SessionProvider>
         </main>

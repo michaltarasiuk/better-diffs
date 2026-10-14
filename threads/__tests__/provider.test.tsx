@@ -8,18 +8,18 @@ import {newId} from '@/utils/new-id';
 
 import {
   ShareActionsContext,
-  ShareEventsProvider,
   ShareStateContext,
+  ThreadsProvider,
 } from '../provider';
-import type {ShareEvent, ShareSnapshot, Thread} from '../schemas';
+import type {ShareSnapshot, Thread} from '../schemas';
 import type {OptimisticChange} from '../state';
 
-const {fetchEvents, startPolling} = vi.hoisted(() => ({
-  fetchEvents: vi.fn<typeof import('../sync').fetchEvents>(),
+const {fetchSnapshot, startPolling} = vi.hoisted(() => ({
+  fetchSnapshot: vi.fn<typeof import('../sync').fetchSnapshot>(),
   startPolling: vi.fn<typeof import('../sync').startPolling>(),
 }));
 
-vi.mock('../sync', () => ({fetchEvents, startPolling}));
+vi.mock('../sync', () => ({fetchSnapshot, startPolling}));
 
 const SHARE_ID = newId();
 
@@ -34,17 +34,8 @@ function thread(id = newId()): Thread {
   };
 }
 
-function opened(seq: number, subject = thread()): ShareEvent {
-  return {
-    id: newId(),
-    shareId: SHARE_ID,
-    seq,
-    type: 'thread.opened',
-    subjectId: subject.id,
-    actorId: subject.actorId,
-    createdAt: subject.createdAt,
-    thread: subject,
-  };
+function snapshot(revision: number, threads: Thread[] = []): ShareSnapshot {
+  return {revision, threads, comments: []};
 }
 
 function openChange(threadId: string): OptimisticChange {
@@ -52,7 +43,7 @@ function openChange(threadId: string): OptimisticChange {
     actorId: 'alice',
     actor: {name: 'Alice', image: null},
     createdAt: new Date().toISOString(),
-    payload: {
+    change: {
       $type: 'thread.opened',
       threadId,
       anchor: {
@@ -66,10 +57,10 @@ function openChange(threadId: string): OptimisticChange {
 }
 
 function ThreadCount() {
-  const {threads, seq} = use(ShareStateContext);
+  const {threads, revision} = use(ShareStateContext);
   return (
     <output>
-      {threads.size} threads at seq {seq}
+      {threads.size} threads at revision {revision}
     </output>
   );
 }
@@ -80,14 +71,12 @@ function CaptureActions() {
   return null;
 }
 
-function renderProvider(
-  snapshot: ShareSnapshot = {seq: 0, threads: [], comments: []},
-) {
+function renderProvider(initial = snapshot(0)) {
   return render(
-    <ShareEventsProvider shareId={SHARE_ID} snapshot={snapshot}>
+    <ThreadsProvider shareId={SHARE_ID} snapshot={initial}>
       <CaptureActions />
       <ThreadCount />
-    </ShareEventsProvider>,
+    </ThreadsProvider>,
   );
 }
 
@@ -96,35 +85,44 @@ function polledFn() {
 }
 
 beforeEach(() => {
-  fetchEvents.mockResolvedValue([]);
+  fetchSnapshot.mockResolvedValue(null);
 });
 
-describe('ShareEventsProvider', () => {
+describe('ThreadsProvider', () => {
   it('starts from the snapshot', () => {
-    renderProvider({seq: 2, threads: [thread(), thread()], comments: []});
+    renderProvider(snapshot(2, [thread(), thread()]));
 
-    expect(screen.getByRole('status')).toHaveTextContent('2 threads at seq 2');
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '2 threads at revision 2',
+    );
   });
 
-  it('polls for events after its seq', async () => {
-    renderProvider({seq: 1, threads: [thread()], comments: []});
-    fetchEvents.mockResolvedValueOnce([opened(2), opened(3)]);
+  it('polls for changes after its revision', async () => {
+    renderProvider(snapshot(1, [thread()]));
+    fetchSnapshot.mockResolvedValueOnce(
+      snapshot(3, [thread(), thread(), thread()]),
+    );
 
     await act(() => polledFn()());
 
-    expect(fetchEvents).toHaveBeenLastCalledWith(SHARE_ID, 1);
-    expect(screen.getByRole('status')).toHaveTextContent('3 threads at seq 3');
+    expect(fetchSnapshot).toHaveBeenLastCalledWith(SHARE_ID, 1);
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '3 threads at revision 3',
+    );
 
     await act(() => polledFn()());
 
-    expect(fetchEvents).toHaveBeenLastCalledWith(SHARE_ID, 3);
+    expect(fetchSnapshot).toHaveBeenLastCalledWith(SHARE_ID, 3);
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '3 threads at revision 3',
+    );
   });
 
   it('shows a change while it is saved, then the stored one', async () => {
     renderProvider();
     const stored = thread();
     let save!: () => void;
-    fetchEvents.mockResolvedValueOnce([opened(1, stored)]);
+    fetchSnapshot.mockResolvedValueOnce(snapshot(1, [stored]));
 
     let saved!: Promise<boolean>;
     act(() => {
@@ -137,7 +135,9 @@ describe('ShareEventsProvider', () => {
       );
     });
 
-    expect(screen.getByRole('status')).toHaveTextContent('1 threads at seq 0');
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '1 threads at revision 0',
+    );
 
     await act(async () => {
       save();
@@ -145,8 +145,10 @@ describe('ShareEventsProvider', () => {
     });
 
     await expect(saved).resolves.toBe(true);
-    expect(fetchEvents).toHaveBeenCalledExactlyOnceWith(SHARE_ID, 0);
-    expect(screen.getByRole('status')).toHaveTextContent('1 threads at seq 1');
+    expect(fetchSnapshot).toHaveBeenCalledExactlyOnceWith(SHARE_ID, 0);
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '1 threads at revision 1',
+    );
   });
 
   it('drops a change that fails to save', async () => {
@@ -161,8 +163,10 @@ describe('ShareEventsProvider', () => {
     });
 
     await expect(saved).resolves.toBe(false);
-    expect(fetchEvents).not.toHaveBeenCalled();
-    expect(screen.getByRole('status')).toHaveTextContent('0 threads at seq 0');
+    expect(fetchSnapshot).not.toHaveBeenCalled();
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '0 threads at revision 0',
+    );
   });
 
   it('stops polling on unmount', () => {

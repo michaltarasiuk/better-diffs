@@ -1,15 +1,9 @@
 import type {FileDiffMetadata} from '@pierre/diffs';
 import {relations, sql} from 'drizzle-orm';
-import {
-  index,
-  integer,
-  sqliteTable,
-  text,
-  uniqueIndex,
-} from 'drizzle-orm/sqlite-core';
+import {index, integer, sqliteTable, text} from 'drizzle-orm/sqlite-core';
 import type {SerializedEditorState} from 'lexical';
 
-import {type Anchor, EVENT_TYPES} from '@/events/schemas';
+import type {Anchor} from '@/threads/schemas';
 import {newId} from '@/utils/new-id';
 
 import {user} from './auth';
@@ -21,7 +15,7 @@ export const shares = sqliteTable(
   {
     id: text('id').primaryKey().$defaultFn(newId),
     patch: text('patch').notNull(),
-    lastEventSeq: integer('last_event_seq').notNull().default(0),
+    revision: integer('revision').notNull().default(0),
     pinned: integer('pinned', {mode: 'boolean'}).notNull().default(false),
     createdAt: text('created_at')
       .notNull()
@@ -37,7 +31,6 @@ export const sharesRelations = relations(shares, ({many}) => ({
   patches: many(patches),
   threads: many(threads),
   comments: many(comments),
-  events: many(events),
 }));
 
 export const patches = sqliteTable(
@@ -112,7 +105,6 @@ export const comments = sqliteTable(
     threadId: text('thread_id')
       .notNull()
       .references(() => threads.id, {onDelete: 'cascade'}),
-    seq: integer('seq').notNull(),
     actorId: text('actor_id')
       .notNull()
       .references(() => user.id, {onDelete: 'restrict'}),
@@ -131,34 +123,6 @@ export const commentsRelations = relations(comments, ({one}) => ({
   actor: one(user, {fields: [comments.actorId], references: [user.id]}),
 }));
 
-export const events = sqliteTable(
-  'events',
-  {
-    id: text('id').primaryKey().$defaultFn(newId),
-    shareId: text('share_id')
-      .notNull()
-      .references(() => shares.id, {onDelete: 'cascade'}),
-    seq: integer('seq').notNull(),
-    type: text('type', {enum: EVENT_TYPES}).notNull(),
-    subjectId: text('subject_id').notNull(),
-    actorId: text('actor_id')
-      .notNull()
-      .references(() => user.id, {onDelete: 'restrict'}),
-    createdAt: text('created_at')
-      .notNull()
-      .default(sql`(datetime('now'))`),
-  },
-  (t) => [
-    uniqueIndex('events_shareId_seq_unique').on(t.shareId, t.seq),
-    index('events_subjectId_idx').on(t.subjectId),
-  ],
-);
-
-export const eventsRelations = relations(events, ({one}) => ({
-  share: one(shares, {fields: [events.shareId], references: [shares.id]}),
-  actor: one(user, {fields: [events.actorId], references: [user.id]}),
-}));
-
 export type Share = typeof shares.$inferSelect;
 export type NewShare = typeof shares.$inferInsert;
 
@@ -173,6 +137,3 @@ export type NewThread = typeof threads.$inferInsert;
 
 export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
-
-export type Event = typeof events.$inferSelect;
-export type NewEvent = typeof events.$inferInsert;

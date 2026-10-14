@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import type {ThreadState} from '@/events/state';
+import type {Thread} from '@/threads/schemas';
 import {newId} from '@/utils/new-id';
 
 import {
@@ -57,7 +57,7 @@ describe('toThreadAnnotation', () => {
         side: 'deletions',
         line: 7,
       },
-    } as ThreadState;
+    } as Thread;
 
     expect(toThreadAnnotation(thread)).toEqual({
       side: 'deletions',

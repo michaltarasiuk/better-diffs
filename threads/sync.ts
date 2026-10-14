@@ -3,23 +3,25 @@ import {z} from 'zod';
 import {fetchJson} from '@/http/fetch';
 import {isDefined} from '@/utils/is-defined';
 
-import {ShareEvent} from './schemas';
+import {ShareSnapshot} from './schemas';
 
 const ACTIVE_POLL_INTERVAL = 3_000;
 const BACKGROUND_POLL_INTERVAL = 30_000;
 
-const EventsResponse = z.object({
-  events: z.array(ShareEvent),
+const ThreadsResponse = z.object({
+  snapshot: ShareSnapshot.nullable(),
 });
 
-export async function fetchEvents(shareId: string, afterSeq: number) {
-  const searchParams = new URLSearchParams({afterSeq: String(afterSeq)});
-  const {events} = await fetchJson(
-    `/api/shares/${shareId}/events?${searchParams}`,
-    EventsResponse,
+export async function fetchSnapshot(shareId: string, afterRevision: number) {
+  const searchParams = new URLSearchParams({
+    afterRevision: String(afterRevision),
+  });
+  const {snapshot} = await fetchJson(
+    `/api/shares/${shareId}/threads?${searchParams}`,
+    ThreadsResponse,
     {cache: 'no-store'},
   );
-  return events;
+  return snapshot;
 }
 
 export function startPolling(poll: () => Promise<void>) {

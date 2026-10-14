@@ -20,9 +20,9 @@ import {
 import {isEmptyDiff} from '@/diffs/empty';
 import {isDiffLine} from '@/diffs/lines';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
-import {ShareStateContext} from '@/events/provider';
 import {useIsMobile} from '@/hooks/use-is-mobile';
 import {useShortcut} from '@/hooks/use-shortcut';
+import {ShareStateContext} from '@/threads/provider';
 import {isDefined} from '@/utils/is-defined';
 
 import {useSelectedLines} from '../_hooks/use-selected-lines';
