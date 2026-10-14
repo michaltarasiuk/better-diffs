@@ -6,7 +6,7 @@ import {env} from '@/env';
 import {isDefined} from '@/utils/is-defined';
 
 import {ApiError} from '../error';
-import {parse, parseSearchParams, prefersText, readJson, route} from '../route';
+import {parseSearchParams, prefersText, route} from '../route';
 
 const ROUTE_URL = `${env.BASE_URL}/api/thing`;
 
@@ -146,46 +146,23 @@ describe('prefersText', () => {
   });
 });
 
-describe('parse', () => {
+describe('parseSearchParams', () => {
   const Schema = z.object({count: z.coerce.number().int()});
 
-  it('returns the parsed value', () => {
-    expect(parse(Schema, {count: '3'})).toEqual({count: 3});
+  it('parses the request search params', () => {
+    expect(
+      parseSearchParams(Schema, request(undefined, `${ROUTE_URL}?count=3`)),
+    ).toEqual({count: 3});
   });
 
   it('throws an invalid argument error', () => {
-    expect(() => parse(Schema, {count: 'x'})).toThrow(
+    expect(() =>
+      parseSearchParams(Schema, request(undefined, `${ROUTE_URL}?count=x`)),
+    ).toThrow(
       expect.objectContaining({
         code: 'INVALID_ARGUMENT',
         fieldViolations: [{field: 'count', description: expect.any(String)}],
       }),
     );
-  });
-});
-
-describe('parseSearchParams', () => {
-  it('parses the request search params', () => {
-    const Schema = z.object({afterSeq: z.coerce.number().int()});
-
-    expect(
-      parseSearchParams(Schema, request(undefined, `${ROUTE_URL}?afterSeq=7`)),
-    ).toEqual({afterSeq: 7});
-  });
-});
-
-describe('readJson', () => {
-  it('returns the parsed body', async () => {
-    const req = request({method: 'POST', body: '{"a":1}'});
-
-    await expect(readJson(req)).resolves.toEqual({a: 1});
-  });
-
-  it('throws an invalid argument error for malformed JSON', async () => {
-    const req = request({method: 'POST', body: '{nope'});
-
-    await expect(readJson(req)).rejects.toMatchObject({
-      code: 'INVALID_ARGUMENT',
-      reason: 'INVALID_JSON',
-    });
   });
 });

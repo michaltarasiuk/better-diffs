@@ -40,10 +40,3 @@ export function parseParams(input: string, delimiter: ';' | ',' = ';') {
 
   return params;
 }
-
-export function quote(value: string) {
-  if (value.includes('"') || value.includes(';') || value.includes(' ')) {
-    return `"${value.replace(/"/g, '\\"')}"`;
-  }
-  return value;
-}

@@ -37,33 +37,16 @@ export function prefersText(request: Request) {
   );
 }
 
-export function parse<T extends z.ZodType>(
-  schema: T,
-  value: unknown,
-): z.output<T> {
-  const result = schema.safeParse(value);
-  if (!result.success) {
-    throw ApiError.invalidArgument(result.error);
-  }
-  return result.data;
-}
-
 export function parseSearchParams<T extends z.ZodType>(
   schema: T,
   request: Request,
 ) {
   const {searchParams} = new URL(request.url);
-  return parse(schema, Object.fromEntries(searchParams));
-}
-
-export async function readJson(request: Request): Promise<unknown> {
-  try {
-    return await request.json();
-  } catch {
-    throw new ApiError('INVALID_ARGUMENT', 'Request body is not valid JSON.', {
-      reason: 'INVALID_JSON',
-    });
+  const result = schema.safeParse(Object.fromEntries(searchParams));
+  if (!result.success) {
+    throw ApiError.invalidArgument(result.error);
   }
+  return result.data;
 }
 
 function toApiError(error: unknown) {

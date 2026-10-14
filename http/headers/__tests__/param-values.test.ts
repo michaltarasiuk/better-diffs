@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import {parseParams, quote} from '../param-values';
+import {parseParams} from '../param-values';
 
 describe('parseParams', () => {
   it('correctly parses a string of parameters for a Content-Type header', () => {
@@ -119,32 +119,5 @@ describe('parseParams', () => {
       ['text/plain', undefined],
       ['charset', undefined],
     ]);
-  });
-});
-
-describe('quote', () => {
-  it('returns value as-is when no special characters', () => {
-    expect(quote('simple')).toBe('simple');
-    expect(quote('abc123')).toBe('abc123');
-  });
-
-  it('quotes value when it contains double quotes', () => {
-    expect(quote('value"with"quotes')).toBe('"value\\"with\\"quotes"');
-  });
-
-  it('quotes value when it contains semicolons', () => {
-    expect(quote('value;with;semicolons')).toBe('"value;with;semicolons"');
-  });
-
-  it('quotes value when it contains spaces', () => {
-    expect(quote('value with spaces')).toBe('"value with spaces"');
-  });
-
-  it('handles empty string', () => {
-    expect(quote('')).toBe('');
-  });
-
-  it('escapes existing double quotes', () => {
-    expect(quote('he said "hello"')).toBe('"he said \\"hello\\""');
   });
 });

@@ -6,8 +6,6 @@ import {newId} from '@/utils/new-id';
 import {
   type DiffAnnotation,
   type FormDiffAnnotation,
-  isFormAnnotation,
-  isThreadAnnotation,
   sortAnnotations,
   type ThreadDiffAnnotation,
   toThreadAnnotation,
@@ -31,20 +29,6 @@ const THREAD = {
 function at(lineNumber: number, side: DiffAnnotation['side']): DiffAnnotation {
   return {...THREAD, lineNumber, side};
 }
-
-describe('isFormAnnotation', () => {
-  it('matches form annotations only', () => {
-    expect(isFormAnnotation(FORM)).toBe(true);
-    expect(isFormAnnotation(THREAD)).toBe(false);
-  });
-});
-
-describe('isThreadAnnotation', () => {
-  it('matches thread annotations only', () => {
-    expect(isThreadAnnotation(THREAD)).toBe(true);
-    expect(isThreadAnnotation(FORM)).toBe(false);
-  });
-});
 
 describe('toThreadAnnotation', () => {
   it('anchors the annotation at the thread line', () => {

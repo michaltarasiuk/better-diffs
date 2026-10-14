@@ -19,18 +19,6 @@ export type DiffAnnotation = DiffLineAnnotation<AnnotationMetadata>;
 export type FormDiffAnnotation = DiffLineAnnotation<FormAnnotationMetadata>;
 export type ThreadDiffAnnotation = DiffLineAnnotation<ThreadAnnotationMetadata>;
 
-export function isFormAnnotation(
-  annotation: DiffAnnotation,
-): annotation is FormDiffAnnotation {
-  return annotation.metadata.type === 'form';
-}
-
-export function isThreadAnnotation(
-  annotation: DiffAnnotation,
-): annotation is ThreadDiffAnnotation {
-  return annotation.metadata.type === 'thread';
-}
-
 export function toThreadAnnotation(thread: Thread): ThreadDiffAnnotation {
   return {
     side: thread.anchor.side,
