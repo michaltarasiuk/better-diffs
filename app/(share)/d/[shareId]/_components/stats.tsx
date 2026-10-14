@@ -48,7 +48,7 @@ const statValue = tv({
   base: 'tabular-nums text-foreground',
   variants: {
     tone: {
-      default: null,
+      default: undefined,
       success: 'text-success',
       danger: 'text-danger',
     },
