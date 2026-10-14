@@ -18,7 +18,10 @@ export const GET = route(
     await touchShare(shareId);
 
     return new Response(patch, {
-      headers: {'Content-Type': 'text/x-diff; charset=utf-8'},
+      headers: {
+        'Content-Type': 'text/x-diff; charset=utf-8',
+        'X-Content-Type-Options': 'nosniff',
+      },
     });
   },
   {headers: {'Cache-Control': 'no-store'}},

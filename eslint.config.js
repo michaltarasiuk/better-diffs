@@ -76,7 +76,7 @@ const DB_DEPENDENCIES = [
 export default defineConfig([
   ...nextVitals,
   ...nextTs,
-  globalIgnores(['.next/**', '.agents/**', 'next-env.d.ts']),
+  globalIgnores(['.next/**', '.agents/**', '.local/**', 'next-env.d.ts']),
   {
     linterOptions: {
       reportUnusedDisableDirectives: 'error',

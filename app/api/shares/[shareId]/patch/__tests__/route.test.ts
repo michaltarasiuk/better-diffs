@@ -37,6 +37,7 @@ describe('GET', () => {
     expect(response.headers.get('Content-Type')).toBe(
       'text/x-diff; charset=utf-8',
     );
+    expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff');
     await expect(response.text()).resolves.toBe(text);
   });
 
