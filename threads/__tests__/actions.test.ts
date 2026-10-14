@@ -8,13 +8,7 @@ import {getSnapshot} from '@/db/threads';
 import {isDefined} from '@/utils/is-defined';
 import {newId} from '@/utils/new-id';
 
-import {
-  createComment,
-  deleteComment,
-  editComment,
-  openThread,
-  resolveThread,
-} from '../actions';
+import {createComment, openThread} from '../actions';
 import type {Anchor} from '../schemas';
 
 const {getSession} = vi.hoisted(() => ({
@@ -140,39 +134,6 @@ describe('openThread', () => {
   });
 });
 
-describe('resolveThread', () => {
-  it('resolves a thread opened by the user', async () => {
-    const {threadId} = await openAliceThread();
-
-    await resolveThread({shareId, threadId});
-
-    await expect(stored()).resolves.toMatchObject({
-      threads: [{id: threadId, resolved: true}],
-    });
-  });
-
-  it("resolves another user's thread", async () => {
-    const {threadId} = await openAliceThread();
-    signIn(bob);
-
-    await resolveThread({shareId, threadId});
-
-    await expect(stored()).resolves.toMatchObject({
-      threads: [{id: threadId, resolved: true}],
-    });
-  });
-
-  it('rejects resolving a thread twice', async () => {
-    const {threadId} = await openAliceThread();
-    await resolveThread({shareId, threadId});
-
-    await expect(resolveThread({shareId, threadId})).resolves.toEqual({
-      reason: 'THREAD_RESOLVED',
-      message: `Thread already resolved: ${threadId}`,
-    });
-  });
-});
-
 describe('createComment', () => {
   it('lets anyone reply to a thread', async () => {
     const {threadId} = await openAliceThread();
@@ -186,18 +147,6 @@ describe('createComment', () => {
       id: commentId,
       threadId,
       actorId: bob,
-    });
-  });
-
-  it('rejects replying to a resolved thread', async () => {
-    const {threadId} = await openAliceThread();
-    await resolveThread({shareId, threadId});
-
-    await expect(
-      createComment({shareId, threadId, commentId: newId(), body: BODY}),
-    ).resolves.toEqual({
-      reason: 'THREAD_RESOLVED',
-      message: `Thread already resolved: ${threadId}`,
     });
   });
 
@@ -222,98 +171,6 @@ describe('createComment', () => {
     ).resolves.toEqual({
       reason: 'THREAD_NOT_FOUND',
       message: `Thread not found: ${threadId}`,
-    });
-  });
-});
-
-describe('editComment', () => {
-  it("edits the user's comment", async () => {
-    const {commentId} = await openAliceThread();
-
-    const edited = {root: {edited: true}} as unknown as SerializedEditorState;
-
-    await editComment({shareId, commentId, body: edited});
-
-    await expect(stored()).resolves.toMatchObject({
-      comments: [{id: commentId, body: edited}],
-    });
-  });
-
-  it("rejects editing another user's comment", async () => {
-    const {commentId} = await openAliceThread();
-    signIn(bob);
-
-    await expect(
-      editComment({shareId, commentId, body: BODY}),
-    ).resolves.toEqual({
-      reason: 'NOT_OWNER',
-      message: `${commentId} not owned by actor: ${bob}`,
-    });
-  });
-});
-
-describe('deleteComment', () => {
-  async function reply(threadId: string) {
-    const commentId = newId();
-    await createComment({shareId, threadId, commentId, body: BODY});
-    return commentId;
-  }
-
-  it("deletes the user's comment", async () => {
-    const {threadId, commentId} = await openAliceThread();
-    const replyId = await reply(threadId);
-
-    await expect(
-      deleteComment({shareId, commentId: replyId}),
-    ).resolves.toBeUndefined();
-
-    await expect(stored()).resolves.toMatchObject({
-      comments: [{id: commentId}],
-    });
-  });
-
-  it("rejects deleting a thread's last comment", async () => {
-    const {threadId, commentId} = await openAliceThread();
-
-    await expect(deleteComment({shareId, commentId})).resolves.toEqual({
-      reason: 'LAST_COMMENT',
-      message: `Cannot delete the last comment of thread: ${threadId}`,
-    });
-    await expect(stored()).resolves.toMatchObject({
-      revision: 1,
-      comments: [{id: commentId}],
-    });
-  });
-
-  it("rejects deleting another user's comment", async () => {
-    const {commentId} = await openAliceThread();
-    signIn(bob);
-
-    await expect(deleteComment({shareId, commentId})).resolves.toEqual({
-      reason: 'NOT_OWNER',
-      message: `${commentId} not owned by actor: ${bob}`,
-    });
-  });
-
-  it('rejects deleting a comment twice', async () => {
-    const {threadId} = await openAliceThread();
-    const replyId = await reply(threadId);
-    await deleteComment({shareId, commentId: replyId});
-
-    await expect(deleteComment({shareId, commentId: replyId})).resolves.toEqual(
-      {
-        reason: 'COMMENT_NOT_FOUND',
-        message: `Comment not found: ${replyId}`,
-      },
-    );
-  });
-
-  it('rejects invalid input', async () => {
-    await expect(
-      deleteComment({shareId, commentId: 'not-a-uuid'}),
-    ).resolves.toEqual({
-      reason: 'INVALID_INPUT',
-      message: 'Invalid delete comment input',
     });
   });
 });

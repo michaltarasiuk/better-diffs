@@ -30,7 +30,6 @@ function thread(id = newId()): Thread {
     anchor: {filePath: 'a.txt', side: 'additions', line: 1},
     actorId: 'alice',
     actor: {name: 'Alice', image: null},
-    resolved: false,
     createdAt: new Date().toISOString(),
   };
 }

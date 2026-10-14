@@ -87,7 +87,6 @@ export const threads = sqliteTable(
     actorId: text('actor_id')
       .notNull()
       .references(() => user.id, {onDelete: 'restrict'}),
-    resolved: integer('resolved', {mode: 'boolean'}).notNull().default(false),
     createdAt: text('created_at').notNull(),
   },
   (t) => [index('threads_shareId_idx').on(t.shareId)],

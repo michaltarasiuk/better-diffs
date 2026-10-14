@@ -9,7 +9,7 @@ import type {
   Anchor,
   Change,
   Comment,
-  ShareRows,
+  StoredIds,
   Thread,
 } from '../schemas';
 import {applyOptimistic, check, initialState, receive} from '../state';
@@ -19,7 +19,6 @@ const COMMENT_ID = newId();
 const OTHER_COMMENT_ID = newId();
 
 const ALICE = 'alice';
-const BOB = 'bob';
 const CREATED_AT = new Date().toISOString();
 
 const ANCHOR = {
@@ -42,7 +41,6 @@ function thread(overrides: Partial<Thread> = {}): Thread {
     anchor: ANCHOR,
     actorId: ALICE,
     actor: actor(ALICE),
-    resolved: false,
     createdAt: CREATED_AT,
     ...overrides,
   };
@@ -65,11 +63,6 @@ const OPENED = {
   anchor: ANCHOR,
 } satisfies Change;
 
-const RESOLVED = {
-  type: 'resolveThread',
-  threadId: THREAD_ID,
-} satisfies Change;
-
 function created(commentId = COMMENT_ID, text = 'hello') {
   return {
     type: 'createComment',
@@ -77,18 +70,6 @@ function created(commentId = COMMENT_ID, text = 'hello') {
     commentId,
     body: body(text),
   } satisfies Change;
-}
-
-function edited(commentId = COMMENT_ID, text = 'edited') {
-  return {
-    type: 'editComment',
-    commentId,
-    body: body(text),
-  } satisfies Change;
-}
-
-function deleted(commentId = COMMENT_ID) {
-  return {type: 'deleteComment', commentId} satisfies Change;
 }
 
 function optimistic(change: Change, actorId = ALICE) {
@@ -124,13 +105,13 @@ describe('receive', () => {
 
     const next = receive(state, {
       revision: 2,
-      threads: [thread({resolved: true})],
+      threads: [],
       comments: [comment(OTHER_COMMENT_ID)],
     });
 
     expect(next.revision).toBe(2);
     expect(next.version).toBe(1);
-    expect(next.threads.get(THREAD_ID)?.resolved).toBe(true);
+    expect(next.threads.size).toBe(0);
     expect([...next.comments.keys()]).toEqual([OTHER_COMMENT_ID]);
   });
 
@@ -157,106 +138,48 @@ describe('applyOptimistic', () => {
     expect(next.version).toBe(2);
   });
 
-  it('shows edits, deletions and resolutions', () => {
-    const state = stateWith();
-
-    expect(
-      applyOptimistic(state, optimistic(edited())).comments.get(COMMENT_ID)
-        ?.body,
-    ).toEqual(body('edited'));
-    expect(
-      applyOptimistic(state, optimistic(deleted())).comments.has(COMMENT_ID),
-    ).toBe(false);
-    expect(
-      applyOptimistic(state, optimistic(RESOLVED)).threads.get(THREAD_ID)
-        ?.resolved,
-    ).toBe(true);
-  });
-
   it('keeps the revision and leaves the previous state untouched', () => {
     const state = stateWith();
 
-    const next = applyOptimistic(state, optimistic(deleted()));
+    const next = applyOptimistic(state, optimistic(created(OTHER_COMMENT_ID)));
 
     expect(next.revision).toBe(state.revision);
-    expect(state.comments.has(COMMENT_ID)).toBe(true);
+    expect(state.comments.has(OTHER_COMMENT_ID)).toBe(false);
   });
 });
 
 describe('check', () => {
-  function rows(overrides: Partial<ShareRows> = {}) {
-    return {threads: [thread()], comments: [comment()], ...overrides};
+  function stored(overrides: Partial<StoredIds> = {}) {
+    return {threadIds: [THREAD_ID], commentIds: [COMMENT_ID], ...overrides};
   }
 
   it('accepts a new thread with its first comment', () => {
     expect(
-      check(rows({threads: [], comments: []}), ALICE, [OPENED, created()]),
+      check(stored({threadIds: [], commentIds: []}), [OPENED, created()]),
     ).toBeUndefined();
   });
 
-  it('lets anyone reply to and resolve a thread', () => {
-    expect(
-      check(rows(), BOB, [created(OTHER_COMMENT_ID), RESOLVED]),
-    ).toBeUndefined();
-  });
-
-  it('lets the owner edit and delete a comment in a resolved thread', () => {
-    expect(
-      check(
-        rows({
-          threads: [thread({resolved: true})],
-          comments: [comment(), comment(OTHER_COMMENT_ID)],
-        }),
-        ALICE,
-        [edited(), deleted()],
-      ),
-    ).toBeUndefined();
+  it('accepts a reply to a thread', () => {
+    expect(check(stored(), [created(OTHER_COMMENT_ID)])).toBeUndefined();
   });
 
   it('checks each change against the earlier ones', () => {
     expect(
-      check(rows(), ALICE, [created(OTHER_COMMENT_ID), deleted(), edited()]),
+      check(stored(), [created(OTHER_COMMENT_ID), created(OTHER_COMMENT_ID)]),
     ).toEqual({
-      reason: 'COMMENT_NOT_FOUND',
-      message: `Comment not found: ${COMMENT_ID}`,
+      reason: 'COMMENT_ALREADY_EXISTS',
+      message: `Comment already exists: ${OTHER_COMMENT_ID}`,
     });
-    expect(check(rows(), ALICE, [RESOLVED, created(OTHER_COMMENT_ID)])).toEqual(
-      {
-        reason: 'THREAD_RESOLVED',
-        message: `Thread already resolved: ${THREAD_ID}`,
-      },
-    );
-    expect(
-      check(rows(), ALICE, [created(OTHER_COMMENT_ID), deleted()]),
-    ).toBeUndefined();
-    expect(
-      check(rows(), ALICE, [
-        created(OTHER_COMMENT_ID),
-        deleted(),
-        deleted(OTHER_COMMENT_ID),
-      ]),
-    ).toMatchObject({reason: 'LAST_COMMENT'});
   });
 
   it.each([
-    ['THREAD_ALREADY_EXISTS', rows(), ALICE, OPENED],
-    ['THREAD_NOT_FOUND', rows({threads: []}), ALICE, RESOLVED],
-    [
-      'THREAD_RESOLVED',
-      rows({threads: [thread({resolved: true})]}),
-      ALICE,
-      created(OTHER_COMMENT_ID),
-    ],
-    ['COMMENT_ALREADY_EXISTS', rows(), ALICE, created()],
-    ['COMMENT_NOT_FOUND', rows({comments: []}), ALICE, edited()],
-    ['COMMENT_NOT_FOUND', rows({comments: []}), ALICE, deleted()],
-    ['LAST_COMMENT', rows(), ALICE, deleted()],
-    ['NOT_OWNER', rows(), BOB, edited()],
-    ['NOT_OWNER', rows(), BOB, deleted()],
-  ] satisfies [ThreadErrorReason, ShareRows, string, Change][])(
+    ['THREAD_ALREADY_EXISTS', stored(), OPENED],
+    ['THREAD_NOT_FOUND', stored({threadIds: []}), created(OTHER_COMMENT_ID)],
+    ['COMMENT_ALREADY_EXISTS', stored(), created()],
+  ] satisfies [ThreadErrorReason, StoredIds, Change][])(
     'refuses with %s',
-    (reason, given, actorId, refused) => {
-      expect(check(given, actorId, [refused])).toMatchObject({reason});
+    (reason, given, refused) => {
+      expect(check(given, [refused])).toMatchObject({reason});
     },
   );
 });

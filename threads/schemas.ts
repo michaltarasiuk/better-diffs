@@ -24,7 +24,6 @@ export const Thread = z.object({
   anchor: Anchor,
   actorId: z.string().min(1),
   actor: Actor,
-  resolved: z.boolean(),
   createdAt: z.iso.datetime(),
 });
 export type Thread = z.infer<typeof Thread>;
@@ -46,9 +45,9 @@ export const ShareSnapshot = z.object({
 });
 export type ShareSnapshot = z.infer<typeof ShareSnapshot>;
 
-export interface ShareRows {
-  readonly threads: readonly Thread[];
-  readonly comments: readonly Comment[];
+export interface StoredIds {
+  readonly threadIds: readonly string[];
+  readonly commentIds: readonly string[];
 }
 
 export type Change =
@@ -58,23 +57,10 @@ export type Change =
       readonly anchor: Anchor;
     }
   | {
-      readonly type: 'resolveThread';
-      readonly threadId: string;
-    }
-  | {
       readonly type: 'createComment';
       readonly threadId: string;
       readonly commentId: string;
       readonly body: SerializedEditorState;
-    }
-  | {
-      readonly type: 'editComment';
-      readonly commentId: string;
-      readonly body: SerializedEditorState;
-    }
-  | {
-      readonly type: 'deleteComment';
-      readonly commentId: string;
     };
 
 export const OpenThreadInput = z.object({
@@ -86,12 +72,6 @@ export const OpenThreadInput = z.object({
 });
 export type OpenThreadInput = z.infer<typeof OpenThreadInput>;
 
-export const ResolveThreadInput = z.object({
-  shareId: z.uuid(),
-  threadId: z.uuid(),
-});
-export type ResolveThreadInput = z.infer<typeof ResolveThreadInput>;
-
 export const CreateCommentInput = z.object({
   shareId: z.uuid(),
   threadId: z.uuid(),
@@ -99,16 +79,3 @@ export const CreateCommentInput = z.object({
   body: LexicalBody,
 });
 export type CreateCommentInput = z.infer<typeof CreateCommentInput>;
-
-export const EditCommentInput = z.object({
-  shareId: z.uuid(),
-  commentId: z.uuid(),
-  body: LexicalBody,
-});
-export type EditCommentInput = z.infer<typeof EditCommentInput>;
-
-export const DeleteCommentInput = z.object({
-  shareId: z.uuid(),
-  commentId: z.uuid(),
-});
-export type DeleteCommentInput = z.infer<typeof DeleteCommentInput>;

@@ -1,9 +1,9 @@
 import 'server-only';
 
-import {and, asc, eq, gt, inArray, type SQL, sql} from 'drizzle-orm';
+import {and, asc, eq, gt, inArray, sql} from 'drizzle-orm';
 
 import {type ThreadError, threadError} from '@/threads/errors';
-import type {Change, ShareRows} from '@/threads/schemas';
+import type {Change, StoredIds} from '@/threads/schemas';
 import {isDefined} from '@/utils/is-defined';
 
 import {db} from './db';
@@ -14,49 +14,7 @@ import {
   user as userTable,
 } from './schema';
 
-type Executor = Pick<typeof db, 'select'>;
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
-
-function selectThreads(executor: Executor, where: SQL | undefined) {
-  return executor
-    .select({
-      id: threadsTable.id,
-      anchor: {
-        filePath: threadsTable.filePath,
-        side: threadsTable.side,
-        line: threadsTable.line,
-      },
-      actorId: threadsTable.actorId,
-      actor: {
-        name: userTable.name,
-        image: userTable.image,
-      },
-      resolved: threadsTable.resolved,
-      createdAt: threadsTable.createdAt,
-    })
-    .from(threadsTable)
-    .innerJoin(userTable, eq(threadsTable.actorId, userTable.id))
-    .where(where);
-}
-
-function selectComments(executor: Executor, where: SQL | undefined) {
-  return executor
-    .select({
-      id: commentsTable.id,
-      threadId: commentsTable.threadId,
-      actorId: commentsTable.actorId,
-      actor: {
-        name: userTable.name,
-        image: userTable.image,
-      },
-      body: commentsTable.body,
-      createdAt: commentsTable.createdAt,
-    })
-    .from(commentsTable)
-    .innerJoin(userTable, eq(commentsTable.actorId, userTable.id))
-    .where(where)
-    .orderBy(asc(commentsTable.createdAt), asc(sql`${commentsTable}.rowid`));
-}
 
 export async function getSnapshot(shareId: string, afterRevision = -1) {
   return db.transaction(async (tx) => {
@@ -74,58 +32,81 @@ export async function getSnapshot(shareId: string, afterRevision = -1) {
       return undefined;
     }
 
-    const threads = await selectThreads(tx, eq(threadsTable.shareId, shareId));
-    const comments = await selectComments(
-      tx,
-      eq(commentsTable.shareId, shareId),
-    );
+    const threads = await tx
+      .select({
+        id: threadsTable.id,
+        anchor: {
+          filePath: threadsTable.filePath,
+          side: threadsTable.side,
+          line: threadsTable.line,
+        },
+        actorId: threadsTable.actorId,
+        actor: {
+          name: userTable.name,
+          image: userTable.image,
+        },
+        createdAt: threadsTable.createdAt,
+      })
+      .from(threadsTable)
+      .innerJoin(userTable, eq(threadsTable.actorId, userTable.id))
+      .where(eq(threadsTable.shareId, shareId));
+    const comments = await tx
+      .select({
+        id: commentsTable.id,
+        threadId: commentsTable.threadId,
+        actorId: commentsTable.actorId,
+        actor: {
+          name: userTable.name,
+          image: userTable.image,
+        },
+        body: commentsTable.body,
+        createdAt: commentsTable.createdAt,
+      })
+      .from(commentsTable)
+      .innerJoin(userTable, eq(commentsTable.actorId, userTable.id))
+      .where(eq(commentsTable.shareId, shareId))
+      .orderBy(asc(commentsTable.createdAt), asc(sql`${commentsTable}.rowid`));
 
     return {revision: share.revision, threads, comments};
   });
 }
 
-async function getRows(
+async function getStoredIds(
   tx: Transaction,
   shareId: string,
   changes: readonly Change[],
 ) {
-  const commentIds = changes.flatMap((change) =>
-    'commentId' in change ? [change.commentId] : [],
-  );
-  const touched =
-    commentIds.length > 0
-      ? await tx
-          .select({threadId: commentsTable.threadId})
-          .from(commentsTable)
-          .where(
-            and(
-              eq(commentsTable.shareId, shareId),
-              inArray(commentsTable.id, commentIds),
-            ),
-          )
-      : [];
-
-  const threadIds = [
-    ...new Set([
-      ...changes.flatMap((change) =>
-        'threadId' in change ? [change.threadId] : [],
+  const threads = await tx
+    .select({id: threadsTable.id})
+    .from(threadsTable)
+    .where(
+      and(
+        eq(threadsTable.shareId, shareId),
+        inArray(
+          threadsTable.id,
+          changes.map(({threadId}) => threadId),
+        ),
       ),
-      ...touched.map(({threadId}) => threadId),
-    ]),
-  ];
-  const threads = await selectThreads(
-    tx,
-    and(eq(threadsTable.shareId, shareId), inArray(threadsTable.id, threadIds)),
-  );
-  const comments = await selectComments(
-    tx,
-    and(
-      eq(commentsTable.shareId, shareId),
-      inArray(commentsTable.threadId, threadIds),
-    ),
-  );
+    );
+  const comments = await tx
+    .select({id: commentsTable.id})
+    .from(commentsTable)
+    .where(
+      and(
+        eq(commentsTable.shareId, shareId),
+        inArray(
+          commentsTable.id,
+          changes.flatMap((change) =>
+            change.type === 'createComment' ? [change.commentId] : [],
+          ),
+        ),
+      ),
+    );
 
-  return {threads, comments};
+  return {
+    threadIds: threads.map(({id}) => id),
+    commentIds: comments.map(({id}) => id),
+  };
 }
 
 async function write(
@@ -155,17 +136,6 @@ async function write(
       });
       break;
     }
-    case 'resolveThread':
-      await tx
-        .update(threadsTable)
-        .set({resolved: true})
-        .where(
-          and(
-            eq(threadsTable.id, change.threadId),
-            eq(threadsTable.shareId, shareId),
-          ),
-        );
-      break;
     case 'createComment':
       await tx.insert(commentsTable).values({
         id: change.commentId,
@@ -176,27 +146,6 @@ async function write(
         createdAt,
       });
       break;
-    case 'editComment':
-      await tx
-        .update(commentsTable)
-        .set({body: change.body})
-        .where(
-          and(
-            eq(commentsTable.id, change.commentId),
-            eq(commentsTable.shareId, shareId),
-          ),
-        );
-      break;
-    case 'deleteComment':
-      await tx
-        .delete(commentsTable)
-        .where(
-          and(
-            eq(commentsTable.id, change.commentId),
-            eq(commentsTable.shareId, shareId),
-          ),
-        );
-      break;
     default:
       change satisfies never;
   }
@@ -206,7 +155,7 @@ export async function saveChanges(
   shareId: string,
   actorId: string,
   changes: readonly Change[],
-  validate: (rows: ShareRows) => ThreadError | undefined,
+  validate: (stored: StoredIds) => ThreadError | undefined,
 ) {
   if (changes.length === 0) {
     return undefined;
@@ -221,7 +170,7 @@ export async function saveChanges(
       return threadError('SHARE_NOT_FOUND', `Share not found: ${shareId}`);
     }
 
-    const error = validate(await getRows(tx, shareId, changes));
+    const error = validate(await getStoredIds(tx, shareId, changes));
     if (isDefined(error)) {
       return error;
     }

@@ -63,7 +63,6 @@ describe('saveChanges', () => {
           anchor: {filePath: 'a.txt', side: 'additions', line: 1},
           actorId,
           actor: {name: 'Alice', image: null},
-          resolved: false,
         },
       ],
       comments: [
@@ -86,65 +85,29 @@ describe('saveChanges', () => {
     await expect(getSnapshot(shareId)).resolves.toMatchObject({revision: 2});
   });
 
-  it('resolves a thread and edits a comment in place', async () => {
+  it('validates against the stored ids the changes refer to', async () => {
     const {actorId, shareId, threadId, commentId} = await shareWithThread();
-
-    await saveChanges(
-      shareId,
-      actorId,
-      [
-        {type: 'resolveThread', threadId},
-        {type: 'editComment', commentId, body: body('edited')},
-      ],
-      allowAll,
-    );
-
-    const snapshot = await getSnapshot(shareId);
-    expect(snapshot?.threads[0]?.resolved).toBe(true);
-    expect(snapshot?.comments[0]?.body).toEqual(body('edited'));
-  });
-
-  it('deletes a comment for good', async () => {
-    const {actorId, shareId, commentId} = await shareWithThread();
-
-    await saveChanges(
-      shareId,
-      actorId,
-      [{type: 'deleteComment', commentId}],
-      allowAll,
-    );
-
-    const snapshot = await getSnapshot(shareId);
-    expect(snapshot?.comments).toEqual([]);
-  });
-
-  it('validates against the threads the changes refer to, with their comments', async () => {
-    const {actorId, shareId, threadId, commentId} = await shareWithThread();
-    const replyId = newId();
-    await saveChanges(shareId, actorId, [created(threadId, replyId)], allowAll);
+    await saveChanges(shareId, actorId, [created(threadId)], allowAll);
     await shareWithThread();
-    const validate = vi.fn(allowAll);
+    const validate = vi.fn(() => threadError('COMMENT_ALREADY_EXISTS', ''));
 
     await saveChanges(
       shareId,
       actorId,
-      [{type: 'editComment', commentId, body: body('edited')}],
+      [created(threadId, commentId)],
       validate,
     );
 
     expect(validate).toHaveBeenCalledExactlyOnceWith({
-      threads: [expect.objectContaining({id: threadId})],
-      comments: [
-        expect.objectContaining({id: commentId}),
-        expect.objectContaining({id: replyId}),
-      ],
+      threadIds: [threadId],
+      commentIds: [commentId],
     });
   });
 
   it('stores nothing when validation fails', async () => {
     const {actorId, shareId, threadId} = await shareWithThread();
 
-    const refused = threadError('THREAD_RESOLVED', 'Refused');
+    const refused = threadError('THREAD_NOT_FOUND', 'Refused');
 
     await expect(
       saveChanges(shareId, actorId, [created(threadId)], () => refused),
@@ -201,16 +164,10 @@ describe('getSnapshot', () => {
     const {actorId, shareId, threadId, commentId} = await shareWithThread();
     const replyId = newId();
     await saveChanges(shareId, actorId, [created(threadId, replyId)], allowAll);
-    await saveChanges(
-      shareId,
-      actorId,
-      [{type: 'editComment', commentId, body: body('edited')}],
-      allowAll,
-    );
 
     const snapshot = await getSnapshot(shareId);
 
-    expect(snapshot?.revision).toBe(3);
+    expect(snapshot?.revision).toBe(2);
     expect(snapshot?.comments.map(({id}) => id)).toEqual([commentId, replyId]);
   });
 
