@@ -17,7 +17,8 @@ Share a working-tree diff as a link, without a PR; teammates view it and leave c
 Use these in code, routes, errors and UI. A new concept gets a line here in the same change.
 
 - **Share**: one uploaded diff and its link, `/d/{shareId}`; `/d/{shareId}.patch` serves the uploaded text unchanged. Expires 7 days after it was last visited (`app/api/cron`, `lastVisitedAt`); viewing refreshes it at most once an hour (`touchShare`), and commenting refreshes it. A Share with `pinned` set is never deleted by the cron.
-- **Patch**: one unified-diff document inside a Share. `POST /api/diffs` takes patch text only, which may hold several (as `git format-patch` output does).
+- **Patch**: one unified-diff document inside a Share. `POST /api/diffs` takes patch text only, which may hold several (as `git format-patch` output does), up to 2 MiB per upload.
+- **Uploader key**: an HMAC of the client address (`x-real-ip`, set by Vercel) stored on a Share, so `POST /api/diffs` can refuse more than 30 uploads an hour from one client with 429 `RATE_LIMITED`. The cron clears it once the Share is an hour old. Without the header, as in development, uploads are not limited.
 - **File**: one file's diff inside a Patch, stored as `@pierre/diffs` `FileDiffMetadata`.
 - **Thread**: a conversation anchored to a line (`Anchor`: file path, side, line). It can be resolved, never reopened or deleted.
 - **Comment**: one Lexical rich-text body in a Thread. It can be edited and deleted, except a Thread's last Comment, which can only be edited.

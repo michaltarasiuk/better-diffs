@@ -1,5 +1,5 @@
 import {hasBearerToken} from '@/auth/bearer';
-import {deleteExpiredShares} from '@/db/shares';
+import {deleteExpiredShares, forgetUploaders} from '@/db/shares';
 import {env} from '@/env';
 import {ApiError} from '@/http/error';
 import {route} from '@/http/route';
@@ -16,6 +16,7 @@ export const GET = route(async (request) => {
   const deletedCount = await deleteExpiredShares({
     maxAgeHours: SHARE_MAX_AGE_HOURS,
   });
+  await forgetUploaders({olderThanHours: 1});
 
   return Response.json({deletedCount});
 });

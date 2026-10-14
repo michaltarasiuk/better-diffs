@@ -1,4 +1,4 @@
-import {eq} from 'drizzle-orm';
+import {eq, sql} from 'drizzle-orm';
 import type {SerializedEditorState} from 'lexical';
 import {describe, expect, it} from 'vitest';
 
@@ -9,6 +9,7 @@ import {newId} from '@/utils/new-id';
 import {db} from '../db';
 import {comments, files, patches, shares, threads} from '../schema';
 import {
+  countRecentShares,
   createShare,
   deleteExpiredShares,
   getShareFiles,
@@ -143,6 +144,21 @@ describe('saveChanges', () => {
 
     const after = await getShare(id);
     expect(after!.lastVisitedAt > before!.lastVisitedAt).toBe(true);
+  });
+});
+
+describe('countRecentShares', () => {
+  it('counts shares from one uploader within the window', async () => {
+    const old = await createShare('', [], 'alice');
+    await createShare('', [], 'alice');
+    await createShare('', [], 'bob');
+    await createShare('', []);
+    await db
+      .update(shares)
+      .set({createdAt: sql`datetime('now', '-2 hours')`})
+      .where(eq(shares.id, old));
+
+    await expect(countRecentShares('alice', {withinHours: 1})).resolves.toBe(1);
   });
 });
 

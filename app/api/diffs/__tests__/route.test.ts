@@ -1,6 +1,9 @@
+import {eq} from 'drizzle-orm';
 import {describe, expect, it} from 'vitest';
 
 import {setupTestDb} from '@/db/__tests__/setup';
+import {db} from '@/db/db';
+import {shares} from '@/db/schema';
 import {getShareFiles, getSharePatch} from '@/db/shares';
 import {gitPatch} from '@/diffs/__tests__/patches';
 import {env} from '@/env';
@@ -110,6 +113,65 @@ describe('POST', () => {
     await expect(response.json()).resolves.toMatchObject({
       error: {reason: 'EMPTY_PATCH'},
     });
+  });
+
+  it('rejects patch text over 2 MiB', async () => {
+    const text = gitPatch('a.txt') + 'x'.repeat(2 * 1024 * 1024);
+
+    const response = await postText(text);
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: {reason: 'PATCH_TOO_LARGE', metadata: {maxBytes: '2097152'}},
+    });
+  });
+
+  it('rejects a declared length over 2 MiB before reading the body', async () => {
+    const response = await postText(gitPatch('a.txt'), {
+      'Content-Length': String(2 * 1024 * 1024 + 1),
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: {reason: 'PATCH_TOO_LARGE'},
+    });
+  });
+
+  it('limits each client to 30 uploads an hour', async () => {
+    const client = {'X-Real-IP': '203.0.113.7'};
+    for (let index = 0; index < 30; index++) {
+      const response = await postText(gitPatch('a.txt'), client);
+      expect(response.status).toBe(201);
+    }
+
+    const limited = await postText(gitPatch('a.txt'), {
+      ...client,
+      Accept: 'text/plain',
+    });
+    const other = await postText(gitPatch('a.txt'), {
+      'X-Real-IP': '203.0.113.8',
+    });
+
+    expect(limited.status).toBe(429);
+    await expect(limited.text()).resolves.toBe(
+      'Upload limit reached: 30 diffs an hour. Try again later.',
+    );
+    expect(other.status).toBe(201);
+  });
+
+  it('does not store the client address', async () => {
+    const response = await postText(gitPatch('a.txt'), {
+      'X-Real-IP': '203.0.113.7',
+    });
+    const shareId = shareIdFrom(response.headers.get('Location'));
+
+    const [share] = await db
+      .select({uploaderKey: shares.uploaderKey})
+      .from(shares)
+      .where(eq(shares.id, shareId!));
+
+    expect(share?.uploaderKey).toEqual(expect.any(String));
+    expect(share?.uploaderKey).not.toContain('203.0.113.7');
   });
 
   it('adds CORS headers to errors', async () => {

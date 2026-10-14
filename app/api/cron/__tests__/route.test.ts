@@ -1,6 +1,9 @@
+import {eq, sql} from 'drizzle-orm';
 import {describe, expect, it} from 'vitest';
 
 import {ageShare, hasShare, setupTestDb} from '@/db/__tests__/setup';
+import {db} from '@/db/db';
+import {shares} from '@/db/schema';
 import {createShare} from '@/db/shares';
 import {env} from '@/env';
 
@@ -25,6 +28,27 @@ describe('GET', () => {
     await expect(response.json()).resolves.toEqual({deletedCount: 1});
     await expect(hasShare(expired)).resolves.toBe(false);
     await expect(hasShare(fresh)).resolves.toBe(true);
+  });
+
+  it('forgets who uploaded shares older than an hour', async () => {
+    const old = await createShare('', [], 'old-uploader');
+    const recent = await createShare('', [], 'recent-uploader');
+    await db
+      .update(shares)
+      .set({createdAt: sql`datetime('now', '-2 hours')`})
+      .where(eq(shares.id, old));
+
+    await get({Authorization: `Bearer ${env.CRON_SECRET}`});
+
+    const rows = await db
+      .select({id: shares.id, uploaderKey: shares.uploaderKey})
+      .from(shares);
+    expect(rows).toEqual(
+      expect.arrayContaining([
+        {id: old, uploaderKey: null},
+        {id: recent, uploaderKey: 'recent-uploader'},
+      ]),
+    );
   });
 
   it.each([

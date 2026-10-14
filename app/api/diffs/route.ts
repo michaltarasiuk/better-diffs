@@ -1,9 +1,15 @@
+import {createHmac} from 'node:crypto';
+
 import {type FileDiffMetadata, parsePatchFiles} from '@pierre/diffs';
 
-import {createShare} from '@/db/shares';
+import {countRecentShares, createShare} from '@/db/shares';
 import {env} from '@/env';
 import {ApiError} from '@/http/error';
 import {prefersText, route} from '@/http/route';
+import {isDefined} from '@/utils/is-defined';
+
+const MAX_PATCH_BYTES = 2 * 1024 * 1024;
+const MAX_UPLOADS_PER_HOUR = 30;
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -23,8 +29,13 @@ export function OPTIONS() {
 
 export const POST = route(
   async (request) => {
-    const text = await request.text();
-    const id = await createShare(text, parsePatchText(text));
+    const uploaderKey = getUploaderKey(request);
+    if (isDefined(uploaderKey)) {
+      await checkUploadRate(uploaderKey);
+    }
+
+    const text = await readPatchText(request);
+    const id = await createShare(text, parsePatchText(text), uploaderKey);
     const url = `${env.BASE_URL}/d/${id}`;
     const headers = {Location: url};
 
@@ -35,6 +46,48 @@ export const POST = route(
   },
   {headers: CORS_HEADERS},
 );
+
+function getUploaderKey(request: Request) {
+  const ip = request.headers.get('x-real-ip');
+  if (!isDefined(ip)) {
+    return undefined;
+  }
+  return createHmac('sha256', env.BETTER_AUTH_SECRET)
+    .update(`uploader:${ip}`)
+    .digest('base64url');
+}
+
+async function checkUploadRate(uploaderKey: string) {
+  const recent = await countRecentShares(uploaderKey, {withinHours: 1});
+  if (recent >= MAX_UPLOADS_PER_HOUR) {
+    throw new ApiError(
+      'RESOURCE_EXHAUSTED',
+      `Upload limit reached: ${MAX_UPLOADS_PER_HOUR} diffs an hour. Try again later.`,
+      {reason: 'RATE_LIMITED'},
+    );
+  }
+}
+
+async function readPatchText(request: Request) {
+  const contentLength = Number(request.headers.get('Content-Length'));
+  if (contentLength > MAX_PATCH_BYTES) {
+    throw patchTooLarge();
+  }
+
+  const text = await request.text();
+  if (Buffer.byteLength(text) > MAX_PATCH_BYTES) {
+    throw patchTooLarge();
+  }
+  return text;
+}
+
+function patchTooLarge() {
+  return new ApiError(
+    'INVALID_ARGUMENT',
+    `Patch text is larger than ${MAX_PATCH_BYTES / 1024 / 1024} MiB.`,
+    {reason: 'PATCH_TOO_LARGE', metadata: {maxBytes: String(MAX_PATCH_BYTES)}},
+  );
+}
 
 function parsePatchText(text: string): Patches {
   let patches: Patches;

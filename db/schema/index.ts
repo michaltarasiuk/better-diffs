@@ -15,6 +15,7 @@ export const shares = sqliteTable(
   {
     id: text('id').primaryKey().$defaultFn(newId),
     patch: text('patch').notNull(),
+    uploaderKey: text('uploader_key'),
     revision: integer('revision').notNull().default(0),
     pinned: integer('pinned', {mode: 'boolean'}).notNull().default(false),
     createdAt: text('created_at')
@@ -24,7 +25,10 @@ export const shares = sqliteTable(
       .notNull()
       .default(sql`(datetime('now'))`),
   },
-  (t) => [index('shares_lastVisitedAt_idx').on(t.lastVisitedAt)],
+  (t) => [
+    index('shares_lastVisitedAt_idx').on(t.lastVisitedAt),
+    index('shares_uploaderKey_createdAt_idx').on(t.uploaderKey, t.createdAt),
+  ],
 );
 
 export const sharesRelations = relations(shares, ({many}) => ({

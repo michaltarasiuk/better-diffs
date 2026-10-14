@@ -1,7 +1,7 @@
 import 'server-only';
 
 import type {FileDiffMetadata} from '@pierre/diffs';
-import {and, asc, eq, lt, sql} from 'drizzle-orm';
+import {and, asc, eq, gt, isNotNull, lt, sql} from 'drizzle-orm';
 
 import {isDefined} from '@/utils/is-defined';
 import {newId} from '@/utils/new-id';
@@ -58,9 +58,26 @@ export async function touchShare(id: string) {
   return true;
 }
 
+export async function countRecentShares(
+  uploaderKey: string,
+  {withinHours}: {readonly withinHours: number},
+) {
+  return db.$count(
+    sharesTable,
+    and(
+      eq(sharesTable.uploaderKey, uploaderKey),
+      gt(
+        sharesTable.createdAt,
+        sql`datetime('now', ${`-${withinHours} hours`})`,
+      ),
+    ),
+  );
+}
+
 export async function createShare(
   patch: string,
   patches: readonly (readonly FileDiffMetadata[])[],
+  uploaderKey?: string,
 ) {
   const shareId = newId();
   const patchValues: (typeof patchesTable.$inferInsert)[] = [];
@@ -85,7 +102,7 @@ export async function createShare(
   }
 
   await db.transaction(async (tx) => {
-    await tx.insert(sharesTable).values({id: shareId, patch});
+    await tx.insert(sharesTable).values({id: shareId, patch, uploaderKey});
 
     if (patchValues.length > 0) {
       await tx.insert(patchesTable).values(patchValues);
@@ -118,4 +135,23 @@ export async function deleteExpiredShares({
     .returning({id: sharesTable.id});
 
   return deleted.length;
+}
+
+export async function forgetUploaders({
+  olderThanHours,
+}: {
+  readonly olderThanHours: number;
+}) {
+  await db
+    .update(sharesTable)
+    .set({uploaderKey: null})
+    .where(
+      and(
+        isNotNull(sharesTable.uploaderKey),
+        lt(
+          sharesTable.createdAt,
+          sql`datetime('now', ${`-${olderThanHours} hours`})`,
+        ),
+      ),
+    );
 }

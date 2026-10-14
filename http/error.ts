@@ -4,6 +4,7 @@ export const Code = {
   INVALID_ARGUMENT: 400,
   UNAUTHENTICATED: 401,
   NOT_FOUND: 404,
+  RESOURCE_EXHAUSTED: 429,
   INTERNAL: 500,
 } as const;
 export type Code = keyof typeof Code;
