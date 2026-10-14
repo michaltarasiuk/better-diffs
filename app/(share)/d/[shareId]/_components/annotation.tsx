@@ -2,7 +2,6 @@
 
 import {Card, toast} from '@heroui/react';
 import type {SerializedEditorState} from 'lexical';
-import {use} from 'react';
 
 import type {Session} from '@/auth/server';
 import {SignedIn} from '@/auth/signed-in';
@@ -10,7 +9,7 @@ import type {DiffAnnotation, FormAnnotationMetadata} from '@/diffs/annotations';
 import {createComment, openThread} from '@/threads/actions';
 import {toActor} from '@/threads/actor';
 import type {ThreadError} from '@/threads/errors';
-import {ShareActionsContext, ShareStateContext} from '@/threads/provider';
+import {useShareActions, useShareState} from '@/threads/provider';
 import type {Anchor} from '@/threads/schemas';
 import {isDefined} from '@/utils/is-defined';
 import {newId} from '@/utils/new-id';
@@ -22,7 +21,7 @@ import {CommentList} from './comment-list';
 import {InsetSeparator} from './inset-separator';
 import {LazyCommentEditor as CommentEditor} from './lazy-comment-editor';
 import {ReplyInput} from './reply-input';
-import {DraftsContext, ReviewStateContext} from './review-state-provider';
+import {useDrafts, useReviewState} from './review-state-provider';
 import {SignIn} from './sign-in';
 
 type AnnotationLine = Omit<DiffAnnotation, 'metadata'>;
@@ -34,7 +33,7 @@ interface AnnotationProps {
 }
 
 export function Annotation({annotation, fileId, filePath}: AnnotationProps) {
-  const {removeCommentForm} = use(ReviewStateContext);
+  const {removeCommentForm} = useReviewState();
 
   const {metadata, ...line} = annotation;
 
@@ -83,8 +82,8 @@ interface CommentFormProps {
 
 function CommentForm({line, form, filePath, onDismiss}: CommentFormProps) {
   const shareId = useShareId();
-  const {optimistic} = use(ShareActionsContext);
-  const {getDraft, setDraft} = use(DraftsContext);
+  const {optimistic} = useShareActions();
+  const {getDraft, setDraft} = useDrafts();
 
   async function submit(session: Session, body: SerializedEditorState) {
     const threadId = newId();
@@ -160,7 +159,7 @@ interface CommentThreadProps {
 }
 
 function CommentThread({line, threadId}: CommentThreadProps) {
-  const share = use(ShareStateContext);
+  const share = useShareState();
 
   const thread = share.threads.get(threadId);
   if (!isDefined(thread)) {
@@ -168,8 +167,8 @@ function CommentThread({line, threadId}: CommentThreadProps) {
   }
 
   const shareId = useShareId();
-  const {optimistic} = use(ShareActionsContext);
-  const {getDraft, setDraft, clearDraft} = use(DraftsContext);
+  const {optimistic} = useShareActions();
+  const {getDraft, setDraft, clearDraft} = useDrafts();
 
   async function reply(session: Session, body: SerializedEditorState) {
     const commentId = newId();

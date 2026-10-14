@@ -10,7 +10,6 @@ import {
 } from '@pierre/diffs';
 import {CodeView} from '@pierre/diffs/react';
 import {ChevronDownIcon} from 'lucide-react';
-import {use} from 'react';
 
 import {
   sortAnnotations,
@@ -22,7 +21,7 @@ import {isDiffLine} from '@/diffs/lines';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
 import {useIsMobile} from '@/hooks/use-is-mobile';
 import {useShortcut} from '@/hooks/use-shortcut';
-import {ShareStateContext} from '@/threads/provider';
+import {useShareState} from '@/threads/provider';
 import {isDefined} from '@/utils/is-defined';
 
 import {useSelectedLines} from '../_hooks/use-selected-lines';
@@ -30,8 +29,8 @@ import {getViewportFileId} from '../_lib/get-viewport-file-id';
 import {scrollToFile} from '../_lib/scroll-to-file';
 import {AddCommentButton} from './add-comment-button';
 import {Annotation} from './annotation';
-import {CodeViewRefContext} from './code-view-provider';
-import {ReviewStateContext} from './review-state-provider';
+import {useCodeViewRef} from './code-view-provider';
+import {useReviewState} from './review-state-provider';
 
 interface DiffViewProps {
   readonly files: readonly {
@@ -47,9 +46,9 @@ export function DiffView({files}: DiffViewProps) {
     setFileViewed,
     toggleFileViewed,
     addCommentForm,
-  } = use(ReviewStateContext);
-  const share = use(ShareStateContext);
-  const codeViewRef = use(CodeViewRefContext);
+  } = useReviewState();
+  const share = useShareState();
+  const codeViewRef = useCodeViewRef();
   const {selectedLines, setSelectedLines} = useSelectedLines();
   const isMobile = useIsMobile();
 

@@ -3,6 +3,7 @@
 import {
   createContext,
   startTransition,
+  use,
   useEffect,
   useEffectEvent,
   useOptimistic,
@@ -29,9 +30,9 @@ interface ShareActions {
   ) => Promise<ThreadError | undefined>;
 }
 
-export const ShareStateContext = createContext<ShareState>(null as never);
+const ShareStateContext = createContext<ShareState | null>(null);
 
-export const ShareActionsContext = createContext<ShareActions>(null as never);
+const ShareActionsContext = createContext<ShareActions | null>(null);
 
 export function ThreadsProvider({
   shareId,
@@ -92,4 +93,20 @@ export function ThreadsProvider({
       <ShareStateContext value={state}>{children}</ShareStateContext>
     </ShareActionsContext>
   );
+}
+
+export function useShareState() {
+  const state = use(ShareStateContext);
+  if (!isDefined(state)) {
+    throw new Error('useShareState must be used within ThreadsProvider');
+  }
+  return state;
+}
+
+export function useShareActions() {
+  const actions = use(ShareActionsContext);
+  if (!isDefined(actions)) {
+    throw new Error('useShareActions must be used within ThreadsProvider');
+  }
+  return actions;
 }

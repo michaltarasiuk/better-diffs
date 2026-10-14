@@ -20,7 +20,7 @@ import {isDefined} from '@/utils/is-defined';
 
 import {useSearchQuery} from '../_hooks/use-search-query';
 import {scrollToFile} from '../_lib/scroll-to-file';
-import {CodeViewRefContext} from './code-view-provider';
+import {useCodeViewRef} from './code-view-provider';
 
 interface FileTreePanelProps {
   readonly input: TreeInput;
@@ -36,7 +36,7 @@ export function FileTreePanel({
   children,
 }: FileTreePanelProps) {
   const {searchQuery, setSearchQuery} = useSearchQuery();
-  const codeViewRef = use(CodeViewRefContext);
+  const codeViewRef = useCodeViewRef();
   const overlay = use(OverlayTriggerStateContext);
   const {model} = useFileTree({
     ...getFileTreeOptions(input, {searchQuery}),

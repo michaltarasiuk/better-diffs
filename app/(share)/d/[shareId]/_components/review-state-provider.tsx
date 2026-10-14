@@ -1,11 +1,12 @@
 'use client';
 
 import type {SerializedEditorState} from 'lexical';
-import {createContext} from 'react';
+import {createContext, use} from 'react';
 
 import type {FormDiffAnnotation} from '@/diffs/annotations';
 import type {DiffLine} from '@/diffs/lines';
 import {useLocalStorage} from '@/hooks/use-local-storage';
+import {isDefined} from '@/utils/is-defined';
 import {jsonToMap, mapToJson} from '@/utils/map';
 import {newId} from '@/utils/new-id';
 
@@ -22,9 +23,9 @@ type FileStatePatch = Partial<Omit<FileState, 'version'>>;
 
 type Drafts = Readonly<Record<string, SerializedEditorState>>;
 
-type ReviewState = ReturnType<typeof useReviewState>;
+type ReviewState = ReturnType<typeof useStoredReviewState>;
 
-type DraftsState = ReturnType<typeof useDrafts>;
+type DraftsState = ReturnType<typeof useStoredDrafts>;
 
 const DEFAULT_FILE_STATE: FileState = {
   commentForms: [],
@@ -33,17 +34,17 @@ const DEFAULT_FILE_STATE: FileState = {
   version: 0,
 };
 
-export const ReviewStateContext = createContext<ReviewState>(null as never);
+const ReviewStateContext = createContext<ReviewState | null>(null);
 
-export const DraftsContext = createContext<DraftsState>(null as never);
+const DraftsContext = createContext<DraftsState | null>(null);
 
 export function ReviewStateProvider({
   children,
 }: {
   readonly children: React.ReactNode;
 }) {
-  const drafts = useDrafts();
-  const reviewState = useReviewState(drafts.clearDraft);
+  const drafts = useStoredDrafts();
+  const reviewState = useStoredReviewState(drafts.clearDraft);
 
   return (
     <ReviewStateContext value={reviewState}>
@@ -52,7 +53,23 @@ export function ReviewStateProvider({
   );
 }
 
-function useReviewState(clearDraft: (id: string) => void) {
+export function useReviewState() {
+  const reviewState = use(ReviewStateContext);
+  if (!isDefined(reviewState)) {
+    throw new Error('useReviewState must be used within ReviewStateProvider');
+  }
+  return reviewState;
+}
+
+export function useDrafts() {
+  const drafts = use(DraftsContext);
+  if (!isDefined(drafts)) {
+    throw new Error('useDrafts must be used within ReviewStateProvider');
+  }
+  return drafts;
+}
+
+function useStoredReviewState(clearDraft: (id: string) => void) {
   const shareId = useShareId();
   const [fileStates, setFileStates] = useLocalStorage(
     `share:v1:${shareId}`,
@@ -125,7 +142,7 @@ function useReviewState(clearDraft: (id: string) => void) {
   };
 }
 
-function useDrafts() {
+function useStoredDrafts() {
   const shareId = useShareId();
   const [drafts, setDrafts] = useLocalStorage<Drafts>(
     `share:v1:${shareId}:drafts`,
