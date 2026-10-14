@@ -57,7 +57,10 @@ export type Change =
       readonly threadId: string;
       readonly anchor: Anchor;
     }
-  | {readonly type: 'resolveThread'; readonly threadId: string}
+  | {
+      readonly type: 'resolveThread';
+      readonly threadId: string;
+    }
   | {
       readonly type: 'createComment';
       readonly threadId: string;
@@ -69,7 +72,10 @@ export type Change =
       readonly commentId: string;
       readonly body: SerializedEditorState;
     }
-  | {readonly type: 'deleteComment'; readonly commentId: string};
+  | {
+      readonly type: 'deleteComment';
+      readonly commentId: string;
+    };
 
 export const OpenThreadInput = z.object({
   shareId: z.uuid(),
