@@ -8,7 +8,7 @@ export function mapToJson<K, V>(map: ReadonlyMap<K, V>) {
 }
 
 export function jsonToMap<K, V>(text: string) {
-  let entries: [K, V][] | null = null;
+  let entries: [K, V][] | undefined;
   try {
     const parsed: unknown = JSON.parse(text);
     entries = Entries.parse(parsed) as [K, V][];

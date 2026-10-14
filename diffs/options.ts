@@ -14,7 +14,10 @@ import {
   EMPTY_DIFF_ATTRIBUTE,
 } from './unsafe-css';
 
-export const PATCH_DIFF_OPTIONS: FileDiffOptions<AnnotationMetadata, null> = {
+export const PATCH_DIFF_OPTIONS: FileDiffOptions<
+  AnnotationMetadata,
+  undefined
+> = {
   theme: DEFAULT_THEMES,
   hunkSeparators: 'line-info-basic',
   diffStyle: 'unified',
@@ -22,26 +25,28 @@ export const PATCH_DIFF_OPTIONS: FileDiffOptions<AnnotationMetadata, null> = {
   overflow: 'wrap',
 };
 
-export const CODE_VIEW_OPTIONS: CodeViewReactOptions<AnnotationMetadata, null> =
-  {
-    theme: DEFAULT_THEMES,
-    hunkSeparators: 'line-info-basic',
-    stickyHeaders: true,
-    enableGutterUtility: true,
-    enableLineSelection: true,
-    unsafeCSS: [
-      DIFFS_SINGLE_COLUMN_ANNOTATION_UNSAFE_CSS,
-      DIFFS_EMPTY_DIFF_UNSAFE_CSS,
-      DIFFS_CODE_BOTTOM_PADDING_UNSAFE_CSS,
-    ].join('\n\n'),
-    layout: {
-      ...DEFAULT_CODE_VIEW_LAYOUT,
-      paddingTop: 0,
-      paddingBottom: 0,
-      gap: 0,
-    },
-    onPostRender: markEmptyDiff,
-  };
+export const CODE_VIEW_OPTIONS: CodeViewReactOptions<
+  AnnotationMetadata,
+  undefined
+> = {
+  theme: DEFAULT_THEMES,
+  hunkSeparators: 'line-info-basic',
+  stickyHeaders: true,
+  enableGutterUtility: true,
+  enableLineSelection: true,
+  unsafeCSS: [
+    DIFFS_SINGLE_COLUMN_ANNOTATION_UNSAFE_CSS,
+    DIFFS_EMPTY_DIFF_UNSAFE_CSS,
+    DIFFS_CODE_BOTTOM_PADDING_UNSAFE_CSS,
+  ].join('\n\n'),
+  layout: {
+    ...DEFAULT_CODE_VIEW_LAYOUT,
+    paddingTop: 0,
+    paddingBottom: 0,
+    gap: 0,
+  },
+  onPostRender: markEmptyDiff,
+};
 
 function markEmptyDiff(
   node: HTMLElement,

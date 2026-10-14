@@ -25,7 +25,7 @@ export async function fetchSnapshot(shareId: string, afterRevision: number) {
 }
 
 export function startPolling(poll: () => Promise<void>) {
-  let intervalId: ReturnType<typeof setInterval> | null = null;
+  let intervalId: ReturnType<typeof setInterval> | undefined;
   let isPolling = false;
 
   const tick = async () => {

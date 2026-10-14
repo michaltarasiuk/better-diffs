@@ -6,7 +6,7 @@ import {createContext, useRef} from 'react';
 import type {AnnotationMetadata} from '@/diffs/annotations';
 import {DiffWorkerPoolProvider} from '@/diffs/provider';
 
-type Handle = CodeViewHandle<AnnotationMetadata, null>;
+type Handle = CodeViewHandle<AnnotationMetadata, undefined>;
 
 type CodeViewRef = React.RefObject<Handle | null>;
 

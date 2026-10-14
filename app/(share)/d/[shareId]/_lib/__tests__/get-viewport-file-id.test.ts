@@ -27,12 +27,12 @@ function codeView(
         item: {collapsed},
         instance: {getVirtualizedHeight: () => height},
       })),
-  } as unknown as CodeView<AnnotationMetadata, null>;
+  } as unknown as CodeView<AnnotationMetadata>;
 }
 
 describe('getViewportFileId', () => {
-  it('returns null without rendered items', () => {
-    expect(getViewportFileId(codeView([]))).toBe(null);
+  it('returns undefined without rendered items', () => {
+    expect(getViewportFileId(codeView([]))).toBeUndefined();
   });
 
   it('returns the first expanded file in the viewport', () => {
@@ -89,9 +89,9 @@ describe('getViewportFileId', () => {
     expect(getViewportFileId(view)).toBe('positioned');
   });
 
-  it('returns null when nothing intersects the viewport', () => {
+  it('returns undefined when nothing intersects the viewport', () => {
     const view = codeView([{id: 'far', top: 500, height: 100}]);
 
-    expect(getViewportFileId(view)).toBe(null);
+    expect(getViewportFileId(view)).toBeUndefined();
   });
 });

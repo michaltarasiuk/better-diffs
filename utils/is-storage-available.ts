@@ -22,7 +22,7 @@ export function isStorageAvailable(type: StorageType) {
 }
 
 function probeStorage(type: StorageType) {
-  let storage: Storage | null = null;
+  let storage: Storage | undefined;
 
   try {
     storage = window[type];
