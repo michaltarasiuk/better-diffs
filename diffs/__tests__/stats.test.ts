@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import {computeDiffStats, type DiffStatsFile, formatDiffStat} from '../stats';
+import {computeDiffStats, formatDiffStat, type DiffStatsFile} from '../stats';
 
 type DiffStatsHunk = DiffStatsFile['hunks'][number];
 

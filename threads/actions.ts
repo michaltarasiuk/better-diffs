@@ -7,7 +7,7 @@ import {saveChanges} from '@/db/threads';
 import {isDefined} from '@/utils/is-defined';
 
 import {threadError} from './errors';
-import {type Change, CreateCommentInput, OpenThreadInput} from './schemas';
+import {CreateCommentInput, OpenThreadInput, type Change} from './schemas';
 import {check} from './state';
 
 export async function openThread(input: OpenThreadInput) {

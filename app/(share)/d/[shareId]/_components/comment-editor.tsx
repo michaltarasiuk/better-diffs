@@ -4,12 +4,12 @@ import {
   Button,
   ButtonGroup,
   Card,
-  type CardProps,
-  type Key,
   ListBox,
   Select,
   ToggleButton,
   ToggleButtonGroup,
+  type CardProps,
+  type Key,
 } from '@heroui/react';
 import {cn, typographyVariants} from '@heroui/styles';
 import {HistoryExtension} from '@lexical/history';
@@ -36,11 +36,11 @@ import {
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
   KEY_ESCAPE_COMMAND,
-  type LexicalEditor,
   REDO_COMMAND,
+  UNDO_COMMAND,
+  type LexicalEditor,
   type SerializedEditorState,
   type TextFormatType,
-  UNDO_COMMAND,
 } from 'lexical';
 import {
   AlignCenterIcon,

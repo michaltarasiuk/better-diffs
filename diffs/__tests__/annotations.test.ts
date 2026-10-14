@@ -4,11 +4,11 @@ import type {Thread} from '@/threads/schemas';
 import {newId} from '@/utils/new-id';
 
 import {
+  sortAnnotations,
+  toThreadAnnotation,
   type DiffAnnotation,
   type FormDiffAnnotation,
-  sortAnnotations,
   type ThreadDiffAnnotation,
-  toThreadAnnotation,
 } from '../annotations';
 
 const FORM_ID = newId();

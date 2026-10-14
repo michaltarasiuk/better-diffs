@@ -6,7 +6,7 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {newId} from '@/utils/new-id';
 
-import {type ThreadError, threadError} from '../errors';
+import {threadError, type ThreadError} from '../errors';
 import {
   ShareActionsContext,
   ShareStateContext,

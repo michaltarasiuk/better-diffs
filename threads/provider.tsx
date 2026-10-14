@@ -11,13 +11,13 @@ import {
 
 import {isDefined} from '@/utils/is-defined';
 
-import {type ThreadError, threadError} from './errors';
+import {threadError, type ThreadError} from './errors';
 import type {ShareSnapshot} from './schemas';
 import {
   applyOptimistic,
   initialState,
-  type OptimisticChange,
   receive,
+  type OptimisticChange,
   type ShareState,
 } from './state';
 import {fetchSnapshot, startPolling} from './sync';

@@ -1,6 +1,6 @@
 import {createHmac} from 'node:crypto';
 
-import {type FileDiffMetadata, parsePatchFiles} from '@pierre/diffs';
+import {parsePatchFiles, type FileDiffMetadata} from '@pierre/diffs';
 
 import {countRecentShares, createShare} from '@/db/shares';
 import {env} from '@/env';

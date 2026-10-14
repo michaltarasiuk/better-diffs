@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import {type DiffLine, type FileLine, isDiffLine} from '../lines';
+import {isDiffLine, type DiffLine, type FileLine} from '../lines';
 
 describe('isDiffLine', () => {
   it('distinguishes diff lines from file lines by side', () => {

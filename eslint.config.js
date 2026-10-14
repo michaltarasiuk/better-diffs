@@ -1,9 +1,9 @@
 import vitest from '@vitest/eslint-plugin';
-import {defineConfig, globalIgnores} from 'eslint/config';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
-import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import perfectionist from 'eslint-plugin-perfectionist';
 import testingLibrary from 'eslint-plugin-testing-library';
+import {defineConfig, globalIgnores} from 'eslint/config';
 
 const TEST_FILES = ['**/__tests__/**'];
 
@@ -78,43 +78,11 @@ export default defineConfig([
   ...nextTs,
   globalIgnores(['.next/**', '.agents/**', '.local/**', 'next-env.d.ts']),
   {
+    name: 'better-diffs/base',
     linterOptions: {
       reportUnusedDisableDirectives: 'error',
     },
-  },
-  {
-    plugins: {
-      'simple-import-sort': simpleImportSort,
-    },
-    settings: {
-      // import/no-cycle parses every module it follows; skipping packages
-      // keeps it to our own code.
-      'import/ignore': ['node_modules'],
-    },
     rules: {
-      'simple-import-sort/imports': [
-        'error',
-        {
-          groups: [
-            // Side effect imports.
-            ['^\\u0000'],
-            // Node.js builtins.
-            ['^node:'],
-            // Packages.
-            ['^@?\\w'],
-            // Absolute imports.
-            ['^@/'],
-            // Relative imports.
-            ['^\\.'],
-          ],
-        },
-      ],
-      'simple-import-sort/exports': 'error',
-      'import/first': 'error',
-      'import/newline-after-import': 'error',
-      'import/no-duplicates': ['error', {'prefer-inline': true}],
-      'import/no-cycle': 'error',
-      'import/no-anonymous-default-export': 'off',
       'no-console': ['warn', {allow: ['warn', 'error']}],
       eqeqeq: ['error', 'smart'],
       'object-shorthand': 'error',
@@ -122,6 +90,50 @@ export default defineConfig([
     },
   },
   {
+    name: 'better-diffs/imports',
+    plugins: {
+      perfectionist,
+    },
+    settings: {
+      // import/no-cycle parses every module it follows; skipping packages
+      // keeps it to our own code.
+      'import/ignore': ['node_modules'],
+    },
+    rules: {
+      'import/first': 'error',
+      'import/newline-after-import': 'error',
+      'import/no-duplicates': ['error', {'prefer-inline': true}],
+      'import/no-cycle': 'error',
+      'import/no-anonymous-default-export': 'off',
+
+      'perfectionist/sort-imports': [
+        'error',
+        {
+          type: 'natural',
+          internalPattern: ['^@/'],
+          newlinesBetween: 1,
+          groups: [
+            'side-effect',
+            'builtin',
+            'external',
+            'internal',
+            ['parent', 'sibling', 'index'],
+          ],
+        },
+      ],
+      'perfectionist/sort-named-imports': [
+        'error',
+        {type: 'natural', groups: ['value-import', 'type-import']},
+      ],
+      'perfectionist/sort-exports': ['error', {type: 'natural'}],
+      'perfectionist/sort-named-exports': [
+        'error',
+        {type: 'natural', groups: ['value-export', 'type-export']},
+      ],
+    },
+  },
+  {
+    name: 'better-diffs/typescript',
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parserOptions: {
@@ -130,6 +142,24 @@ export default defineConfig([
       },
     },
     rules: {
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        {fixStyle: 'inline-type-imports', disallowTypeAnnotations: false},
+      ],
+      '@typescript-eslint/no-import-type-side-effects': 'error',
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {patterns: [ROUTE_PRIVATE]},
+      ],
+
+      '@typescript-eslint/await-thenable': 'error',
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        {checksVoidReturn: {attributes: false}},
+      ],
+
+      '@typescript-eslint/no-unnecessary-condition': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -138,28 +168,13 @@ export default defineConfig([
           caughtErrorsIgnorePattern: '^_',
         },
       ],
-      '@typescript-eslint/consistent-type-imports': [
-        'error',
-        {fixStyle: 'inline-type-imports', disallowTypeAnnotations: false},
-      ],
-      '@typescript-eslint/no-import-type-side-effects': 'error',
-      '@typescript-eslint/no-floating-promises': 'error',
-      '@typescript-eslint/no-misused-promises': [
-        'error',
-        {checksVoidReturn: {attributes: false}},
-      ],
-      '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
-      '@typescript-eslint/no-unnecessary-condition': 'error',
-      '@typescript-eslint/no-restricted-imports': [
-        'error',
-        {patterns: [ROUTE_PRIVATE]},
-      ],
     },
   },
   // Boundaries. Flat config replaces a rule's options rather than merging
   // them, so each block repeats the restrictions of the blocks before it.
   {
+    name: 'better-diffs/boundaries/client',
     files: CLIENT_FILES,
     ignores: TEST_FILES,
     rules: {
@@ -170,6 +185,7 @@ export default defineConfig([
     },
   },
   {
+    name: 'better-diffs/boundaries/db',
     files: ['db/**'],
     ignores: TEST_FILES,
     rules: {
@@ -180,6 +196,7 @@ export default defineConfig([
     },
   },
   {
+    name: 'better-diffs/boundaries/pure',
     files: PURE_FILES,
     ignores: TEST_FILES,
     rules: {
@@ -190,6 +207,7 @@ export default defineConfig([
     },
   },
   {
+    name: 'better-diffs/tests',
     files: ['**/*.{test,browser.test}.{ts,tsx}'],
     plugins: {
       vitest,

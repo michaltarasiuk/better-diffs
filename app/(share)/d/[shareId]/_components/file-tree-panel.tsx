@@ -6,9 +6,9 @@ import {SearchField} from '@heroui/react';
 import type {FileTree as FileTreeModel} from '@pierre/trees';
 import {
   FileTree,
-  type FileTreePreloadedData,
   useFileTree,
   useFileTreeSearch,
+  type FileTreePreloadedData,
 } from '@pierre/trees/react';
 import {use, useRef} from 'react';
 import {OverlayTriggerStateContext} from 'react-aria-components/Dialog';

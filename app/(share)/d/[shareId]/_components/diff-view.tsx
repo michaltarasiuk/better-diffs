@@ -4,18 +4,18 @@ import '@/diffs/diffs.css';
 
 import {Button, Checkbox, cn, Kbd, Tooltip} from '@heroui/react';
 import {
+  isDiffAnnotation,
   type CodeViewItem,
   type FileDiffMetadata,
-  isDiffAnnotation,
 } from '@pierre/diffs';
 import {CodeView} from '@pierre/diffs/react';
 import {ChevronDownIcon} from 'lucide-react';
 import {use} from 'react';
 
 import {
-  type AnnotationMetadata,
   sortAnnotations,
   toThreadAnnotation,
+  type AnnotationMetadata,
 } from '@/diffs/annotations';
 import {isEmptyDiff} from '@/diffs/empty';
 import {isDiffLine} from '@/diffs/lines';

@@ -1,6 +1,6 @@
 'use client';
 
-import {type ComponentProps, lazy, Suspense} from 'react';
+import {lazy, Suspense, type ComponentProps} from 'react';
 
 import {CommentEditorSkeleton} from './comment-editor-skeleton';
 

@@ -2,7 +2,7 @@ import 'server-only';
 
 import {and, asc, eq, gt, inArray, sql} from 'drizzle-orm';
 
-import {type ThreadError, threadError} from '@/threads/errors';
+import {threadError, type ThreadError} from '@/threads/errors';
 import type {Change, StoredIds} from '@/threads/schemas';
 import {isDefined} from '@/utils/is-defined';
 

@@ -1,4 +1,4 @@
-import {Card, type CardProps, Skeleton} from '@heroui/react';
+import {Card, Skeleton, type CardProps} from '@heroui/react';
 import {cn} from '@heroui/styles';
 
 interface CommentEditorSkeletonProps {
