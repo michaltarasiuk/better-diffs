@@ -21,7 +21,7 @@ Use these in code, routes, errors and UI. A new concept gets a line here in the 
 - **File**: one file's diff inside a Patch, stored as `@pierre/diffs` `FileDiffMetadata`.
 - **Thread**: a conversation anchored to a line (`Anchor`: file path, side, line). It can be resolved, never reopened or deleted.
 - **Comment**: one Lexical rich-text body in a Thread. It can be edited and deleted.
-- **Event**: an append-only record of one change to Threads or Comments, numbered per Share by `seq`. The database stores Events, never Thread or Comment rows; state is a fold over them (`events/state.ts`). An Event is never deleted on its own, only with its Share, so deleting a user who has Events is refused.
+- **Event**: an append-only record that one Thread or Comment changed, numbered per Share by `seq`. Threads and Comments are stored as rows holding their current state; an Event names its subject but holds no content, and is served with the subject as it is now, or `null` once it is gone, so a deleted Comment's body is never sent. The page starts from a snapshot of the rows, polls Events after its `seq`, and shows a change before it is stored with `useOptimistic` (`events/provider.tsx`). An Event is never deleted on its own, only with its Share, so deleting a user who has Events is refused.
 - **Actor**: the signed-in GitHub user behind an Event. Viewing needs no account, commenting does.
 - **Review state**: per-browser state such as viewed, collapsed and unsent drafts, kept in localStorage (`review-state-provider.tsx`). Never sent to the server.
 
@@ -33,7 +33,7 @@ Application code lives in top-level folders beside config, `cli/` and `docs/`; t
 - `app/api/**/route.ts` holds route handlers, each wrapped in `route()` from `http/route.ts`. Validate with `parse`, `parseSearchParams` and `readJson`; fail by throwing `ApiError` with a `reason` in SCREAMING_SNAKE_CASE. `route()` turns it into the JSON envelope, or into plain text for a client that prefers it, which is how the CLI reads errors.
 - `http/` is the HTTP toolkit both sides share: `route.ts` (server-only), `error.ts` (`ApiError` and its envelope), `fetch.ts` (`fetchJson`, which turns the envelope back into an `ApiError` in the browser), and `headers/`, parsers for `Accept`, `Authorization` and `Content-Type`. It is not `app/api/`, which holds the routes themselves.
 - `env.ts` validates the environment with t3-env. Import `env` from `@/env` rather than reading `process.env`.
-- `events/actions.ts` holds the server actions, the only write path for Threads and Comments. Each validates its input, resolves the Actor and appends Events, replaying them through `ShareState` first so an invalid change is refused before it is stored. A refused change throws `EventError` (`events/errors.ts`) with a `reason` in SCREAMING_SNAKE_CASE.
+- `events/actions.ts` holds the server actions, the only write path for Threads and Comments. Each validates its input, resolves the Actor and calls `appendEvents`, which writes the rows and their Events in one transaction after `check` (`events/state.ts`) tests the change against the rows it touches, so an invalid change is refused before it is stored. A refused change throws `EventError` (`events/errors.ts`) with a `reason` in SCREAMING_SNAKE_CASE.
 - `db/` holds queries, as plain async functions over Drizzle. It may import `@/env`, `@/utils/*` and `@/events/schemas` only; anything else arrives as an argument, as `appendEvents` takes `validate`.
 - `auth/` holds Better Auth: `server.ts` and `bearer.ts` are server-only, `client.ts` and the providers are client-side.
 - Pure modules take plain values and return plain values, with no React, Next.js, storage or network: `utils/`, `http/headers/`, `http/error.ts`, `events/{schemas,state,actor,errors}.ts`, `diffs/{annotations,contents,empty,lines,schemas,stats}.ts` and `trees/input.ts`. They are where logic goes so it can be unit tested without mocks.
@@ -44,7 +44,7 @@ Application code lives in top-level folders beside config, `cli/` and `docs/`; t
 
 - Within a folder, import relatively (`./schemas`); across folders, use `@/`. Tests are the exception and may use `@/` throughout.
 - zod schemas share a name with their inferred type (`export const Anchor = z.object(...)`, `export type Anchor = z.infer<typeof Anchor>`).
-- Check presence with `isDefined` from `utils/is-defined.ts`.
+- `undefined` is what isn't there, as JavaScript gives it: a missing field, `map.get`, `find`, a lookup with no result. `null` is a slot that will hold a value but doesn't yet: a variable filled in later, a ref before it's attached, a timer not started. JSON and nullable columns use `null` for both, since they have no `undefined`. Check presence with `isDefined` from `utils/is-defined.ts`, which accepts both.
 - Tests sit in a `__tests__/` folder beside the code. `*.browser.test.ts(x)` runs in real Chromium; every other test runs in Node. Database tests call `setupTestDb()` from `db/__tests__/setup.ts`, which builds the schema in memory and clears it before each test.
 - The schema has no migrations: `bun run db:push` applies `db/schema` directly.
 

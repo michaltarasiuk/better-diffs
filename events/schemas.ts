@@ -12,8 +12,7 @@ export const Anchor = z.object({
 });
 export type Anchor = z.infer<typeof Anchor>;
 
-export const LexicalBody = z.custom<SerializedEditorState>(isDefined);
-export type LexicalBody = z.infer<typeof LexicalBody>;
+const LexicalBody = z.custom<SerializedEditorState>(isDefined);
 
 const ThreadOpenedPayload = z.object({
   $type: z.literal('thread.opened'),
@@ -125,15 +124,56 @@ export const Actor = z.object({
 });
 export type Actor = z.infer<typeof Actor>;
 
-export const ShareEvent = z.object({
+export const Thread = z.object({
+  id: z.uuid(),
+  anchor: Anchor,
+  actorId: z.string().min(1),
+  actor: Actor,
+  resolved: z.boolean(),
+  createdAt: z.iso.datetime(),
+});
+export type Thread = z.infer<typeof Thread>;
+
+export const Comment = z.object({
+  id: z.uuid(),
+  threadId: z.uuid(),
+  actorId: z.string().min(1),
+  actor: Actor,
+  body: LexicalBody,
+  createdAt: z.iso.datetime(),
+});
+export type Comment = z.infer<typeof Comment>;
+
+const ShareEventBase = z.object({
   id: z.uuid(),
   shareId: z.uuid(),
   seq: z.int().positive(),
-  type: z.enum(EVENT_TYPES),
   subjectId: z.uuid(),
   actorId: z.string().min(1),
-  actor: Actor,
-  payload: ShareEventPayload,
   createdAt: z.iso.datetime(),
 });
+
+export const ShareEvent = z.discriminatedUnion('type', [
+  ShareEventBase.extend({
+    type: z.enum(['thread.opened', 'thread.resolved']),
+    thread: Thread.nullable(),
+  }),
+  ShareEventBase.extend({
+    type: z.enum(['comment.created', 'comment.edited']),
+    comment: Comment.nullable(),
+  }),
+  ShareEventBase.extend({
+    type: z.literal('comment.deleted'),
+  }),
+]);
 export type ShareEvent = z.infer<typeof ShareEvent>;
+
+export interface ShareRecords {
+  readonly threads: readonly Thread[];
+  readonly comments: readonly Comment[];
+  readonly deletedCommentIds?: readonly string[];
+}
+
+export interface ShareSnapshot extends ShareRecords {
+  readonly seq: number;
+}

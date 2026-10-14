@@ -14,7 +14,7 @@ import {
   getSharePatch,
   touchShare,
 } from '../shares';
-import {ageShare, hasShare, insertUser, setupTestDb} from './setup';
+import {ageShare, allowAll, hasShare, insertUser, setupTestDb} from './setup';
 
 setupTestDb();
 
@@ -107,9 +107,12 @@ describe('appendEvents', () => {
     await ageShare(id, 48);
     const before = await getShare(id);
 
-    await appendEvents(id, actorId, [
-      {$type: 'thread.resolved', threadId: newId()},
-    ]);
+    await appendEvents(
+      id,
+      actorId,
+      [{$type: 'thread.resolved', threadId: newId()}],
+      allowAll,
+    );
 
     const after = await getShare(id);
     expect(after!.lastVisitedAt > before!.lastVisitedAt).toBe(true);
@@ -140,9 +143,12 @@ describe('deleteExpiredShares', () => {
   it('deletes the patches, files and events of expired shares', async () => {
     const {id: actorId} = await insertUser();
     const id = await createShare('', [fileDiffs('a.txt', 'b.txt')]);
-    await appendEvents(id, actorId, [
-      {$type: 'thread.resolved', threadId: newId()},
-    ]);
+    await appendEvents(
+      id,
+      actorId,
+      [{$type: 'thread.resolved', threadId: newId()}],
+      allowAll,
+    );
     await ageShare(id, 25);
 
     await deleteExpiredShares({maxAgeHours: 24});

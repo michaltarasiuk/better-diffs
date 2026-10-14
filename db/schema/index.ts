@@ -7,8 +7,9 @@ import {
   text,
   uniqueIndex,
 } from 'drizzle-orm/sqlite-core';
+import type {SerializedEditorState} from 'lexical';
 
-import {EVENT_TYPES, type ShareEventPayload} from '@/events/schemas';
+import {type Anchor, EVENT_TYPES} from '@/events/schemas';
 import {newId} from '@/utils/new-id';
 
 import {user} from './auth';
@@ -34,6 +35,8 @@ export const shares = sqliteTable(
 
 export const sharesRelations = relations(shares, ({many}) => ({
   patches: many(patches),
+  threads: many(threads),
+  comments: many(comments),
   events: many(events),
 }));
 
@@ -74,6 +77,60 @@ export const filesRelations = relations(files, ({one}) => ({
   patch: one(patches, {fields: [files.patchId], references: [patches.id]}),
 }));
 
+export const threads = sqliteTable(
+  'threads',
+  {
+    id: text('id').primaryKey(),
+    shareId: text('share_id')
+      .notNull()
+      .references(() => shares.id, {onDelete: 'cascade'}),
+    filePath: text('file_path').notNull(),
+    side: text('side').$type<Anchor['side']>().notNull(),
+    line: integer('line').notNull(),
+    actorId: text('actor_id')
+      .notNull()
+      .references(() => user.id, {onDelete: 'restrict'}),
+    resolved: integer('resolved', {mode: 'boolean'}).notNull().default(false),
+    createdAt: text('created_at').notNull(),
+  },
+  (t) => [index('threads_shareId_idx').on(t.shareId)],
+);
+
+export const threadsRelations = relations(threads, ({one, many}) => ({
+  share: one(shares, {fields: [threads.shareId], references: [shares.id]}),
+  actor: one(user, {fields: [threads.actorId], references: [user.id]}),
+  comments: many(comments),
+}));
+
+export const comments = sqliteTable(
+  'comments',
+  {
+    id: text('id').primaryKey(),
+    shareId: text('share_id')
+      .notNull()
+      .references(() => shares.id, {onDelete: 'cascade'}),
+    threadId: text('thread_id')
+      .notNull()
+      .references(() => threads.id, {onDelete: 'cascade'}),
+    seq: integer('seq').notNull(),
+    actorId: text('actor_id')
+      .notNull()
+      .references(() => user.id, {onDelete: 'restrict'}),
+    body: text('body', {mode: 'json'}).$type<SerializedEditorState>().notNull(),
+    createdAt: text('created_at').notNull(),
+  },
+  (t) => [
+    index('comments_shareId_idx').on(t.shareId),
+    index('comments_threadId_idx').on(t.threadId),
+  ],
+);
+
+export const commentsRelations = relations(comments, ({one}) => ({
+  share: one(shares, {fields: [comments.shareId], references: [shares.id]}),
+  thread: one(threads, {fields: [comments.threadId], references: [threads.id]}),
+  actor: one(user, {fields: [comments.actorId], references: [user.id]}),
+}));
+
 export const events = sqliteTable(
   'events',
   {
@@ -87,14 +144,14 @@ export const events = sqliteTable(
     actorId: text('actor_id')
       .notNull()
       .references(() => user.id, {onDelete: 'restrict'}),
-    payload: text('payload', {mode: 'json'})
-      .$type<ShareEventPayload>()
-      .notNull(),
     createdAt: text('created_at')
       .notNull()
       .default(sql`(datetime('now'))`),
   },
-  (t) => [uniqueIndex('events_shareId_seq_unique').on(t.shareId, t.seq)],
+  (t) => [
+    uniqueIndex('events_shareId_seq_unique').on(t.shareId, t.seq),
+    index('events_subjectId_idx').on(t.subjectId),
+  ],
 );
 
 export const eventsRelations = relations(events, ({one}) => ({
@@ -110,6 +167,12 @@ export type NewPatch = typeof patches.$inferInsert;
 
 export type File = typeof files.$inferSelect;
 export type NewFile = typeof files.$inferInsert;
+
+export type Thread = typeof threads.$inferSelect;
+export type NewThread = typeof threads.$inferInsert;
+
+export type Comment = typeof comments.$inferSelect;
+export type NewComment = typeof comments.$inferInsert;
 
 export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;

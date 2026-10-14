@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import {insertUser, setupTestDb} from '@/db/__tests__/setup';
+import {allowAll, insertUser, setupTestDb} from '@/db/__tests__/setup';
 import {appendEvents} from '@/db/events';
 import {createShare} from '@/db/shares';
 import {env} from '@/env';
@@ -28,6 +28,7 @@ async function shareWithEvents(count: number) {
       $type: 'thread.resolved' as const,
       threadId: newId(),
     })),
+    allowAll,
   );
   return shareId;
 }

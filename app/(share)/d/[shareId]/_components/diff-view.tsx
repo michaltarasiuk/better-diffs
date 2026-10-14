@@ -20,7 +20,7 @@ import {
 import {isEmptyDiff} from '@/diffs/empty';
 import {isDiffLine} from '@/diffs/lines';
 import {CODE_VIEW_OPTIONS} from '@/diffs/options';
-import {FoldedStateContext} from '@/events/provider';
+import {ShareStateContext} from '@/events/provider';
 import {useIsMobile} from '@/hooks/use-is-mobile';
 import {useShortcut} from '@/hooks/use-shortcut';
 import {isDefined} from '@/utils/is-defined';
@@ -48,13 +48,13 @@ export function DiffView({files}: DiffViewProps) {
     toggleFileViewed,
     addCommentForm,
   } = use(ReviewStateContext);
-  const folded = use(FoldedStateContext);
+  const share = use(ShareStateContext);
   const codeViewRef = use(CodeViewRefContext);
   const {selectedLines, setSelectedLines} = useSelectedLines();
   const isMobile = useIsMobile();
 
   const threadsByFilePath = Map.groupBy(
-    folded.threads.values(),
+    share.threads.values(),
     (thread) => thread.anchor.filePath,
   );
 
@@ -89,7 +89,7 @@ export function DiffView({files}: DiffViewProps) {
             ...commentForms,
           ]),
           collapsed,
-          version: version + folded.version,
+          version: version + share.version,
         };
       })}
       selectedLines={selectedLines}

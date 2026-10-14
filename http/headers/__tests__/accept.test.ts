@@ -95,7 +95,7 @@ describe('Accept', () => {
       'text/html',
     );
     expect(header.getPreferred(['text/plain', 'text/html'])).toBe('text/html');
-    expect(header.getPreferred(['image/jpeg'])).toBe(null);
+    expect(header.getPreferred(['image/jpeg'])).toBeUndefined();
   });
 
   it('sets and gets media types', () => {

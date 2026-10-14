@@ -1,97 +1,85 @@
 'use client';
 
-import {catchError} from 'next/error';
 import {
   createContext,
-  use,
+  startTransition,
   useEffect,
-  useState,
-  useSyncExternalStore,
+  useEffectEvent,
+  useOptimistic,
+  useReducer,
 } from 'react';
-import {browser} from 'react-dom';
 
-import type {ShareEvent} from './schemas';
-import {EMPTY_FOLDED_STATE, type FoldedState, ShareState} from './state';
-import {hydrateShareEvents, type ShareEventsSync} from './sync';
+import type {ShareSnapshot} from './schemas';
+import {
+  applyOptimistic,
+  ingest,
+  initialState,
+  type OptimisticChange,
+  type ShareState,
+} from './state';
+import {fetchEvents, startPolling} from './sync';
 
-const HydrationBoundary = catchError(() => null);
+interface ShareActions {
+  readonly optimistic: (
+    changes: readonly OptimisticChange[],
+    save: () => Promise<unknown>,
+  ) => Promise<boolean>;
+}
 
 export const ShareStateContext = createContext<ShareState>(null as never);
 
-export const FoldedStateContext = createContext<FoldedState>(null as never);
+export const ShareActionsContext = createContext<ShareActions>(null as never);
 
 export function ShareEventsProvider({
   shareId,
+  snapshot,
   children,
 }: {
   readonly shareId: string;
+  readonly snapshot: ShareSnapshot;
   readonly children: React.ReactNode;
 }) {
-  use(browser());
+  const [confirmed, dispatch] = useReducer(ingest, snapshot, initialState);
+  const [state, addOptimistic] = useOptimistic(confirmed, applyOptimistic);
 
-  const hydratePromise = hydrateShareEvents(shareId);
+  async function refresh() {
+    dispatch(await fetchEvents(shareId, confirmed.seq));
+  }
 
-  return (
-    <HydrationBoundary key={shareId}>
-      <HydratedEvents hydratePromise={hydratePromise}>
-        {children}
-      </HydratedEvents>
-    </HydrationBoundary>
-  );
-}
+  const poll = useEffectEvent(refresh);
 
-function HydratedEvents({
-  hydratePromise,
-  children,
-}: {
-  readonly hydratePromise: ReturnType<typeof hydrateShareEvents>;
-  readonly children: React.ReactNode;
-}) {
-  const {events, sync} = use(hydratePromise);
-  return (
-    <ShareStateProvider events={events} sync={sync}>
-      {children}
-    </ShareStateProvider>
-  );
-}
+  useEffect(() => startPolling(poll), []);
 
-function ShareStateProvider({
-  events,
-  sync,
-  children,
-}: {
-  readonly events: readonly ShareEvent[];
-  readonly sync: ShareEventsSync;
-  readonly children: React.ReactNode;
-}) {
-  const [state] = useState(() => {
-    const shareState = new ShareState();
-    shareState.ingest(events);
-    return shareState;
-  });
+  function optimistic(
+    changes: readonly OptimisticChange[],
+    save: () => Promise<unknown>,
+  ) {
+    return new Promise<boolean>((resolve) => {
+      startTransition(async () => {
+        for (const change of changes) {
+          addOptimistic(change);
+        }
 
-  useEffect(() => {
-    return sync.startPolling(
-      () => state.latestSeq,
-      (batch) => {
-        state.ingest(batch);
-      },
-    );
-  }, [state, sync]);
+        try {
+          await save();
+        } catch {
+          resolve(false);
+          return;
+        }
 
-  const snapshot = useSyncExternalStore(
-    state.subscribe,
-    state.getSnapshot,
-    getServerSnapshot,
-  );
+        try {
+          await refresh();
+        } catch {
+          // Shown by the next poll instead
+        }
+        resolve(true);
+      });
+    });
+  }
 
   return (
-    <ShareStateContext value={state}>
-      <FoldedStateContext value={snapshot}>{children}</FoldedStateContext>
-    </ShareStateContext>
+    <ShareActionsContext value={{optimistic}}>
+      <ShareStateContext value={state}>{children}</ShareStateContext>
+    </ShareActionsContext>
   );
-}
-
-function getServerSnapshot() {
-  return EMPTY_FOLDED_STATE;
 }

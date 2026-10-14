@@ -1,16 +1,24 @@
 import type {SerializedEditorState} from 'lexical';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {newId} from '@/utils/new-id';
 
 import type {EventErrorReason} from '../errors';
-import type {Actor, Anchor, ShareEvent, ShareEventPayload} from '../schemas';
 import {
-  Draft,
-  EMPTY_FOLDED_STATE,
-  isType,
-  type OptimisticEvent,
-  ShareState,
+  type Actor,
+  type Anchor,
+  type Comment,
+  type ShareEventPayload,
+  type ShareRecords,
+  subjectIdFromPayload,
+  type Thread,
+} from '../schemas';
+import {
+  applyOptimistic,
+  check,
+  ingest,
+  initialState,
+  type OptimisticChange,
 } from '../state';
 
 const SHARE_ID = newId();
@@ -37,25 +45,26 @@ function actor(actorId: string): Actor {
   return {name: actorId[0]!.toUpperCase() + actorId.slice(1), image: null};
 }
 
-function optimistic(
-  payload: ShareEventPayload,
-  actorId = ALICE,
-): OptimisticEvent {
-  return {actorId, actor: actor(actorId), createdAt: CREATED_AT, payload};
+function thread(overrides: Partial<Thread> = {}) {
+  return {
+    id: THREAD_ID,
+    anchor: ANCHOR,
+    actorId: ALICE,
+    actor: actor(ALICE),
+    resolved: false,
+    createdAt: CREATED_AT,
+    ...overrides,
+  };
 }
 
-let nextSeq = 0;
-function confirmed(
-  payload: ShareEventPayload,
-  {actorId = ALICE, seq = ++nextSeq} = {},
-): ShareEvent {
+function comment(commentId = COMMENT_ID, text = 'hello') {
   return {
-    ...optimistic(payload, actorId),
-    id: newId(),
-    shareId: SHARE_ID,
-    seq,
-    type: payload.$type,
-    subjectId: 'commentId' in payload ? payload.commentId : payload.threadId,
+    id: commentId,
+    threadId: THREAD_ID,
+    actorId: ALICE,
+    actor: actor(ALICE),
+    body: body(text),
+    createdAt: CREATED_AT,
   };
 }
 
@@ -91,501 +100,267 @@ function deleted(commentId = COMMENT_ID) {
   return {$type: 'comment.deleted', commentId} satisfies ShareEventPayload;
 }
 
-function emptyEntities() {
-  return {
-    threads: new Map(),
-    comments: new Map(),
-    deletedCommentIds: new Set<string>(),
-  };
+function change(payload: ShareEventPayload, actorId = ALICE) {
+  return {actorId, actor: actor(actorId), createdAt: CREATED_AT, payload};
 }
 
-describe('Draft', () => {
-  function draftWith(...payloads: ShareEventPayload[]) {
-    const draft = Draft.fork(emptyEntities());
-    for (const payload of payloads) {
-      draft.apply(optimistic(payload));
-    }
-    return draft;
+function event(
+  seq: number,
+  payload: ShareEventPayload,
+  subject: Thread | Comment | null = null,
+) {
+  const base = {
+    id: newId(),
+    shareId: SHARE_ID,
+    seq,
+    subjectId: subjectIdFromPayload(payload),
+    actorId: ALICE,
+    createdAt: CREATED_AT,
+  };
+
+  switch (payload.$type) {
+    case 'thread.opened':
+    case 'thread.resolved':
+      return {
+        ...base,
+        type: payload.$type,
+        thread: subject as Thread | null,
+      };
+    case 'comment.created':
+    case 'comment.edited':
+      return {
+        ...base,
+        type: payload.$type,
+        comment: subject as Comment | null,
+      };
+    case 'comment.deleted':
+      return {...base, type: payload.$type};
+  }
+}
+
+function stateWith(
+  threads: Thread[] = [thread()],
+  comments: Comment[] = [comment()],
+  seq = 2,
+) {
+  return initialState({seq, threads, comments});
+}
+
+describe('initialState', () => {
+  it('lists each thread’s comments in the order given', () => {
+    const state = stateWith(
+      [thread()],
+      [comment(OTHER_COMMENT_ID), comment(COMMENT_ID)],
+      4,
+    );
+
+    expect(state.seq).toBe(4);
+    expect(state.version).toBe(0);
+    expect(state.threads.get(THREAD_ID)?.commentIds).toEqual([
+      OTHER_COMMENT_ID,
+      COMMENT_ID,
+    ]);
+    expect(state.comments.size).toBe(2);
+  });
+});
+
+describe('ingest', () => {
+  it('applies each subject as stored', () => {
+    const state = stateWith();
+
+    const next = ingest(state, [
+      event(3, edited(), comment(COMMENT_ID, 'edited')),
+      event(4, RESOLVED, thread({resolved: true})),
+      event(5, created(OTHER_COMMENT_ID), comment(OTHER_COMMENT_ID)),
+    ]);
+
+    expect(next.seq).toBe(5);
+    expect(next.version).toBe(1);
+    expect(next.comments.get(COMMENT_ID)?.body).toEqual(body('edited'));
+    expect(next.threads.get(THREAD_ID)).toMatchObject({
+      resolved: true,
+      commentIds: [COMMENT_ID, OTHER_COMMENT_ID],
+    });
+  });
+
+  it('removes a deleted comment', () => {
+    const next = ingest(stateWith(), [event(3, deleted())]);
+
+    expect(next.comments.has(COMMENT_ID)).toBe(false);
+    expect(next.threads.get(THREAD_ID)?.commentIds).toEqual([]);
+  });
+
+  it('skips an event whose subject is gone', () => {
+    const state = stateWith([thread()], []);
+
+    const next = ingest(state, [
+      event(3, created(), null),
+      event(4, deleted()),
+    ]);
+
+    expect(next.seq).toBe(4);
+    expect(next.comments.size).toBe(0);
+    expect(next.threads.get(THREAD_ID)?.commentIds).toEqual([]);
+  });
+
+  it('skips events it already applied', () => {
+    const state = stateWith();
+
+    const next = ingest(state, [
+      event(2, deleted()),
+      event(3, edited(), comment(COMMENT_ID, 'edited')),
+    ]);
+
+    expect(next.seq).toBe(3);
+    expect(next.comments.get(COMMENT_ID)?.body).toEqual(body('edited'));
+  });
+
+  it('stops at a gap', () => {
+    const next = ingest(stateWith(), [
+      event(3, edited(), comment(COMMENT_ID, 'edited')),
+      event(5, deleted()),
+    ]);
+
+    expect(next.seq).toBe(3);
+    expect(next.comments.has(COMMENT_ID)).toBe(true);
+  });
+
+  it('returns the same state when nothing is new', () => {
+    const state = stateWith();
+
+    expect(ingest(state, [])).toBe(state);
+    expect(ingest(state, [event(2, deleted())])).toBe(state);
+  });
+
+  it('leaves the previous state untouched', () => {
+    const state = stateWith();
+    const before = state.threads.get(THREAD_ID);
+
+    ingest(state, [
+      event(3, created(OTHER_COMMENT_ID), comment(OTHER_COMMENT_ID)),
+      event(4, deleted()),
+    ]);
+
+    expect(state.threads.get(THREAD_ID)).toBe(before);
+    expect(before?.commentIds).toEqual([COMMENT_ID]);
+    expect(state.comments.has(COMMENT_ID)).toBe(true);
+  });
+});
+
+describe('applyOptimistic', () => {
+  it('shows a new thread with its first comment', () => {
+    const state = initialState({seq: 0, threads: [], comments: []});
+
+    const next = [change(OPENED), change(created())].reduce(
+      applyOptimistic,
+      state,
+    );
+
+    expect(next.threads.get(THREAD_ID)).toEqual({
+      ...thread(),
+      commentIds: [COMMENT_ID],
+    });
+    expect(next.comments.get(COMMENT_ID)).toEqual(comment());
+    expect(next.version).toBe(2);
+  });
+
+  it('does not repeat a change that is already stored', () => {
+    const next = applyOptimistic(stateWith(), change(created()));
+
+    expect(next.threads.get(THREAD_ID)?.commentIds).toEqual([COMMENT_ID]);
+  });
+
+  it('shows edits, deletions and resolutions', () => {
+    const state = stateWith();
+
+    expect(
+      applyOptimistic(state, change(edited())).comments.get(COMMENT_ID)?.body,
+    ).toEqual(body('edited'));
+    expect(
+      applyOptimistic(state, change(deleted())).comments.has(COMMENT_ID),
+    ).toBe(false);
+    expect(
+      applyOptimistic(state, change(RESOLVED)).threads.get(THREAD_ID)?.resolved,
+    ).toBe(true);
+  });
+
+  it('keeps the seq and leaves the previous state untouched', () => {
+    const state = stateWith();
+
+    const next = applyOptimistic(state, change(created(OTHER_COMMENT_ID)));
+
+    expect(next.seq).toBe(state.seq);
+    expect(state.threads.get(THREAD_ID)?.commentIds).toEqual([COMMENT_ID]);
+    expect(state.comments.has(OTHER_COMMENT_ID)).toBe(false);
+  });
+});
+
+describe('check', () => {
+  function records(overrides: Partial<ShareRecords> = {}) {
+    return {threads: [thread()], comments: [comment()], ...overrides};
   }
 
-  it('opens a thread', () => {
-    const draft = draftWith(OPENED);
-
-    expect(draft.threads.get(THREAD_ID)).toEqual({
-      id: THREAD_ID,
-      anchor: ANCHOR,
-      actorId: ALICE,
-      actor: actor(ALICE),
-      resolved: false,
-      commentIds: [],
-      createdAt: CREATED_AT,
-    });
+  it('accepts a new thread with its first comment', () => {
+    expect(() =>
+      check(records({threads: [], comments: []}), [
+        change(OPENED),
+        change(created()),
+      ]),
+    ).not.toThrow();
   });
 
-  it('rejects opening a thread twice', () => {
-    const draft = draftWith(OPENED);
-
-    expect(() => draft.apply(optimistic(OPENED))).toThrow(
-      `Thread already exists: ${THREAD_ID}`,
-    );
+  it('lets anyone reply to and resolve a thread', () => {
+    expect(() =>
+      check(records(), [
+        change(created(OTHER_COMMENT_ID), BOB),
+        change(RESOLVED, BOB),
+      ]),
+    ).not.toThrow();
   });
 
-  it('resolves a thread owned by the actor', () => {
-    const draft = draftWith(OPENED, RESOLVED);
-
-    expect(draft.threads.get(THREAD_ID)?.resolved).toBe(true);
+  it('lets the owner edit and delete a comment in a resolved thread', () => {
+    expect(() =>
+      check(records({threads: [thread({resolved: true})]}), [
+        change(edited()),
+        change(deleted()),
+      ]),
+    ).not.toThrow();
   });
 
-  it('resolves a thread owned by another actor', () => {
-    const draft = draftWith(OPENED);
-
-    draft.apply(optimistic(RESOLVED, BOB));
-
-    expect(draft.threads.get(THREAD_ID)?.resolved).toBe(true);
-  });
-
-  it('rejects resolving a missing thread', () => {
-    const draft = draftWith();
-
-    expect(() => draft.apply(optimistic(RESOLVED))).toThrow(
-      `Thread not found: ${THREAD_ID}`,
-    );
-  });
-
-  it('rejects changes to a RESOLVED thread', () => {
-    const draft = draftWith(OPENED, RESOLVED);
-
-    expect(() => draft.apply(optimistic(RESOLVED))).toThrow(
-      `Thread already resolved: ${THREAD_ID}`,
-    );
-    expect(() => draft.apply(optimistic(created()))).toThrow(
-      `Thread already resolved: ${THREAD_ID}`,
-    );
-  });
-
-  it('deletes a comment in a RESOLVED thread', () => {
-    const draft = draftWith(OPENED, created(), RESOLVED, deleted());
-
-    expect(draft.comments.has(COMMENT_ID)).toBe(false);
-    expect(draft.threads.get(THREAD_ID)?.commentIds).toEqual([]);
-  });
-
-  it('creates comments in order', () => {
-    const draft = Draft.fork(emptyEntities());
-    draft.apply(optimistic(OPENED));
-    draft.apply(optimistic(created(COMMENT_ID, 'first')));
-    draft.apply(optimistic(created(OTHER_COMMENT_ID, 'second'), BOB));
-
-    expect(draft.threads.get(THREAD_ID)?.commentIds).toEqual([
-      COMMENT_ID,
-      OTHER_COMMENT_ID,
-    ]);
-    expect(draft.comments.get(OTHER_COMMENT_ID)).toEqual({
-      id: OTHER_COMMENT_ID,
-      threadId: THREAD_ID,
-      actorId: BOB,
-      actor: actor(BOB),
-      body: body('second'),
-      createdAt: CREATED_AT,
-    });
-  });
-
-  it('edits a comment owned by the actor', () => {
-    const draft = draftWith(OPENED, created(), edited());
-
-    expect(draft.comments.get(COMMENT_ID)?.body).toEqual(body('edited'));
-  });
-
-  it('rejects editing a comment owned by another actor', () => {
-    const draft = draftWith(OPENED, created());
-
-    expect(() => draft.apply(optimistic(edited(), BOB))).toThrow(
-      `${COMMENT_ID} not owned by actor: ${BOB}`,
-    );
-  });
-
-  it('rejects editing a missing comment', () => {
-    const draft = draftWith(OPENED);
-
-    expect(() => draft.apply(optimistic(edited()))).toThrow(
-      `Comment not found: ${COMMENT_ID}`,
-    );
-  });
-
-  it('deletes a comment and remembers it', () => {
-    const draft = draftWith(OPENED, created(), deleted());
-
-    expect(draft.comments.has(COMMENT_ID)).toBe(false);
-    expect(draft.threads.get(THREAD_ID)?.commentIds).toEqual([]);
-    expect(draft.deletedCommentIds).toEqual(new Set([COMMENT_ID]));
-  });
-
-  it('rejects changes to a deleted comment', () => {
-    const draft = draftWith(OPENED, created(), deleted());
-
-    expect(() => draft.apply(optimistic(edited()))).toThrow(
-      `Comment already deleted: ${COMMENT_ID}`,
-    );
-    expect(() => draft.apply(optimistic(deleted()))).toThrow(
-      `Comment already deleted: ${COMMENT_ID}`,
-    );
+  it('checks each change against the earlier ones', () => {
+    expect(() =>
+      check(records(), [change(deleted()), change(edited())]),
+    ).toThrow(`Comment already deleted: ${COMMENT_ID}`);
   });
 
   it.each([
-    ['THREAD_ALREADY_EXISTS', [OPENED], optimistic(OPENED)],
-    ['THREAD_NOT_FOUND', [], optimistic(RESOLVED)],
-    ['THREAD_RESOLVED', [OPENED, RESOLVED], optimistic(created())],
-    ['COMMENT_ALREADY_EXISTS', [OPENED, created()], optimistic(created())],
-    ['COMMENT_NOT_FOUND', [OPENED], optimistic(edited())],
-    ['COMMENT_DELETED', [OPENED, created(), deleted()], optimistic(edited())],
-    ['NOT_OWNER', [OPENED, created()], optimistic(edited(), BOB)],
-  ] satisfies [EventErrorReason, ShareEventPayload[], OptimisticEvent][])(
+    ['THREAD_ALREADY_EXISTS', records(), change(OPENED)],
+    ['THREAD_NOT_FOUND', records({threads: []}), change(RESOLVED)],
+    [
+      'THREAD_RESOLVED',
+      records({threads: [thread({resolved: true})]}),
+      change(created(OTHER_COMMENT_ID)),
+    ],
+    ['COMMENT_ALREADY_EXISTS', records(), change(created())],
+    [
+      'COMMENT_ALREADY_EXISTS',
+      records({comments: [], deletedCommentIds: [COMMENT_ID]}),
+      change(created()),
+    ],
+    ['COMMENT_NOT_FOUND', records({comments: []}), change(edited())],
+    [
+      'COMMENT_DELETED',
+      records({comments: [], deletedCommentIds: [COMMENT_ID]}),
+      change(deleted()),
+    ],
+    ['NOT_OWNER', records(), change(edited(), BOB)],
+    ['NOT_OWNER', records(), change(deleted(), BOB)],
+  ] satisfies [EventErrorReason, ShareRecords, OptimisticChange][])(
     'refuses with %s',
-    (reason, base, event) => {
-      const draft = draftWith(...base);
-
-      expect(() => draft.apply(event)).toThrow(
+    (reason, given, refused) => {
+      expect(() => check(given, [refused])).toThrow(
         expect.objectContaining({name: 'EventError', reason}),
       );
     },
   );
-
-  describe('fork', () => {
-    it('leaves the base untouched', () => {
-      const base = draftWith(OPENED, created());
-      const thread = base.threads.get(THREAD_ID)!;
-      const comment = base.comments.get(COMMENT_ID)!;
-
-      const fork = Draft.fork(base);
-      fork.apply(optimistic(edited()));
-      fork.apply(optimistic(created(OTHER_COMMENT_ID)));
-      fork.apply(optimistic(deleted()));
-      fork.apply(optimistic(RESOLVED));
-
-      expect(base.threads.get(THREAD_ID)).toBe(thread);
-      expect(thread).toMatchObject({resolved: false, commentIds: [COMMENT_ID]});
-      expect(base.comments.get(COMMENT_ID)).toBe(comment);
-      expect(comment.body).toEqual(body('hello'));
-      expect(base.comments.has(OTHER_COMMENT_ID)).toBe(false);
-      expect(base.deletedCommentIds.size).toBe(0);
-
-      expect(fork.threads.get(THREAD_ID)).toMatchObject({
-        resolved: true,
-        commentIds: [OTHER_COMMENT_ID],
-      });
-    });
-
-    it('copies an entity once and then mutates its own copy', () => {
-      const base = draftWith(OPENED, created());
-      const fork = Draft.fork(base);
-
-      fork.apply(optimistic(edited(COMMENT_ID, 'one')));
-      const copy = fork.comments.get(COMMENT_ID);
-      fork.apply(optimistic(edited(COMMENT_ID, 'two')));
-
-      expect(copy).not.toBe(base.comments.get(COMMENT_ID));
-      expect(fork.comments.get(COMMENT_ID)).toBe(copy);
-      expect(copy?.body).toEqual(body('two'));
-    });
-  });
-});
-
-describe('ShareState', () => {
-  beforeEach(() => {
-    nextSeq = 0;
-  });
-
-  function stateWith(...payloads: ShareEventPayload[]) {
-    const state = new ShareState();
-    state.ingest(payloads.map((payload) => confirmed(payload)));
-    return state;
-  }
-
-  it('starts empty', () => {
-    const snapshot = new ShareState().getSnapshot();
-
-    expect(snapshot).toEqual(EMPTY_FOLDED_STATE);
-  });
-
-  it('caches the snapshot until something changes', () => {
-    const state = new ShareState();
-    const first = state.getSnapshot();
-
-    expect(state.getSnapshot()).toBe(first);
-
-    state.ingest([confirmed(OPENED)]);
-
-    expect(state.getSnapshot()).not.toBe(first);
-    expect(state.getSnapshot().version).toBe(1);
-  });
-
-  describe('ingest', () => {
-    it('folds confirmed events', () => {
-      const state = stateWith(OPENED, created());
-      const {threads, comments, pendingIds} = state.getSnapshot();
-
-      expect(threads.get(THREAD_ID)?.commentIds).toEqual([COMMENT_ID]);
-      expect(comments.get(COMMENT_ID)?.body).toEqual(body('hello'));
-      expect(pendingIds.size).toBe(0);
-    });
-
-    it('leaves earlier snapshots untouched', () => {
-      const state = stateWith(OPENED, created());
-      const before = state.getSnapshot();
-      const thread = before.threads.get(THREAD_ID)!;
-
-      state.ingest([confirmed(created(OTHER_COMMENT_ID)), confirmed(RESOLVED)]);
-      const after = state.getSnapshot();
-
-      expect(thread.commentIds).toEqual([COMMENT_ID]);
-      expect(thread.resolved).toBe(false);
-      expect(before.comments.has(OTHER_COMMENT_ID)).toBe(false);
-      expect(after.threads.get(THREAD_ID)).not.toBe(thread);
-      expect(after.comments).not.toBe(before.comments);
-      expect(after.comments.get(COMMENT_ID)).toBe(
-        before.comments.get(COMMENT_ID),
-      );
-    });
-
-    it('returns false and skips notifying for an empty batch', () => {
-      const state = new ShareState();
-      const subscriber = vi.fn();
-      state.subscribe(subscriber);
-
-      expect(state.ingest([])).toBe(false);
-      expect(subscriber).not.toHaveBeenCalled();
-      expect(state.getSnapshot().version).toBe(0);
-    });
-
-    it('notifies subscribers once per batch', () => {
-      const state = new ShareState();
-      const subscriber = vi.fn();
-      state.subscribe(subscriber);
-
-      expect(state.ingest([confirmed(OPENED), confirmed(created())])).toBe(
-        true,
-      );
-      expect(subscriber).toHaveBeenCalledOnce();
-    });
-
-    it('stops notifying after unsubscribing', () => {
-      const state = new ShareState();
-      const subscriber = vi.fn();
-      const unsubscribe = state.subscribe(subscriber);
-
-      unsubscribe();
-      state.ingest([confirmed(OPENED)]);
-
-      expect(subscriber).not.toHaveBeenCalled();
-    });
-
-    it.each([
-      ['repeated', 1],
-      ['older', 0],
-      ['gapped', 3],
-    ])('rejects a %s seq without consuming it', (_name, seq) => {
-      const state = new ShareState();
-      state.ingest([confirmed(OPENED, {seq: 1})]);
-
-      expect(() => state.ingest([confirmed(created(), {seq})])).toThrow(
-        expect.objectContaining({reason: 'UNEXPECTED_SEQ'}),
-      );
-      expect(state.latestSeq).toBe(1);
-    });
-
-    it('keeps the events before a gap', () => {
-      const state = new ShareState();
-
-      expect(() =>
-        state.ingest([
-          confirmed(OPENED, {seq: 1}),
-          confirmed(created(), {seq: 3}),
-        ]),
-      ).toThrow(`Expected event seq 2, got 3`);
-      expect(state.latestSeq).toBe(1);
-      expect(state.threads.has(THREAD_ID)).toBe(true);
-      expect(state.comments.has(COMMENT_ID)).toBe(false);
-    });
-  });
-
-  describe('optimistic', () => {
-    it('shows pending events on top of confirmed state', () => {
-      const state = stateWith(OPENED);
-
-      state.optimistic(optimistic(created()));
-      const {threads, comments, pendingIds} = state.getSnapshot();
-
-      expect(threads.get(THREAD_ID)?.commentIds).toEqual([COMMENT_ID]);
-      expect(comments.has(COMMENT_ID)).toBe(true);
-      expect(pendingIds).toEqual(new Set([COMMENT_ID]));
-    });
-
-    it('keeps confirmed entities untouched', () => {
-      const state = stateWith(OPENED, created());
-
-      state.optimistic(optimistic(edited()));
-
-      expect(state.comments.get(COMMENT_ID)?.body).toEqual(body('hello'));
-      expect(state.getSnapshot().comments.get(COMMENT_ID)?.body).toEqual(
-        body('edited'),
-      );
-    });
-
-    it('throws without recording an invalid event', () => {
-      const state = stateWith(OPENED);
-      const subscriber = vi.fn();
-      state.subscribe(subscriber);
-
-      expect(() => state.optimistic(optimistic(edited()))).toThrow(
-        `Comment not found: ${COMMENT_ID}`,
-      );
-      expect(subscriber).not.toHaveBeenCalled();
-      expect(state.getSnapshot().pendingIds.size).toBe(0);
-    });
-
-    it('validates a batch atomically', () => {
-      const state = new ShareState();
-
-      expect(() =>
-        state.optimisticAll([optimistic(OPENED), optimistic(edited())]),
-      ).toThrow();
-      expect(state.getSnapshot().threads.size).toBe(0);
-    });
-
-    it('returns one pending id per event', () => {
-      const state = new ShareState();
-
-      const pendingIds = state.optimisticAll([
-        optimistic(OPENED),
-        optimistic(created()),
-      ]);
-
-      expect(pendingIds).toHaveLength(2);
-      expect(new Set(pendingIds).size).toBe(2);
-      expect(state.getSnapshot().pendingIds).toEqual(
-        new Set([THREAD_ID, COMMENT_ID]),
-      );
-    });
-
-    it('does nothing for an empty batch', () => {
-      const state = new ShareState();
-      const subscriber = vi.fn();
-      state.subscribe(subscriber);
-
-      expect(state.optimisticAll([])).toEqual([]);
-      expect(subscriber).not.toHaveBeenCalled();
-    });
-
-    it('drops pending events once the server confirms them', () => {
-      const state = new ShareState();
-      state.optimisticAll([optimistic(OPENED), optimistic(created())]);
-
-      state.ingest([confirmed(OPENED), confirmed(created())]);
-      const {threads, pendingIds} = state.getSnapshot();
-
-      expect(pendingIds.size).toBe(0);
-      expect(threads.get(THREAD_ID)?.commentIds).toEqual([COMMENT_ID]);
-    });
-
-    it('keeps pending events that the server has not confirmed yet', () => {
-      const state = new ShareState();
-      state.optimisticAll([optimistic(OPENED), optimistic(created())]);
-
-      state.ingest([confirmed(OPENED)]);
-
-      expect(state.getSnapshot().pendingIds).toEqual(new Set([COMMENT_ID]));
-    });
-
-    it('settles one pending event per confirmed event', () => {
-      const state = stateWith(OPENED, created());
-      state.optimisticAll([
-        optimistic(edited(COMMENT_ID, 'first')),
-        optimistic(edited(COMMENT_ID, 'second')),
-      ]);
-
-      state.ingest([confirmed(edited(COMMENT_ID, 'first'))]);
-
-      expect(state.getSnapshot().comments.get(COMMENT_ID)?.body).toEqual(
-        body('second'),
-      );
-    });
-
-    it('drops pending events that no longer apply', () => {
-      const state = stateWith(OPENED, created());
-      state.optimistic(optimistic(edited()));
-
-      state.ingest([confirmed(deleted())]);
-      const {pendingIds, comments} = state.getSnapshot();
-
-      expect(pendingIds.size).toBe(0);
-      expect(comments.has(COMMENT_ID)).toBe(false);
-    });
-
-    it('notifies about the events applied before a failing one', () => {
-      const state = new ShareState();
-      const subscriber = vi.fn();
-      state.subscribe(subscriber);
-
-      expect(() =>
-        state.ingest([confirmed(OPENED), confirmed(OPENED)]),
-      ).toThrow();
-
-      expect(subscriber).toHaveBeenCalledOnce();
-      expect(state.getSnapshot().threads.has(THREAD_ID)).toBe(true);
-    });
-
-    it('only reconciles events of the same type', () => {
-      const state = stateWith(OPENED, created());
-      state.optimistic(optimistic(deleted()));
-
-      state.ingest([confirmed(edited())]);
-
-      expect(state.getSnapshot().pendingIds).toEqual(new Set([COMMENT_ID]));
-      expect(state.getSnapshot().comments.has(COMMENT_ID)).toBe(false);
-    });
-  });
-
-  describe('reject', () => {
-    it('removes a pending event', () => {
-      const state = stateWith(OPENED);
-      const pendingId = state.optimistic(optimistic(created()));
-      const subscriber = vi.fn();
-      state.subscribe(subscriber);
-
-      expect(state.reject(pendingId)).toBe(true);
-      expect(subscriber).toHaveBeenCalledOnce();
-      expect(state.getSnapshot().comments.has(COMMENT_ID)).toBe(false);
-      expect(state.getSnapshot().pendingIds.size).toBe(0);
-    });
-
-    it('returns false for an unknown pending id', () => {
-      const state = new ShareState();
-      const subscriber = vi.fn();
-      state.subscribe(subscriber);
-
-      expect(state.reject('unknown')).toBe(false);
-      expect(subscriber).not.toHaveBeenCalled();
-    });
-
-    it('removes several pending events with one notification', () => {
-      const state = new ShareState();
-      const pendingIds = state.optimisticAll([
-        optimistic(OPENED),
-        optimistic(created()),
-      ]);
-      const subscriber = vi.fn();
-      state.subscribe(subscriber);
-
-      expect(state.rejectAll([...pendingIds, 'unknown'])).toBe(true);
-      expect(subscriber).toHaveBeenCalledOnce();
-      expect(state.getSnapshot().threads.size).toBe(0);
-    });
-  });
-});
-
-describe('isType', () => {
-  it('matches the payload type', () => {
-    expect(isType('thread.opened', OPENED)).toBe(true);
-    expect(isType('thread.resolved', OPENED)).toBe(false);
-  });
 });

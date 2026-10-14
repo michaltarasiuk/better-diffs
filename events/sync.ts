@@ -3,7 +3,6 @@ import {z} from 'zod';
 import {fetchJson} from '@/http/fetch';
 import {isDefined} from '@/utils/is-defined';
 
-import {getEvents, getLastSeq, putEvents} from './idb';
 import {ShareEvent} from './schemas';
 
 const ACTIVE_POLL_INTERVAL = 3_000;
@@ -13,111 +12,62 @@ const EventsResponse = z.object({
   events: z.array(ShareEvent),
 });
 
-async function fetchEvents(shareId: string, afterSeq: number | null) {
-  const searchParams = isDefined(afterSeq)
-    ? `?${new URLSearchParams({afterSeq: String(afterSeq)})}`
-    : '';
+export async function fetchEvents(shareId: string, afterSeq: number) {
+  const searchParams = new URLSearchParams({afterSeq: String(afterSeq)});
   const {events} = await fetchJson(
-    `/api/shares/${shareId}/events${searchParams}`,
+    `/api/shares/${shareId}/events?${searchParams}`,
     EventsResponse,
     {cache: 'no-store'},
   );
   return events;
 }
 
-export class ShareEventsSync {
-  readonly #shareId: string;
-  #isPulling = false;
+export function startPolling(poll: () => Promise<void>) {
+  let intervalId: ReturnType<typeof setInterval> | null = null;
+  let isPolling = false;
 
-  constructor(shareId: string) {
-    this.#shareId = shareId;
-  }
-
-  async hydrate() {
-    const lastSeq = await getLastSeq(this.#shareId);
-    const events = await fetchEvents(this.#shareId, lastSeq);
-    if (events.length > 0) {
-      await putEvents(events);
+  const tick = async () => {
+    if (isPolling) {
+      return;
     }
-    return getEvents(this.#shareId);
-  }
 
-  startPolling(
-    afterSeq: () => number,
-    onBatch: (events: readonly ShareEvent[]) => void,
-  ) {
-    let intervalId: ReturnType<typeof setInterval> | null = null;
+    isPolling = true;
+    try {
+      await poll();
+    } catch {
+      // Retried on the next interval
+    } finally {
+      isPolling = false;
+    }
+  };
 
-    const getInterval = () =>
+  const resetInterval = () => {
+    if (isDefined(intervalId)) {
+      clearInterval(intervalId);
+    }
+    intervalId = setInterval(
+      () => void tick(),
       document.visibilityState === 'visible'
         ? ACTIVE_POLL_INTERVAL
-        : BACKGROUND_POLL_INTERVAL;
+        : BACKGROUND_POLL_INTERVAL,
+    );
+  };
 
-    const poll = async () => {
-      if (this.#isPulling) {
-        return;
-      }
-
-      this.#isPulling = true;
-
-      try {
-        const events = await fetchEvents(this.#shareId, afterSeq());
-        if (events.length > 0) {
-          onBatch(events);
-          await putEvents(events);
-        }
-      } catch {
-        // Retried on the next interval
-      } finally {
-        this.#isPulling = false;
-      }
-    };
-
-    const resetInterval = () => {
-      if (isDefined(intervalId)) {
-        clearInterval(intervalId);
-      }
-      intervalId = setInterval(() => void poll(), getInterval());
-    };
-
-    void poll();
+  const onVisibilityChange = () => {
     resetInterval();
+    if (document.visibilityState === 'visible') {
+      void tick();
+    }
+  };
 
-    const onVisibilityChange = () => {
-      resetInterval();
-      if (document.visibilityState === 'visible') {
-        void poll();
-      }
-    };
+  void tick();
+  resetInterval();
+  document.addEventListener('visibilitychange', onVisibilityChange);
 
-    document.addEventListener('visibilitychange', onVisibilityChange);
-
-    return () => {
-      if (isDefined(intervalId)) {
-        clearInterval(intervalId);
-      }
-      document.removeEventListener('visibilitychange', onVisibilityChange);
-    };
-  }
-}
-
-const hydratePromises = new Map<
-  string,
-  Promise<{events: ShareEvent[]; sync: ShareEventsSync}>
->();
-
-export function hydrateShareEvents(shareId: string) {
-  let hydratePromise = hydratePromises.get(shareId);
-  if (!isDefined(hydratePromise)) {
-    hydratePromise = (async () => {
-      const sync = new ShareEventsSync(shareId);
-      const events = await sync.hydrate();
-      return {events, sync};
-    })().catch((error) => {
-      hydratePromises.delete(shareId);
-      throw error;
-    });
-    hydratePromises.set(shareId, hydratePromise);
-  }
-  return hydratePromise;
+  return () => {
+    if (isDefined(intervalId)) {
+      clearInterval(intervalId);
+    }
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+  };
 }

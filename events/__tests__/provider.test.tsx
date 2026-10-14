@@ -1,163 +1,177 @@
 // @vitest-environment jsdom
 
 import {act, render, screen} from '@testing-library/react';
-import {Suspense, use} from 'react';
+import {use} from 'react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {newId} from '@/utils/new-id';
 
 import {
-  FoldedStateContext,
+  ShareActionsContext,
   ShareEventsProvider,
   ShareStateContext,
 } from '../provider';
-import type {ShareEvent, ShareEventPayload} from '../schemas';
-import type {ShareEventsSync} from '../sync';
+import type {ShareEvent, ShareSnapshot, Thread} from '../schemas';
+import type {OptimisticChange} from '../state';
 
-const {hydrateShareEvents} = vi.hoisted(() => ({
-  hydrateShareEvents: vi.fn<typeof import('../sync').hydrateShareEvents>(),
+const {fetchEvents, startPolling} = vi.hoisted(() => ({
+  fetchEvents: vi.fn<typeof import('../sync').fetchEvents>(),
+  startPolling: vi.fn<typeof import('../sync').startPolling>(),
 }));
 
-vi.mock('../sync', () => ({hydrateShareEvents}));
+vi.mock('../sync', () => ({fetchEvents, startPolling}));
 
 const SHARE_ID = newId();
 
-type StartPolling = ShareEventsSync['startPolling'];
-
-let onBatch: Parameters<StartPolling>[1];
-const stopPolling = vi.fn<ReturnType<StartPolling>>();
-const startPolling = vi.fn<StartPolling>((_afterSeq, callback) => {
-  onBatch = callback;
-  return stopPolling;
-});
-
-function shareEvent(seq: number, payload: ShareEventPayload): ShareEvent {
+function thread(id = newId()): Thread {
   return {
-    id: newId(),
-    shareId: SHARE_ID,
-    seq,
-    type: payload.$type,
-    subjectId: 'threadId' in payload ? payload.threadId : newId(),
+    id,
+    anchor: {shareId: SHARE_ID, filePath: 'a.txt', side: 'additions', line: 1},
     actorId: 'alice',
     actor: {name: 'Alice', image: null},
-    payload,
+    resolved: false,
     createdAt: new Date().toISOString(),
   };
 }
 
-function opened(seq: number) {
-  return shareEvent(seq, {
-    $type: 'thread.opened',
-    threadId: newId(),
-    anchor: {shareId: SHARE_ID, filePath: 'a.txt', side: 'additions', line: 1},
-  });
+function opened(seq: number, subject = thread()): ShareEvent {
+  return {
+    id: newId(),
+    shareId: SHARE_ID,
+    seq,
+    type: 'thread.opened',
+    subjectId: subject.id,
+    actorId: subject.actorId,
+    createdAt: subject.createdAt,
+    thread: subject,
+  };
 }
 
-type Hydration = Awaited<ReturnType<typeof hydrateShareEvents>>;
-
-// React reads a settled promise synchronously instead of suspending on it.
-function settled(result: PromiseSettledResult<Hydration>) {
-  const promise =
-    result.status === 'fulfilled'
-      ? Promise.resolve(result.value)
-      : Promise.reject(result.reason);
-  promise.catch(() => {});
-  return Object.assign(promise, result);
-}
-
-function hydrateWith(events: ShareEvent[]) {
-  const sync = {startPolling} as unknown as ShareEventsSync;
-  hydrateShareEvents.mockReturnValue(
-    settled({status: 'fulfilled', value: {events, sync}}),
-  );
+function openChange(threadId: string): OptimisticChange {
+  return {
+    actorId: 'alice',
+    actor: {name: 'Alice', image: null},
+    createdAt: new Date().toISOString(),
+    payload: {
+      $type: 'thread.opened',
+      threadId,
+      anchor: {
+        shareId: SHARE_ID,
+        filePath: 'a.txt',
+        side: 'additions',
+        line: 1,
+      },
+    },
+  };
 }
 
 function ThreadCount() {
-  const {threads, version} = use(FoldedStateContext);
+  const {threads, seq} = use(ShareStateContext);
   return (
     <output>
-      {threads.size} threads, version {version}
+      {threads.size} threads at seq {seq}
     </output>
   );
 }
 
-function renderProvider(children: React.ReactNode = <ThreadCount />) {
+let actions: React.ContextType<typeof ShareActionsContext>;
+function CaptureActions() {
+  actions = use(ShareActionsContext);
+  return null;
+}
+
+function renderProvider(
+  snapshot: ShareSnapshot = {seq: 0, threads: [], comments: []},
+) {
   return render(
-    <Suspense fallback="Loading">
-      <ShareEventsProvider shareId={SHARE_ID}>{children}</ShareEventsProvider>
-    </Suspense>,
+    <ShareEventsProvider shareId={SHARE_ID} snapshot={snapshot}>
+      <CaptureActions />
+      <ThreadCount />
+    </ShareEventsProvider>,
   );
 }
 
+function polledFn() {
+  return startPolling.mock.calls[0]![0];
+}
+
 beforeEach(() => {
-  hydrateWith([]);
+  fetchEvents.mockResolvedValue([]);
 });
 
 describe('ShareEventsProvider', () => {
-  it('hydrates events for the share', async () => {
-    hydrateWith([opened(1), opened(2)]);
+  it('starts from the snapshot', () => {
+    renderProvider({seq: 2, threads: [thread(), thread()], comments: []});
 
-    renderProvider();
-
-    expect(hydrateShareEvents).toHaveBeenCalledWith(SHARE_ID);
-    expect(screen.getByRole('status')).toHaveTextContent(
-      '2 threads, version 1',
-    );
+    expect(screen.getByRole('status')).toHaveTextContent('2 threads at seq 2');
   });
 
-  it('applies polled batches', async () => {
-    hydrateWith([opened(1)]);
-    renderProvider();
+  it('polls for events after its seq', async () => {
+    renderProvider({seq: 1, threads: [thread()], comments: []});
+    fetchEvents.mockResolvedValueOnce([opened(2), opened(3)]);
 
-    act(() => onBatch([opened(2), opened(3)]));
+    await act(() => polledFn()());
 
-    expect(screen.getByRole('status')).toHaveTextContent(
-      '3 threads, version 2',
-    );
+    expect(fetchEvents).toHaveBeenLastCalledWith(SHARE_ID, 1);
+    expect(screen.getByRole('status')).toHaveTextContent('3 threads at seq 3');
+
+    await act(() => polledFn()());
+
+    expect(fetchEvents).toHaveBeenLastCalledWith(SHARE_ID, 3);
   });
 
-  it('exposes the share state for optimistic updates', async () => {
-    let state: React.ContextType<typeof ShareStateContext> | undefined;
-    function CaptureState() {
-      state = use(ShareStateContext);
-      return null;
-    }
-    renderProvider(
-      <>
-        <CaptureState />
-        <ThreadCount />
-      </>,
-    );
+  it('shows a change while it is saved, then the stored one', async () => {
+    renderProvider();
+    const stored = thread();
+    let save!: () => void;
+    fetchEvents.mockResolvedValueOnce([opened(1, stored)]);
 
+    let saved!: Promise<boolean>;
     act(() => {
-      state!.optimistic({
-        actorId: 'alice',
-        actor: {name: 'Alice', image: null},
-        createdAt: new Date().toISOString(),
-        payload: opened(1).payload,
-      });
+      saved = actions.optimistic(
+        [openChange(stored.id)],
+        () =>
+          new Promise<void>((resolve) => {
+            save = resolve;
+          }),
+      );
     });
 
-    expect(screen.getByRole('status')).toHaveTextContent('1 threads');
+    expect(screen.getByRole('status')).toHaveTextContent('1 threads at seq 0');
+
+    await act(async () => {
+      save();
+      await saved;
+    });
+
+    await expect(saved).resolves.toBe(true);
+    expect(fetchEvents).toHaveBeenCalledExactlyOnceWith(SHARE_ID, 0);
+    expect(screen.getByRole('status')).toHaveTextContent('1 threads at seq 1');
   });
 
-  it('stops polling on unmount', async () => {
+  it('drops a change that fails to save', async () => {
+    renderProvider();
+
+    let saved!: Promise<boolean>;
+    await act(async () => {
+      saved = actions.optimistic([openChange(newId())], () =>
+        Promise.reject(new Error('Refused')),
+      );
+      await saved;
+    });
+
+    await expect(saved).resolves.toBe(false);
+    expect(fetchEvents).not.toHaveBeenCalled();
+    expect(screen.getByRole('status')).toHaveTextContent('0 threads at seq 0');
+  });
+
+  it('stops polling on unmount', () => {
+    const stopPolling = vi.fn();
+    startPolling.mockReturnValue(stopPolling);
     const {unmount} = renderProvider();
-    expect(startPolling).toHaveBeenCalledOnce();
 
     unmount();
 
     expect(stopPolling).toHaveBeenCalledOnce();
-  });
-
-  it('renders nothing when hydration fails', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-    hydrateShareEvents.mockReturnValue(
-      settled({status: 'rejected', reason: new Error('Offline')}),
-    );
-
-    const {container} = renderProvider();
-
-    expect(container).toBeEmptyDOMElement();
   });
 });

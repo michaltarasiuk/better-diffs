@@ -1,15 +1,13 @@
 import type {AnnotationSide, DiffLineAnnotation} from '@pierre/diffs';
-import type {SerializedEditorState} from 'lexical';
 
 import type {ThreadState} from '@/events/state';
 
 export interface FormAnnotationMetadata {
   readonly type: 'form';
   readonly formId: string;
-  readonly draft?: SerializedEditorState;
 }
 
-export interface ThreadAnnotationMetadata {
+interface ThreadAnnotationMetadata {
   readonly type: 'thread';
   readonly threadId: string;
 }

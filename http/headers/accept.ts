@@ -71,11 +71,11 @@ export class Accept implements Iterable<[string, number]> {
 
     const first = sorted[0];
 
-    return isDefined(first) && first[1] > 0 ? first[0] : null;
+    return isDefined(first) && first[1] > 0 ? first[0] : undefined;
   }
 
   get(mediaType: string) {
-    return this.#map.get(mediaType.toLowerCase()) ?? null;
+    return this.#map.get(mediaType.toLowerCase());
   }
 
   set(mediaType: string, weight = 1) {

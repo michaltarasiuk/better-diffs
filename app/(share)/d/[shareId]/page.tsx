@@ -5,11 +5,13 @@ import {notFound} from 'next/navigation';
 import {Suspense} from 'react';
 
 import {SessionProvider} from '@/auth/provider';
+import {getSnapshot} from '@/db/events';
 import {getShareFiles, touchShare} from '@/db/shares';
 import {computeDiffStats} from '@/diffs/stats';
 import {ShareEventsProvider} from '@/events/provider';
 import {prepareTreeInput, sortByTree} from '@/trees/input';
 import {getFileTreeOptions} from '@/trees/options';
+import {isDefined} from '@/utils/is-defined';
 
 import {CodeViewProvider} from './_components/code-view-provider';
 import {DiffView} from './_components/diff-view';
@@ -42,7 +44,14 @@ export default async function SharePage({
     notFound();
   }
 
-  const files = await getShareFiles(shareId);
+  const [files, snapshot] = await Promise.all([
+    getShareFiles(shareId),
+    getSnapshot(shareId),
+  ]);
+  if (!isDefined(snapshot)) {
+    notFound();
+  }
+
   const fileDiffs = files.map(({metadata}) => metadata);
 
   const treeInput = prepareTreeInput(fileDiffs);
@@ -71,7 +80,11 @@ export default async function SharePage({
         <main aria-label="Diff" className="min-h-0 min-w-0 flex-1">
           <SessionProvider>
             <Suspense fallback={diffViewSpinner}>
-              <ShareEventsProvider shareId={shareId}>
+              <ShareEventsProvider
+                key={shareId}
+                shareId={shareId}
+                snapshot={snapshot}
+              >
                 <ReviewStateProvider key={shareId}>
                   <DiffView files={sortedFiles} />
                 </ReviewStateProvider>

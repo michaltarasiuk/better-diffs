@@ -13,23 +13,21 @@ import {useShareId} from '../_hooks/use-share-id';
 
 interface FileState {
   readonly commentForms: readonly FormDiffAnnotation[];
-  readonly replyDrafts: Readonly<Record<string, SerializedEditorState>>;
   readonly collapsed: boolean;
   readonly viewed: boolean;
   readonly version: number;
 }
 
-type CommentForms = FileState['commentForms'];
-
-type ReplyDrafts = FileState['replyDrafts'];
-
 type FileStatePatch = Partial<Omit<FileState, 'version'>>;
+
+type Drafts = Readonly<Record<string, SerializedEditorState>>;
 
 type ReviewState = ReturnType<typeof useReviewState>;
 
+type DraftsState = ReturnType<typeof useDrafts>;
+
 const DEFAULT_FILE_STATE: FileState = {
   commentForms: [],
-  replyDrafts: {},
   collapsed: false,
   viewed: false,
   version: 0,
@@ -37,19 +35,24 @@ const DEFAULT_FILE_STATE: FileState = {
 
 export const ReviewStateContext = createContext<ReviewState>(null as never);
 
+export const DraftsContext = createContext<DraftsState>(null as never);
+
 export function ReviewStateProvider({
   children,
 }: {
   readonly children: React.ReactNode;
 }) {
-  const reviewState = useReviewState();
+  const drafts = useDrafts();
+  const reviewState = useReviewState(drafts.clearDraft);
 
   return (
-    <ReviewStateContext value={reviewState}>{children}</ReviewStateContext>
+    <ReviewStateContext value={reviewState}>
+      <DraftsContext value={drafts}>{children}</DraftsContext>
+    </ReviewStateContext>
   );
 }
 
-function useReviewState() {
+function useReviewState(clearDraft: (id: string) => void) {
   const shareId = useShareId();
   const [fileStates, setFileStates] = useLocalStorage(
     `share:v1:${shareId}`,
@@ -73,24 +76,6 @@ function useReviewState() {
         version: state.version + 1,
       });
     });
-  }
-
-  function patchCommentForms(
-    fileId: string,
-    patch: (commentForms: CommentForms) => CommentForms,
-  ) {
-    patchFileState(fileId, (state) => ({
-      commentForms: patch(state.commentForms),
-    }));
-  }
-
-  function patchReplyDrafts(
-    fileId: string,
-    patch: (replyDrafts: ReplyDrafts) => ReplyDrafts,
-  ) {
-    patchFileState(fileId, (state) => ({
-      replyDrafts: patch(state.replyDrafts),
-    }));
   }
 
   return {
@@ -124,50 +109,40 @@ function useReviewState() {
         metadata: {type: 'form', formId: newId()},
       };
 
-      patchCommentForms(fileId, (commentForms) => [
-        ...commentForms,
-        commentForm,
-      ]);
-    },
-
-    setCommentFormDraft(
-      fileId: string,
-      formId: string,
-      draft: SerializedEditorState,
-    ) {
-      patchCommentForms(fileId, (commentForms) =>
-        commentForms.map((commentForm) =>
-          commentForm.metadata.formId === formId
-            ? {...commentForm, metadata: {...commentForm.metadata, draft}}
-            : commentForm,
-        ),
-      );
-    },
-
-    removeCommentForm(fileId: string, formId: string) {
-      patchCommentForms(fileId, (commentForms) =>
-        commentForms.filter(
-          (commentForm) => commentForm.metadata.formId !== formId,
-        ),
-      );
-    },
-
-    setReplyDraft(
-      fileId: string,
-      threadId: string,
-      draft: SerializedEditorState,
-    ) {
-      patchReplyDrafts(fileId, (replyDrafts) => ({
-        ...replyDrafts,
-        [threadId]: draft,
+      patchFileState(fileId, (state) => ({
+        commentForms: [...state.commentForms, commentForm],
       }));
     },
 
-    clearReplyDraft(fileId: string, threadId: string) {
-      patchReplyDrafts(
-        fileId,
-        ({[threadId]: _, ...replyDrafts}) => replyDrafts,
-      );
+    removeCommentForm(fileId: string, formId: string) {
+      patchFileState(fileId, (state) => ({
+        commentForms: state.commentForms.filter(
+          (commentForm) => commentForm.metadata.formId !== formId,
+        ),
+      }));
+      clearDraft(formId);
+    },
+  };
+}
+
+function useDrafts() {
+  const shareId = useShareId();
+  const [drafts, setDrafts] = useLocalStorage<Drafts>(
+    `share:v1:${shareId}:drafts`,
+    () => ({}),
+  );
+
+  return {
+    getDraft(id: string) {
+      return drafts[id];
+    },
+
+    setDraft(id: string, draft: SerializedEditorState) {
+      setDrafts((ds) => ({...ds, [id]: draft}));
+    },
+
+    clearDraft(id: string) {
+      setDrafts(({[id]: _, ...ds}) => ds);
     },
   };
 }

@@ -1,6 +1,5 @@
 export type EventErrorReason =
   | 'INVALID_INPUT'
-  | 'UNEXPECTED_SEQ'
   | 'THREAD_ALREADY_EXISTS'
   | 'THREAD_NOT_FOUND'
   | 'THREAD_RESOLVED'
@@ -17,8 +16,4 @@ export class EventError extends Error {
     this.name = 'EventError';
     this.reason = reason;
   }
-}
-
-export function isEventError(error: unknown): error is EventError {
-  return error instanceof EventError;
 }

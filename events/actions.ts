@@ -21,7 +21,7 @@ import {
   type ThreadOpenedPayload,
   type ThreadResolvedPayload,
 } from './schemas';
-import {Draft, ShareState} from './state';
+import {check} from './state';
 
 export async function openThread(input: OpenThreadInput) {
   if (!OpenThreadInput.validate(input)) {
@@ -93,20 +93,11 @@ async function appendValidatedEvents(
 ) {
   const {actorId, actor} = await getActor();
 
-  return appendEvents(shareId, actorId, payloads, (events) => {
-    const state = new ShareState();
-    state.ingest(events);
-
-    const fork = Draft.fork(state);
+  return appendEvents(shareId, actorId, payloads, (records) => {
     const createdAt = new Date().toISOString();
-
-    for (const payload of payloads) {
-      fork.apply({
-        actorId,
-        actor,
-        createdAt,
-        payload,
-      });
-    }
+    check(
+      records,
+      payloads.map((payload) => ({actorId, actor, createdAt, payload})),
+    );
   });
 }
