@@ -1,6 +1,6 @@
 'use client';
 
-import '@/trees/trees.css';
+import '#/trees/trees.css';
 
 import {SearchField} from '@heroui/react';
 import type {FileTree as FileTreeModel} from '@pierre/trees';
@@ -13,10 +13,10 @@ import {
 import {use, useRef} from 'react';
 import {OverlayTriggerStateContext} from 'react-aria-components/Dialog';
 
-import {useShortcut} from '@/hooks/use-shortcut';
-import type {TreeInput} from '@/trees/input';
-import {getFileTreeOptions} from '@/trees/options';
-import {isDefined} from '@/utils/is-defined';
+import {useShortcut} from '#/hooks/use-shortcut';
+import type {TreeInput} from '#/trees/input';
+import {getFileTreeOptions} from '#/trees/options';
+import {isDefined} from '#/utils/is-defined';
 
 import {useSearchQuery} from '../_hooks/use-search-query';
 import {scrollToFile} from '../_lib/scroll-to-file';

@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {z} from 'zod';
 
-import {newId} from '@/utils/new-id';
+import {newId} from '#/utils/new-id';
 
 import {ApiError, ErrorResponse} from '../error';
 

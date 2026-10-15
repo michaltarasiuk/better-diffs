@@ -1,7 +1,7 @@
 import type {SerializedEditorState} from 'lexical';
 import {describe, expect, it} from 'vitest';
 
-import {newId} from '@/utils/new-id';
+import {newId} from '#/utils/new-id';
 
 import type {ThreadErrorReason} from '../errors';
 import type {

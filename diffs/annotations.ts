@@ -1,6 +1,6 @@
 import type {AnnotationSide, DiffLineAnnotation} from '@pierre/diffs';
 
-import type {Thread} from '@/threads/schemas';
+import type {Thread} from '#/threads/schemas';
 
 export interface FormAnnotationMetadata {
   readonly type: 'form';

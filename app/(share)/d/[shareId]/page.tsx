@@ -4,14 +4,14 @@ import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {Suspense} from 'react';
 
-import {SessionProvider} from '@/auth/provider';
-import {getShareFiles, touchShare} from '@/db/shares';
-import {getSnapshot} from '@/db/threads';
-import {computeDiffStats} from '@/diffs/stats';
-import {ThreadsProvider} from '@/threads/provider';
-import {prepareTreeInput, sortByTree} from '@/trees/input';
-import {getFileTreeOptions} from '@/trees/options';
-import {isDefined} from '@/utils/is-defined';
+import {SessionProvider} from '#/auth/provider';
+import {getShareFiles, touchShare} from '#/db/shares';
+import {getSnapshot} from '#/db/threads';
+import {computeDiffStats} from '#/diffs/stats';
+import {ThreadsProvider} from '#/threads/provider';
+import {prepareTreeInput, sortByTree} from '#/trees/input';
+import {getFileTreeOptions} from '#/trees/options';
+import {isDefined} from '#/utils/is-defined';
 
 import {CodeViewProvider} from './_components/code-view-provider';
 import {DiffView} from './_components/diff-view';

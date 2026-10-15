@@ -1,4 +1,4 @@
-import type {Session} from '@/auth/server';
+import type {Session} from '#/auth/server';
 
 import type {Actor} from './schemas';
 

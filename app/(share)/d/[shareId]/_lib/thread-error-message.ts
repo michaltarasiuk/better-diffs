@@ -1,4 +1,4 @@
-import type {ThreadErrorReason} from '@/threads/errors';
+import type {ThreadErrorReason} from '#/threads/errors';
 
 const MESSAGES: Record<ThreadErrorReason, string> = {
   INVALID_INPUT: 'The comment could not be read',

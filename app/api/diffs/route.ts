@@ -2,11 +2,11 @@ import {createHmac} from 'node:crypto';
 
 import {parsePatchFiles, type FileDiffMetadata} from '@pierre/diffs';
 
-import {countRecentShares, createShare} from '@/db/shares';
-import {env} from '@/env';
-import {ApiError} from '@/http/error';
-import {prefersText, route} from '@/http/route';
-import {isDefined} from '@/utils/is-defined';
+import {countRecentShares, createShare} from '#/db/shares';
+import {env} from '#/env';
+import {ApiError} from '#/http/error';
+import {prefersText, route} from '#/http/route';
+import {isDefined} from '#/utils/is-defined';
 
 const MAX_PATCH_BYTES = 2 * 1024 * 1024;
 const MAX_UPLOADS_PER_HOUR = 30;

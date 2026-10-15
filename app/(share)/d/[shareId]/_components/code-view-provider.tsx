@@ -3,9 +3,9 @@
 import type {CodeViewHandle} from '@pierre/diffs/react';
 import {createContext, use, useRef} from 'react';
 
-import type {AnnotationMetadata} from '@/diffs/annotations';
-import {DiffWorkerPoolProvider} from '@/diffs/provider';
-import {isDefined} from '@/utils/is-defined';
+import type {AnnotationMetadata} from '#/diffs/annotations';
+import {DiffWorkerPoolProvider} from '#/diffs/provider';
+import {isDefined} from '#/utils/is-defined';
 
 type Handle = CodeViewHandle<AnnotationMetadata, undefined>;
 

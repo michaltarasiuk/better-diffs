@@ -1,7 +1,7 @@
 import type {CodeView} from '@pierre/diffs';
 import {describe, expect, it} from 'vitest';
 
-import type {AnnotationMetadata} from '@/diffs/annotations';
+import type {AnnotationMetadata} from '#/diffs/annotations';
 
 import {getViewportFileId} from '../get-viewport-file-id';
 

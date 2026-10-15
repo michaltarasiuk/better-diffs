@@ -6,7 +6,7 @@ import {
   type LexicalNode,
 } from 'lexical';
 
-import {isDefined} from '@/utils/is-defined';
+import {isDefined} from '#/utils/is-defined';
 
 function $isBlank(node: LexicalNode) {
   return (

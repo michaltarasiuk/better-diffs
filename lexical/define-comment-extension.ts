@@ -2,7 +2,7 @@ import {HistoryExtension} from '@lexical/history';
 import {RichTextExtension} from '@lexical/rich-text';
 import {defineExtension, type SerializedEditorState} from 'lexical';
 
-import {isDefined} from '@/utils/is-defined';
+import {isDefined} from '#/utils/is-defined';
 
 import {EDITOR_THEME} from './editor-theme';
 

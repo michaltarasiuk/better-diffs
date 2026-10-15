@@ -2,9 +2,9 @@ import {eq} from 'drizzle-orm';
 import type {SerializedEditorState} from 'lexical';
 import {describe, expect, it, vi} from 'vitest';
 
-import {threadError} from '@/threads/errors';
-import type {Change} from '@/threads/schemas';
-import {newId} from '@/utils/new-id';
+import {threadError} from '#/threads/errors';
+import type {Change} from '#/threads/schemas';
+import {newId} from '#/utils/new-id';
 
 import {db} from '../db';
 import {user as userTable} from '../schema';

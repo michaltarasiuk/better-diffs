@@ -1,11 +1,11 @@
 import {eq, sql} from 'drizzle-orm';
 import {describe, expect, it} from 'vitest';
 
-import {ageShare, hasShare, setupTestDb} from '@/db/__tests__/setup';
-import {db} from '@/db/db';
-import {shares} from '@/db/schema';
-import {createShare} from '@/db/shares';
-import {env} from '@/env';
+import {ageShare, hasShare, setupTestDb} from '#/db/__tests__/setup';
+import {db} from '#/db/db';
+import {shares} from '#/db/schema/index';
+import {createShare} from '#/db/shares';
+import {env} from '#/env';
 
 import {GET} from '../route';
 

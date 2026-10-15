@@ -1,12 +1,12 @@
-import '@/diffs/diffs.css';
+import '#/diffs/diffs.css';
 
 import {Typography} from '@heroui/react';
 import {typographyVariants} from '@heroui/styles';
 import {MultiFileDiff} from '@pierre/diffs/react';
 import {preloadMultiFileDiff} from '@pierre/diffs/ssr';
 
-import {fileContents} from '@/diffs/contents';
-import {PATCH_DIFF_OPTIONS} from '@/diffs/options';
+import {fileContents} from '#/diffs/contents';
+import {PATCH_DIFF_OPTIONS} from '#/diffs/options';
 
 import {CommandSnippet} from './_components/command-snippet';
 import {INSTALL_COMMAND} from './_lib/install-command';

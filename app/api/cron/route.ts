@@ -1,8 +1,8 @@
-import {hasBearerToken} from '@/auth/bearer';
-import {deleteExpiredShares, forgetUploaders} from '@/db/shares';
-import {env} from '@/env';
-import {ApiError} from '@/http/error';
-import {route} from '@/http/route';
+import {hasBearerToken} from '#/auth/bearer';
+import {deleteExpiredShares, forgetUploaders} from '#/db/shares';
+import {env} from '#/env';
+import {ApiError} from '#/http/error';
+import {route} from '#/http/route';
 
 const SHARE_MAX_AGE_HOURS = 7 * 24;
 

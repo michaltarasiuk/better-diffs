@@ -4,7 +4,7 @@ import {Button, toast} from '@heroui/react';
 import {CheckIcon, CopyIcon} from 'lucide-react';
 import React, {useEffect, useRef, useState} from 'react';
 
-import {isDefined} from '@/utils/is-defined';
+import {isDefined} from '#/utils/is-defined';
 
 export const FEEDBACK_MS = 2_000;
 

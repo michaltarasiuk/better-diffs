@@ -3,12 +3,12 @@
 import type {SerializedEditorState} from 'lexical';
 import {createContext, use} from 'react';
 
-import type {FormDiffAnnotation} from '@/diffs/annotations';
-import type {DiffLine} from '@/diffs/lines';
-import {useLocalStorage} from '@/hooks/use-local-storage';
-import {isDefined} from '@/utils/is-defined';
-import {jsonToMap, mapToJson} from '@/utils/map';
-import {newId} from '@/utils/new-id';
+import type {FormDiffAnnotation} from '#/diffs/annotations';
+import type {DiffLine} from '#/diffs/lines';
+import {useLocalStorage} from '#/hooks/use-local-storage';
+import {isDefined} from '#/utils/is-defined';
+import {jsonToMap, mapToJson} from '#/utils/map';
+import {newId} from '#/utils/new-id';
 
 import {useShareId} from '../_hooks/use-share-id';
 

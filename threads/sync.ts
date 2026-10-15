@@ -1,7 +1,7 @@
 import {z} from 'zod';
 
-import {fetchJson} from '@/http/fetch';
-import {isDefined} from '@/utils/is-defined';
+import {fetchJson} from '#/http/fetch';
+import {isDefined} from '#/utils/is-defined';
 
 import {ShareSnapshot} from './schemas';
 

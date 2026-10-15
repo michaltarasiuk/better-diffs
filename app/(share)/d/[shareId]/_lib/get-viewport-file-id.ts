@@ -1,7 +1,7 @@
 import type {CodeView} from '@pierre/diffs';
 
-import type {AnnotationMetadata} from '@/diffs/annotations';
-import {isDefined} from '@/utils/is-defined';
+import type {AnnotationMetadata} from '#/diffs/annotations';
+import {isDefined} from '#/utils/is-defined';
 
 export function getViewportFileId(codeView: CodeView<AnnotationMetadata>) {
   const viewportTop = codeView.getScrollTop();

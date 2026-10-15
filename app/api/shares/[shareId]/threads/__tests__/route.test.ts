@@ -1,12 +1,12 @@
 import type {SerializedEditorState} from 'lexical';
 import {describe, expect, it} from 'vitest';
 
-import {allowAll, insertUser, setupTestDb} from '@/db/__tests__/setup';
-import {createShare} from '@/db/shares';
-import {saveChanges} from '@/db/threads';
-import {env} from '@/env';
-import {ShareSnapshot} from '@/threads/schemas';
-import {newId} from '@/utils/new-id';
+import {allowAll, insertUser, setupTestDb} from '#/db/__tests__/setup';
+import {createShare} from '#/db/shares';
+import {saveChanges} from '#/db/threads';
+import {env} from '#/env';
+import {ShareSnapshot} from '#/threads/schemas';
+import {newId} from '#/utils/new-id';
 
 import {GET} from '../route';
 

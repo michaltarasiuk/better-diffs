@@ -2,8 +2,8 @@ import {redirect} from 'next/navigation';
 import {describe, expect, it, vi} from 'vitest';
 import {z} from 'zod';
 
-import {env} from '@/env';
-import {isDefined} from '@/utils/is-defined';
+import {env} from '#/env';
+import {isDefined} from '#/utils/is-defined';
 
 import {ApiError} from '../error';
 import {parseSearchParams, prefersText, route} from '../route';

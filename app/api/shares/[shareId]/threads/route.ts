@@ -1,9 +1,9 @@
 import {z} from 'zod';
 
-import {touchShare} from '@/db/shares';
-import {getSnapshot} from '@/db/threads';
-import {ApiError} from '@/http/error';
-import {parseSearchParams, route} from '@/http/route';
+import {touchShare} from '#/db/shares';
+import {getSnapshot} from '#/db/threads';
+import {ApiError} from '#/http/error';
+import {parseSearchParams, route} from '#/http/route';
 
 const SearchParams = z.object({
   afterRevision: z.coerce.number().int().nonnegative().optional(),

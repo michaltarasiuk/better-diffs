@@ -1,21 +1,21 @@
 import type {SerializedEditorState} from 'lexical';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-import type {Session} from '@/auth/server';
-import {insertUser, setupTestDb} from '@/db/__tests__/setup';
-import {createShare} from '@/db/shares';
-import {getSnapshot} from '@/db/threads';
-import {isDefined} from '@/utils/is-defined';
-import {newId} from '@/utils/new-id';
+import type {Session} from '#/auth/server';
+import {insertUser, setupTestDb} from '#/db/__tests__/setup';
+import {createShare} from '#/db/shares';
+import {getSnapshot} from '#/db/threads';
+import {isDefined} from '#/utils/is-defined';
+import {newId} from '#/utils/new-id';
 
 import {createComment, openThread} from '../actions';
 import type {Anchor} from '../schemas';
 
 const {getSession} = vi.hoisted(() => ({
-  getSession: vi.fn<typeof import('@/auth/server').getSession>(),
+  getSession: vi.fn<typeof import('#/auth/server').getSession>(),
 }));
 
-vi.mock('@/auth/server', () => ({getSession}));
+vi.mock('#/auth/server', () => ({getSession}));
 
 setupTestDb();
 

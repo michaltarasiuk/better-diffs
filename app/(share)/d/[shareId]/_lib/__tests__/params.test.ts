@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import type {SelectedLines} from '@/diffs/schemas';
+import type {SelectedLines} from '#/diffs/schemas';
 
 import {loadSearchParams} from '../params';
 

@@ -2,7 +2,7 @@
 
 import {use} from 'react';
 
-import {isDefined} from '@/utils/is-defined';
+import {isDefined} from '#/utils/is-defined';
 
 import {SessionContext} from './context';
 import type {Session} from './server';

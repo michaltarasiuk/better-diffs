@@ -8,10 +8,10 @@ import {eq, getTableName, is, sql} from 'drizzle-orm';
 import {SQLiteTable} from 'drizzle-orm/sqlite-core';
 import {beforeAll, beforeEach} from 'vitest';
 
-import {db} from '@/db/db';
-import * as schema from '@/db/schema';
-import {isDefined} from '@/utils/is-defined';
-import {newId} from '@/utils/new-id';
+import {db} from '#/db/db';
+import * as schema from '#/db/schema/index';
+import {isDefined} from '#/utils/is-defined';
+import {newId} from '#/utils/new-id';
 
 const TABLE_NAMES = Object.values(schema)
   .filter((value) => is(value, SQLiteTable))

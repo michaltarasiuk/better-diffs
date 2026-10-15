@@ -55,9 +55,9 @@ import {
 } from 'lucide-react';
 import {startTransition, useEffect, useEffectEvent, useState} from 'react';
 
-import {defineCommentExtension} from '@/lexical/define-comment-extension';
-import {$trimRoot} from '@/lexical/trim-root';
-import {isDefined} from '@/utils/is-defined';
+import {defineCommentExtension} from '#/lexical/define-comment-extension';
+import {$trimRoot} from '#/lexical/trim-root';
+import {isDefined} from '#/utils/is-defined';
 
 const BLOCK_TYPES = [
   {label: 'Normal', value: 'paragraph'},

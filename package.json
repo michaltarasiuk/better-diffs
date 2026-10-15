@@ -2,6 +2,12 @@
   "private": true,
   "type": "module",
   "repository": "michaltarasiuk/better-diffs",
+  "imports": {
+    "#/*": {
+      "types": "./*.js",
+      "default": "./*"
+    }
+  },
   "scripts": {
     "prepare": "husky",
     "dev": "next dev",

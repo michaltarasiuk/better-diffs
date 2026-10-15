@@ -1,6 +1,6 @@
 'use client';
 
-import '@/diffs/diffs.css';
+import '#/diffs/diffs.css';
 
 import {Button, Checkbox, cn, Kbd, Tooltip} from '@heroui/react';
 import {
@@ -15,14 +15,14 @@ import {
   sortAnnotations,
   toThreadAnnotation,
   type AnnotationMetadata,
-} from '@/diffs/annotations';
-import {isEmptyDiff} from '@/diffs/empty';
-import {isDiffLine} from '@/diffs/lines';
-import {CODE_VIEW_OPTIONS} from '@/diffs/options';
-import {useIsMobile} from '@/hooks/use-is-mobile';
-import {useShortcut} from '@/hooks/use-shortcut';
-import {useShareState} from '@/threads/provider';
-import {isDefined} from '@/utils/is-defined';
+} from '#/diffs/annotations';
+import {isEmptyDiff} from '#/diffs/empty';
+import {isDiffLine} from '#/diffs/lines';
+import {CODE_VIEW_OPTIONS} from '#/diffs/options';
+import {useIsMobile} from '#/hooks/use-is-mobile';
+import {useShortcut} from '#/hooks/use-shortcut';
+import {useShareState} from '#/threads/provider';
+import {isDefined} from '#/utils/is-defined';
 
 import {useSelectedLines} from '../_hooks/use-selected-lines';
 import {getViewportFileId} from '../_lib/get-viewport-file-id';

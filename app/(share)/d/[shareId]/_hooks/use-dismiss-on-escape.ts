@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {useFocusWithin} from 'react-aria/useFocusWithin';
 
-import {useKeyDown} from '@/hooks/use-key-down';
+import {useKeyDown} from '#/hooks/use-key-down';
 
 export function useDismissOnEscape(onDismiss?: () => void) {
   const [isFocusWithin, setIsFocusWithin] = useState(false);

@@ -3,16 +3,16 @@
 import {Card, toast} from '@heroui/react';
 import type {SerializedEditorState} from 'lexical';
 
-import type {Session} from '@/auth/server';
-import {SignedIn} from '@/auth/signed-in';
-import type {DiffAnnotation, FormAnnotationMetadata} from '@/diffs/annotations';
-import {createComment, openThread} from '@/threads/actions';
-import {toActor} from '@/threads/actor';
-import type {ThreadError} from '@/threads/errors';
-import {useShareActions, useShareState} from '@/threads/provider';
-import type {Anchor} from '@/threads/schemas';
-import {isDefined} from '@/utils/is-defined';
-import {newId} from '@/utils/new-id';
+import type {Session} from '#/auth/server';
+import {SignedIn} from '#/auth/signed-in';
+import type {DiffAnnotation, FormAnnotationMetadata} from '#/diffs/annotations';
+import {createComment, openThread} from '#/threads/actions';
+import {toActor} from '#/threads/actor';
+import type {ThreadError} from '#/threads/errors';
+import {useShareActions, useShareState} from '#/threads/provider';
+import type {Anchor} from '#/threads/schemas';
+import {isDefined} from '#/utils/is-defined';
+import {newId} from '#/utils/new-id';
 
 import {useDismissOnEscape} from '../_hooks/use-dismiss-on-escape';
 import {useShareId} from '../_hooks/use-share-id';

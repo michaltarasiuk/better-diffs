@@ -1,8 +1,8 @@
 import {use, useEffect, useEffectEvent, useState} from 'react';
 import {browser} from 'react-dom';
 
-import {isDefined} from '@/utils/is-defined';
-import {isStorageAvailable} from '@/utils/is-storage-available';
+import {isDefined} from '#/utils/is-defined';
+import {isStorageAvailable} from '#/utils/is-storage-available';
 
 export function useLocalStorage<T>(
   key: string,

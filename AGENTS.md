@@ -28,14 +28,14 @@ Use these in code, routes, errors and UI. A new concept gets a line here in the 
 
 ## Where code goes
 
-Application code lives in top-level folders beside config, `cli/` and `docs/`; there is no `src/`, and `@/` resolves to the root. Folders are grouped by what the code touches, not by feature. ESLint enforces the boundaries in `eslint.config.js`, and each diagnostic says where the code belongs instead.
+Application code lives in top-level folders beside config, `cli/` and `docs/`; there is no `src/`, and `#/` resolves to the root (a Node.js subpath import, declared in `package.json`'s `imports` field). Folders are grouped by what the code touches, not by feature. ESLint enforces the boundaries in `eslint.config.js`, and each diagnostic says where the code belongs instead.
 
-- `app/` holds routes. A segment's own code lives beside it in `_components/`, `_hooks/` and `_lib/` and is imported relatively; the root layout's fonts are in `app/_lib/fonts.ts`. Nothing imports `@/app/...`; once a second segment needs something, it moves to a top-level folder.
+- `app/` holds routes. A segment's own code lives beside it in `_components/`, `_hooks/` and `_lib/` and is imported relatively; the root layout's fonts are in `app/_lib/fonts.ts`. Nothing imports `#/app/...`; once a second segment needs something, it moves to a top-level folder.
 - `app/api/**/route.ts` holds route handlers, each wrapped in `route()` from `http/route.ts`. Validate search params with `parseSearchParams`; fail by throwing `ApiError` with a `reason` in SCREAMING_SNAKE_CASE. `route()` turns it into the JSON envelope, or into plain text for a client that prefers it, which is how the CLI reads errors.
 - `http/` is the HTTP toolkit both sides share: `route.ts` (server-only), `error.ts` (`ApiError` and its envelope), `fetch.ts` (`fetchJson`, which turns the envelope back into an `ApiError` in the browser), and `headers/`, parsers for `Accept` and `Authorization`. It is not `app/api/`, which holds the routes themselves.
-- `env.ts` validates the environment with t3-env. Import `env` from `@/env` rather than reading `process.env`.
+- `env.ts` validates the environment with t3-env. Import `env` from `#/env` rather than reading `process.env`.
 - `threads/actions.ts` holds the server actions, the only write path for Threads and Comments. Each validates its input, resolves the Actor and calls `saveChanges`, which writes the rows and raises the Revision in one transaction after `check` (`threads/state.ts`) tests the change against the stored ids of the Threads and Comments it names, so an invalid change is refused before it is stored. A refused change is returned, not thrown, as a `ThreadError` (`threads/errors.ts`) with a `reason` in SCREAMING_SNAKE_CASE; an action that succeeds returns `undefined`. Next.js hides thrown errors from the browser in production, so a thrown error means a bug, not a refusal.
-- `db/` holds queries, as plain async functions over Drizzle. It may import `@/env`, `@/utils/*`, `@/threads/schemas` and `@/threads/errors` only; anything else arrives as an argument, as `saveChanges` takes `validate`.
+- `db/` holds queries, as plain async functions over Drizzle. It may import `#/env`, `#/utils/*`, `#/threads/schemas` and `#/threads/errors` only; anything else arrives as an argument, as `saveChanges` takes `validate`.
 - `auth/` holds Better Auth: `server.ts` and `bearer.ts` are server-only, `client.ts` and the providers are client-side.
 - Pure modules take plain values and return plain values, with no React, Next.js, storage or network: `utils/`, `http/headers/`, `http/error.ts`, `threads/{schemas,state,actor,errors}.ts`, `diffs/{annotations,contents,empty,lines,schemas,stats}.ts` and `trees/input.ts`. They are where logic goes so it can be unit tested without mocks.
 - `diffs/`, `trees/` and `lexical/` adapt `@pierre/diffs`, `@pierre/trees` and Lexical to this app; `hooks/` holds React hooks shared across segments.
@@ -43,7 +43,7 @@ Application code lives in top-level folders beside config, `cli/` and `docs/`; t
 
 ## Conventions
 
-- Within a folder, import relatively (`./schemas`); across folders, use `@/`. Tests are the exception and may use `@/` throughout.
+- Within a folder, import relatively (`./schemas`); across folders, use `#/`. Tests are the exception and may use `#/` throughout.
 - zod schemas share a name with their inferred type (`export const Anchor = z.object(...)`, `export type Anchor = z.infer<typeof Anchor>`).
 - Write `undefined` for nothing. Write `null` only where an API we don't own asks for it: React (`useRef(null)`, `return null`), the DOM, JSON, SQL columns, nuqs. Check either with `isDefined` from `utils/is-defined.ts`.
 - Tests sit in a `__tests__/` folder beside the code. `*.browser.test.ts(x)` runs in real Chromium; every other test runs in Node. Database tests call `setupTestDb()` from `db/__tests__/setup.ts`, which builds the schema in memory and clears it before each test.

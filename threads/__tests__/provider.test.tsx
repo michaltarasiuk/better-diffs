@@ -3,7 +3,7 @@
 import {act, renderHook} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-import {newId} from '@/utils/new-id';
+import {newId} from '#/utils/new-id';
 
 import {threadError, type ThreadError} from '../errors';
 import {ThreadsProvider, useShareActions, useShareState} from '../provider';

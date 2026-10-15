@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 
-import {authClient} from '@/auth/client';
-import {isDefined} from '@/utils/is-defined';
+import {authClient} from '#/auth/client';
+import {isDefined} from '#/utils/is-defined';
 
 export function useGitHubSignIn() {
   const [isSigningIn, setIsSigningIn] = useState(false);

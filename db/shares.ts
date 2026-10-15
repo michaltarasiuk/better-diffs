@@ -3,8 +3,8 @@ import 'server-only';
 import type {FileDiffMetadata} from '@pierre/diffs';
 import {and, asc, eq, gt, isNotNull, lt, sql} from 'drizzle-orm';
 
-import {isDefined} from '@/utils/is-defined';
-import {newId} from '@/utils/new-id';
+import {isDefined} from '#/utils/is-defined';
+import {newId} from '#/utils/new-id';
 
 import {db} from './db';
 import {

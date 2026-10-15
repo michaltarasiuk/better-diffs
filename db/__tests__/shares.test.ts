@@ -2,9 +2,9 @@ import {eq, sql} from 'drizzle-orm';
 import type {SerializedEditorState} from 'lexical';
 import {describe, expect, it} from 'vitest';
 
-import {fileDiffs, gitPatch} from '@/diffs/__tests__/patches';
-import type {Change} from '@/threads/schemas';
-import {newId} from '@/utils/new-id';
+import {fileDiffs, gitPatch} from '#/diffs/__tests__/patches';
+import type {Change} from '#/threads/schemas';
+import {newId} from '#/utils/new-id';
 
 import {db} from '../db';
 import {comments, files, patches, shares, threads} from '../schema';

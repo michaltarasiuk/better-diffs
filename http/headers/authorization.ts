@@ -1,4 +1,4 @@
-import {isDefined} from '@/utils/is-defined';
+import {isDefined} from '#/utils/is-defined';
 
 export interface AuthorizationInit {
   credentials?: string;

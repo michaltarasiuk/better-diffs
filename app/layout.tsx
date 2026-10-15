@@ -5,7 +5,7 @@ import type {Metadata, Viewport} from 'next';
 import Script from 'next/script';
 import {NuqsAdapter} from 'nuqs/adapters/next/app';
 
-import {env} from '@/env';
+import {env} from '#/env';
 
 import {ToastProvider} from './_components/toast-provider';
 import {fontMono, fontSans} from './_lib/fonts';

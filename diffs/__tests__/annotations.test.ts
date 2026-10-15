@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 
-import type {Thread} from '@/threads/schemas';
-import {newId} from '@/utils/new-id';
+import type {Thread} from '#/threads/schemas';
+import {newId} from '#/utils/new-id';
 
 import {
   sortAnnotations,

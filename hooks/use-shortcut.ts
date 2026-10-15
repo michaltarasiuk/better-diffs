@@ -1,6 +1,6 @@
-import {isDefined} from '@/utils/is-defined';
-import {isEditableTarget} from '@/utils/is-editable-target';
-import {isUnmodifiedKey} from '@/utils/is-unmodified-key';
+import {isDefined} from '#/utils/is-defined';
+import {isEditableTarget} from '#/utils/is-editable-target';
+import {isUnmodifiedKey} from '#/utils/is-unmodified-key';
 
 import {useKeyDown} from './use-key-down';
 

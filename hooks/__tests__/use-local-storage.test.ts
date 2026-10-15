@@ -7,10 +7,10 @@ import {useLocalStorage} from '../use-local-storage';
 
 const {isStorageAvailable} = vi.hoisted(() => ({
   isStorageAvailable:
-    vi.fn<typeof import('@/utils/is-storage-available').isStorageAvailable>(),
+    vi.fn<typeof import('#/utils/is-storage-available').isStorageAvailable>(),
 }));
 
-vi.mock('@/utils/is-storage-available', () => ({isStorageAvailable}));
+vi.mock('#/utils/is-storage-available', () => ({isStorageAvailable}));
 
 const KEY = 'preference';
 

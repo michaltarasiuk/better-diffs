@@ -1,9 +1,9 @@
-import '@/diffs/diffs.css';
+import '#/diffs/diffs.css';
 
 import {MultiFileDiff} from '@pierre/diffs/react';
 
-import {fileContents} from '@/diffs/contents';
-import {PATCH_DIFF_OPTIONS} from '@/diffs/options';
+import {fileContents} from '#/diffs/contents';
+import {PATCH_DIFF_OPTIONS} from '#/diffs/options';
 
 const NOT_FOUND_OLD_FILE = fileContents(
   'share/link',

@@ -1,12 +1,12 @@
 import {eq} from 'drizzle-orm';
 import {describe, expect, it} from 'vitest';
 
-import {setupTestDb} from '@/db/__tests__/setup';
-import {db} from '@/db/db';
-import {shares} from '@/db/schema';
-import {getShareFiles, getSharePatch} from '@/db/shares';
-import {gitPatch} from '@/diffs/__tests__/patches';
-import {env} from '@/env';
+import {setupTestDb} from '#/db/__tests__/setup';
+import {db} from '#/db/db';
+import {shares} from '#/db/schema/index';
+import {getShareFiles, getSharePatch} from '#/db/shares';
+import {gitPatch} from '#/diffs/__tests__/patches';
+import {env} from '#/env';
 
 import {OPTIONS, POST} from '../route';
 

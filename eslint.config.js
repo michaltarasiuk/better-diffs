@@ -28,14 +28,14 @@ const PURE_FILES = [
 ];
 
 const ROUTE_PRIVATE = {
-  group: ['@/app/**'],
+  group: ['#/app/**'],
   message:
     'Route code is private to its segment. ' +
     'Import it relatively from inside the segment, or move what is shared to a top-level folder.',
 };
 
 const SERVER_ONLY = {
-  group: ['@/db/**', '@/auth/server', '@/auth/bearer'],
+  group: ['#/db/**', '#/auth/server', '#/auth/bearer'],
   allowTypeImports: true,
   message:
     'Server-only. ' +
@@ -48,10 +48,10 @@ const FRAMEWORK = {
     'react-dom',
     'next',
     'next/*',
-    '@/http/fetch',
-    '@/http/route',
-    '@/hooks/**',
-    '@/threads/{actions,provider,sync}',
+    '#/http/fetch',
+    '#/http/route',
+    '#/hooks/**',
+    '#/threads/{actions,provider,sync}',
   ],
   allowTypeImports: true,
   message:
@@ -61,7 +61,7 @@ const FRAMEWORK = {
 
 const DB_DEPENDENCIES = [
   {
-    regex: '^@/(?!env$|utils/|threads/(?:schemas|errors)$|db/)',
+    regex: '^#/(?!env$|utils/|threads/(?:schemas|errors)$|db/)',
     message:
       'db/ depends only on env, utils and the thread schemas and errors. ' +
       'Take anything else as an argument, as saveChanges takes `validate`.',
@@ -110,7 +110,7 @@ export default defineConfig([
         'error',
         {
           type: 'natural',
-          internalPattern: ['^@/'],
+          internalPattern: ['^#/'],
           newlinesBetween: 1,
           groups: [
             'side-effect',

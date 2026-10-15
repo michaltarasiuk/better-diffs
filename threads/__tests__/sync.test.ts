@@ -2,8 +2,8 @@
 
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-import {ApiError} from '@/http/error';
-import {newId} from '@/utils/new-id';
+import {ApiError} from '#/http/error';
+import {newId} from '#/utils/new-id';
 
 import type {ShareSnapshot} from '../schemas';
 import {fetchSnapshot, startPolling} from '../sync';

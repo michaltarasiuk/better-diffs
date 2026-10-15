@@ -3,8 +3,8 @@
 import {Button, Spinner} from '@heroui/react';
 import {getLineAnnotationName} from '@pierre/diffs';
 
-import {GitHubIcon} from '@/auth/github-icon';
-import type {DiffAnnotation} from '@/diffs/annotations';
+import {GitHubIcon} from '#/auth/github-icon';
+import type {DiffAnnotation} from '#/diffs/annotations';
 
 import {useGitHubSignIn} from '../_hooks/use-github-sign-in';
 

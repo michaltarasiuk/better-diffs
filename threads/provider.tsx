@@ -10,7 +10,7 @@ import {
   useReducer,
 } from 'react';
 
-import {isDefined} from '@/utils/is-defined';
+import {isDefined} from '#/utils/is-defined';
 
 import {threadError, type ThreadError} from './errors';
 import type {ShareSnapshot} from './schemas';

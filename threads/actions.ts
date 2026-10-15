@@ -2,9 +2,9 @@
 
 import {unauthorized} from 'next/navigation';
 
-import {getSession} from '@/auth/server';
-import {saveChanges} from '@/db/threads';
-import {isDefined} from '@/utils/is-defined';
+import {getSession} from '#/auth/server';
+import {saveChanges} from '#/db/threads';
+import {isDefined} from '#/utils/is-defined';
 
 import {threadError} from './errors';
 import {CreateCommentInput, OpenThreadInput, type Change} from './schemas';
