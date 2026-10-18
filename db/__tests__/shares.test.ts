@@ -1,6 +1,6 @@
 import {eq, sql} from 'drizzle-orm';
 import type {SerializedEditorState} from 'lexical';
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 
 import {fileDiffs, gitPatch} from '#/diffs/__tests__/patches';
 import type {Change} from '#/threads/schemas';
@@ -9,7 +9,6 @@ import {newId} from '#/utils/new-id';
 import {db} from '../db';
 import {comments, files, patches, shares, threads} from '../schema';
 import {
-  countRecentShares,
   createShare,
   deleteExpiredShares,
   getShareFiles,
@@ -57,6 +56,35 @@ describe('createShare', () => {
     const id = await createShare('', []);
 
     await expect(getShareFiles(id)).resolves.toEqual([]);
+  });
+
+  it("checks the uploader's shares from the last hour", async () => {
+    const old = await createShare('', [], 'alice');
+    await createShare('', [], 'alice');
+    await createShare('', [], 'bob');
+    await createShare('', []);
+    await db
+      .update(shares)
+      .set({createdAt: sql`datetime('now', '-2 hours')`})
+      .where(eq(shares.id, old));
+    const checkUploadRate = vi.fn();
+
+    await createShare('', [], 'alice', checkUploadRate);
+
+    expect(checkUploadRate).toHaveBeenCalledExactlyOnceWith(1);
+  });
+
+  it('stores nothing when the upload rate check throws', async () => {
+    const limited = new Error('Limited');
+
+    await expect(
+      createShare('', [fileDiffs('a.txt')], 'alice', () => {
+        throw limited;
+      }),
+    ).rejects.toBe(limited);
+
+    expect(await db.$count(shares)).toBe(0);
+    expect(await countRows(files)).toBe(0);
   });
 });
 
@@ -144,21 +172,6 @@ describe('saveChanges', () => {
 
     const after = await getShare(id);
     expect(after!.lastVisitedAt > before!.lastVisitedAt).toBe(true);
-  });
-});
-
-describe('countRecentShares', () => {
-  it('counts shares from one uploader within the window', async () => {
-    const old = await createShare('', [], 'alice');
-    await createShare('', [], 'alice');
-    await createShare('', [], 'bob');
-    await createShare('', []);
-    await db
-      .update(shares)
-      .set({createdAt: sql`datetime('now', '-2 hours')`})
-      .where(eq(shares.id, old));
-
-    await expect(countRecentShares('alice', {withinHours: 1})).resolves.toBe(1);
   });
 });
 

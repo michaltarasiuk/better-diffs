@@ -2,7 +2,7 @@ import {createHmac} from 'node:crypto';
 
 import {parsePatchFiles, type FileDiffMetadata} from '@pierre/diffs';
 
-import {countRecentShares, createShare} from '#/db/shares';
+import {createShare} from '#/db/shares';
 import {env} from '#/env';
 import {ApiError} from '#/http/error';
 import {prefersText, route} from '#/http/route';
@@ -29,13 +29,13 @@ export function OPTIONS() {
 
 export const POST = route(
   async (request) => {
-    const uploaderKey = getUploaderKey(request);
-    if (isDefined(uploaderKey)) {
-      await checkUploadRate(uploaderKey);
-    }
-
     const text = await readPatchText(request);
-    const id = await createShare(text, parsePatchText(text), uploaderKey);
+    const id = await createShare(
+      text,
+      parsePatchText(text),
+      getUploaderKey(request),
+      checkUploadRate,
+    );
     const url = `${env.BASE_URL}/d/${id}`;
     const headers = {Location: url};
 
@@ -57,9 +57,8 @@ function getUploaderKey(request: Request) {
     .digest('base64url');
 }
 
-async function checkUploadRate(uploaderKey: string) {
-  const recent = await countRecentShares(uploaderKey, {withinHours: 1});
-  if (recent >= MAX_UPLOADS_PER_HOUR) {
+function checkUploadRate(uploadsInLastHour: number) {
+  if (uploadsInLastHour >= MAX_UPLOADS_PER_HOUR) {
     throw new ApiError(
       'RESOURCE_EXHAUSTED',
       `Upload limit reached: ${MAX_UPLOADS_PER_HOUR} diffs an hour. Try again later.`,

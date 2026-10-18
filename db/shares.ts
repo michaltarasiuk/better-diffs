@@ -58,26 +58,11 @@ export async function touchShare(id: string) {
   return true;
 }
 
-export async function countRecentShares(
-  uploaderKey: string,
-  {withinHours}: {readonly withinHours: number},
-) {
-  return db.$count(
-    sharesTable,
-    and(
-      eq(sharesTable.uploaderKey, uploaderKey),
-      gt(
-        sharesTable.createdAt,
-        sql`datetime('now', ${`-${withinHours} hours`})`,
-      ),
-    ),
-  );
-}
-
 export async function createShare(
   patch: string,
   patches: readonly (readonly FileDiffMetadata[])[],
   uploaderKey?: string,
+  checkUploadRate?: (uploadsInLastHour: number) => void,
 ) {
   const shareId = newId();
   const patchValues: (typeof patchesTable.$inferInsert)[] = [];
@@ -102,6 +87,18 @@ export async function createShare(
   }
 
   await db.transaction(async (tx) => {
+    if (isDefined(uploaderKey) && isDefined(checkUploadRate)) {
+      checkUploadRate(
+        await tx.$count(
+          sharesTable,
+          and(
+            eq(sharesTable.uploaderKey, uploaderKey),
+            gt(sharesTable.createdAt, sql`datetime('now', '-1 hours')`),
+          ),
+        ),
+      );
+    }
+
     await tx.insert(sharesTable).values({id: shareId, patch, uploaderKey});
 
     if (patchValues.length > 0) {
