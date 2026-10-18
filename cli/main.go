@@ -8,7 +8,7 @@ import (
 )
 
 // Version is set at link time with -ldflags "-X main.Version=...".
-var Version = "0.1.3"
+var Version = "0.1.4"
 
 // DefaultURL is the fallback instance when no flag, env, or config is set.
 // Set at link time with -ldflags "-X main.DefaultURL=...".
