@@ -18,7 +18,7 @@ export async function fetchSnapshot(shareId: string, afterRevision: number) {
     afterRevision: String(afterRevision),
   });
   const {snapshot} = await fetchJson(
-    `/api/shares/${shareId}/threads?${searchParams}`,
+    `/api/shares/${shareId}/snapshot?${searchParams}`,
     ThreadsResponse,
     {cache: 'no-store'},
   );

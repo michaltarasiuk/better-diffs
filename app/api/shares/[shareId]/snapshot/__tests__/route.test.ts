@@ -17,7 +17,7 @@ setupTestDb();
 
 function get(shareId: string, search = '') {
   const request = new Request(
-    `${env.BASE_URL}/api/shares/${shareId}/threads${search}`,
+    `${env.BASE_URL}/api/shares/${shareId}/snapshot${search}`,
   );
   return GET(request, {params: Promise.resolve({shareId})});
 }

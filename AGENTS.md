@@ -22,7 +22,7 @@ Use these in code, routes, errors and UI. A new concept gets a line here in the 
 - **File**: one file's diff inside a Patch, stored as `@pierre/diffs` `FileDiffMetadata`.
 - **Thread**: a conversation anchored to a line (`Anchor`: File id, side, line), so a path changed by several Patches keeps each Thread on its own File. It is never resolved or deleted.
 - **Comment**: one Lexical rich-text body in a Thread. It is never edited or deleted.
-- **Revision**: a counter on a Share, raised by every write to its Threads and Comments. The page starts from a snapshot of the rows, polls for a new snapshot after its revision (`/api/shares/{shareId}/threads?afterRevision=`), which answers `null` when nothing changed, and shows a change before it is stored with `useOptimistic` (`threads/provider.tsx`). Deleting a user who has Threads or Comments is refused.
+- **Revision**: a counter on a Share, raised by every write to its Threads and Comments. The page starts from a snapshot of the rows, polls for a new snapshot after its revision (`/api/shares/{shareId}/snapshot?afterRevision=`), which answers `null` when nothing changed, and shows a change before it is stored with `useOptimistic` (`threads/provider.tsx`). Deleting a user who has Threads or Comments is refused.
 - **Actor**: the signed-in GitHub user who wrote a Thread or Comment. Viewing needs no account, commenting does.
 - **Review state**: per-browser state such as viewed, collapsed and unsent drafts, kept in localStorage (`review-state-provider.tsx`). Never sent to the server.
 

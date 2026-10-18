@@ -10,7 +10,7 @@ const SearchParams = z.object({
 });
 
 export const GET = route(
-  async (request, {params}: RouteContext<'/api/shares/[shareId]/threads'>) => {
+  async (request, {params}: RouteContext<'/api/shares/[shareId]/snapshot'>) => {
     const {shareId} = await params;
     const {afterRevision} = parseSearchParams(SearchParams, request);
 

@@ -27,7 +27,7 @@ describe('fetchSnapshot', () => {
 
     await expect(fetchSnapshot(shareId, 4)).resolves.toEqual(snapshot);
     expect(fetch).toHaveBeenCalledExactlyOnceWith(
-      `/api/shares/${shareId}/threads?afterRevision=4`,
+      `/api/shares/${shareId}/snapshot?afterRevision=4`,
       {cache: 'no-store'},
     );
   });
