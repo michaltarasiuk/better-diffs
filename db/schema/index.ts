@@ -70,8 +70,9 @@ export const files = sqliteTable(
   (t) => [index('files_patchId_idx').on(t.patchId)],
 );
 
-export const filesRelations = relations(files, ({one}) => ({
+export const filesRelations = relations(files, ({one, many}) => ({
   patch: one(patches, {fields: [files.patchId], references: [patches.id]}),
+  threads: many(threads),
 }));
 
 export const threads = sqliteTable(
@@ -81,7 +82,9 @@ export const threads = sqliteTable(
     shareId: text('share_id')
       .notNull()
       .references(() => shares.id, {onDelete: 'cascade'}),
-    filePath: text('file_path').notNull(),
+    fileId: text('file_id')
+      .notNull()
+      .references(() => files.id, {onDelete: 'cascade'}),
     side: text('side').$type<Anchor['side']>().notNull(),
     line: integer('line').notNull(),
     actorId: text('actor_id')
@@ -89,11 +92,15 @@ export const threads = sqliteTable(
       .references(() => user.id, {onDelete: 'restrict'}),
     createdAt: text('created_at').notNull(),
   },
-  (t) => [index('threads_shareId_idx').on(t.shareId)],
+  (t) => [
+    index('threads_shareId_idx').on(t.shareId),
+    index('threads_fileId_idx').on(t.fileId),
+  ],
 );
 
 export const threadsRelations = relations(threads, ({one, many}) => ({
   share: one(shares, {fields: [threads.shareId], references: [shares.id]}),
+  file: one(files, {fields: [threads.fileId], references: [files.id]}),
   actor: one(user, {fields: [threads.actorId], references: [user.id]}),
   comments: many(comments),
 }));

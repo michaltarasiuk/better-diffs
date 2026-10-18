@@ -5,7 +5,7 @@ import {AnnotationSide} from '#/diffs/schemas';
 import {isDefined} from '#/utils/is-defined';
 
 export const Anchor = z.object({
-  filePath: z.string(),
+  fileId: z.uuid(),
   side: AnnotationSide,
   line: z.int().positive(),
 });
@@ -46,7 +46,9 @@ export const ShareSnapshot = z.object({
 export type ShareSnapshot = z.infer<typeof ShareSnapshot>;
 
 export interface StoredIds {
+  readonly fileIds: readonly string[];
   readonly threadIds: readonly string[];
+  readonly otherThreadIds: readonly string[];
   readonly commentIds: readonly string[];
 }
 

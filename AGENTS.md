@@ -20,7 +20,7 @@ Use these in code, routes, errors and UI. A new concept gets a line here in the 
 - **Patch**: one unified-diff document inside a Share. `POST /api/diffs` takes patch text only, which may hold several (as `git format-patch` output does), up to 2 MiB per upload.
 - **Uploader key**: an HMAC of the client address (`x-real-ip`, set by Vercel) stored on a Share, so `POST /api/diffs` can refuse more than 30 uploads an hour from one client with 429 `RATE_LIMITED`. The daily cron clears it from Shares more than an hour old, so it is kept for up to a day. Without the header, as in development, uploads are not limited.
 - **File**: one file's diff inside a Patch, stored as `@pierre/diffs` `FileDiffMetadata`.
-- **Thread**: a conversation anchored to a line (`Anchor`: file path, side, line). It is never resolved or deleted.
+- **Thread**: a conversation anchored to a line (`Anchor`: File id, side, line), so a path changed by several Patches keeps each Thread on its own File. It is never resolved or deleted.
 - **Comment**: one Lexical rich-text body in a Thread. It is never edited or deleted.
 - **Revision**: a counter on a Share, raised by every write to its Threads and Comments. The page starts from a snapshot of the rows, polls for a new snapshot after its revision (`/api/shares/{shareId}/threads?afterRevision=`), which answers `null` when nothing changed, and shows a change before it is stored with `useOptimistic` (`threads/provider.tsx`). Deleting a user who has Threads or Comments is refused.
 - **Actor**: the signed-in GitHub user who wrote a Thread or Comment. Viewing needs no account, commenting does.

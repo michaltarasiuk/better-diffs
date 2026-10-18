@@ -1,6 +1,7 @@
 export type ThreadErrorReason =
   | 'INVALID_INPUT'
   | 'SHARE_NOT_FOUND'
+  | 'FILE_NOT_FOUND'
   | 'THREAD_ALREADY_EXISTS'
   | 'THREAD_NOT_FOUND'
   | 'COMMENT_ALREADY_EXISTS'

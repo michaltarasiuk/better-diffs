@@ -14,6 +14,7 @@ import type {
 } from '../schemas';
 import {applyOptimistic, check, initialState, receive} from '../state';
 
+const FILE_ID = newId();
 const THREAD_ID = newId();
 const COMMENT_ID = newId();
 const OTHER_COMMENT_ID = newId();
@@ -22,7 +23,7 @@ const ALICE = 'alice';
 const CREATED_AT = new Date().toISOString();
 
 const ANCHOR = {
-  filePath: 'a.txt',
+  fileId: FILE_ID,
   side: 'additions',
   line: 3,
 } satisfies Anchor;
@@ -147,7 +148,13 @@ describe('applyOptimistic', () => {
 
 describe('check', () => {
   function stored(overrides: Partial<StoredIds> = {}) {
-    return {threadIds: [THREAD_ID], commentIds: [COMMENT_ID], ...overrides};
+    return {
+      fileIds: [FILE_ID],
+      threadIds: [THREAD_ID],
+      otherThreadIds: [],
+      commentIds: [COMMENT_ID],
+      ...overrides,
+    };
   }
 
   it('accepts a new thread with its first comment', () => {
@@ -171,6 +178,17 @@ describe('check', () => {
 
   it.each([
     ['THREAD_ALREADY_EXISTS', stored(), OPENED],
+    [
+      'THREAD_ALREADY_EXISTS',
+      stored({threadIds: [], otherThreadIds: [THREAD_ID]}),
+      OPENED,
+    ],
+    ['FILE_NOT_FOUND', stored({threadIds: [], fileIds: []}), OPENED],
+    [
+      'THREAD_NOT_FOUND',
+      stored({threadIds: [], otherThreadIds: [THREAD_ID]}),
+      created(OTHER_COMMENT_ID),
+    ],
     ['THREAD_NOT_FOUND', stored({threadIds: []}), created(OTHER_COMMENT_ID)],
     ['COMMENT_ALREADY_EXISTS', stored(), created()],
   ] satisfies [ThreadErrorReason, StoredIds, Change][])(

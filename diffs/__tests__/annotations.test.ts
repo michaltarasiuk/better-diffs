@@ -35,7 +35,7 @@ describe('toThreadAnnotation', () => {
     const thread = {
       id: THREAD_ID,
       anchor: {
-        filePath: 'a.txt',
+        fileId: newId(),
         side: 'deletions',
         line: 7,
       },

@@ -73,16 +73,27 @@ export function applyOptimistic(
 }
 
 export function check(stored: StoredIds, changes: readonly Change[]) {
+  const fileIds = new Set(stored.fileIds);
   const threadIds = new Set(stored.threadIds);
+  const otherThreadIds = new Set(stored.otherThreadIds);
   const commentIds = new Set(stored.commentIds);
 
   function checkChange(change: Change) {
     switch (change.type) {
       case 'openThread':
-        if (threadIds.has(change.threadId)) {
+        if (
+          threadIds.has(change.threadId) ||
+          otherThreadIds.has(change.threadId)
+        ) {
           return threadError(
             'THREAD_ALREADY_EXISTS',
             `Thread already exists: ${change.threadId}`,
+          );
+        }
+        if (!fileIds.has(change.anchor.fileId)) {
+          return threadError(
+            'FILE_NOT_FOUND',
+            `File not found: ${change.anchor.fileId}`,
           );
         }
         threadIds.add(change.threadId);

@@ -29,10 +29,9 @@ type AnnotationLine = Omit<DiffAnnotation, 'metadata'>;
 interface AnnotationProps {
   readonly annotation: DiffAnnotation;
   readonly fileId: string;
-  readonly filePath: string;
 }
 
-export function Annotation({annotation, fileId, filePath}: AnnotationProps) {
+export function Annotation({annotation, fileId}: AnnotationProps) {
   const {removeCommentForm} = useReviewState();
   const {clearDraft} = useDrafts();
 
@@ -56,7 +55,6 @@ export function Annotation({annotation, fileId, filePath}: AnnotationProps) {
           line={line}
           form={metadata}
           fileId={fileId}
-          filePath={filePath}
           onDismiss={onDismiss}
         />
       );
@@ -82,17 +80,10 @@ interface CommentFormProps {
   readonly line: AnnotationLine;
   readonly form: FormAnnotationMetadata;
   readonly fileId: string;
-  readonly filePath: string;
   readonly onDismiss?: () => void;
 }
 
-function CommentForm({
-  line,
-  form,
-  fileId,
-  filePath,
-  onDismiss,
-}: CommentFormProps) {
+function CommentForm({line, form, fileId, onDismiss}: CommentFormProps) {
   const shareId = useShareId();
   const {optimistic} = useShareActions();
   const {removeCommentForm, restoreCommentForm} = useReviewState();
@@ -102,7 +93,7 @@ function CommentForm({
     const threadId = newId();
     const commentId = newId();
     const anchor: Anchor = {
-      filePath,
+      fileId,
       side: line.side,
       line: line.lineNumber,
     };

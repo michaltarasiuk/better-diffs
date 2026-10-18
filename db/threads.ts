@@ -9,6 +9,8 @@ import {isDefined} from '#/utils/is-defined';
 import {db} from './db';
 import {
   comments as commentsTable,
+  files as filesTable,
+  patches as patchesTable,
   shares as sharesTable,
   threads as threadsTable,
   user as userTable,
@@ -36,7 +38,7 @@ export async function getSnapshot(shareId: string, afterRevision = -1) {
       .select({
         id: threadsTable.id,
         anchor: {
-          filePath: threadsTable.filePath,
+          fileId: threadsTable.fileId,
           side: threadsTable.side,
           line: threadsTable.line,
         },
@@ -76,35 +78,50 @@ async function getStoredIds(
   shareId: string,
   changes: readonly Change[],
 ) {
-  const threads = await tx
-    .select({id: threadsTable.id})
-    .from(threadsTable)
+  const files = await tx
+    .select({id: filesTable.id})
+    .from(filesTable)
+    .innerJoin(patchesTable, eq(filesTable.patchId, patchesTable.id))
     .where(
       and(
-        eq(threadsTable.shareId, shareId),
+        eq(patchesTable.shareId, shareId),
         inArray(
-          threadsTable.id,
-          changes.map(({threadId}) => threadId),
+          filesTable.id,
+          changes.flatMap((change) =>
+            change.type === 'openThread' ? [change.anchor.fileId] : [],
+          ),
         ),
+      ),
+    );
+  const threads = await tx
+    .select({id: threadsTable.id, shareId: threadsTable.shareId})
+    .from(threadsTable)
+    .where(
+      inArray(
+        threadsTable.id,
+        changes.map(({threadId}) => threadId),
       ),
     );
   const comments = await tx
     .select({id: commentsTable.id})
     .from(commentsTable)
     .where(
-      and(
-        eq(commentsTable.shareId, shareId),
-        inArray(
-          commentsTable.id,
-          changes.flatMap((change) =>
-            change.type === 'createComment' ? [change.commentId] : [],
-          ),
+      inArray(
+        commentsTable.id,
+        changes.flatMap((change) =>
+          change.type === 'createComment' ? [change.commentId] : [],
         ),
       ),
     );
 
   return {
-    threadIds: threads.map(({id}) => id),
+    fileIds: files.map(({id}) => id),
+    threadIds: threads
+      .filter((thread) => thread.shareId === shareId)
+      .map(({id}) => id),
+    otherThreadIds: threads
+      .filter((thread) => thread.shareId !== shareId)
+      .map(({id}) => id),
     commentIds: comments.map(({id}) => id),
   };
 }
@@ -124,11 +141,11 @@ async function write(
 ) {
   switch (change.type) {
     case 'openThread': {
-      const {filePath, side, line} = change.anchor;
+      const {fileId, side, line} = change.anchor;
       await tx.insert(threadsTable).values({
         id: change.threadId,
         shareId,
-        filePath,
+        fileId,
         side,
         line,
         actorId,

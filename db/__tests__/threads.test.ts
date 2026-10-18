@@ -10,7 +10,7 @@ import {db} from '../db';
 import {user as userTable} from '../schema';
 import {createShare} from '../shares';
 import {getSnapshot, saveChanges} from '../threads';
-import {allowAll, insertUser, setupTestDb} from './setup';
+import {allowAll, createShareWithFile, insertUser, setupTestDb} from './setup';
 
 setupTestDb();
 
@@ -18,11 +18,11 @@ function body(text: string) {
   return {root: {text}} as unknown as SerializedEditorState;
 }
 
-function opened(threadId = newId()) {
+function opened(fileId: string, threadId = newId()) {
   return {
     type: 'openThread',
     threadId,
-    anchor: {filePath: 'a.txt', side: 'additions', line: 1},
+    anchor: {fileId, side: 'additions', line: 1},
   } satisfies Change;
 }
 
@@ -37,21 +37,22 @@ function created(threadId: string, commentId = newId(), text = 'hello') {
 
 async function shareWithThread() {
   const {id: actorId} = await insertUser({name: 'Alice', image: null});
-  const shareId = await createShare('', []);
+  const {shareId, fileId} = await createShareWithFile();
   const threadId = newId();
   const commentId = newId();
   await saveChanges(
     shareId,
     actorId,
-    [opened(threadId), created(threadId, commentId)],
+    [opened(fileId, threadId), created(threadId, commentId)],
     allowAll,
   );
-  return {actorId, shareId, threadId, commentId};
+  return {actorId, shareId, fileId, threadId, commentId};
 }
 
 describe('saveChanges', () => {
   it('stores threads and comments', async () => {
-    const {actorId, shareId, threadId, commentId} = await shareWithThread();
+    const {actorId, shareId, fileId, threadId, commentId} =
+      await shareWithThread();
 
     const snapshot = await getSnapshot(shareId);
 
@@ -60,7 +61,7 @@ describe('saveChanges', () => {
       threads: [
         {
           id: threadId,
-          anchor: {filePath: 'a.txt', side: 'additions', line: 1},
+          anchor: {fileId, side: 'additions', line: 1},
           actorId,
           actor: {name: 'Alice', image: null},
         },
@@ -86,21 +87,29 @@ describe('saveChanges', () => {
   });
 
   it('validates against the stored ids the changes refer to', async () => {
-    const {actorId, shareId, threadId, commentId} = await shareWithThread();
+    const {actorId, shareId, fileId, threadId, commentId} =
+      await shareWithThread();
     await saveChanges(shareId, actorId, [created(threadId)], allowAll);
-    await shareWithThread();
+    const other = await shareWithThread();
     const validate = vi.fn(() => threadError('COMMENT_ALREADY_EXISTS', ''));
 
     await saveChanges(
       shareId,
       actorId,
-      [created(threadId, commentId)],
+      [
+        opened(fileId, other.threadId),
+        opened(other.fileId),
+        created(threadId, commentId),
+        created(threadId, other.commentId),
+      ],
       validate,
     );
 
     expect(validate).toHaveBeenCalledExactlyOnceWith({
+      fileIds: [fileId],
       threadIds: [threadId],
-      commentIds: [commentId],
+      otherThreadIds: [other.threadId],
+      commentIds: expect.arrayContaining([commentId, other.commentId]),
     });
   });
 
@@ -129,7 +138,7 @@ describe('saveChanges', () => {
     const shareId = newId();
 
     await expect(
-      saveChanges(shareId, actorId, [opened()], allowAll),
+      saveChanges(shareId, actorId, [opened(newId())], allowAll),
     ).resolves.toEqual({
       reason: 'SHARE_NOT_FOUND',
       message: `Share not found: ${shareId}`,
@@ -137,10 +146,10 @@ describe('saveChanges', () => {
   });
 
   it('rolls back the revision when a write fails', async () => {
-    const shareId = await createShare('', []);
+    const {shareId, fileId} = await createShareWithFile();
 
     await expect(
-      saveChanges(shareId, newId(), [opened()], allowAll),
+      saveChanges(shareId, newId(), [opened(fileId)], allowAll),
     ).rejects.toThrow();
 
     await expect(getSnapshot(shareId)).resolves.toMatchObject({revision: 0});

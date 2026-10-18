@@ -18,11 +18,12 @@ const {fetchSnapshot, startPolling} = vi.hoisted(() => ({
 vi.mock('../sync', () => ({fetchSnapshot, startPolling}));
 
 const SHARE_ID = newId();
+const FILE_ID = newId();
 
 function thread(id = newId()): Thread {
   return {
     id,
-    anchor: {filePath: 'a.txt', side: 'additions', line: 1},
+    anchor: {fileId: FILE_ID, side: 'additions', line: 1},
     actorId: 'alice',
     actor: {name: 'Alice', image: null},
     createdAt: new Date().toISOString(),
@@ -42,7 +43,7 @@ function openChange(threadId: string): OptimisticChange {
       type: 'openThread',
       threadId,
       anchor: {
-        filePath: 'a.txt',
+        fileId: FILE_ID,
         side: 'additions',
         line: 1,
       },

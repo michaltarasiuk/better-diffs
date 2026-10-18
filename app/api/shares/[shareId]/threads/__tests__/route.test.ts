@@ -1,8 +1,12 @@
 import type {SerializedEditorState} from 'lexical';
 import {describe, expect, it} from 'vitest';
 
-import {allowAll, insertUser, setupTestDb} from '#/db/__tests__/setup';
-import {createShare} from '#/db/shares';
+import {
+  allowAll,
+  createShareWithFile,
+  insertUser,
+  setupTestDb,
+} from '#/db/__tests__/setup';
 import {saveChanges} from '#/db/threads';
 import {env} from '#/env';
 import {ShareSnapshot} from '#/threads/schemas';
@@ -21,7 +25,7 @@ function get(shareId: string, search = '') {
 
 async function shareWithThreads(count: number) {
   const {id: actorId} = await insertUser();
-  const shareId = await createShare('', []);
+  const {shareId, fileId} = await createShareWithFile();
   for (let index = 0; index < count; index++) {
     const threadId = newId();
     await saveChanges(
@@ -31,7 +35,7 @@ async function shareWithThreads(count: number) {
         {
           type: 'openThread',
           threadId,
-          anchor: {filePath: 'a.txt', side: 'additions', line: 1},
+          anchor: {fileId, side: 'additions', line: 1},
         },
         {
           type: 'createComment',

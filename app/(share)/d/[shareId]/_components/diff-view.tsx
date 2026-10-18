@@ -54,9 +54,9 @@ export function DiffView({files}: DiffViewProps) {
   const {selectedLines, setSelectedLines} = useSelectedLines();
   const isMobile = useIsMobile();
 
-  const threadsByFilePath = Map.groupBy(
+  const threadsByFileId = Map.groupBy(
     share.threads.values(),
-    (thread) => thread.anchor.filePath,
+    (thread) => thread.anchor.fileId,
   );
 
   useShortcut('v', function toggleViewed() {
@@ -79,7 +79,7 @@ export function DiffView({files}: DiffViewProps) {
       ref={codeViewRef}
       items={files.map((file) => {
         const {commentForms, collapsed, version} = getFileState(file.id);
-        const threads = threadsByFilePath.get(file.metadata.name) ?? [];
+        const threads = threadsByFileId.get(file.id) ?? [];
 
         return {
           id: file.id,
@@ -128,13 +128,8 @@ export function DiffView({files}: DiffViewProps) {
         />
       )}
       renderAnnotation={(annotation, item) =>
-        item.type === 'diff' &&
         isDiffAnnotation<AnnotationMetadata>(annotation) ? (
-          <Annotation
-            annotation={annotation}
-            fileId={item.id}
-            filePath={item.fileDiff.name}
-          />
+          <Annotation annotation={annotation} fileId={item.id} />
         ) : null
       }
       options={{

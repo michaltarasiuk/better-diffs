@@ -10,6 +10,8 @@ import {beforeAll, beforeEach} from 'vitest';
 
 import {db} from '#/db/db';
 import * as schema from '#/db/schema/index';
+import {createShare, getShareFiles} from '#/db/shares';
+import {fileDiffs} from '#/diffs/__tests__/patches';
 import {isDefined} from '#/utils/is-defined';
 import {newId} from '#/utils/new-id';
 
@@ -56,6 +58,12 @@ export async function insertUser(
     .values({id, name: id, email: `${id}@example.com`, ...values})
     .returning();
   return user!;
+}
+
+export async function createShareWithFile(name = 'a.txt') {
+  const shareId = await createShare('', [fileDiffs(name)]);
+  const [file] = await getShareFiles(shareId);
+  return {shareId, fileId: file!.id};
 }
 
 export async function hasShare(shareId: string) {

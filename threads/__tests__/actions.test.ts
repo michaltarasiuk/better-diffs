@@ -2,8 +2,11 @@ import type {SerializedEditorState} from 'lexical';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import type {Session} from '#/auth/server';
-import {insertUser, setupTestDb} from '#/db/__tests__/setup';
-import {createShare} from '#/db/shares';
+import {
+  createShareWithFile,
+  insertUser,
+  setupTestDb,
+} from '#/db/__tests__/setup';
 import {getSnapshot} from '#/db/threads';
 import {isDefined} from '#/utils/is-defined';
 import {newId} from '#/utils/new-id';
@@ -22,6 +25,7 @@ setupTestDb();
 const BODY = {root: {}} as SerializedEditorState;
 
 let shareId: string;
+let anchor: Anchor;
 let alice: string;
 let bob: string;
 
@@ -33,12 +37,6 @@ function signIn(userId: string | null) {
   );
 }
 
-const ANCHOR = {
-  filePath: 'a.txt',
-  side: 'additions',
-  line: 1,
-} satisfies Anchor;
-
 async function openAliceThread() {
   const threadId = newId();
   const commentId = newId();
@@ -47,7 +45,7 @@ async function openAliceThread() {
     threadId,
     commentId,
     body: BODY,
-    anchor: ANCHOR,
+    anchor,
   });
   return {threadId, commentId};
 }
@@ -59,7 +57,9 @@ async function stored() {
 
 beforeEach(async () => {
   vi.stubEnv('__NEXT_EXPERIMENTAL_AUTH_INTERRUPTS', 'true');
-  shareId = await createShare('', []);
+  const share = await createShareWithFile();
+  shareId = share.shareId;
+  anchor = {fileId: share.fileId, side: 'additions', line: 1};
   alice = (await insertUser()).id;
   bob = (await insertUser()).id;
   signIn(alice);
@@ -70,7 +70,7 @@ describe('openThread', () => {
     const {threadId, commentId} = await openAliceThread();
 
     await expect(stored()).resolves.toMatchObject({
-      threads: [{id: threadId, actorId: alice, anchor: ANCHOR}],
+      threads: [{id: threadId, actorId: alice, anchor}],
       comments: [{id: commentId, threadId, actorId: alice, body: BODY}],
     });
   });
@@ -82,11 +82,28 @@ describe('openThread', () => {
         threadId: 'not-a-uuid',
         commentId: newId(),
         body: BODY,
-        anchor: ANCHOR,
+        anchor,
       }),
     ).resolves.toEqual({
       reason: 'INVALID_INPUT',
       message: 'Invalid open thread input',
+    });
+  });
+
+  it('rejects a file of another share', async () => {
+    const other = await createShareWithFile();
+
+    await expect(
+      openThread({
+        shareId,
+        threadId: newId(),
+        commentId: newId(),
+        body: BODY,
+        anchor: {...anchor, fileId: other.fileId},
+      }),
+    ).resolves.toEqual({
+      reason: 'FILE_NOT_FOUND',
+      message: `File not found: ${other.fileId}`,
     });
   });
 
@@ -99,7 +116,25 @@ describe('openThread', () => {
         threadId,
         commentId: newId(),
         body: BODY,
-        anchor: ANCHOR,
+        anchor,
+      }),
+    ).resolves.toEqual({
+      reason: 'THREAD_ALREADY_EXISTS',
+      message: `Thread already exists: ${threadId}`,
+    });
+  });
+
+  it('rejects a thread id taken in another share', async () => {
+    const {threadId} = await openAliceThread();
+    const other = await createShareWithFile();
+
+    await expect(
+      openThread({
+        shareId: other.shareId,
+        threadId,
+        commentId: newId(),
+        body: BODY,
+        anchor: {...anchor, fileId: other.fileId},
       }),
     ).resolves.toEqual({
       reason: 'THREAD_ALREADY_EXISTS',
@@ -116,7 +151,7 @@ describe('openThread', () => {
         threadId: newId(),
         commentId: newId(),
         body: BODY,
-        anchor: ANCHOR,
+        anchor,
       }),
     ).resolves.toEqual({
       reason: 'SHARE_NOT_FOUND',

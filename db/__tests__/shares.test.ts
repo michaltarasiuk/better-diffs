@@ -16,7 +16,14 @@ import {
   touchShare,
 } from '../shares';
 import {saveChanges} from '../threads';
-import {ageShare, allowAll, hasShare, insertUser, setupTestDb} from './setup';
+import {
+  ageShare,
+  allowAll,
+  createShareWithFile,
+  hasShare,
+  insertUser,
+  setupTestDb,
+} from './setup';
 
 setupTestDb();
 
@@ -144,13 +151,13 @@ describe('getShareFiles', () => {
   });
 });
 
-function openThread() {
+function openThread(fileId: string) {
   const threadId = newId();
   return [
     {
       type: 'openThread',
       threadId,
-      anchor: {filePath: 'a.txt', side: 'additions', line: 1},
+      anchor: {fileId, side: 'additions', line: 1},
     },
     {
       type: 'createComment',
@@ -164,11 +171,11 @@ function openThread() {
 describe('saveChanges', () => {
   it('refreshes the last visit', async () => {
     const {id: actorId} = await insertUser();
-    const id = await createShare('', []);
+    const {shareId: id, fileId} = await createShareWithFile();
     await ageShare(id, 48);
     const before = await getShare(id);
 
-    await saveChanges(id, actorId, openThread(), allowAll);
+    await saveChanges(id, actorId, openThread(fileId), allowAll);
 
     const after = await getShare(id);
     expect(after!.lastVisitedAt > before!.lastVisitedAt).toBe(true);
@@ -199,7 +206,8 @@ describe('deleteExpiredShares', () => {
   it('deletes the patches, files, threads and comments of expired shares', async () => {
     const {id: actorId} = await insertUser();
     const id = await createShare('', [fileDiffs('a.txt', 'b.txt')]);
-    await saveChanges(id, actorId, openThread(), allowAll);
+    const [file] = await getShareFiles(id);
+    await saveChanges(id, actorId, openThread(file!.id), allowAll);
     await ageShare(id, 25);
 
     await deleteExpiredShares({maxAgeHours: 24});
