@@ -58,9 +58,10 @@ export default async function SharePage({
   const stats = computeDiffStats(fileDiffs);
 
   const sortedFiles = sortByTree(files, treeInput);
-  const fileIdByPath = Object.fromEntries(
-    files.map((file) => [file.name, file.id]),
-  );
+  const fileIdByPath: Record<string, string> = {};
+  for (const file of files) {
+    fileIdByPath[file.name] ??= file.id;
+  }
 
   const tree = (
     <FileTreePanel

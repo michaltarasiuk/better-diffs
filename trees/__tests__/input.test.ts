@@ -32,6 +32,22 @@ describe('prepareTreeInput', () => {
 
     expect(paths).toEqual(expect.arrayContaining(files.map(({name}) => name)));
   });
+
+  it('lists a file changed by several patches once', () => {
+    const files = [
+      {name: 'a.txt', type: 'new'},
+      {name: 'b.txt', type: 'change'},
+      {name: 'a.txt', type: 'change'},
+    ] satisfies TreeInputFile[];
+
+    expect(prepareTreeInput(files)).toEqual({
+      paths: ['a.txt', 'b.txt'],
+      gitStatus: [
+        {path: 'a.txt', status: 'added'},
+        {path: 'b.txt', status: 'modified'},
+      ],
+    });
+  });
 });
 
 describe('sortByTree', () => {

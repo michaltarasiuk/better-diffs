@@ -5,12 +5,21 @@ export type TreeInputFile = Pick<FileDiffMetadata, 'name' | 'type'>;
 export type TreeInput = ReturnType<typeof prepareTreeInput>;
 
 export function prepareTreeInput(files: readonly TreeInputFile[]) {
+  const names = new Set<string>();
+  const uniqueFiles = files.filter(({name}) => {
+    if (names.has(name)) {
+      return false;
+    }
+    names.add(name);
+    return true;
+  });
+
   const {paths} = prepareFileTreeInput(
-    files.map(({name}) => name),
+    uniqueFiles.map(({name}) => name),
     {flattenEmptyDirectories: true},
   );
 
-  const gitStatus = files.map(({name, type}) => ({
+  const gitStatus = uniqueFiles.map(({name, type}) => ({
     path: name,
     status: toGitStatus(type),
   }));
