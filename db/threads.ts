@@ -1,9 +1,14 @@
 import 'server-only';
 
-import {and, asc, eq, gt, inArray, sql} from 'drizzle-orm';
+import {and, asc, eq, gt, sql, type SQL} from 'drizzle-orm';
+import type {SQLiteTable} from 'drizzle-orm/sqlite-core';
 
-import {threadError, type ThreadError} from '#/threads/errors';
-import type {Change, StoredIds} from '#/threads/schemas';
+import {
+  threadError,
+  type ThreadError,
+  type ThreadErrorReason,
+} from '#/threads/errors';
+import type {Change} from '#/threads/schemas';
 import {isDefined} from '#/utils/is-defined';
 
 import {db} from './db';
@@ -73,60 +78,25 @@ export async function getSnapshot(shareId: string, afterRevision = -1) {
   });
 }
 
-async function getStoredIds(
-  tx: Transaction,
-  shareId: string,
-  changes: readonly Change[],
-) {
-  const files = await tx
-    .select({id: filesTable.id})
-    .from(filesTable)
-    .innerJoin(patchesTable, eq(filesTable.patchId, patchesTable.id))
-    .where(
-      and(
-        eq(patchesTable.shareId, shareId),
-        inArray(
-          filesTable.id,
-          changes.flatMap((change) =>
-            change.type === 'openThread' ? [change.anchor.fileId] : [],
-          ),
-        ),
-      ),
-    );
-  const threads = await tx
-    .select({id: threadsTable.id, shareId: threadsTable.shareId})
-    .from(threadsTable)
-    .where(
-      inArray(
-        threadsTable.id,
-        changes.map(({threadId}) => threadId),
-      ),
-    );
-  const comments = await tx
-    .select({id: commentsTable.id})
-    .from(commentsTable)
-    .where(
-      inArray(
-        commentsTable.id,
-        changes.flatMap((change) =>
-          change.type === 'createComment' ? [change.commentId] : [],
-        ),
-      ),
-    );
-
-  return {
-    fileIds: files.map(({id}) => id),
-    threadIds: threads
-      .filter((thread) => thread.shareId === shareId)
-      .map(({id}) => id),
-    otherThreadIds: threads
-      .filter((thread) => thread.shareId !== shareId)
-      .map(({id}) => id),
-    commentIds: comments.map(({id}) => id),
-  };
+class Refusal extends Error {
+  constructor(readonly threadError: ThreadError) {
+    super(threadError.message);
+  }
 }
 
-async function write(
+function refuse(reason: ThreadErrorReason, message: string) {
+  throw new Refusal(threadError(reason, message));
+}
+
+async function exists(
+  tx: Transaction,
+  table: SQLiteTable,
+  where: SQL | undefined,
+) {
+  return (await tx.$count(table, where)) > 0;
+}
+
+async function applyChange(
   tx: Transaction,
   {
     shareId,
@@ -141,9 +111,24 @@ async function write(
 ) {
   switch (change.type) {
     case 'openThread': {
+      const {threadId} = change;
       const {fileId, side, line} = change.anchor;
+      if (await exists(tx, threadsTable, eq(threadsTable.id, threadId))) {
+        refuse('THREAD_ALREADY_EXISTS', `Thread already exists: ${threadId}`);
+      }
+      const [file] = await tx
+        .select({id: filesTable.id})
+        .from(filesTable)
+        .innerJoin(patchesTable, eq(filesTable.patchId, patchesTable.id))
+        .where(
+          and(eq(filesTable.id, fileId), eq(patchesTable.shareId, shareId)),
+        );
+      if (!isDefined(file)) {
+        refuse('FILE_NOT_FOUND', `File not found: ${fileId}`);
+      }
+
       await tx.insert(threadsTable).values({
-        id: change.threadId,
+        id: threadId,
         shareId,
         fileId,
         side,
@@ -153,16 +138,32 @@ async function write(
       });
       break;
     }
-    case 'createComment':
+    case 'createComment': {
+      const {threadId, commentId, body} = change;
+      const thread = and(
+        eq(threadsTable.id, threadId),
+        eq(threadsTable.shareId, shareId),
+      );
+      if (!(await exists(tx, threadsTable, thread))) {
+        refuse('THREAD_NOT_FOUND', `Thread not found: ${threadId}`);
+      }
+      if (await exists(tx, commentsTable, eq(commentsTable.id, commentId))) {
+        refuse(
+          'COMMENT_ALREADY_EXISTS',
+          `Comment already exists: ${commentId}`,
+        );
+      }
+
       await tx.insert(commentsTable).values({
-        id: change.commentId,
+        id: commentId,
         shareId,
-        threadId: change.threadId,
+        threadId,
         actorId,
-        body: change.body,
+        body,
         createdAt,
       });
       break;
+    }
     default:
       change satisfies never;
   }
@@ -172,38 +173,35 @@ export async function saveChanges(
   shareId: string,
   actorId: string,
   changes: readonly Change[],
-  validate: (stored: StoredIds) => ThreadError | undefined,
 ) {
   if (changes.length === 0) {
     return undefined;
   }
 
-  return db.transaction(async (tx) => {
-    const [share] = await tx
-      .select({id: sharesTable.id})
-      .from(sharesTable)
-      .where(eq(sharesTable.id, shareId));
-    if (!isDefined(share)) {
-      return threadError('SHARE_NOT_FOUND', `Share not found: ${shareId}`);
-    }
+  try {
+    await db.transaction(async (tx) => {
+      if (!(await exists(tx, sharesTable, eq(sharesTable.id, shareId)))) {
+        refuse('SHARE_NOT_FOUND', `Share not found: ${shareId}`);
+      }
 
-    const error = validate(await getStoredIds(tx, shareId, changes));
-    if (isDefined(error)) {
-      return error;
-    }
+      await tx
+        .update(sharesTable)
+        .set({
+          revision: sql`${sharesTable.revision} + 1`,
+          lastVisitedAt: sql`datetime('now')`,
+        })
+        .where(eq(sharesTable.id, shareId));
 
-    await tx
-      .update(sharesTable)
-      .set({
-        revision: sql`${sharesTable.revision} + 1`,
-        lastVisitedAt: sql`datetime('now')`,
-      })
-      .where(eq(sharesTable.id, shareId));
-
-    const createdAt = new Date().toISOString();
-    for (const change of changes) {
-      await write(tx, {shareId, actorId, createdAt}, change);
+      const createdAt = new Date().toISOString();
+      for (const change of changes) {
+        await applyChange(tx, {shareId, actorId, createdAt}, change);
+      }
+    });
+  } catch (error) {
+    if (error instanceof Refusal) {
+      return error.threadError;
     }
-    return undefined;
-  });
+    throw error;
+  }
+  return undefined;
 }

@@ -3,16 +3,8 @@ import {describe, expect, it} from 'vitest';
 
 import {newId} from '#/utils/new-id';
 
-import type {ThreadErrorReason} from '../errors';
-import type {
-  Actor,
-  Anchor,
-  Change,
-  Comment,
-  StoredIds,
-  Thread,
-} from '../schemas';
-import {applyOptimistic, check, initialState, receive} from '../state';
+import type {Actor, Anchor, Change, Comment, Thread} from '../schemas';
+import {applyOptimistic, initialState, receive} from '../state';
 
 const FILE_ID = newId();
 const THREAD_ID = newId();
@@ -144,57 +136,4 @@ describe('applyOptimistic', () => {
     expect(next.revision).toBe(state.revision);
     expect(state.comments.has(OTHER_COMMENT_ID)).toBe(false);
   });
-});
-
-describe('check', () => {
-  function stored(overrides: Partial<StoredIds> = {}) {
-    return {
-      fileIds: [FILE_ID],
-      threadIds: [THREAD_ID],
-      otherThreadIds: [],
-      commentIds: [COMMENT_ID],
-      ...overrides,
-    };
-  }
-
-  it('accepts a new thread with its first comment', () => {
-    expect(
-      check(stored({threadIds: [], commentIds: []}), [OPENED, created()]),
-    ).toBeUndefined();
-  });
-
-  it('accepts a reply to a thread', () => {
-    expect(check(stored(), [created(OTHER_COMMENT_ID)])).toBeUndefined();
-  });
-
-  it('checks each change against the earlier ones', () => {
-    expect(
-      check(stored(), [created(OTHER_COMMENT_ID), created(OTHER_COMMENT_ID)]),
-    ).toEqual({
-      reason: 'COMMENT_ALREADY_EXISTS',
-      message: `Comment already exists: ${OTHER_COMMENT_ID}`,
-    });
-  });
-
-  it.each([
-    ['THREAD_ALREADY_EXISTS', stored(), OPENED],
-    [
-      'THREAD_ALREADY_EXISTS',
-      stored({threadIds: [], otherThreadIds: [THREAD_ID]}),
-      OPENED,
-    ],
-    ['FILE_NOT_FOUND', stored({threadIds: [], fileIds: []}), OPENED],
-    [
-      'THREAD_NOT_FOUND',
-      stored({threadIds: [], otherThreadIds: [THREAD_ID]}),
-      created(OTHER_COMMENT_ID),
-    ],
-    ['THREAD_NOT_FOUND', stored({threadIds: []}), created(OTHER_COMMENT_ID)],
-    ['COMMENT_ALREADY_EXISTS', stored(), created()],
-  ] satisfies [ThreadErrorReason, StoredIds, Change][])(
-    'refuses with %s',
-    (reason, given, refused) => {
-      expect(check(given, [refused])).toMatchObject({reason});
-    },
-  );
 });

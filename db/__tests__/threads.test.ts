@@ -1,8 +1,7 @@
 import {eq} from 'drizzle-orm';
 import type {SerializedEditorState} from 'lexical';
-import {describe, expect, it, vi} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
-import {threadError} from '#/threads/errors';
 import type {Change} from '#/threads/schemas';
 import {newId} from '#/utils/new-id';
 
@@ -10,7 +9,7 @@ import {db} from '../db';
 import {user as userTable} from '../schema';
 import {createShare} from '../shares';
 import {getSnapshot, saveChanges} from '../threads';
-import {allowAll, createShareWithFile, insertUser, setupTestDb} from './setup';
+import {createShareWithFile, insertUser, setupTestDb} from './setup';
 
 setupTestDb();
 
@@ -40,12 +39,10 @@ async function shareWithThread() {
   const {shareId, fileId} = await createShareWithFile();
   const threadId = newId();
   const commentId = newId();
-  await saveChanges(
-    shareId,
-    actorId,
-    [opened(fileId, threadId), created(threadId, commentId)],
-    allowAll,
-  );
+  await saveChanges(shareId, actorId, [
+    opened(fileId, threadId),
+    created(threadId, commentId),
+  ]);
   return {actorId, shareId, fileId, threadId, commentId};
 }
 
@@ -81,56 +78,44 @@ describe('saveChanges', () => {
   it('bumps the revision once per save', async () => {
     const {actorId, shareId, threadId} = await shareWithThread();
 
-    await saveChanges(shareId, actorId, [created(threadId)], allowAll);
+    await saveChanges(shareId, actorId, [created(threadId)]);
 
     await expect(getSnapshot(shareId)).resolves.toMatchObject({revision: 2});
   });
 
-  it('validates against the stored ids the changes refer to', async () => {
-    const {actorId, shareId, fileId, threadId, commentId} =
-      await shareWithThread();
-    await saveChanges(shareId, actorId, [created(threadId)], allowAll);
-    const other = await shareWithThread();
-    const validate = vi.fn(() => threadError('COMMENT_ALREADY_EXISTS', ''));
+  it('checks each change against the ones before it', async () => {
+    const {actorId, shareId, threadId} = await shareWithThread();
+    const commentId = newId();
 
-    await saveChanges(
-      shareId,
-      actorId,
-      [
-        opened(fileId, other.threadId),
-        opened(other.fileId),
+    await expect(
+      saveChanges(shareId, actorId, [
         created(threadId, commentId),
-        created(threadId, other.commentId),
-      ],
-      validate,
-    );
-
-    expect(validate).toHaveBeenCalledExactlyOnceWith({
-      fileIds: [fileId],
-      threadIds: [threadId],
-      otherThreadIds: [other.threadId],
-      commentIds: expect.arrayContaining([commentId, other.commentId]),
+        created(threadId, commentId),
+      ]),
+    ).resolves.toEqual({
+      reason: 'COMMENT_ALREADY_EXISTS',
+      message: `Comment already exists: ${commentId}`,
     });
   });
 
-  it('stores nothing when validation fails', async () => {
-    const {actorId, shareId, threadId} = await shareWithThread();
-
-    const refused = threadError('THREAD_NOT_FOUND', 'Refused');
+  it('stores none of the changes when one is refused', async () => {
+    const {actorId, shareId, fileId, commentId} = await shareWithThread();
+    const threadId = newId();
 
     await expect(
-      saveChanges(shareId, actorId, [created(threadId)], () => refused),
-    ).resolves.toBe(refused);
+      saveChanges(shareId, actorId, [
+        opened(fileId, threadId),
+        created(threadId, commentId),
+      ]),
+    ).resolves.toMatchObject({reason: 'COMMENT_ALREADY_EXISTS'});
 
     const snapshot = await getSnapshot(shareId);
     expect(snapshot?.revision).toBe(1);
-    expect(snapshot?.comments).toHaveLength(1);
+    expect(snapshot?.threads).toHaveLength(1);
   });
 
   it('does nothing for an empty batch', async () => {
-    await expect(
-      saveChanges(newId(), newId(), [], allowAll),
-    ).resolves.toBeUndefined();
+    await expect(saveChanges(newId(), newId(), [])).resolves.toBeUndefined();
   });
 
   it('refuses an unknown share', async () => {
@@ -138,7 +123,7 @@ describe('saveChanges', () => {
     const shareId = newId();
 
     await expect(
-      saveChanges(shareId, actorId, [opened(newId())], allowAll),
+      saveChanges(shareId, actorId, [opened(newId())]),
     ).resolves.toEqual({
       reason: 'SHARE_NOT_FOUND',
       message: `Share not found: ${shareId}`,
@@ -149,7 +134,7 @@ describe('saveChanges', () => {
     const {shareId, fileId} = await createShareWithFile();
 
     await expect(
-      saveChanges(shareId, newId(), [opened(fileId)], allowAll),
+      saveChanges(shareId, newId(), [opened(fileId)]),
     ).rejects.toThrow();
 
     await expect(getSnapshot(shareId)).resolves.toMatchObject({revision: 0});
@@ -172,7 +157,7 @@ describe('getSnapshot', () => {
   it('lists comments in the order they were created', async () => {
     const {actorId, shareId, threadId, commentId} = await shareWithThread();
     const replyId = newId();
-    await saveChanges(shareId, actorId, [created(threadId, replyId)], allowAll);
+    await saveChanges(shareId, actorId, [created(threadId, replyId)]);
 
     const snapshot = await getSnapshot(shareId);
 

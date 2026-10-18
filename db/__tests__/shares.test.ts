@@ -18,7 +18,6 @@ import {
 import {saveChanges} from '../threads';
 import {
   ageShare,
-  allowAll,
   createShareWithFile,
   hasShare,
   insertUser,
@@ -175,7 +174,7 @@ describe('saveChanges', () => {
     await ageShare(id, 48);
     const before = await getShare(id);
 
-    await saveChanges(id, actorId, openThread(fileId), allowAll);
+    await saveChanges(id, actorId, openThread(fileId));
 
     const after = await getShare(id);
     expect(after!.lastVisitedAt > before!.lastVisitedAt).toBe(true);
@@ -207,7 +206,7 @@ describe('deleteExpiredShares', () => {
     const {id: actorId} = await insertUser();
     const id = await createShare('', [fileDiffs('a.txt', 'b.txt')]);
     const [file] = await getShareFiles(id);
-    await saveChanges(id, actorId, openThread(file!.id), allowAll);
+    await saveChanges(id, actorId, openThread(file!.id));
     await ageShare(id, 25);
 
     await deleteExpiredShares({maxAgeHours: 24});

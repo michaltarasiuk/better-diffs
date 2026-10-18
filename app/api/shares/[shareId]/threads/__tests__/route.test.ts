@@ -2,7 +2,6 @@ import type {SerializedEditorState} from 'lexical';
 import {describe, expect, it} from 'vitest';
 
 import {
-  allowAll,
   createShareWithFile,
   insertUser,
   setupTestDb,
@@ -28,24 +27,19 @@ async function shareWithThreads(count: number) {
   const {shareId, fileId} = await createShareWithFile();
   for (let index = 0; index < count; index++) {
     const threadId = newId();
-    await saveChanges(
-      shareId,
-      actorId,
-      [
-        {
-          type: 'openThread',
-          threadId,
-          anchor: {fileId, side: 'additions', line: 1},
-        },
-        {
-          type: 'createComment',
-          threadId,
-          commentId: newId(),
-          body: {root: {}} as SerializedEditorState,
-        },
-      ],
-      allowAll,
-    );
+    await saveChanges(shareId, actorId, [
+      {
+        type: 'openThread',
+        threadId,
+        anchor: {fileId, side: 'additions', line: 1},
+      },
+      {
+        type: 'createComment',
+        threadId,
+        commentId: newId(),
+        body: {root: {}} as SerializedEditorState,
+      },
+    ]);
   }
   return shareId;
 }

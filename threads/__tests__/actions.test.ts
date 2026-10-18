@@ -212,6 +212,23 @@ describe('createComment', () => {
     });
   });
 
+  it('rejects replying to a thread of another share', async () => {
+    const {threadId} = await openAliceThread();
+    const other = await createShareWithFile();
+
+    await expect(
+      createComment({
+        shareId: other.shareId,
+        threadId,
+        commentId: newId(),
+        body: BODY,
+      }),
+    ).resolves.toEqual({
+      reason: 'THREAD_NOT_FOUND',
+      message: `Thread not found: ${threadId}`,
+    });
+  });
+
   it('rejects replying to an unknown thread', async () => {
     const threadId = newId();
 

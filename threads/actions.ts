@@ -8,7 +8,6 @@ import {isDefined} from '#/utils/is-defined';
 
 import {threadError} from './errors';
 import {CreateCommentInput, OpenThreadInput, type Change} from './schemas';
-import {check} from './state';
 
 export async function openThread(input: OpenThreadInput) {
   if (!OpenThreadInput.validate(input)) {
@@ -37,8 +36,5 @@ async function save(shareId: string, changes: readonly Change[]) {
     unauthorized();
   }
 
-  const actorId = session.user.id;
-  return saveChanges(shareId, actorId, changes, (stored) =>
-    check(stored, changes),
-  );
+  return saveChanges(shareId, session.user.id, changes);
 }

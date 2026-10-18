@@ -48,13 +48,6 @@ export const ShareSnapshot = z.object({
 });
 export type ShareSnapshot = z.infer<typeof ShareSnapshot>;
 
-export interface StoredIds {
-  readonly fileIds: readonly string[];
-  readonly threadIds: readonly string[];
-  readonly otherThreadIds: readonly string[];
-  readonly commentIds: readonly string[];
-}
-
 export type Change =
   | {
       readonly type: 'openThread';

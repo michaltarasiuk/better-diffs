@@ -80,8 +80,3 @@ export async function ageShare(shareId: string, hours: number) {
     .set({lastVisitedAt: sql`datetime('now', ${`-${hours} hours`})`})
     .where(eq(schema.shares.id, shareId));
 }
-
-export function allowAll() {
-  // Rules are tested with the server actions; these tests cover storage only
-  return undefined;
-}
