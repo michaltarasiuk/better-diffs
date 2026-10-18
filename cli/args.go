@@ -24,7 +24,7 @@ func parse(args []string) (command, error) {
 
 		// Paths start at "--", a lone "-", or the first non-flag so a file
 		// named like an option still reaches git.
-		if arg == "--" || arg == "-" {
+		if arg == "--" {
 			opts.paths = append(opts.paths, args[i+1:]...)
 			break
 		}

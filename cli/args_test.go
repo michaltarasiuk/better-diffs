@@ -92,6 +92,11 @@ func TestParse(t *testing.T) {
 			want: command{options: options{paths: []string{"a/", "--staged"}}},
 		},
 		{
+			name: "lone dash path",
+			args: []string{"-", "a/"},
+			want: command{options: options{paths: []string{"-", "a/"}}},
+		},
+		{
 			name: "double dash paths",
 			args: []string{"--", "-", "a/"},
 			want: command{options: options{paths: []string{"-", "a/"}}},
