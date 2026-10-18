@@ -1,6 +1,8 @@
 import type * as Diffs from '@pierre/diffs';
 import {z} from 'zod';
 
+export type Patch = readonly Diffs.FileDiffMetadata[];
+
 export const AnnotationSide = z.enum([
   'deletions',
   'additions',

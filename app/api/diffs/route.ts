@@ -1,8 +1,9 @@
 import {createHmac} from 'node:crypto';
 
-import {parsePatchFiles, type FileDiffMetadata} from '@pierre/diffs';
+import {parsePatchFiles} from '@pierre/diffs';
 
 import {createShare} from '#/db/shares';
+import type {Patch} from '#/diffs/schemas';
 import {env} from '#/env';
 import {ApiError} from '#/http/error';
 import {prefersText, route} from '#/http/route';
@@ -18,8 +19,6 @@ const CORS_HEADERS = {
   'Access-Control-Expose-Headers': 'Location',
 };
 
-type Patches = readonly (readonly FileDiffMetadata[])[];
-
 export function OPTIONS() {
   return new Response(null, {
     status: 204,
@@ -29,10 +28,11 @@ export function OPTIONS() {
 
 export const POST = route(
   async (request) => {
-    const text = await readPatchText(request);
+    const patchesText = await readPatchesText(request);
+    const patches = parsePatches(patchesText);
     const id = await createShare(
-      text,
-      parsePatchText(text),
+      patchesText,
+      patches,
       getUploaderKey(request),
       checkUploadRate,
     );
@@ -67,7 +67,7 @@ function checkUploadRate(uploadsInLastHour: number) {
   }
 }
 
-async function readPatchText(request: Request) {
+async function readPatchesText(request: Request) {
   const contentLength = Number(request.headers.get('Content-Length'));
   if (contentLength > MAX_PATCH_BYTES) {
     throw patchTooLarge();
@@ -88,8 +88,8 @@ function patchTooLarge() {
   );
 }
 
-function parsePatchText(text: string): Patches {
-  let patches: Patches;
+function parsePatches(text: string) {
+  let patches: readonly Patch[];
   try {
     patches = parsePatchFiles(text)
       .map((patch) => patch.files)

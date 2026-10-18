@@ -4,7 +4,7 @@ import {describe, expect, it} from 'vitest';
 import {setupTestDb} from '#/db/__tests__/setup';
 import {db} from '#/db/db';
 import {shares} from '#/db/schema/index';
-import {getShareFiles, getSharePatch} from '#/db/shares';
+import {getPatchesText, getShareFiles} from '#/db/shares';
 import {gitPatch} from '#/diffs/__tests__/patches';
 import {env} from '#/env';
 
@@ -62,7 +62,7 @@ describe('POST', () => {
     const response = await postText(text);
     const shareId = shareIdFrom(response.headers.get('Location'));
 
-    await expect(getSharePatch(shareId!)).resolves.toBe(text);
+    await expect(getPatchesText(shareId!)).resolves.toBe(text);
   });
 
   it('responds with the share as JSON', async () => {

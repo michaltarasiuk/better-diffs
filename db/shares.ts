@@ -1,8 +1,8 @@
 import 'server-only';
 
-import type {FileDiffMetadata} from '@pierre/diffs';
 import {and, asc, eq, gt, isNotNull, lt, sql} from 'drizzle-orm';
 
+import type {Patch} from '#/diffs/schemas';
 import {isDefined} from '#/utils/is-defined';
 import {newId} from '#/utils/new-id';
 
@@ -15,6 +15,15 @@ import {
 
 const VISIT_REFRESH_HOURS = 1;
 
+export async function getPatchesText(id: string) {
+  const [share] = await db
+    .select({patch: sharesTable.patch})
+    .from(sharesTable)
+    .where(eq(sharesTable.id, id));
+
+  return share?.patch;
+}
+
 export async function getShareFiles(id: string) {
   return db
     .select({
@@ -26,15 +35,6 @@ export async function getShareFiles(id: string) {
     .innerJoin(patchesTable, eq(filesTable.patchId, patchesTable.id))
     .where(eq(patchesTable.shareId, id))
     .orderBy(asc(patchesTable.order), asc(filesTable.order));
-}
-
-export async function getSharePatch(id: string) {
-  const [share] = await db
-    .select({patch: sharesTable.patch})
-    .from(sharesTable)
-    .where(eq(sharesTable.id, id));
-
-  return share?.patch;
 }
 
 export async function touchShare(id: string) {
@@ -59,8 +59,8 @@ export async function touchShare(id: string) {
 }
 
 export async function createShare(
-  patch: string,
-  patches: readonly (readonly FileDiffMetadata[])[],
+  patchesText: string,
+  patches: readonly Patch[],
   uploaderKey?: string,
   checkUploadRate?: (uploadsInLastHour: number) => void,
 ) {
@@ -99,7 +99,9 @@ export async function createShare(
       );
     }
 
-    await tx.insert(sharesTable).values({id: shareId, patch, uploaderKey});
+    await tx
+      .insert(sharesTable)
+      .values({id: shareId, patch: patchesText, uploaderKey});
 
     if (patchValues.length > 0) {
       await tx.insert(patchesTable).values(patchValues);

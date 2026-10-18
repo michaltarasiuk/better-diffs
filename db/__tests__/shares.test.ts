@@ -11,8 +11,8 @@ import {comments, files, patches, shares, threads} from '../schema';
 import {
   createShare,
   deleteExpiredShares,
+  getPatchesText,
   getShareFiles,
-  getSharePatch,
   touchShare,
 } from '../shares';
 import {saveChanges} from '../threads';
@@ -95,16 +95,16 @@ describe('createShare', () => {
   });
 });
 
-describe('getSharePatch', () => {
+describe('getPatchesText', () => {
   it('returns the uploaded patch text', async () => {
     const text = gitPatch('a.txt');
     const id = await createShare(text, [fileDiffs('a.txt')]);
 
-    await expect(getSharePatch(id)).resolves.toBe(text);
+    await expect(getPatchesText(id)).resolves.toBe(text);
   });
 
   it('returns undefined for a missing share', async () => {
-    await expect(getSharePatch(newId())).resolves.toBeUndefined();
+    await expect(getPatchesText(newId())).resolves.toBeUndefined();
   });
 });
 

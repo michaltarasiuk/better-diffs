@@ -61,9 +61,9 @@ const FRAMEWORK = {
 
 const DB_DEPENDENCIES = [
   {
-    regex: '^#/(?!env$|utils/|threads/(?:schemas|errors)$|db/)',
+    regex: '^#/(?!env$|utils/|threads/(?:schemas|errors)$|diffs/schemas$|db/)',
     message:
-      'db/ depends only on env, utils and the thread schemas and errors. ' +
+      'db/ depends only on env, utils, the diff schemas and the thread schemas and errors. ' +
       'Take anything else as an argument, as saveChanges takes `validate`.',
   },
   {
