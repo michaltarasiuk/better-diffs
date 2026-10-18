@@ -96,6 +96,19 @@ func TestDiff(t *testing.T) {
 			},
 		},
 		{
+			name: "untracked nested repository",
+			setup: func(t *testing.T, dir string) options {
+				commitFile(t, dir, "a.txt", "old\n")
+				writeFile(t, dir, "b.txt", "new\n")
+				nested := filepath.Join(dir, "nested")
+				writeFile(t, nested, "c.txt", "new\n")
+				runGit(t, nested, "init")
+				return options{}
+			},
+			want:    []string{"+++ b/b.txt"},
+			notWant: []string{"nested"},
+		},
+		{
 			name: "staged skips untracked files",
 			setup: func(t *testing.T, dir string) options {
 				commitFile(t, dir, "a.txt", "old\n")
@@ -168,6 +181,14 @@ func TestDiff(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDiffNewFileMissing(t *testing.T) {
+	requireGit(t)
+	dir := initGitRepo(t)
+
+	_, err := diffNewFile(dir, "missing.txt")
+	assertError(t, err, "Could not access 'missing.txt'")
 }
 
 func TestDiffOutsideRepo(t *testing.T) {

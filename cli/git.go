@@ -72,7 +72,7 @@ func untrackedDiff(root string, paths []string) ([]byte, error) {
 
 	var patch []byte
 	for _, name := range strings.Split(string(out), "\x00") {
-		if name == "" {
+		if name == "" || strings.HasSuffix(name, "/") {
 			continue
 		}
 		fileDiff, err := diffNewFile(root, name)
@@ -90,7 +90,7 @@ func diffNewFile(root, name string) ([]byte, error) {
 
 	// --no-index implies --exit-code, so a file with content exits 1.
 	var exitErr *exec.ExitError
-	if errors.As(err, &exitErr) && exitErr.ExitCode() == 1 {
+	if errors.As(err, &exitErr) && exitErr.ExitCode() == 1 && len(out) > 0 {
 		return out, nil
 	}
 	if err != nil {
