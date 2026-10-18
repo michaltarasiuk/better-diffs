@@ -157,6 +157,20 @@ describe('useLocalStorage', () => {
     expect(setItem).not.toHaveBeenCalled();
   });
 
+  it('keeps the value in memory when storage is full', () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('Full', 'QuotaExceededError');
+    });
+
+    const {result} = renderPreferenceHook();
+
+    act(() => {
+      result.current[1]({theme: 'dark'});
+    });
+
+    expect(result.current[0]).toEqual({theme: 'dark'});
+  });
+
   it('stops listening once unmounted', () => {
     const removeEventListener = vi.spyOn(window, 'removeEventListener');
     const {unmount} = renderPreferenceHook();

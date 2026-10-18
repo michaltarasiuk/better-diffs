@@ -55,7 +55,11 @@ export function useLocalStorage<T>(
           : setItemAction;
 
       if (isStorageAvailable('localStorage')) {
-        localStorage.setItem(key, serialize(newItem));
+        try {
+          localStorage.setItem(key, serialize(newItem));
+        } catch {
+          // Kept in memory when the storage is full
+        }
       }
 
       return newItem;
