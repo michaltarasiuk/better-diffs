@@ -2,6 +2,7 @@ import type {SerializedEditorState} from 'lexical';
 import {z} from 'zod';
 
 import {AnnotationSide} from '#/diffs/schemas';
+import {isCommentBody} from '#/lexical/is-comment-body';
 import {isDefined} from '#/utils/is-defined';
 
 export const Anchor = z.object({
@@ -12,6 +13,8 @@ export const Anchor = z.object({
 export type Anchor = z.infer<typeof Anchor>;
 
 const LexicalBody = z.custom<SerializedEditorState>(isDefined);
+
+const CommentBody = z.custom<SerializedEditorState>(isCommentBody);
 
 export const Actor = z.object({
   name: z.string().min(1),
@@ -69,7 +72,7 @@ export const OpenThreadInput = z.object({
   shareId: z.uuid(),
   threadId: z.uuid(),
   commentId: z.uuid(),
-  body: LexicalBody,
+  body: CommentBody,
   anchor: Anchor,
 });
 export type OpenThreadInput = z.infer<typeof OpenThreadInput>;
@@ -78,6 +81,6 @@ export const CreateCommentInput = z.object({
   shareId: z.uuid(),
   threadId: z.uuid(),
   commentId: z.uuid(),
-  body: LexicalBody,
+  body: CommentBody,
 });
 export type CreateCommentInput = z.infer<typeof CreateCommentInput>;

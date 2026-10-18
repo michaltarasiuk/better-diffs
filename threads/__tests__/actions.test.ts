@@ -8,6 +8,7 @@ import {
   setupTestDb,
 } from '#/db/__tests__/setup';
 import {getSnapshot} from '#/db/threads';
+import {commentBody} from '#/lexical/__tests__/bodies';
 import {isDefined} from '#/utils/is-defined';
 import {newId} from '#/utils/new-id';
 
@@ -22,7 +23,7 @@ vi.mock('#/auth/server', () => ({getSession}));
 
 setupTestDb();
 
-const BODY = {root: {}} as SerializedEditorState;
+const BODY = commentBody('hello');
 
 let shareId: string;
 let anchor: Anchor;
@@ -88,6 +89,19 @@ describe('openThread', () => {
       reason: 'INVALID_INPUT',
       message: 'Invalid open thread input',
     });
+  });
+
+  it('rejects a body the editor cannot read', async () => {
+    await expect(
+      openThread({
+        shareId,
+        threadId: newId(),
+        commentId: newId(),
+        body: {root: {}} as SerializedEditorState,
+        anchor,
+      }),
+    ).resolves.toMatchObject({reason: 'INVALID_INPUT'});
+    await expect(stored()).resolves.toMatchObject({threads: []});
   });
 
   it('rejects a file of another share', async () => {
