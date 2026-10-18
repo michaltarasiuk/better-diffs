@@ -93,7 +93,6 @@ describe('initialState', () => {
     );
 
     expect(state.revision).toBe(4);
-    expect(state.version).toBe(0);
     expect(state.threads.get(THREAD_ID)).toEqual(thread());
     expect([...state.comments.keys()]).toEqual([OTHER_COMMENT_ID, COMMENT_ID]);
   });
@@ -110,7 +109,6 @@ describe('receive', () => {
     });
 
     expect(next.revision).toBe(2);
-    expect(next.version).toBe(1);
     expect(next.threads.size).toBe(0);
     expect([...next.comments.keys()]).toEqual([OTHER_COMMENT_ID]);
   });
@@ -135,7 +133,6 @@ describe('applyOptimistic', () => {
 
     expect(next.threads.get(THREAD_ID)).toEqual(thread());
     expect(next.comments.get(COMMENT_ID)).toEqual(comment());
-    expect(next.version).toBe(2);
   });
 
   it('keeps the revision and leaves the previous state untouched', () => {

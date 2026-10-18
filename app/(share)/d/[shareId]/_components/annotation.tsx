@@ -34,12 +34,16 @@ interface AnnotationProps {
 
 export function Annotation({annotation, fileId, filePath}: AnnotationProps) {
   const {removeCommentForm} = useReviewState();
+  const {clearDraft} = useDrafts();
 
   const {metadata, ...line} = annotation;
 
   const onDismiss =
     metadata.type === 'form'
-      ? () => removeCommentForm(fileId, metadata.formId)
+      ? () => {
+          removeCommentForm(fileId, metadata.formId);
+          clearDraft(metadata.formId);
+        }
       : undefined;
 
   const focusWithinProps = useDismissOnEscape(onDismiss);
@@ -51,6 +55,7 @@ export function Annotation({annotation, fileId, filePath}: AnnotationProps) {
         <CommentForm
           line={line}
           form={metadata}
+          fileId={fileId}
           filePath={filePath}
           onDismiss={onDismiss}
         />
@@ -76,14 +81,22 @@ export function Annotation({annotation, fileId, filePath}: AnnotationProps) {
 interface CommentFormProps {
   readonly line: AnnotationLine;
   readonly form: FormAnnotationMetadata;
+  readonly fileId: string;
   readonly filePath: string;
   readonly onDismiss?: () => void;
 }
 
-function CommentForm({line, form, filePath, onDismiss}: CommentFormProps) {
+function CommentForm({
+  line,
+  form,
+  fileId,
+  filePath,
+  onDismiss,
+}: CommentFormProps) {
   const shareId = useShareId();
   const {optimistic} = useShareActions();
-  const {getDraft, setDraft} = useDrafts();
+  const {removeCommentForm, restoreCommentForm} = useReviewState();
+  const {getDraft, setDraft, clearDraft} = useDrafts();
 
   async function submit(session: Session, body: SerializedEditorState) {
     const threadId = newId();
@@ -98,6 +111,7 @@ function CommentForm({line, form, filePath, onDismiss}: CommentFormProps) {
       createdAt: new Date().toISOString(),
     };
 
+    removeCommentForm(fileId, form.formId);
     const error = await optimistic(
       [
         {
@@ -119,7 +133,10 @@ function CommentForm({line, form, filePath, onDismiss}: CommentFormProps) {
         }),
     );
     if (isDefined(error)) {
+      restoreCommentForm(fileId, {...line, metadata: form});
       notifyNotSaved(error);
+    } else {
+      clearDraft(form.formId);
     }
   }
 
@@ -160,12 +177,6 @@ interface CommentThreadProps {
 
 function CommentThread({line, threadId}: CommentThreadProps) {
   const share = useShareState();
-
-  const thread = share.threads.get(threadId);
-  if (!isDefined(thread)) {
-    throw new Error(`Thread not found: ${threadId}`);
-  }
-
   const shareId = useShareId();
   const {optimistic} = useShareActions();
   const {getDraft, setDraft, clearDraft} = useDrafts();
@@ -197,6 +208,10 @@ function CommentThread({line, threadId}: CommentThreadProps) {
     }
   }
 
+  if (!share.threads.has(threadId)) {
+    return null;
+  }
+
   const comments = [...share.comments.values()].filter(
     (comment) => comment.threadId === threadId,
   );
@@ -223,7 +238,10 @@ function CommentThread({line, threadId}: CommentThreadProps) {
                 autoFocus
                 variant="transparent"
                 className="rounded-b-xl"
-                onSubmit={(body) => reply(session, body)}
+                onSubmit={(body) => {
+                  onDismiss();
+                  return reply(session, body);
+                }}
                 onChange={(draft) => {
                   setDraft(threadId, draft);
                 }}

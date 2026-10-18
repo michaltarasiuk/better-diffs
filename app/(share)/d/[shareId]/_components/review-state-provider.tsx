@@ -44,7 +44,7 @@ export function ReviewStateProvider({
   readonly children: React.ReactNode;
 }) {
   const drafts = useStoredDrafts();
-  const reviewState = useStoredReviewState(drafts.clearDraft);
+  const reviewState = useStoredReviewState();
 
   return (
     <ReviewStateContext value={reviewState}>
@@ -69,7 +69,7 @@ export function useDrafts() {
   return drafts;
 }
 
-function useStoredReviewState(clearDraft: (id: string) => void) {
+function useStoredReviewState() {
   const shareId = useShareId();
   const [fileStates, setFileStates] = useLocalStorage(
     `share:v1:${shareId}`,
@@ -137,7 +137,12 @@ function useStoredReviewState(clearDraft: (id: string) => void) {
           (commentForm) => commentForm.metadata.formId !== formId,
         ),
       }));
-      clearDraft(formId);
+    },
+
+    restoreCommentForm(fileId: string, commentForm: FormDiffAnnotation) {
+      patchFileState(fileId, (state) => ({
+        commentForms: [...state.commentForms, commentForm],
+      }));
     },
   };
 }

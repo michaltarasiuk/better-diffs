@@ -14,7 +14,6 @@ export interface ShareState {
   readonly revision: number;
   readonly threads: ReadonlyMap<string, Thread>;
   readonly comments: ReadonlyMap<string, Comment>;
-  readonly version: number;
 }
 
 export interface OptimisticChange {
@@ -29,7 +28,6 @@ export function initialState({revision, threads, comments}: ShareSnapshot) {
     revision,
     threads: new Map(threads.map((thread) => [thread.id, thread])),
     comments: new Map(comments.map((comment) => [comment.id, comment])),
-    version: 0,
   };
 }
 
@@ -37,7 +35,7 @@ export function receive(state: ShareState, snapshot: ShareSnapshot) {
   if (snapshot.revision <= state.revision) {
     return state;
   }
-  return {...initialState(snapshot), version: state.version + 1};
+  return initialState(snapshot);
 }
 
 export function applyOptimistic(
@@ -71,7 +69,7 @@ export function applyOptimistic(
       change satisfies never;
   }
 
-  return {...state, threads, comments, version: state.version + 1};
+  return {...state, threads, comments};
 }
 
 export function check(stored: StoredIds, changes: readonly Change[]) {

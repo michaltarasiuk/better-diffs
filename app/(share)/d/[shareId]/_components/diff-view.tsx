@@ -24,6 +24,7 @@ import {useShortcut} from '#/hooks/use-shortcut';
 import {useShareState} from '#/threads/provider';
 import {isDefined} from '#/utils/is-defined';
 
+import {useChangeCount} from '../_hooks/use-change-count';
 import {useSelectedLines} from '../_hooks/use-selected-lines';
 import {getViewportFileId} from '../_lib/get-viewport-file-id';
 import {scrollToFile} from '../_lib/scroll-to-file';
@@ -48,6 +49,7 @@ export function DiffView({files}: DiffViewProps) {
     addCommentForm,
   } = useReviewState();
   const share = useShareState();
+  const shareVersion = useChangeCount(share);
   const codeViewRef = useCodeViewRef();
   const {selectedLines, setSelectedLines} = useSelectedLines();
   const isMobile = useIsMobile();
@@ -88,7 +90,7 @@ export function DiffView({files}: DiffViewProps) {
             ...commentForms,
           ]),
           collapsed,
-          version: version + share.version,
+          version: version + shareVersion,
         };
       })}
       selectedLines={selectedLines}

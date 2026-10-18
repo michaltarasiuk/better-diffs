@@ -169,7 +169,7 @@ export function CommentEditor({
           <Button variant="ghost" size="sm" onPress={() => onDismiss?.()}>
             Cancel
           </Button>
-          <SubmitCommentButton onSubmit={onSubmit} onDismiss={onDismiss} />
+          <SubmitCommentButton onSubmit={onSubmit} />
         </Card.Footer>
       </Card>
 
@@ -186,10 +186,9 @@ export function CommentEditor({
 
 interface SubmitCommentButtonProps {
   readonly onSubmit?: OnSubmit;
-  readonly onDismiss?: () => void;
 }
 
-function SubmitCommentButton({onSubmit, onDismiss}: SubmitCommentButtonProps) {
+function SubmitCommentButton({onSubmit}: SubmitCommentButtonProps) {
   const [editor] = useLexicalComposerContext();
   const isEmpty = useLexicalIsTextContentEmpty(editor, true);
 
@@ -200,7 +199,6 @@ function SubmitCommentButton({onSubmit, onDismiss}: SubmitCommentButtonProps) {
       onPress={() => {
         editor.update($trimRoot, {discrete: true});
         const body = editor.getEditorState().toJSON();
-        onDismiss?.();
         startTransition(() => {
           void onSubmit?.(body);
         });
