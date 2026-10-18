@@ -1,5 +1,6 @@
 import {z} from 'zod';
 
+import {ApiError} from '#/http/error';
 import {fetchJson} from '#/http/fetch';
 import {isDefined} from '#/utils/is-defined';
 
@@ -36,8 +37,10 @@ export function startPolling(poll: () => Promise<void>) {
     isPolling = true;
     try {
       await poll();
-    } catch {
-      // Retried on the next interval
+    } catch (error) {
+      if (isShareGone(error)) {
+        stop();
+      }
     } finally {
       isPolling = false;
     }
@@ -62,14 +65,20 @@ export function startPolling(poll: () => Promise<void>) {
     }
   };
 
-  void tick();
-  resetInterval();
-  document.addEventListener('visibilitychange', onVisibilityChange);
-
-  return () => {
+  const stop = () => {
     if (isDefined(intervalId)) {
       clearInterval(intervalId);
     }
     document.removeEventListener('visibilitychange', onVisibilityChange);
   };
+
+  void tick();
+  resetInterval();
+  document.addEventListener('visibilitychange', onVisibilityChange);
+
+  return stop;
+}
+
+function isShareGone(error: unknown) {
+  return error instanceof ApiError && error.reason === 'SHARE_NOT_FOUND';
 }

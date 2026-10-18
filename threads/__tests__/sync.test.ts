@@ -94,6 +94,21 @@ describe('startPolling', () => {
     stop();
   });
 
+  it('stops polling once the share is gone', async () => {
+    const poll = vi.fn<() => Promise<void>>().mockRejectedValue(
+      new ApiError('NOT_FOUND', 'Share not found.', {
+        reason: 'SHARE_NOT_FOUND',
+      }),
+    );
+    startPolling(poll);
+
+    await vi.advanceTimersByTimeAsync(ACTIVE_POLL_INTERVAL * 2);
+    setVisibility('visible');
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(poll).toHaveBeenCalledOnce();
+  });
+
   it('skips a tick while the previous poll is in flight', async () => {
     let settle!: () => void;
     const poll = vi.fn(

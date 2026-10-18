@@ -48,4 +48,22 @@ describe('fetchJson', () => {
       reason: 'SHARE_NOT_FOUND',
     });
   });
+
+  it.each([
+    ['a page', new Response('<html>Bad gateway</html>', {status: 502})],
+    ['other JSON', Response.json({message: 'Bad gateway'}, {status: 502})],
+  ])(
+    'throws an ApiError for an error response with %s',
+    async (_name, response) => {
+      stubFetch(response);
+
+      const promise = fetchJson('/api/thing', Body);
+
+      await expect(promise).rejects.toBeInstanceOf(ApiError);
+      await expect(promise).rejects.toMatchObject({
+        code: 'INTERNAL',
+        message: 'Request failed with status 502.',
+      });
+    },
+  );
 });
