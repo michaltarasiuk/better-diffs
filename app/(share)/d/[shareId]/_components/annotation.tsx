@@ -103,6 +103,7 @@ function CommentForm({line, form, fileId, onDismiss}: CommentFormProps) {
     };
 
     removeCommentForm(fileId, form.formId);
+    clearDraft(form.formId);
     const error = await optimistic(
       [
         {
@@ -125,9 +126,8 @@ function CommentForm({line, form, fileId, onDismiss}: CommentFormProps) {
     );
     if (isDefined(error)) {
       restoreCommentForm(fileId, {...line, metadata: form});
+      setDraft(form.formId, body);
       notifyNotSaved(error);
-    } else {
-      clearDraft(form.formId);
     }
   }
 
@@ -176,6 +176,7 @@ function CommentThread({line, threadId}: CommentThreadProps) {
     const commentId = newId();
     const createdAt = new Date().toISOString();
 
+    clearDraft(threadId);
     const error = await optimistic(
       [
         {
@@ -193,9 +194,8 @@ function CommentThread({line, threadId}: CommentThreadProps) {
         }),
     );
     if (isDefined(error)) {
+      setDraft(threadId, body);
       notifyNotSaved(error);
-    } else {
-      clearDraft(threadId);
     }
   }
 
