@@ -32,12 +32,15 @@ import {
   $getSelection,
   $isRangeSelection,
   $isRootOrShadowRoot,
+  $onUpdate,
   COMMAND_PRIORITY_BEFORE_EDITOR,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
   KEY_ESCAPE_COMMAND,
+  mergeRegister,
   REDO_COMMAND,
   UNDO_COMMAND,
+  type KeyboardShortcutMatch,
   type LexicalEditor,
   type SerializedEditorState,
   type TextFormatType,
@@ -53,9 +56,17 @@ import {
   UnderlineIcon,
   Undo2Icon,
 } from 'lucide-react';
-import {startTransition, useEffect, useEffectEvent, useState} from 'react';
+import {createElement, useEffect, useEffectEvent, useState} from 'react';
 
-import {defineCommentExtension} from '#/lexical/define-comment-extension';
+import {
+  CommentEditorExtension,
+  withInitialState,
+} from '#/lexical/comment-extension';
+import {
+  formatAriaKeyShortcuts,
+  registerShortcut,
+  SHORTCUTS,
+} from '#/lexical/shortcuts';
 import {$trimRoot} from '#/lexical/trim-root';
 import {isDefined} from '#/utils/is-defined';
 
@@ -68,6 +79,8 @@ const BLOCK_TYPES = [
 ] as const;
 
 const FORMAT_TYPES = ['bold', 'italic', 'underline', 'strikethrough'] as const;
+
+const ALIGNMENTS = ['left', 'center', 'right', 'justify'] as const;
 
 type BlockType = (typeof BLOCK_TYPES)[number]['value'];
 
@@ -130,10 +143,7 @@ export function CommentEditor({
   onDismiss,
 }: CommentEditorProps) {
   const [extension] = useState(() =>
-    defineCommentExtension({
-      name: 'CommentEditor',
-      initialState,
-    }),
+    withInitialState(CommentEditorExtension, initialState),
   );
 
   return (
@@ -166,7 +176,12 @@ export function CommentEditor({
         </Card.Content>
 
         <Card.Footer className="flex flex-wrap-reverse items-center justify-end gap-2">
-          <Button variant="ghost" size="sm" onPress={() => onDismiss?.()}>
+          <Button
+            variant="ghost"
+            size="sm"
+            render={withKeyShortcuts('button', SHORTCUTS.dismiss)}
+            onPress={() => onDismiss?.()}
+          >
             Cancel
           </Button>
           <SubmitCommentButton onSubmit={onSubmit} />
@@ -192,17 +207,37 @@ function SubmitCommentButton({onSubmit}: SubmitCommentButtonProps) {
   const [editor] = useLexicalComposerContext();
   const isEmpty = useLexicalIsTextContentEmpty(editor, true);
 
+  function submit() {
+    editor.update(
+      () => {
+        $trimRoot();
+        $onUpdate(() => {
+          const body = editor.getEditorState().toJSON();
+          void onSubmit?.(body);
+        });
+      },
+      {discrete: true},
+    );
+  }
+
+  const onSubmitShortcut = useEffectEvent(() => {
+    if (!isEmpty) {
+      submit();
+    }
+  });
+
+  useEffect(() => {
+    return registerShortcut(editor, SHORTCUTS.submit, () => {
+      onSubmitShortcut();
+    });
+  }, [editor]);
+
   return (
     <Button
       size="sm"
       isDisabled={isEmpty}
-      onPress={() => {
-        editor.update($trimRoot, {discrete: true});
-        const body = editor.getEditorState().toJSON();
-        startTransition(() => {
-          void onSubmit?.(body);
-        });
-      }}
+      render={withKeyShortcuts('button', SHORTCUTS.submit)}
+      onPress={submit}
     >
       Comment
     </Button>
@@ -268,6 +303,21 @@ function RichTextToolbarPlugin() {
     });
   }, [editor]);
 
+  useEffect(() => {
+    return mergeRegister(
+      ...BLOCK_TYPES.map(({value}) =>
+        registerShortcut(editor, SHORTCUTS[value], () => {
+          applyBlockType(editor, value);
+        }),
+      ),
+      ...ALIGNMENTS.map((alignment) =>
+        registerShortcut(editor, SHORTCUTS[alignment], () => {
+          editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, alignment);
+        }),
+      ),
+    );
+  }, [editor]);
+
   return (
     <div className="-m-1 flex [scrollbar-width:none] items-center gap-2 overflow-x-auto p-1">
       <Select
@@ -292,6 +342,7 @@ function RichTextToolbarPlugin() {
                 key={blockType.value}
                 id={blockType.value}
                 textValue={blockType.label}
+                render={withKeyShortcuts('div', SHORTCUTS[blockType.value])}
               >
                 {blockType.label}
                 <ListBox.ItemIndicator />
@@ -308,6 +359,7 @@ function RichTextToolbarPlugin() {
       >
         <Button
           aria-label="Undo"
+          render={withKeyShortcuts('button', SHORTCUTS.undo)}
           isDisabled={!canUndo}
           onPress={() => {
             editor.dispatchCommand(UNDO_COMMAND);
@@ -318,6 +370,7 @@ function RichTextToolbarPlugin() {
         </Button>
         <Button
           aria-label="Redo"
+          render={withKeyShortcuts('button', SHORTCUTS.redo)}
           isDisabled={!canRedo}
           onPress={() => {
             editor.dispatchCommand(REDO_COMMAND);
@@ -344,14 +397,29 @@ function RichTextToolbarPlugin() {
           }
         }}
       >
-        <ToggleButton id="bold" aria-label="Bold" isIconOnly>
+        <ToggleButton
+          id="bold"
+          aria-label="Bold"
+          render={withKeyShortcuts('button', SHORTCUTS.bold)}
+          isIconOnly
+        >
           <BoldIcon aria-hidden className="size-4" />
         </ToggleButton>
-        <ToggleButton id="italic" aria-label="Italic" isIconOnly>
+        <ToggleButton
+          id="italic"
+          aria-label="Italic"
+          render={withKeyShortcuts('button', SHORTCUTS.italic)}
+          isIconOnly
+        >
           <ToggleButtonGroup.Separator />
           <ItalicIcon aria-hidden className="size-4" />
         </ToggleButton>
-        <ToggleButton id="underline" aria-label="Underline" isIconOnly>
+        <ToggleButton
+          id="underline"
+          aria-label="Underline"
+          render={withKeyShortcuts('button', SHORTCUTS.underline)}
+          isIconOnly
+        >
           <ToggleButtonGroup.Separator />
           <UnderlineIcon aria-hidden className="size-4" />
         </ToggleButton>
@@ -360,6 +428,7 @@ function RichTextToolbarPlugin() {
       <ButtonGroup className="shrink-0" variant="tertiary" size="sm">
         <Button
           aria-label="Align left"
+          render={withKeyShortcuts('button', SHORTCUTS.left)}
           onPress={() => {
             editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
           }}
@@ -369,6 +438,7 @@ function RichTextToolbarPlugin() {
         </Button>
         <Button
           aria-label="Align center"
+          render={withKeyShortcuts('button', SHORTCUTS.center)}
           onPress={() => {
             editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center');
           }}
@@ -379,6 +449,7 @@ function RichTextToolbarPlugin() {
         </Button>
         <Button
           aria-label="Align right"
+          render={withKeyShortcuts('button', SHORTCUTS.right)}
           onPress={() => {
             editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right');
           }}
@@ -389,6 +460,7 @@ function RichTextToolbarPlugin() {
         </Button>
         <Button
           aria-label="Justify"
+          render={withKeyShortcuts('button', SHORTCUTS.justify)}
           onPress={() => {
             editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify');
           }}
@@ -400,4 +472,17 @@ function RichTextToolbarPlugin() {
       </ButtonGroup>
     </div>
   );
+}
+
+function withKeyShortcuts(
+  element: 'button' | 'div',
+  shortcut: KeyboardShortcutMatch,
+) {
+  const keyShortcuts = formatAriaKeyShortcuts(shortcut);
+  return function render(props: object) {
+    return createElement(element, {
+      ...props,
+      'aria-keyshortcuts': keyShortcuts,
+    });
+  };
 }

@@ -1,18 +1,14 @@
-import {HeadingNode, QuoteNode} from '@lexical/rich-text';
-import {createEditor, type SerializedEditorState} from 'lexical';
+import {buildEditorFromExtensions} from '@lexical/extension';
+import type {SerializedEditorState} from 'lexical';
 
-import {isDefined} from '#/utils/is-defined';
+import {isObject} from '#/utils/is-object';
 
-const editor = createEditor({
-  namespace: 'CommentBody',
-  nodes: [HeadingNode, QuoteNode],
-  onError(error) {
-    throw error;
-  },
-});
+import {CommentExtension} from './comment-extension';
+
+const editor = buildEditorFromExtensions(CommentExtension);
 
 export function isCommentBody(value: unknown): value is SerializedEditorState {
-  if (!isDefined(value) || typeof value !== 'object') {
+  if (!isObject(value)) {
     return false;
   }
 

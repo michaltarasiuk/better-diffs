@@ -7,7 +7,10 @@ import {LexicalExtensionComposer} from '@lexical/react/LexicalExtensionComposer'
 import type {SerializedEditorState} from 'lexical';
 import {Fragment, useState} from 'react';
 
-import {defineCommentExtension} from '#/lexical/define-comment-extension';
+import {
+  CommentBodyExtension,
+  withInitialState,
+} from '#/lexical/comment-extension';
 import type {Comment as CommentRow} from '#/threads/schemas';
 import {isDefined} from '#/utils/is-defined';
 
@@ -67,11 +70,7 @@ interface CommentBodyProps {
 
 function CommentBody({initialState}: CommentBodyProps) {
   const [extension] = useState(() =>
-    defineCommentExtension({
-      name: 'CommentBody',
-      initialState,
-      editable: false,
-    }),
+    withInitialState(CommentBodyExtension, initialState),
   );
 
   return (
