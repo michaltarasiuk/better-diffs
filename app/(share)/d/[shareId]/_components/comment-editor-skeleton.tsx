@@ -1,5 +1,6 @@
 import {Card, Skeleton, type CardProps} from '@heroui/react';
 import {cn} from '@heroui/styles';
+import {fbs} from 'fbtee';
 
 interface CommentEditorSkeletonProps {
   readonly variant?: CardProps['variant'];
@@ -12,7 +13,10 @@ export function CommentEditorSkeleton({
 }: CommentEditorSkeletonProps) {
   return (
     <Card
-      aria-label="Loading comment editor"
+      aria-label={fbs(
+        'Loading comment editor',
+        'Placeholder shown while the comment editor loads',
+      )}
       aria-busy="true"
       variant={variant}
       className={cn('@container', className)}

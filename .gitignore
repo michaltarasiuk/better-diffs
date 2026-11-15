@@ -21,6 +21,8 @@ out
 !.env.test
 
 # generated
+/i18n/source_strings.json
+/i18n/.enum_manifest.json
 .vitest/
 *.tsbuildinfo
 next-env.d.ts

@@ -1,20 +1,25 @@
 import './globals.css';
+import '#/i18n/setup';
 
 import {cn} from '@heroui/styles';
+import {fbs} from 'fbtee';
 import type {Metadata, Viewport} from 'next';
 import Script from 'next/script';
 import {NuqsAdapter} from 'nuqs/adapters/next/app';
 
 import {env} from '#/env';
+import {FbteeClientSetup} from '#/i18n/client-setup';
 
 import {ToastProvider} from './_components/toast-provider';
 import {fontMono, fontSans} from './_lib/fonts';
 
 export const metadata: Metadata = {
   title: 'Better Diffs',
-  description:
+  description: fbs(
     'Share your current changes with teammates without creating a PR. ' +
-    'They can view the diff and leave comments.',
+      'They can view the diff and leave comments.',
+    'Site description shown in search results and link previews',
+  ),
 };
 
 export const viewport: Viewport = {
@@ -39,6 +44,7 @@ export default function RootLayout({children}: LayoutProps<'/'>) {
         )}
       </head>
       <body className="h-full bg-background font-sans text-foreground">
+        <FbteeClientSetup />
         <NuqsAdapter>{children}</NuqsAdapter>
         <ToastProvider />
       </body>

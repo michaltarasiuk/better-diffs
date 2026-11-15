@@ -1,12 +1,14 @@
 import {resolve} from 'node:path';
 
 import nextEnv from '@next/env';
+import fbtee from '@nkzw/vite-plugin-fbtee';
 import {playwright} from '@vitest/browser-playwright';
 import {defaultExclude, defineConfig} from 'vitest/config';
 
 const dirname = import.meta.dirname;
 
 export default defineConfig({
+  plugins: [fbtee()],
   resolve: {
     tsconfigPaths: true,
     alias: {
@@ -38,6 +40,7 @@ export default defineConfig({
         test: {
           name: 'browser',
           include: ['**/*.browser.test.{ts,tsx}'],
+          setupFiles: ['./i18n/setup.ts'],
           browser: {
             enabled: true,
             headless: true,

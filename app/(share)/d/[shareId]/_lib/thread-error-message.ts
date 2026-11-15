@@ -1,15 +1,43 @@
+import {fbs} from 'fbtee';
+
 import type {ThreadErrorReason} from '#/threads/errors';
 
-const MESSAGES: Record<ThreadErrorReason, string> = {
-  INVALID_INPUT: 'The comment could not be read',
-  SHARE_NOT_FOUND: 'This diff no longer exists',
-  FILE_NOT_FOUND: 'This file is not part of the diff',
-  THREAD_ALREADY_EXISTS: 'This thread already exists',
-  THREAD_NOT_FOUND: 'This thread no longer exists',
-  COMMENT_ALREADY_EXISTS: 'This comment already exists',
-  SAVE_FAILED: 'Check your connection and try again',
-};
-
 export function threadErrorMessage(reason: ThreadErrorReason) {
-  return MESSAGES[reason];
+  switch (reason) {
+    case 'INVALID_INPUT':
+      return fbs(
+        'The comment could not be read',
+        'Why a comment was not saved: the server rejected its content',
+      );
+    case 'SHARE_NOT_FOUND':
+      return fbs(
+        'This diff no longer exists',
+        'Why a comment was not saved: the shared diff expired or was deleted',
+      );
+    case 'FILE_NOT_FOUND':
+      return fbs(
+        'This file is not part of the diff',
+        'Why a comment was not saved: the commented file is not in the diff',
+      );
+    case 'THREAD_ALREADY_EXISTS':
+      return fbs(
+        'This thread already exists',
+        'Why a comment was not saved: its conversation was already started',
+      );
+    case 'THREAD_NOT_FOUND':
+      return fbs(
+        'This thread no longer exists',
+        'Why a reply was not saved: its conversation is missing',
+      );
+    case 'COMMENT_ALREADY_EXISTS':
+      return fbs(
+        'This comment already exists',
+        'Why a comment was not saved: it was already stored',
+      );
+    case 'SAVE_FAILED':
+      return fbs(
+        'Check your connection and try again',
+        'Why a comment was not saved: the request failed',
+      );
+  }
 }

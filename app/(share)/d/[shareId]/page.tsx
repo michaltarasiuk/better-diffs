@@ -1,5 +1,6 @@
 import {Spinner} from '@heroui/react';
 import {preloadFileTree} from '@pierre/trees/ssr';
+import {fbs} from 'fbtee';
 import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {Suspense} from 'react';
@@ -28,7 +29,12 @@ export async function generateMetadata({
   params,
 }: PageProps<'/d/[shareId]'>): Promise<Metadata> {
   const {shareId} = await params;
-  return {title: `Diff ${shareId}`};
+  return {
+    title: fbs(
+      ['Diff ', fbs.param('share id', shareId)],
+      'Browser tab title of a shared diff',
+    ),
+  };
 }
 
 export default async function SharePage({
@@ -78,9 +84,12 @@ export default async function SharePage({
       <CodeViewProvider>
         <FilesSidebar>{tree}</FilesSidebar>
 
-        <main aria-label="Diff" className="min-h-0 min-w-0 flex-1">
+        <main
+          aria-label={fbs('Diff', 'Accessible name of the main diff region')}
+          className="min-h-0 min-w-0 flex-1"
+        >
           <SessionProvider>
-            <Suspense fallback={diffViewSpinner}>
+            <Suspense fallback={<DiffViewSpinner />}>
               <ThreadsProvider
                 key={shareId}
                 shareId={shareId}
@@ -94,7 +103,13 @@ export default async function SharePage({
           </SessionProvider>
         </main>
 
-        <div aria-label="Files" className="md:hidden">
+        <div
+          aria-label={fbs(
+            'Files',
+            'Accessible name of the changed files region on small screens',
+          )}
+          className="md:hidden"
+        >
           <FilesDrawer>{tree}</FilesDrawer>
         </div>
       </CodeViewProvider>
@@ -102,8 +117,12 @@ export default async function SharePage({
   );
 }
 
-const diffViewSpinner = (
-  <div className="flex h-full items-center justify-center">
-    <Spinner aria-label="Loading diff" />
-  </div>
-);
+function DiffViewSpinner() {
+  return (
+    <div className="flex h-full items-center justify-center">
+      <Spinner
+        aria-label={fbs('Loading diff', 'Spinner shown while the diff loads')}
+      />
+    </div>
+  );
+}

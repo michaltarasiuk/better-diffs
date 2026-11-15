@@ -9,6 +9,7 @@ import {
   type FileDiffMetadata,
 } from '@pierre/diffs';
 import {CodeView} from '@pierre/diffs/react';
+import {fbs} from 'fbtee';
 import {ChevronDownIcon} from 'lucide-react';
 
 import {
@@ -32,6 +33,8 @@ import {AddCommentButton} from './add-comment-button';
 import {Annotation} from './annotation';
 import {useCodeViewRef} from './code-view-provider';
 import {useReviewState} from './review-state-provider';
+
+const VIEWED_SHORTCUT = 'v';
 
 interface DiffViewProps {
   readonly files: readonly {
@@ -59,7 +62,7 @@ export function DiffView({files}: DiffViewProps) {
     (thread) => thread.anchor.fileId,
   );
 
-  useShortcut('v', function toggleViewed() {
+  useShortcut(VIEWED_SHORTCUT, function toggleViewed() {
     const codeView = codeViewRef.current?.getInstance();
     if (!isDefined(codeView)) {
       return;
@@ -107,7 +110,11 @@ export function DiffView({files}: DiffViewProps) {
       }
       renderHeaderFilenameSuffix={(item) =>
         isEmptyDiffItem(item) ? (
-          <span className="text-xs text-muted">No text changes</span>
+          <span className="text-xs text-muted">
+            <fbt desc="File header note for a file whose diff has no text lines, such as a rename or binary change">
+              No text changes
+            </fbt>
+          </span>
         ) : null
       }
       renderHeaderMetadata={(item) => (
@@ -158,7 +165,11 @@ function CollapseButton({collapsed, onToggleCollapsed}: CollapseButtonProps) {
   return (
     <Button
       aria-expanded={!collapsed}
-      aria-label={collapsed ? 'Expand file' : 'Collapse file'}
+      aria-label={
+        collapsed
+          ? fbs('Expand file', 'Button that shows a collapsed file diff')
+          : fbs('Collapse file', 'Button that hides a file diff')
+      }
       variant="ghost"
       size="sm"
       isIconOnly
@@ -185,7 +196,7 @@ function ViewedCheckbox({viewed, onViewedChange}: ViewedCheckboxProps) {
     <Tooltip>
       <Tooltip.Trigger>
         <Checkbox
-          aria-keyshortcuts="v"
+          aria-keyshortcuts={VIEWED_SHORTCUT}
           variant="secondary"
           isSelected={viewed}
           onChange={onViewedChange}
@@ -195,14 +206,16 @@ function ViewedCheckbox({viewed, onViewedChange}: ViewedCheckboxProps) {
             <Checkbox.Control>
               <Checkbox.Indicator />
             </Checkbox.Control>
-            Viewed
+            <fbt desc="Checkbox that marks a file as reviewed">Viewed</fbt>
           </Checkbox.Content>
         </Checkbox>
       </Tooltip.Trigger>
       <Tooltip.Content placement="left" className="flex items-center gap-2">
-        Viewed by me
+        <fbt desc="Tooltip of the checkbox that marks a file as reviewed">
+          Viewed by me
+        </fbt>
         <Kbd>
-          <Kbd.Content>v</Kbd.Content>
+          <Kbd.Content>{VIEWED_SHORTCUT}</Kbd.Content>
         </Kbd>
       </Tooltip.Content>
     </Tooltip>

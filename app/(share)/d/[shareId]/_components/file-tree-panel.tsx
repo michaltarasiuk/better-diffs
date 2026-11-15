@@ -10,6 +10,7 @@ import {
   useFileTreeSearch,
   type FileTreePreloadedData,
 } from '@pierre/trees/react';
+import {fbs} from 'fbtee';
 import {use, useRef} from 'react';
 import {OverlayTriggerStateContext} from 'react-aria-components/Dialog';
 
@@ -68,7 +69,7 @@ export function FileTreePanel({
       <FileTreeSearch model={model} />
 
       <FileTree
-        aria-label="Changed files"
+        aria-label={fbs('Changed files', 'Accessible name of the file tree')}
         model={model}
         preloadedData={preloaded}
         className="min-h-0 flex-1"
@@ -95,7 +96,10 @@ function FileTreeSearch({model}: {readonly model: FileTreeModel}) {
   return (
     <SearchField
       variant="secondary"
-      aria-label="Search files"
+      aria-label={fbs(
+        'Search files',
+        'Accessible name of the file search field',
+      )}
       value={search.value}
       onChange={(value) => search.setValue(value || null)}
       fullWidth
@@ -106,7 +110,10 @@ function FileTreeSearch({model}: {readonly model: FileTreeModel}) {
         <SearchField.Input
           ref={inputRef}
           aria-keyshortcuts="/ Escape"
-          placeholder="Search files"
+          placeholder={fbs(
+            'Search files',
+            'Placeholder of the file search field',
+          )}
           onKeyDown={(event) => {
             switch (event.key) {
               case 'ArrowUp':
@@ -123,7 +130,9 @@ function FileTreeSearch({model}: {readonly model: FileTreeModel}) {
             }
           }}
         />
-        <SearchField.ClearButton aria-label="Clear search" />
+        <SearchField.ClearButton
+          aria-label={fbs('Clear search', 'Button that clears the file search')}
+        />
       </SearchField.Group>
     </SearchField>
   );

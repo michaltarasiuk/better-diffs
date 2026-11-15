@@ -2,6 +2,7 @@
 
 import {Button, Spinner} from '@heroui/react';
 import {getLineAnnotationName} from '@pierre/diffs';
+import {fbs} from 'fbtee';
 
 import {GitHubIcon} from '#/auth/github-icon';
 import type {DiffAnnotation} from '#/diffs/annotations';
@@ -34,7 +35,9 @@ export function SignIn({line, onDismiss}: SignInProps) {
         ) : (
           <GitHubIcon aria-hidden className="size-4" />
         )}
-        {isSigningIn ? 'Signing in…' : 'Sign in'}
+        {isSigningIn
+          ? fbs('Signing in…', 'Sign-in button while GitHub sign-in is pending')
+          : fbs('Sign in', 'Button that signs in with GitHub to comment')}
       </Button>
 
       <Button
@@ -44,7 +47,7 @@ export function SignIn({line, onDismiss}: SignInProps) {
         className="w-full sm:w-auto"
         onPress={onDismiss}
       >
-        Cancel
+        <fbt desc="Button that dismisses the sign-in prompt">Cancel</fbt>
       </Button>
     </div>
   );

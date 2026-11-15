@@ -26,6 +26,7 @@ import {
   $isHeadingNode,
 } from '@lexical/rich-text';
 import {$setBlocksType} from '@lexical/selection';
+import {fbs} from 'fbtee';
 import {
   $createParagraphNode,
   $findMatchingParent,
@@ -70,19 +71,28 @@ import {
 import {$trimRoot} from '#/lexical/trim-root';
 import {isDefined} from '#/utils/is-defined';
 
-const BLOCK_TYPES = [
-  {label: 'Normal', value: 'paragraph'},
-  {label: 'Heading 1', value: 'h1'},
-  {label: 'Heading 2', value: 'h2'},
-  {label: 'Heading 3', value: 'h3'},
-  {label: 'Quote', value: 'quote'},
-] as const;
+const BLOCK_TYPES = ['paragraph', 'h1', 'h2', 'h3', 'quote'] as const;
 
 const FORMAT_TYPES = ['bold', 'italic', 'underline', 'strikethrough'] as const;
 
 const ALIGNMENTS = ['left', 'center', 'right', 'justify'] as const;
 
-type BlockType = (typeof BLOCK_TYPES)[number]['value'];
+type BlockType = (typeof BLOCK_TYPES)[number];
+
+function blockTypeLabel(type: BlockType) {
+  switch (type) {
+    case 'paragraph':
+      return fbs('Normal', 'Comment editor block type: plain paragraph');
+    case 'h1':
+      return fbs('Heading 1', 'Comment editor block type: largest heading');
+    case 'h2':
+      return fbs('Heading 2', 'Comment editor block type: medium heading');
+    case 'h3':
+      return fbs('Heading 3', 'Comment editor block type: smallest heading');
+    case 'quote':
+      return fbs('Quote', 'Comment editor block type: block quote');
+  }
+}
 
 function formatParagraph(editor: LexicalEditor) {
   editor.update(() => {
@@ -116,7 +126,7 @@ function applyBlockType(editor: LexicalEditor, type: BlockType) {
 }
 
 function isBlockType(value: string): value is BlockType {
-  return BLOCK_TYPES.some((blockType) => blockType.value === value);
+  return BLOCK_TYPES.some((type) => type === value);
 }
 
 type OnSubmit = (body: SerializedEditorState) => void | Promise<unknown>;
@@ -156,7 +166,10 @@ export function CommentEditor({
         <Card.Content>
           <div className="relative flex max-h-48 min-h-24 w-full flex-col overflow-y-auto rounded-field px-3 py-2">
             <ContentEditable
-              aria-label="Comment"
+              aria-label={fbs(
+                'Comment',
+                'Accessible name of the comment editor',
+              )}
               aria-placeholder={placeholder}
               placeholder={
                 <div
@@ -182,7 +195,9 @@ export function CommentEditor({
             render={withKeyShortcuts('button', SHORTCUTS.dismiss)}
             onPress={() => onDismiss?.()}
           >
-            Cancel
+            <fbt desc="Button that discards the comment being written">
+              Cancel
+            </fbt>
           </Button>
           <SubmitCommentButton onSubmit={onSubmit} />
         </Card.Footer>
@@ -239,7 +254,7 @@ function SubmitCommentButton({onSubmit}: SubmitCommentButtonProps) {
       render={withKeyShortcuts('button', SHORTCUTS.submit)}
       onPress={submit}
     >
-      Comment
+      <fbt desc="Button that posts the comment">Comment</fbt>
     </Button>
   );
 }
@@ -305,9 +320,9 @@ function RichTextToolbarPlugin() {
 
   useEffect(() => {
     return mergeRegister(
-      ...BLOCK_TYPES.map(({value}) =>
-        registerShortcut(editor, SHORTCUTS[value], () => {
-          applyBlockType(editor, value);
+      ...BLOCK_TYPES.map((type) =>
+        registerShortcut(editor, SHORTCUTS[type], () => {
+          applyBlockType(editor, type);
         }),
       ),
       ...ALIGNMENTS.map((alignment) =>
@@ -321,7 +336,10 @@ function RichTextToolbarPlugin() {
   return (
     <div className="-m-1 flex [scrollbar-width:none] items-center gap-2 overflow-x-auto p-1">
       <Select
-        aria-label="Block type"
+        aria-label={fbs(
+          'Block type',
+          'Select that changes the paragraph style',
+        )}
         variant="secondary"
         value={blockType}
         onChange={(value) => {
@@ -337,14 +355,14 @@ function RichTextToolbarPlugin() {
         </Select.Trigger>
         <Select.Popover>
           <ListBox>
-            {BLOCK_TYPES.map((blockType) => (
+            {BLOCK_TYPES.map((type) => (
               <ListBox.Item
-                key={blockType.value}
-                id={blockType.value}
-                textValue={blockType.label}
-                render={withKeyShortcuts('div', SHORTCUTS[blockType.value])}
+                key={type}
+                id={type}
+                textValue={blockTypeLabel(type)}
+                render={withKeyShortcuts('div', SHORTCUTS[type])}
               >
-                {blockType.label}
+                {blockTypeLabel(type)}
                 <ListBox.ItemIndicator />
               </ListBox.Item>
             ))}
@@ -358,7 +376,7 @@ function RichTextToolbarPlugin() {
         size="sm"
       >
         <Button
-          aria-label="Undo"
+          aria-label={fbs('Undo', 'Comment editor toolbar button')}
           render={withKeyShortcuts('button', SHORTCUTS.undo)}
           isDisabled={!canUndo}
           onPress={() => {
@@ -369,7 +387,7 @@ function RichTextToolbarPlugin() {
           <Undo2Icon aria-hidden className="size-4" />
         </Button>
         <Button
-          aria-label="Redo"
+          aria-label={fbs('Redo', 'Comment editor toolbar button')}
           render={withKeyShortcuts('button', SHORTCUTS.redo)}
           isDisabled={!canRedo}
           onPress={() => {
@@ -399,7 +417,7 @@ function RichTextToolbarPlugin() {
       >
         <ToggleButton
           id="bold"
-          aria-label="Bold"
+          aria-label={fbs('Bold', 'Comment editor toolbar text style')}
           render={withKeyShortcuts('button', SHORTCUTS.bold)}
           isIconOnly
         >
@@ -407,7 +425,7 @@ function RichTextToolbarPlugin() {
         </ToggleButton>
         <ToggleButton
           id="italic"
-          aria-label="Italic"
+          aria-label={fbs('Italic', 'Comment editor toolbar text style')}
           render={withKeyShortcuts('button', SHORTCUTS.italic)}
           isIconOnly
         >
@@ -416,7 +434,7 @@ function RichTextToolbarPlugin() {
         </ToggleButton>
         <ToggleButton
           id="underline"
-          aria-label="Underline"
+          aria-label={fbs('Underline', 'Comment editor toolbar text style')}
           render={withKeyShortcuts('button', SHORTCUTS.underline)}
           isIconOnly
         >
@@ -427,7 +445,7 @@ function RichTextToolbarPlugin() {
 
       <ButtonGroup className="shrink-0" variant="tertiary" size="sm">
         <Button
-          aria-label="Align left"
+          aria-label={fbs('Align left', 'Comment editor toolbar alignment')}
           render={withKeyShortcuts('button', SHORTCUTS.left)}
           onPress={() => {
             editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
@@ -437,7 +455,7 @@ function RichTextToolbarPlugin() {
           <AlignLeftIcon aria-hidden className="size-4" />
         </Button>
         <Button
-          aria-label="Align center"
+          aria-label={fbs('Align center', 'Comment editor toolbar alignment')}
           render={withKeyShortcuts('button', SHORTCUTS.center)}
           onPress={() => {
             editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center');
@@ -448,7 +466,7 @@ function RichTextToolbarPlugin() {
           <AlignCenterIcon aria-hidden className="size-4" />
         </Button>
         <Button
-          aria-label="Align right"
+          aria-label={fbs('Align right', 'Comment editor toolbar alignment')}
           render={withKeyShortcuts('button', SHORTCUTS.right)}
           onPress={() => {
             editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right');
@@ -459,7 +477,7 @@ function RichTextToolbarPlugin() {
           <AlignRightIcon aria-hidden className="size-4" />
         </Button>
         <Button
-          aria-label="Justify"
+          aria-label={fbs('Justify', 'Comment editor toolbar alignment')}
           render={withKeyShortcuts('button', SHORTCUTS.justify)}
           onPress={() => {
             editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify');

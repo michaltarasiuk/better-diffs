@@ -35,7 +35,9 @@ export function ReplyInput({children}: ReplyInputProps) {
           })}
           onPress={() => setIsEditing(true)}
         >
-          Write a reply…
+          <fbt desc="Collapsed reply field under a comment thread">
+            Write a reply…
+          </fbt>
         </Button>
       </div>
     );

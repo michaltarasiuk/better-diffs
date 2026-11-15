@@ -4,6 +4,7 @@ import {Avatar} from '@heroui/react';
 import {typographyVariants} from '@heroui/styles';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {LexicalExtensionComposer} from '@lexical/react/LexicalExtensionComposer';
+import {fbs} from 'fbtee';
 import type {SerializedEditorState} from 'lexical';
 import {Fragment, useState} from 'react';
 
@@ -75,7 +76,9 @@ function CommentBody({initialState}: CommentBodyProps) {
 
   return (
     <LexicalExtensionComposer extension={extension} contentEditable={null}>
-      <ContentEditable aria-label="Comment" />
+      <ContentEditable
+        aria-label={fbs('Comment', 'Accessible name of a posted comment body')}
+      />
     </LexicalExtensionComposer>
   );
 }

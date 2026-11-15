@@ -1,6 +1,7 @@
 'use client';
 
 import {Card, toast} from '@heroui/react';
+import {fbs} from 'fbtee';
 import type {SerializedEditorState} from 'lexical';
 
 import type {Session} from '#/auth/server';
@@ -137,7 +138,9 @@ function CommentForm({line, form, fileId, onDismiss}: CommentFormProps) {
         <Card variant="secondary" className="m-2 mbs-1 p-0">
           <div className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <p className="hidden text-sm text-muted sm:block">
-              Sign in to leave a comment.
+              <fbt desc="Prompt next to the sign-in button on a new comment">
+                Sign in to leave a comment.
+              </fbt>
             </p>
             <SignIn line={line} onDismiss={onDismiss} />
           </div>
@@ -147,7 +150,10 @@ function CommentForm({line, form, fileId, onDismiss}: CommentFormProps) {
       {(session) => (
         <div className="m-2 mbs-1">
           <CommentEditor
-            placeholder="Leave a comment…"
+            placeholder={fbs(
+              'Leave a comment…',
+              'Placeholder of a new comment',
+            )}
             initialState={getDraft(form.formId)}
             onSubmit={(body) => submit(session, body)}
             onChange={(state) => {
@@ -224,7 +230,7 @@ function CommentThread({line, threadId}: CommentThreadProps) {
           >
             {(session) => (
               <CommentEditor
-                placeholder="Write a reply…"
+                placeholder={fbs('Write a reply…', 'Placeholder of a reply')}
                 initialState={getDraft(threadId)}
                 autoFocus
                 variant="transparent"
@@ -247,7 +253,7 @@ function CommentThread({line, threadId}: CommentThreadProps) {
 }
 
 function notifyNotSaved({reason}: ThreadError) {
-  toast.danger('Comment not saved', {
+  toast.danger(fbs('Comment not saved', 'Toast title when saving fails'), {
     description: threadErrorMessage(reason),
   });
 }

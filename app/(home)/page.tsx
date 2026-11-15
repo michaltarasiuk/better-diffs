@@ -4,6 +4,7 @@ import {Typography} from '@heroui/react';
 import {typographyVariants} from '@heroui/styles';
 import {MultiFileDiff} from '@pierre/diffs/react';
 import {preloadMultiFileDiff} from '@pierre/diffs/ssr';
+import {fbs} from 'fbtee';
 
 import {fileContents} from '#/diffs/contents';
 import {PATCH_DIFF_OPTIONS} from '#/diffs/options';
@@ -45,27 +46,46 @@ export default async function HomePage() {
         </Typography.Heading>
 
         <Typography.Paragraph size="sm" color="muted" className="max-w-prose">
-          Share your current changes with teammates without creating a PR. They
-          can view the diff and leave comments.
+          <fbt desc="Home page introduction to the product">
+            Share your current changes with teammates without creating a PR.
+            They can view the diff and leave comments.
+          </fbt>
         </Typography.Paragraph>
       </header>
 
-      <Section id="install" title="Install">
+      <Section
+        id="install"
+        title={fbs('Install', 'Home page heading above the install command')}
+      >
         <div className="space-y-2">
           <CommandSnippet
-            label="Copy install command"
+            label={fbs(
+              'Copy install command',
+              'Accessible label of the button that copies the install command',
+            )}
             command={INSTALL_COMMAND}
           />
 
           <Typography.Paragraph size="xs" color="muted">
-            Downloads a prebuilt binary for macOS or Linux into{' '}
-            <InlineCode>~/.local/bin</InlineCode> and points it at this
-            instance. Needs <InlineCode>git</InlineCode> to run.
+            <fbt desc="Explains what the install command does and what it needs">
+              Downloads a prebuilt binary for macOS or Linux into{' '}
+              <fbt:param name="install directory">
+                <InlineCode>~/.local/bin</InlineCode>
+              </fbt:param>{' '}
+              and points it at this instance. Needs{' '}
+              <fbt:param name="git">
+                <InlineCode>git</InlineCode>
+              </fbt:param>{' '}
+              to run.
+            </fbt>
           </Typography.Paragraph>
         </div>
       </Section>
 
-      <Section id="usage" title="Usage">
+      <Section
+        id="usage"
+        title={fbs('Usage', 'Home page heading above the CLI usage examples')}
+      >
         <MultiFileDiff {...preloaded} className="w-full" />
       </Section>
     </main>

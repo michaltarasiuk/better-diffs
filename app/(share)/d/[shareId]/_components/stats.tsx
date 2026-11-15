@@ -1,4 +1,5 @@
 import {Accordion, tv, type VariantProps} from '@heroui/react';
+import {fbs} from 'fbtee';
 
 import {formatDiffStat, type DiffStats} from '#/diffs/stats';
 
@@ -11,17 +12,31 @@ export function Stats({stats}: {readonly stats: DiffStats}) {
       <Accordion.Item id="stats">
         <Accordion.Heading>
           <Accordion.Trigger className="px-4 py-3 text-xs font-medium text-muted hover:bg-inherit">
-            Stats
+            <fbt desc="Heading of the diff statistics panel">Stats</fbt>
             <Accordion.Indicator className="size-3.5" />
           </Accordion.Trigger>
         </Accordion.Heading>
         <Accordion.Panel>
           <Accordion.Body className="px-4 pt-0 pb-3">
             <dl className="space-y-1.5">
-              <Stat label="Files" value={stats.files} />
-              <Stat label="Additions" value={stats.additions} tone="success" />
-              <Stat label="Deletions" value={stats.deletions} tone="danger" />
-              <Stat label="Lines" value={stats.lines} />
+              <Stat
+                label={fbs('Files', 'Statistic: number of changed files')}
+                value={stats.files}
+              />
+              <Stat
+                label={fbs('Additions', 'Statistic: number of added lines')}
+                value={stats.additions}
+                tone="success"
+              />
+              <Stat
+                label={fbs('Deletions', 'Statistic: number of deleted lines')}
+                value={stats.deletions}
+                tone="danger"
+              />
+              <Stat
+                label={fbs('Lines', 'Statistic: number of changed lines')}
+                value={stats.lines}
+              />
             </dl>
           </Accordion.Body>
         </Accordion.Panel>

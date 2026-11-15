@@ -1,6 +1,7 @@
 'use client';
 
 import {Button, toast} from '@heroui/react';
+import {fbs} from 'fbtee';
 import {CheckIcon, CopyIcon} from 'lucide-react';
 import React, {useEffect, useRef, useState} from 'react';
 
@@ -57,11 +58,23 @@ export function CommandSnippet({label, command}: CommandSnippetProps) {
       showFeedback('selected');
     }
 
-    toast.warning('Clipboard unavailable', {
-      description: selected
-        ? 'Command selected. Press ⌘C or Ctrl+C to copy'
-        : 'Copy the command manually',
-    });
+    toast.warning(
+      fbs(
+        'Clipboard unavailable',
+        'Toast title when the browser refuses to copy the command',
+      ),
+      {
+        description: selected
+          ? fbs(
+              'Command selected. Press ⌘C or Ctrl+C to copy',
+              'Toast hint after the command text was selected for manual copying',
+            )
+          : fbs(
+              'Copy the command manually',
+              'Toast hint when the command could be neither copied nor selected',
+            ),
+      },
+    );
   }
 
   async function copyCommand() {
@@ -87,8 +100,11 @@ export function CommandSnippet({label, command}: CommandSnippetProps) {
           feedback === 'idle'
             ? label
             : feedback === 'copied'
-              ? 'Copied'
-              : 'Selected'
+              ? fbs('Copied', 'Copy button label after the command was copied')
+              : fbs(
+                  'Selected',
+                  'Copy button label after the command text was selected',
+                )
         }
         variant="ghost"
         size="sm"

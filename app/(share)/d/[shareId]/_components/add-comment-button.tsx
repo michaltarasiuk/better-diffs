@@ -1,4 +1,5 @@
 import {Button, type ButtonProps} from '@heroui/react';
+import {fbs} from 'fbtee';
 import {PlusIcon} from 'lucide-react';
 
 import {preloadCommentEditor} from './lazy-comment-editor';
@@ -7,7 +8,10 @@ export function AddCommentButton(props: ButtonProps) {
   return (
     <Button
       id="gutter-utility"
-      aria-label="Add comment"
+      aria-label={fbs(
+        'Add comment',
+        'Gutter button that starts a comment on a line',
+      )}
       onHoverStart={preloadCommentEditor}
       onFocus={preloadCommentEditor}
       isIconOnly

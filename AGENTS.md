@@ -38,6 +38,7 @@ Application code lives in top-level folders beside config, `cli/` and `docs/`; t
 - `db/` holds queries, as plain async functions over Drizzle. It may import `#/env`, `#/utils/*`, `#/diffs/schemas`, `#/threads/schemas` and `#/threads/errors` only; anything else arrives as an argument.
 - `auth/` holds Better Auth: `server.ts` and `bearer.ts` are server-only, `client.ts` and the providers are client-side.
 - Pure modules take plain values and return plain values, with no React, Next.js, storage or network: `utils/`, `http/headers/`, `http/error.ts`, `threads/{schemas,state,actor,errors}.ts`, `diffs/{annotations,contents,empty,lines,schemas,stats}.ts` and `trees/input.ts`. They are where logic goes so it can be unit tested without mocks.
+- `i18n/` sets up fbtee once per module graph: `setup.ts` for Server Components (imported first by the root layout) and Vitest, `client-setup.tsx` for Client Components (rendered by the root layout). There is one locale, so the global runtime is enough; a second one needs a runtime per request.
 - `diffs/`, `trees/` and `lexical/` adapt `@pierre/diffs`, `@pierre/trees` and Lexical to this app; `hooks/` holds React hooks shared across segments.
 - Mark server-only files with `import 'server-only'` and browser-only ones with `import 'client-only'`. The lint rules catch a bad import before the build does and say why.
 
@@ -45,6 +46,7 @@ Application code lives in top-level folders beside config, `cli/` and `docs/`; t
 
 - Within a folder, import relatively (`./schemas`); across folders, use `#/`. Tests are the exception and may use `#/` throughout.
 - zod schemas share a name with their inferred type (`export const Anchor = z.object(...)`, `export type Anchor = z.infer<typeof Anchor>`).
+- UI text goes through fbtee: `<fbt desc="…">` in JSX, `fbs(text, desc)` where a string is needed (props, toasts, metadata). Call them during render or in handlers, never at module scope outside the root layout, since a module can run before the runtime is set up. ESLint's `@nkzw/fbtee/no-untranslated-strings` flags literal text in `.tsx`. Error messages for developers and the CLI (`ApiError`, `ThreadError`, thrown errors) stay plain strings.
 - Write `undefined` for nothing. Write `null` only where an API we don't own asks for it: React (`useRef(null)`, `return null`), the DOM, JSON, SQL columns, nuqs. Check either with `isDefined` from `utils/is-defined.ts`.
 - Tests sit in a `__tests__/` folder beside the code. `*.browser.test.ts(x)` runs in real Chromium; every other test runs in Node. Database tests call `setupTestDb()` from `db/__tests__/setup.ts`, which builds the schema in memory and clears it before each test.
 - The schema has no migrations: `bun run db:push` applies `db/schema` directly.

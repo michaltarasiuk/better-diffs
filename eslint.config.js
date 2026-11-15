@@ -1,3 +1,4 @@
+import fbtee from '@nkzw/eslint-plugin-fbtee';
 import vitest from '@vitest/eslint-plugin';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
@@ -87,6 +88,25 @@ export default defineConfig([
       eqeqeq: ['error', 'smart'],
       'object-shorthand': 'error',
       'prefer-template': 'error',
+    },
+  },
+  {
+    name: 'better-diffs/fbtee',
+    files: ['**/*.tsx'],
+    ignores: TEST_FILES,
+    plugins: {
+      '@nkzw/fbtee': /** @type {import('eslint').ESLint.Plugin} */ (
+        /** @type {unknown} */ (fbtee)
+      ),
+    },
+    rules: {
+      '@nkzw/fbtee/no-empty-strings': 'error',
+      '@nkzw/fbtee/no-unhelpful-desc': 'error',
+      '@nkzw/fbtee/no-untranslated-strings': [
+        'error',
+        {ignoredWords: ['Better Diffs']},
+      ],
+      '@nkzw/fbtee/prefer-fbs': 'error',
     },
   },
   {

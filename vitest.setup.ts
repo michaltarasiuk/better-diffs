@@ -1,3 +1,5 @@
+import '#/i18n/setup';
+
 import {afterEach} from 'vitest';
 
 // Most unit tests run in the node environment, where Testing Library is dead

@@ -1,5 +1,6 @@
 'use client';
 
+import {fbs} from 'fbtee';
 import {useState} from 'react';
 import {useMove} from 'react-aria/useMove';
 
@@ -27,7 +28,7 @@ export function FilesSidebar({children}: {readonly children: React.ReactNode}) {
 
   return (
     <aside
-      aria-label="Files"
+      aria-label={fbs('Files', 'Accessible name of the changed files sidebar')}
       style={{width}}
       className="relative hidden shrink-0 md:block"
     >
@@ -38,7 +39,10 @@ export function FilesSidebar({children}: {readonly children: React.ReactNode}) {
         role="separator"
         tabIndex={0}
         aria-orientation="vertical"
-        aria-label="Resize sidebar"
+        aria-label={fbs(
+          'Resize sidebar',
+          'Handle that resizes the files sidebar',
+        )}
         aria-valuemin={MIN_WIDTH}
         aria-valuemax={MAX_WIDTH}
         aria-valuenow={width}
